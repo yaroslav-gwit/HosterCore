@@ -1,10 +1,11 @@
 # General Information
+![Hoster Core Logo](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-core.png)
 Introducing `Hoster` 🚀 - VM management framework that will make your life easier. Whether you're an experienced sysadmin or just starting out, `Hoster` has got you covered. With VM network isolation at the bridge level, ZFS dataset encryption that applies to all underlying VMs, and instant VM deployments, `Hoster` is designed to help you get your work done quickly and efficiently. And that's not all - ZFS send/receive also gives Hoster the ability to offer very reliable, asynchronous storage replication between 2 or more hosts, ensuring data safety and availability 🛡️</br>
 
 Built using modern, rock solid and battle tested technologies like Golang, FreeBSD, bhyve, ZFS, and PF, `Hoster` is a highly opinionated framework that puts an emphasis on ease of use and speed of deployment. Say goodbye to the headaches of traditional VM management and hello to the world of simplicity and reliability. Whether you're managing a small home lab or a large-scale production, `Hoster` can easily accommodate your environment 🧑🏼‍💻
 
 # The why?
-![Hoster Core Screenshot](https://github.com/yaroslav-gwit/HosterRed-HyperVisor/blob/main/screenshots/HosterRedScreenshotMain.png)
+![Hoster Core Screenshot](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-core-main.png)
 <br>
 Have you ever found yourself frustrated with your current hosting solution? Maybe you're a `Proxmox/XCP-ng/XenServer` user like I was for a long time, but when I started renting Hetzner hardware servers, I ran into some serious roadblocks. High RAM usage on smaller servers, no integrated NAT management, and a nightmare of working with multiple public IPs were just a few of the issues I faced. But then I started to look around for an alternative solution to Linux based virtualization, discovered FreeBSD and bhyve, and everything changed. With PF to control the traffic and native ZFS encryption, I could do so much more, but existing solutions like `vmbhyve` and `CBSD` (which heavily inspired my development) just could'nt cut it for me. That's when I decided to create Hoster: a wholistic system that combines bhyve, PF, and ZFS into a powerful hosting platform that can be deployed on any hardware with minimal RAM overhead.</br></br>
 `Hoster` was initially written using Python3 (in 2021), but as the project's codebase grew it became clear that a compiled, statically typed language was necessary to improve the runtime speed (`vm list` in Python3 takes ~500ms to execute, while in Go it's 50-150ms, depending on the number of VMs + your hardware speed) and new node onboarding experience. That's when I made the decision to rewrite everything in Go, resulting in execution speeds that are up to 20 times faster! `Hoster` is now used by several individuals (including myself) as their hosting platform of choice. Give it a try and let me know your thoughts 😉
@@ -57,7 +58,7 @@ sudo su -
 pkg update && pkg install -y bash curl tmux
 ```
 
-This step is optional but highly recommended. Essentially, if you ignore to set any of these values they will be generated automatically. Specifically look at the network port and ZFS encryption password:
+This step is optional but highly recommended. Essentially, if you ignore to set any of these values - they will be set for you automatically.
 ```
 export DEF_NETWORK_NAME=internal
 export DEF_NETWORK_BR_ADDR=10.0.103.254
@@ -70,7 +71,7 @@ export DEF_ZFS_ENCRYPTION_PASSWORD="SuperSecretRandom_password"
 
 Run the installation script:
 ```
-curl -S https://raw.githubusercontent.com/yaroslav-gwit/HosterRed-HyperVisor/python-branch-main/deploy.sh | bash
+curl -S https://raw.githubusercontent.com/yaroslav-gwit/HosterCore/main/node_init.sh | bash
 ```
 
 At the end of the installation you will receive a following message:
