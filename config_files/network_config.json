@@ -1,0 +1,12 @@
+[
+    {
+        "network_name": "internal",
+        "network_gateway": "10.0.100.254",
+        "network_subnet": "10.0.100.0/24",
+        "network_range_start": "10.0.100.10",
+        "network_range_end": "10.0.100.200",
+        "bridge_interface": "None",
+        "apply_bridge_address": true,
+        "comment": "Internal Network"
+    }
+]
