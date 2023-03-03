@@ -1,5 +1,5 @@
 # General Information
-![Hoster Core Logo](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-core.png)
+![Hoster Core Logo](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-core-cropped.png)
 Introducing `Hoster` 🚀 - VM management framework that will make your life easier. Whether you're an experienced sysadmin or just starting out, `Hoster` has got you covered. With VM network isolation at the bridge level, ZFS dataset encryption that applies to all underlying VMs, and instant VM deployments, `Hoster` is designed to help you get your work done quickly and efficiently. And that's not all - ZFS send/receive also gives Hoster the ability to offer very reliable, asynchronous storage replication between 2 or more hosts, ensuring data safety and availability 🛡️</br>
 
 Built using modern, rock solid and battle tested technologies like Golang, FreeBSD, bhyve, ZFS, and PF, `Hoster` is a highly opinionated framework that puts an emphasis on ease of use and speed of deployment. Say goodbye to the headaches of traditional VM management and hello to the world of simplicity and reliability. Whether you're managing a small home lab or a large-scale production, `Hoster` can easily accommodate your environment 🧑🏼‍💻
