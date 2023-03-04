@@ -84,6 +84,8 @@ func ciReset(oldVmName string, newVmName string) error {
 	c.NakedSubnet = strings.Split(networkInfo[0].Subnet, "/")[1]
 	c.Gateway = networkInfo[0].Gateway
 
+	c.Cpus = vmConfigVar.CPUCores
+	c.Ram = vmConfigVar.Memory
 	c.LiveStatus = vmConfigVar.LiveStatus
 	c.OsType = vmConfigVar.OsType
 	c.OsComment = vmConfigVar.OsComment
