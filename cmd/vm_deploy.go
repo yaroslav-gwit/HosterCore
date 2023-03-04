@@ -144,7 +144,7 @@ func deployVmMain(vmName string, osType string, dsParent string, cpus int, ram s
 	case "rockylinux8":
 		c.OsComment = "RockyLinux 8"
 	case "freebsd13ufs":
-		c.OsComment = "FreeBSD 13 UFW"
+		c.OsComment = "FreeBSD 13 UFS"
 	case "freebsd13zfs":
 		c.OsComment = "FreeBSD 13 ZFS"
 	case "windows10":
