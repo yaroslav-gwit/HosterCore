@@ -64,7 +64,7 @@ func main() {
 
 	f, err := os.OpenFile("/opt/hoster-core/hoster", os.O_CREATE|os.O_WRONLY, 0750)
 	if err != nil {
-		fmt.Println("Error decoding response:", err)
+		fmt.Println("Could not replace hoster:", err)
 		os.Exit(1)
 	}
 	defer f.Close()
@@ -90,7 +90,7 @@ func main() {
 
 	f, err = os.OpenFile("/opt/hoster-core/vm_supervisor_service", os.O_CREATE|os.O_WRONLY, 0750)
 	if err != nil {
-		fmt.Println("Error decoding response:", err)
+		fmt.Println("Could not replace vm_supervisor_service:", err)
 		os.Exit(1)
 	}
 	defer f.Close()
