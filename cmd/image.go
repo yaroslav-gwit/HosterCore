@@ -26,7 +26,10 @@ var (
 		Short: "Image and template (.raw) related operations",
 		Long:  `Image and template (.raw) related operations`,
 		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
+			err := listAvailableImages()
+			if err != nil {
+				log.Fatal("Could not list available images: " + err.Error())
+			}
 		},
 	}
 )
@@ -239,6 +242,51 @@ func imageDownload(osType string) error {
 
 	time.Sleep(time.Millisecond * 250)
 	emojlog.PrintLogMessage("Image was downloaded: /tmp/"+osType+".zip", emojlog.Changed)
+
+	return nil
+}
+
+func listAvailableImages() error {
+	// Host config read/parse
+	hostConfig := HostConfig{}
+	// JSON config file location
+	execPath, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	hostConfigFile := path.Dir(execPath) + "/config_files/host_config.json"
+	// Read the JSON file
+	data, err := os.ReadFile(hostConfigFile)
+	if err != nil {
+		return err
+	}
+	// Unmarshal the JSON data into a slice of Network structs
+	err = json.Unmarshal(data, &hostConfig)
+	if err != nil {
+		return err
+	}
+	emojlog.PrintLogMessage("Images available on the public server: "+hostConfig.ImageServer, emojlog.Debug)
+	// Parse website response
+	resp, err := http.Get(hostConfig.ImageServer)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	var vmImageMap map[string][]map[string][]string
+	err = json.Unmarshal(body, &vmImageMap)
+	if err != nil {
+		return err
+	}
+	// var imageList []string
+	for _, v := range vmImageMap["vm_images"] {
+		for key := range v {
+			fmt.Println(key)
+		}
+	}
 
 	return nil
 }
