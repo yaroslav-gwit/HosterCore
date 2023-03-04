@@ -192,12 +192,14 @@ pass in quick on { ${PUBLIC_INTERFACE} } proto tcp to port 22 keep state #ALLOW_
 EOF
 
 
-wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.1/hoster -O ${HOSTER_WD}hoster -q --show-progress
+wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.1a/hoster -O ${HOSTER_WD}hoster -q --show-progress
 chmod +x ${HOSTER_WD}hoster
 
-wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.1/vm_supervisor_service -O ${HOSTER_WD}vm_supervisor_service -q --show-progress
+wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.1a/vm_supervisor_service -O ${HOSTER_WD}vm_supervisor_service -q --show-progress
 chmod +x ${HOSTER_WD}vm_supervisor_service
 
+wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.1a/self_update_service -O ${HOSTER_WD}self_update_service -q --show-progress
+chmod +x ${HOSTER_WD}self_update_service
 
 #_ LET USER KNOW THE STATE OF DEPLOYMENT _#
 cat << EOF | cat

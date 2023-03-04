@@ -12,4 +12,10 @@ go build
 mv vm_supervisor ../vm_supervisor_service
 echo "Done"
 
+echo "Building the self_update module..."
+cd self_update/
+go build
+mv self_update ../self_update_service
+echo "Done"
+
 echo "=== Build process done ==="
