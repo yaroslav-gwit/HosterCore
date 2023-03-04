@@ -62,7 +62,11 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	f, _ := os.OpenFile("/opt/hoster-core/hoster", os.O_CREATE|os.O_WRONLY, 0750)
+	f, err := os.OpenFile("/opt/hoster-core/hoster", os.O_CREATE|os.O_WRONLY, 0750)
+	if err != nil {
+		fmt.Println("Error decoding response:", err)
+		os.Exit(1)
+	}
 	defer f.Close()
 
 	hosterBar := progressbar.DefaultBytes(
@@ -84,7 +88,11 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	f, _ = os.OpenFile("/opt/hoster-core/vm_supervisor_service", os.O_CREATE|os.O_WRONLY, 0750)
+	f, err = os.OpenFile("/opt/hoster-core/vm_supervisor_service", os.O_CREATE|os.O_WRONLY, 0750)
+	if err != nil {
+		fmt.Println("Error decoding response:", err)
+		os.Exit(1)
+	}
 	defer f.Close()
 
 	vmSupervisorBar := progressbar.DefaultBytes(
