@@ -266,7 +266,7 @@ func listAvailableImages() error {
 		return err
 	}
 
-	fmt.Println(" 🔗 OS Images available on the public server: " + hostConfig.ImageServer)
+	fmt.Println("🔗 OS Images available on the public server: " + hostConfig.ImageServer)
 
 	// Parse website response
 	resp, err := http.Get(hostConfig.ImageServer)
