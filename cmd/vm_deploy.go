@@ -137,6 +137,8 @@ func deployVmMain(vmName string, osType string, dsParent string, cpus int, ram s
 		c.OsComment = "Debian 11"
 	case "ubuntu2004":
 		c.OsComment = "Ubuntu 20.04"
+	case "ubuntu2204":
+		c.OsComment = "Ubuntu 22.04"
 	case "almalinux8":
 		c.OsComment = "AlmaLinux 8"
 	case "rockylinux8":

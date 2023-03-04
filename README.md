@@ -32,13 +32,12 @@ Yes, I am planning to develop a central REST API that will be able to control 10
 - [x] AlmaLinux 8
 - [x] RockyLinux 8
 - [x] Ubuntu 20.04
+- [x] Ubuntu 22.04
 - [x] Windows 10 (You'll have to provide your own image, instructions on how to build one will be released in the Wiki section soon)
 
 ### OSes on the roadmap
 - [ ] FreeBSD 13 ZFS
 - [ ] FreeBSD 13 UFS
-- [ ] Ubuntu 22.04
-- [ ] Ubuntu 20.04 LVM Hardened
 - [ ] Fedora (latest)
 - [ ] CentOS 7
 - [ ] OpenBSD
