@@ -145,6 +145,6 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version number of HosterCore",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("HosterCore v0.1, version based on Golang")
+		fmt.Println("HosterCore v0.1a, version based on Golang")
 	},
 }
