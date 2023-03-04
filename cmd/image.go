@@ -265,7 +265,9 @@ func listAvailableImages() error {
 	if err != nil {
 		return err
 	}
-	emojlog.PrintLogMessage("Images available on the public server: "+hostConfig.ImageServer, emojlog.Debug)
+
+	fmt.Println(" 🔗 OS Images available on the public server: " + hostConfig.ImageServer)
+
 	// Parse website response
 	resp, err := http.Get(hostConfig.ImageServer)
 	if err != nil {
@@ -284,7 +286,7 @@ func listAvailableImages() error {
 	// var imageList []string
 	for _, v := range vmImageMap["vm_images"] {
 		for key := range v {
-			fmt.Println(key)
+			fmt.Println(" " + key)
 		}
 	}
 
