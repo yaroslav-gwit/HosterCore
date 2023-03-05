@@ -115,23 +115,9 @@ hoster image download -t debian11
 
 And now you can finally deploy your VM:
 ```
-hoster vm deploy -n newAwesomeVmName -c 1 -r 1G --start-now
-# or with long flags
 hoster vm deploy --name newAwesomeVmName --cpu-cores 2 --ram 2G --start-now
 ```
 
-## Backups
-### Scheduled automatic snapshots for all production VMs
-```
-#== AUTOMATIC SNAPSHOTS ==#
-33 * *  * *      root  hoster vm snapshot-all  --stype  hourly   --keep 3
-5  4 *  * *      root  hoster vm snapshot-all  --stype  daily    --keep 5
-5  5 *  * 3      root  hoster vm snapshot-all  --stype  weekly   --keep 3
-5  3 15 * *      root  hoster vm snapshot-all  --stype  monthly  --keep 6
-```
-
-### Scheduled automatic replication for all production VMs
-```
-#== AUTOMATIC REPLICATION ==#
-50 * *  * *      root  hoster vm replicate-all --endpoint 192.168.1.11
-```
+## Documentation
+Need more information? There is an ongoing effort to document the whole system in one place:
+[Hoster Core Docs](https://docs.hoster-core.gateway-it.com/)
