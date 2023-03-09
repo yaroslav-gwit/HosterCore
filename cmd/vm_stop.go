@@ -36,23 +36,26 @@ func vmStop(vmName string) error {
 		return errors.New("VM is already stopped")
 	}
 
-	StopBhyveProcess(vmName)
+	StopBhyveProcess(vmName, false)
 	vmSupervisorCleanup(vmName)
-	StopBhyveProcess(vmName)
+	StopBhyveProcess(vmName, true)
 	NetworkCleanup(vmName, false)
 	BhyvectlDestroy(vmName, false)
 
 	return nil
 }
 
-func StopBhyveProcess(vmName string) {
-	emojlog.PrintLogMessage("Stopping the VM: "+vmName, emojlog.Info)
+func StopBhyveProcess(vmName string, quiet bool) {
+	if !quiet {
+		emojlog.PrintLogMessage("Stopping the VM: "+vmName, emojlog.Info)
+	}
+
 	cmd := exec.Command("pgrep", "-lf", vmName)
 	stdout, stderr := cmd.Output()
 	if stderr != nil {
 		if cmd.ProcessState.ExitCode() == 1 {
 			_ = 0
-		} else {
+		} else if !quiet {
 			emojlog.PrintLogMessage("pgrep exited with an error: "+stderr.Error(), emojlog.Error)
 		}
 	}
@@ -68,11 +71,13 @@ func StopBhyveProcess(vmName string) {
 	stopCommand2 := "-SIGTERM"
 	cmd = exec.Command(stopCommand1, stopCommand2, processId)
 	stderr = cmd.Run()
-	if stderr != nil {
+	if stderr != nil && !quiet {
 		emojlog.PrintLogMessage("kill was not successful (this is okay, vm supervisor will gracefully deal with it): "+stderr.Error(), emojlog.Warning)
 	}
 
-	emojlog.PrintLogMessage("Done stopping the VM: "+vmName, emojlog.Changed)
+	if !quiet {
+		emojlog.PrintLogMessage("Done stopping the bhyve VM process: "+vmName, emojlog.Changed)
+	}
 }
 
 func vmSupervisorCleanup(vmName string) {
