@@ -39,7 +39,6 @@ Yes, I am planning to develop a central REST API that will be able to control 10
 - [ ] FreeBSD 13 ZFS
 - [ ] FreeBSD 13 UFS
 - [ ] Fedora (latest)
-- [ ] CentOS 7
 - [ ] OpenBSD
 - [ ] OpenSUSE Leap
 - [ ] OpenSUSE Tumbleweed
