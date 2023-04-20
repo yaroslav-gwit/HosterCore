@@ -34,6 +34,7 @@ Yes, I am planning to develop a central REST API that will be able to control 10
 - [x] Ubuntu 20.04
 - [x] Ubuntu 22.04
 - [x] Windows 10 (You'll have to provide your own image, instructions on how to build one will be released in the Wiki section soon)
+- [x] Windows Server 19 (same as Windows 10)
 
 ### OSes on the roadmap
 - [ ] FreeBSD 13 ZFS
@@ -43,7 +44,6 @@ Yes, I am planning to develop a central REST API that will be able to control 10
 - [ ] OpenSUSE Leap
 - [ ] OpenSUSE Tumbleweed
 - [ ] Windows 11
-- [ ] Windows Server (latest)
 
 ### OSes not on the roadmap currently
 - [ ] ~~MacOS (any release)~~
