@@ -32,6 +32,7 @@ var (
 )
 
 var allVmsUptime []string
+var allVmsUptimeTimesUsed int
 var wg = &sync.WaitGroup{}
 
 func vmListMain() {
@@ -285,9 +286,11 @@ func getVmFolder(vmName string) string {
 
 func getVmUptimeNew(vmName string) string {
 	var vmsUptime []string
-	if len(allVmsUptime) > 0 {
+	if len(allVmsUptime) > 0 && allVmsUptimeTimesUsed < 15 {
 		vmsUptime = allVmsUptime
+		allVmsUptimeTimesUsed = allVmsUptimeTimesUsed + 1
 	} else {
+		allVmsUptimeTimesUsed = 0
 		var psEtime1 = "ps"
 		var psEtime2 = "axwww"
 		var psEtime3 = "-o"
