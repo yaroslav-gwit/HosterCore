@@ -156,7 +156,7 @@ func generateBhyveStartCommand(vmName string) string {
 	// fmt.Println(bhyveFinalCommand)
 
 	bhyvePci = bhyvePci + 1
-	vncCommand := " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",fbuf,tcp=0.0.0.0:" + vmConfigVar.VncPort + ",w=1280,h=1024,password=" + vmConfigVar.VncPassword
+	vncCommand := " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",fbuf,tcp=0.0.0.0:" + vmConfigVar.VncPort + ",w=800,h=600,password=" + vmConfigVar.VncPassword
 	bhyveFinalCommand = bhyveFinalCommand + vncCommand
 	// fmt.Println(bhyveFinalCommand)
 
