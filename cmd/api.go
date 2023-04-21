@@ -37,7 +37,7 @@ func StartApiServer(port int, user string, password string) {
 	app := fiber.New(fiber.Config{DisableStartupMessage: true, Prefork: false})
 	app.Use(requestid.New())
 	app.Use(logger.New(logger.Config{
-		Format: "[${locals:requestid} - ${ip}]:${port} ${status} - ${method} ${path} - Error: ${error}\n"}))
+		Format: "[${ip}:${port} ${status} - ${method} ${path} - Error: ${error} - ${latency} - ${bytesSent}\n"}))
 
 	app.Use(basicauth.New(basicauth.Config{
 		Users: map[string]string{
@@ -54,6 +54,18 @@ func StartApiServer(port int, user string, password string) {
 
 	app.Get("/vm/list", func(fiberContext *fiber.Ctx) error {
 		result := getAllVms()
+		jsonResult, _ := json.Marshal(result)
+		fiberContext.Status(fiber.StatusOK)
+		return fiberContext.SendString(string(jsonResult))
+	})
+
+	app.Get("/vm/info-all", func(fiberContext *fiber.Ctx) error {
+		allVms := getAllVms()
+		result := []vmInfoStruct{}
+		for _, v := range allVms {
+			tempRes, _ := getVmInfo(v)
+			result = append(result, tempRes)
+		}
 		jsonResult, _ := json.Marshal(result)
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.SendString(string(jsonResult))
@@ -272,7 +284,5 @@ func StartApiServer(port int, user string, password string) {
 	if err != nil {
 		log.Fatalf("Error starting server: %s\n", err)
 	}
-
-	// app.Listen("0.0.0.0:" + strconv.Itoa(port))
 	os.Exit(0)
 }
