@@ -118,6 +118,7 @@ func hostMain() {
 type jsonOutputHostInfoStruct struct {
 	Hostname     string `json:"hostname"`
 	LiveVms      string `json:"live_vms"`
+	AllVms		 string `json:"all_vms"`
 	SystemUptime string `json:"system_uptime"`
 	RamTotal     string `json:"ram_total"`
 	RamFree      string `json:"ram_free"`
@@ -136,6 +137,7 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	var tHostname string
 	var tLiveVms string
 	var tSystemUptime string
+	var tAllVms string
 	var tSystemRam = ramResponse{}
 	var tSwapInfo swapInfoStruct
 	var tArcSize string
@@ -155,6 +157,8 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	go func() { defer wg.Done(); tArcSize = getArcSize() }()
 	wg.Add(1)
 	go func() { defer wg.Done(); tZrootInfo = getZrootInfo() }()
+	wg.Add(1)
+	go func() { defer wg.Done(); tAllVms = strconv.Itoa(len(getAllVms())) }()
 
 	wg.Add(1)
 	go func() {
@@ -169,6 +173,7 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	jsonOutputVar := jsonOutputHostInfoStruct{}
 	jsonOutputVar.Hostname = tHostname
 	jsonOutputVar.LiveVms = tLiveVms
+	jsonOutputVar.AllVms = tAllVms
 	jsonOutputVar.SystemUptime = tSystemUptime
 	jsonOutputVar.RamTotal = tSystemRam.all
 	jsonOutputVar.RamFree = tSystemRam.free
