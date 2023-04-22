@@ -143,14 +143,20 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 
 	var wg = &sync.WaitGroup{}
 	var err error
-	wg.Add(8)
+	wg.Add(1)
 	go func() { defer wg.Done(); tHostname = GetHostName() }()
+	wg.Add(1)
 	go func() { defer wg.Done(); tLiveVms = getNumberOfRunningVms() }()
+	wg.Add(1)
 	go func() { defer wg.Done(); tSystemUptime = getSystemUptime() }()
+	wg.Add(1)
 	go func() { defer wg.Done(); tSystemRam = getHostRam() }()
+	wg.Add(1)
 	go func() { defer wg.Done(); tArcSize = getArcSize() }()
+	wg.Add(1)
 	go func() { defer wg.Done(); tZrootInfo = getZrootInfo() }()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		tSwapInfo, err = getSwapInfo()
