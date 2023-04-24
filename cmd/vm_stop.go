@@ -14,6 +14,7 @@ import (
 )
 
 var (
+	forceStop bool
 	vmStopCmd = &cobra.Command{
 		Use:   "stop [vmName]",
 		Short: "Stop a particular VM using it's name",
@@ -36,16 +37,16 @@ func vmStop(vmName string) error {
 		return errors.New("VM is already stopped")
 	}
 
-	StopBhyveProcess(vmName, false)
+	StopBhyveProcess(vmName, false, false)
 	vmSupervisorCleanup(vmName)
-	StopBhyveProcess(vmName, true)
+	StopBhyveProcess(vmName, true, false)
 	NetworkCleanup(vmName, false)
 	BhyvectlDestroy(vmName, false)
 
 	return nil
 }
 
-func StopBhyveProcess(vmName string, quiet bool) {
+func StopBhyveProcess(vmName string, quiet bool, kill bool) {
 	if !quiet {
 		emojlog.PrintLogMessage("Stopping the VM: "+vmName, emojlog.Info)
 	}
@@ -62,13 +63,28 @@ func StopBhyveProcess(vmName string, quiet bool) {
 
 	processId := ""
 	reMatchVm, _ := regexp.Compile(`.*bhyve:\s` + vmName)
+	reMatchVmX2, _ := regexp.Compile(`(.*` + vmName + `\s){2}`)
+
 	for _, v := range strings.Split(string(stdout), "\n") {
 		if reMatchVm.MatchString(v) {
 			processId = strings.TrimSpace(strings.Split(v, " ")[0])
+			break
+		} else if reMatchVmX2.MatchString(v) {
+			processId = strings.TrimSpace(strings.Split(v, " ")[0])
+			break
 		}
 	}
-	stopCommand1 := "kill"
-	stopCommand2 := "-SIGTERM"
+
+	stopCommand1 := ""
+	stopCommand2 := ""
+	if kill {
+		stopCommand1 = "kill"
+		stopCommand2 = "-SIGKILL"
+	} else {
+		stopCommand1 = "kill"
+		stopCommand2 = "-SIGTERM"
+	}
+
 	cmd = exec.Command(stopCommand1, stopCommand2, processId)
 	stderr = cmd.Run()
 	if stderr != nil && !quiet {
