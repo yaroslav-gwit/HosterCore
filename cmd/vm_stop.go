@@ -21,7 +21,7 @@ var (
 		Long:  `Stop a particular VM using it's name`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := vmStop(args[0])
+			err := vmStop(args[0], forceStop)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -29,7 +29,7 @@ var (
 	}
 )
 
-func vmStop(vmName string) error {
+func vmStop(vmName string, forceStop bool) error {
 	allVms := getAllVms()
 	if !slices.Contains(allVms, vmName) {
 		return errors.New("VM is not found on this system")
@@ -37,9 +37,9 @@ func vmStop(vmName string) error {
 		return errors.New("VM is already stopped")
 	}
 
-	StopBhyveProcess(vmName, false, false)
+	StopBhyveProcess(vmName, false, forceStop)
 	vmSupervisorCleanup(vmName)
-	StopBhyveProcess(vmName, true, false)
+	StopBhyveProcess(vmName, true, forceStop)
 	NetworkCleanup(vmName, false)
 	BhyvectlDestroy(vmName, false)
 

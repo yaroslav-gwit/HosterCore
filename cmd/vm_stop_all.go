@@ -23,6 +23,6 @@ func vmStopAll() {
 		if i != 0 {
 			time.Sleep(time.Second * time.Duration(sleepTime))
 		}
-		vmStop(vm)
+		vmStop(vm, false)
 	}
 }

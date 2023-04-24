@@ -184,7 +184,7 @@ func StartApiServer(port int, user string, password string) {
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
-		err := vmStop(vm.Name)
+		err := vmStop(vm.Name, false)
 		if err != nil {
 			fiberContext.Status(fiber.StatusBadRequest)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
