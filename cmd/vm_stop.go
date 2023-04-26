@@ -33,7 +33,7 @@ func vmStop(vmName string, forceStop bool) error {
 	allVms := getAllVms()
 	if !slices.Contains(allVms, vmName) {
 		return errors.New("VM is not found on this system")
-	} else if !vmLiveCheck(vmName) {
+	} else if !vmLiveCheck(vmName) && !forceStop {
 		return errors.New("VM is already stopped")
 	}
 

@@ -26,6 +26,7 @@ var (
 		Long:  `Host related operations.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			hostMain()
+			_ = getCpuInfo()
 		},
 	}
 )
@@ -538,6 +539,51 @@ func GetHostName() string {
 	}
 	return hostNameList[0]
 }
+
+type CpuInfo struct {
+	Model 		   string
+	Sockets  	   string
+	Cores 		   string
+	Threads        string
+}
+
+func getCpuInfo() CpuInfo {
+	result := CpuInfo{}
+	
+	command, err := exec.Command("sysctl", "-nq", "hw.model").CombinedOutput()
+	if err != nil {
+		fmt.Println("Error")
+	}
+	cpuModel := string(command)
+	fmt.Println("CPU Model: " + cpuModel)
+
+	command, err = exec.Command("sysctl", "-nq", "hw.machine").CombinedOutput()
+	if err != nil {
+		fmt.Println("Error")
+	}
+	machine := string(command)
+	fmt.Println("CPU Machine?: " + machine)
+
+	command, err = exec.Command("sysctl", "-nq", "hw.ncpu").CombinedOutput()
+	if err != nil {
+		fmt.Println("Error")
+	}
+	cpuCores := string(command)
+	fmt.Println("CPU Cores: " + cpuCores)
+
+	command, err = exec.Command("grep", "-i", "threads", "/var/run/dmesg.boot").CombinedOutput()
+	if err != nil {
+		fmt.Println("Error")
+	}
+	dmesg := string(command)
+	fmt.Println("Dmesg: " + dmesg)
+
+	return result
+}
+
+// func getPc2VcRatio() string {
+// 	return ""
+// }
 
 func ByteConversion(bytes int) string {
 	// SET TO KB
