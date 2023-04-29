@@ -27,7 +27,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			hostMain()
 			_ = getCpuInfo()
-			_ = getPc2VcRatio()
+			_, _ = getPc2VcRatio()
 		},
 	}
 )
@@ -604,7 +604,7 @@ func getCpuInfo() CpuInfo {
 	return result
 }
 
-func getPc2VcRatio() string {
+func getPc2VcRatio() (string, float64) {
 	command, err := exec.Command("sysctl", "-nq", "hw.ncpu").CombinedOutput()
 	if err != nil {
 		fmt.Println("Error", err.Error())
@@ -625,20 +625,17 @@ func getPc2VcRatio() string {
 	result := float64(coresUsed / cpuLogicalCores)
 	var ratio string
 	if result < 1 {
-		ratio = "<1"
-	}
-	if result > 1 && result <= 3 {
-		ratio = fmt.Sprintf("%.0f", result)
-	}
-	if result > 3 && result <= 5 {
-		ratio = fmt.Sprintf("%.0f", result)
-	}
-	if result > 5 {
-		ratio = fmt.Sprintf("%.0f", result)
+		ratio = LIGHT_GREEN + "<1" + NC
+	} else if result >= 1 && result <= 3 {
+		ratio = LIGHT_GREEN + fmt.Sprintf("%.0f", result) + ":1" + NC
+	} else if result >= 3 && result <= 5 {
+		ratio = LIGHT_YELLOW + fmt.Sprintf("%.0f", result) + ":1" + NC
+	} else if result > 5 {
+		ratio = LIGHT_RED + fmt.Sprintf("%.0f", result) + ":1" + NC
 	}
 
 	fmt.Println(ratio)
-	return ratio
+	return ratio, result
 }
 
 func ByteConversion(bytes int) string {
@@ -668,3 +665,8 @@ func ByteConversion(bytes int) string {
 	}
 	return finalResult
 }
+
+const LIGHT_RED = "\033[38;5;203m"
+const LIGHT_GREEN = "\033[0;92m"
+const LIGHT_YELLOW = "\033[0;93m"
+const NC = "\033[0m"
