@@ -27,6 +27,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			hostMain()
 			_ = getCpuInfo()
+			_ = getPc2VcRatio()
 		},
 	}
 )
@@ -600,14 +601,31 @@ func getCpuInfo() CpuInfo {
 	result.Cores = tempCpuInfoListStripped[1]
 	result.Threads = tempCpuInfoListStripped[2]
 
-	fmt.Println(result)
-
 	return result
 }
 
-// func getPc2VcRatio() string {
-// 	return ""
-// }
+func getPc2VcRatio() string {
+	command, err := exec.Command("sysctl", "-nq", "hw.ncpu").CombinedOutput()
+	if err != nil {
+		fmt.Println("Error", err.Error())
+	}
+	
+	cpuLogicalCores, err := strconv.Atoi(string(command))
+	if err != nil {
+		cpuLogicalCores = 1
+	}
+
+	coresUsed := 0
+	for _, v := range getAllVms() {
+		temp, _ := getVmInfo(v)
+		coresUsed = coresUsed + (temp.CpuCores * temp.CpuSockets)
+	}
+
+	ratio := strconv.Itoa(coresUsed) + ":" + strconv.Itoa(cpuLogicalCores)
+	fmt.Println(ratio)
+
+	return ratio
+}
 
 func ByteConversion(bytes int) string {
 	// SET TO KB
