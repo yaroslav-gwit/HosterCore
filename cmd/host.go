@@ -649,7 +649,6 @@ func getPc2VcRatio() (string, float64) {
 		ratio = LIGHT_RED + fmt.Sprintf("%.0f", result) + ":1" + NC
 	}
 
-	fmt.Println(ratio)
 	return ratio, result
 }
 
