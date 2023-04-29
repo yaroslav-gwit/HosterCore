@@ -58,13 +58,19 @@ func hostMain() {
 
 		var wg = &sync.WaitGroup{}
 		var err error
-		wg.Add(7)
+		wg.Add(1)
 		go func() { defer wg.Done(); tHostname = GetHostName() }()
+		wg.Add(1)
 		go func() { defer wg.Done(); tLiveVms = getNumberOfRunningVms() }()
+		wg.Add(1)
 		go func() { defer wg.Done(); tSystemUptime = getSystemUptime() }()
+		wg.Add(1)
 		go func() { defer wg.Done(); tSystemRam = getHostRam() }()
+		wg.Add(1)
 		go func() { defer wg.Done(); tArcSize = getArcSize() }()
+		wg.Add(1)
 		go func() { defer wg.Done(); tZrootInfo = getZrootInfo() }()
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			tSwapInfo, err = getSwapInfo()
@@ -90,11 +96,12 @@ func hostMain() {
 			table.AlignCenter, // Zpool status
 		)
 
-		t.SetHeaders("Host information")
+		t.SetHeaders("Brief Host Overview")
 		t.SetHeaderColSpans(0, 8)
 		t.AddHeaders(
 			"Hostname",
 			"Live VMs",
+			"vCPU:pCPU Ratio",
 			"System Uptime",
 			"RAM (Used/Total)",
 			"SWAP (Used/Total)",
@@ -104,6 +111,7 @@ func hostMain() {
 		)
 
 		t.AddRow(tHostname,
+			tLiveVms,
 			tLiveVms,
 			tSystemUptime,
 			tSystemRam.used+"/"+tSystemRam.all,
@@ -589,9 +597,13 @@ func getCpuInfo() CpuInfo {
 	}
 	var tempCpuInfoList []string
 	var tempCpuInfoListStripped []string
-	for _, v := range strings.Split(dmesg, " x ") {
-		tempCpuInfoList = append(tempCpuInfoList, v)
-	}
+	
+	// The loop was replaced with the one liner right below it
+	// for _, v := range strings.Split(dmesg, " x ") {
+		// 	tempCpuInfoList = append(tempCpuInfoList, v)
+	// }
+	tempCpuInfoList = append(tempCpuInfoList, strings.Split(dmesg, " x ")...)
+
 	for _, v := range tempCpuInfoList {
 		v := strings.Split(v, " ")[0]
 		tempCpuInfoListStripped = append(tempCpuInfoListStripped, v)
@@ -666,6 +678,8 @@ func ByteConversion(bytes int) string {
 	return finalResult
 }
 
+
+// Console color outputs
 const LIGHT_RED = "\033[38;5;203m"
 const LIGHT_GREEN = "\033[0;92m"
 const LIGHT_YELLOW = "\033[0;93m"
