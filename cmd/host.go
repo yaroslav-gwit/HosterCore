@@ -622,9 +622,22 @@ func getPc2VcRatio() string {
 		coresUsed = coresUsed + (temp.CpuCores * temp.CpuSockets)
 	}
 
-	ratio := strconv.Itoa(coresUsed) + ":" + strconv.Itoa(cpuLogicalCores)
-	fmt.Println(ratio)
+	result := float64(coresUsed / cpuLogicalCores)
+	var ratio string
+	if result < 1 {
+		ratio = "<1"
+	}
+	if result > 1 && result <= 3 {
+		ratio = fmt.Sprintf("%.0f", result)
+	}
+	if result > 3 && result <= 5 {
+		ratio = fmt.Sprintf("%.0f", result)
+	}
+	if result > 5 {
+		ratio = fmt.Sprintf("%.0f", result)
+	}
 
+	fmt.Println(ratio)
 	return ratio
 }
 
