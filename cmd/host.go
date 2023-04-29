@@ -27,7 +27,6 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			hostMain()
 			_ = getCpuInfo()
-			_, _ = getPc2VcRatio()
 		},
 	}
 )
@@ -55,6 +54,7 @@ func hostMain() {
 		var tSwapInfo swapInfoStruct
 		var tArcSize string
 		var tZrootInfo zrootInfoStruct
+		var tPc2VcRatio string
 
 		var wg = &sync.WaitGroup{}
 		var err error
@@ -62,6 +62,8 @@ func hostMain() {
 		go func() { defer wg.Done(); tHostname = GetHostName() }()
 		wg.Add(1)
 		go func() { defer wg.Done(); tLiveVms = getNumberOfRunningVms() }()
+		wg.Add(1)
+		go func() { defer wg.Done(); tPc2VcRatio, _ = getPc2VcRatio() }()
 		wg.Add(1)
 		go func() { defer wg.Done(); tSystemUptime = getSystemUptime() }()
 		wg.Add(1)
@@ -88,6 +90,7 @@ func hostMain() {
 		t.SetAlignment(
 			table.AlignLeft,   // Hostname
 			table.AlignCenter, // Live VMs
+			table.AlignCenter, // vCPU:pCPU
 			table.AlignCenter, // System Uptime
 			table.AlignCenter, // RAM
 			table.AlignCenter, // SWAP
@@ -97,7 +100,7 @@ func hostMain() {
 		)
 
 		t.SetHeaders("Brief Host Overview")
-		t.SetHeaderColSpans(0, 8)
+		t.SetHeaderColSpans(0, 9)
 		t.AddHeaders(
 			"Hostname",
 			"Live VMs",
@@ -112,7 +115,7 @@ func hostMain() {
 
 		t.AddRow(tHostname,
 			tLiveVms,
-			tLiveVms,
+			tPc2VcRatio,
 			tSystemUptime,
 			tSystemRam.used+"/"+tSystemRam.all,
 			tSwapInfo.used+"/"+tSwapInfo.total,
