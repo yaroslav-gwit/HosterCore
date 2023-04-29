@@ -195,7 +195,7 @@ func StartApiServer(port int, user string, password string) {
 	})
 
 	app.Post("/vm/stop-all", func(fiberContext *fiber.Ctx) error {
-		go vmStopAll()
+		go vmStopAll(false)
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.JSON(fiber.Map{"message": "process started"})
 	})

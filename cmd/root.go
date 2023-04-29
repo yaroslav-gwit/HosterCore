@@ -56,6 +56,7 @@ func init() {
 
 	// VM cmd -> stop all
 	vmCmd.AddCommand(vmStopAllCmd)
+	vmStopAllCmd.Flags().BoolVarP(&forceStopAll, "force", "f", false, "Use -SIGKILL signal to forcefully kill all of the VMs processes")
 
 	// VM cmd -> snapshot
 	vmCmd.AddCommand(vmZfsSnapshotCmd)
