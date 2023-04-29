@@ -586,20 +586,21 @@ func getCpuInfo() CpuInfo {
 			break
 		}
 	}
-
 	var tempCpuInfoList []string
 	var tempCpuInfoListStripped []string
 	for _, v := range strings.Split(dmesg, " x ") {
 		tempCpuInfoList = append(tempCpuInfoList, v)
 	}
-
 	for _, v := range tempCpuInfoList {
 		v := strings.Split(v, " ")[0]
 		tempCpuInfoListStripped = append(tempCpuInfoListStripped, v)
 	}
 
-	fmt.Println(dmesg)
-	fmt.Println(tempCpuInfoListStripped)
+	result.Sockets = tempCpuInfoListStripped[0]
+	result.Cores = tempCpuInfoListStripped[1]
+	result.Threads = tempCpuInfoListStripped[2]
+
+	fmt.Println(result)
 
 	return result
 }
