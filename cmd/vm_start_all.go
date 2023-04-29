@@ -7,32 +7,53 @@ import (
 )
 
 var (
+	waitTime int
 	vmStartAllCmd = &cobra.Command{
 		Use:   "start-all",
 		Short: "Start all VMs deployed on this system",
 		Long:  `Start all VMs deployed on this system`,
 		Run: func(cmd *cobra.Command, args []string) {
-			vmStartAll()
+			vmStartAll(waitTime)
 		},
 	}
 )
 
-func vmStartAll() {
-	sleepTime := 5
-	for i, vm := range getAllVms() {
-		vmConfigVar := vmConfig(vm)
-		if vmConfigVar.ParentHost != GetHostName() {
-			continue
-		} else if vmConfigVar.LiveStatus == "production" || vmConfigVar.LiveStatus == "prod" {
-			if i != 0 {
+func vmStartAll(waitTime int) {
+	if waitTime > 0 {
+		sleepTime := 5
+		for i, vm := range getAllVms() {
+			vmConfigVar := vmConfig(vm)
+			if vmConfigVar.ParentHost != GetHostName() {
+				continue
+			}
+			if vmConfigVar.LiveStatus == "production" || vmConfigVar.LiveStatus == "prod" {
+				_ = 0
+			} else {
+				continue
+			}
+			if i > 0 {
 				time.Sleep(time.Second * time.Duration(sleepTime))
 			}
-			vmStart(vm)
 			if sleepTime < 30 {
 				sleepTime = sleepTime + 1
 			}
-		} else {
-			continue
+			vmStart(vm)
+		}
+	} else {
+		for i, vm := range getAllVms() {
+			vmConfigVar := vmConfig(vm)
+			if vmConfigVar.ParentHost != GetHostName() {
+				continue
+			}
+			if vmConfigVar.LiveStatus == "production" || vmConfigVar.LiveStatus == "prod" {
+				_ = 0
+			} else {
+				continue
+			}
+			if i > 0 {
+				time.Sleep(time.Second * time.Duration(waitTime))
+			}
+			vmStart(vm)
 		}
 	}
 }
