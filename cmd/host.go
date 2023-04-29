@@ -613,6 +613,7 @@ func getPc2VcRatio() string {
 	cpuLogicalCores, err := strconv.Atoi(string(command))
 	if err != nil {
 		cpuLogicalCores = 1
+		fmt.Println(err.Error())
 	}
 
 	coresUsed := 0
