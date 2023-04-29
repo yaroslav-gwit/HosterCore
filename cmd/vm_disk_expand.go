@@ -30,16 +30,15 @@ var (
 )
 
 func diskExpandOffline(vmName string, diskImage string, expansionSize int) error {
-	vmFolder := getVmFolder(vmName)
-	vmConfigVar := vmConfig(vmName)
 	allVms := getAllVms()
-
 	if slices.Contains(allVms, vmName) {
 		_ = 0
 	} else {
 		return errors.New("vm was not found")
 	}
 
+	vmFolder := getVmFolder(vmName)
+	vmConfigVar := vmConfig(vmName)
 	if vmLiveCheck(vmName) {
 		return errors.New("vm has to be offline, due to the data loss possibility of online expansion")
 	}
