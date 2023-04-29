@@ -610,7 +610,7 @@ func getPc2VcRatio() string {
 		fmt.Println("Error", err.Error())
 	}
 	
-	cpuLogicalCores, err := strconv.Atoi(string(command))
+	cpuLogicalCores, err := strconv.Atoi(strings.TrimSpace(string(command)))
 	if err != nil {
 		cpuLogicalCores = 1
 		fmt.Println(err.Error())
