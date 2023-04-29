@@ -580,16 +580,18 @@ func getCpuInfo() CpuInfo {
 	dmesg := string(command)
 	reCpuInfoMatch := regexp.MustCompile(`.*package.*core.*thread`)
 	reStripPrefix := regexp.MustCompile(`.*FreeBSD/SMP:\s`)
-	var tempList []string
 	for _, v := range strings.Split(dmesg, "\n") {
 		if reCpuInfoMatch.MatchString(v) {
-			v = reStripPrefix.ReplaceAllString(v, "")
-			for _, vv := range strings.Split(v, " x ") {
-				tempList = append(tempList, vv)
-			}
-			dmesg = v
+			dmesg = reStripPrefix.ReplaceAllString(v, "")
+			break
 		}
 	}
+
+	var tempList []string
+	for _, v := range strings.Split(dmesg, " x ") {
+		tempList = append(tempList, v)
+	}
+
 	fmt.Println(dmesg)
 	for _, v := range tempList {
 		fmt.Println(v)
