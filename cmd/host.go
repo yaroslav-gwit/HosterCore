@@ -542,40 +542,48 @@ func GetHostName() string {
 
 type CpuInfo struct {
 	Model 		   string
+	Architecture   string
 	Sockets  	   string
 	Cores 		   string
 	Threads        string
+	OverallCpus    string
 }
 
 func getCpuInfo() CpuInfo {
 	result := CpuInfo{}
-	
+
 	command, err := exec.Command("sysctl", "-nq", "hw.model").CombinedOutput()
 	if err != nil {
-		fmt.Println("Error")
+		fmt.Println("Error", err.Error())
 	}
 	cpuModel := string(command)
-	fmt.Println("CPU Model: " + cpuModel)
+	result.Model = cpuModel
 
 	command, err = exec.Command("sysctl", "-nq", "hw.machine").CombinedOutput()
 	if err != nil {
-		fmt.Println("Error")
+		fmt.Println("Error", err.Error())
 	}
-	machine := string(command)
-	fmt.Println("CPU Machine?: " + machine)
+	cpuArch := string(command)
+	result.Architecture = cpuArch
 
 	command, err = exec.Command("sysctl", "-nq", "hw.ncpu").CombinedOutput()
 	if err != nil {
-		fmt.Println("Error")
+		fmt.Println("Error", err.Error())
 	}
 	cpuCores := string(command)
-	fmt.Println("CPU Cores: " + cpuCores)
+	result.OverallCpus = cpuCores
 
 	command, err = exec.Command("grep", "-i", "threads", "/var/run/dmesg.boot").CombinedOutput()
 	if err != nil {
-		fmt.Println("Error")
+		fmt.Println("Error", err.Error())
 	}
 	dmesg := string(command)
+	reCpuInfoMatch := regexp.MustCompile(`.*package.*core.*thread`)
+	for _, v := range strings.Split(dmesg, "\n") {
+		if reCpuInfoMatch.MatchString(v) {
+			dmesg = v
+		}
+	}
 	fmt.Println("Dmesg: " + dmesg)
 
 	return result

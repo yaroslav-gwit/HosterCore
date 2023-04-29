@@ -32,11 +32,19 @@ var (
 func diskExpandOffline(vmName string, diskImage string, expansionSize int) error {
 	vmFolder := getVmFolder(vmName)
 	vmConfigVar := vmConfig(vmName)
-	if !slices.Contains(getAllVms(), vmName) {
+	allVms := getAllVms()
+
+	if slices.Contains(allVms, vmName) {
+		_ = 0
+	} else {
 		return errors.New("vm was not found")
-	} else if vmLiveCheck(vmName) {
+	}
+
+	if vmLiveCheck(vmName) {
 		return errors.New("vm has to be offline, due to the data loss possibility of online expansion")
-	} else if vmConfigVar.ParentHost != GetHostName() {
+	}
+
+	if vmConfigVar.ParentHost != GetHostName() {
 		return errors.New("this host isn't a parent of this vm, please make sure the vm is not a backup from another host")
 	}
 
