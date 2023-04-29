@@ -557,21 +557,21 @@ func getCpuInfo() CpuInfo {
 	if err != nil {
 		fmt.Println("Error", err.Error())
 	}
-	cpuModel := string(command)
+	cpuModel := strings.TrimSpace(string(command))
 	result.Model = cpuModel
 
 	command, err = exec.Command("sysctl", "-nq", "hw.machine").CombinedOutput()
 	if err != nil {
 		fmt.Println("Error", err.Error())
 	}
-	cpuArch := string(command)
+	cpuArch := strings.TrimSpace(string(command))
 	result.Architecture = cpuArch
 
 	command, err = exec.Command("sysctl", "-nq", "hw.ncpu").CombinedOutput()
 	if err != nil {
 		fmt.Println("Error", err.Error())
 	}
-	cpuCores := string(command)
+	cpuCores := strings.TrimSpace(string(command))
 	result.OverallCpus = cpuCores
 
 	command, err = exec.Command("grep", "-i", "threads", "/var/run/dmesg.boot").CombinedOutput()
