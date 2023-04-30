@@ -634,7 +634,9 @@ func getPc2VcRatio() (string, float64) {
 	coresUsed := 0
 	for _, v := range getAllVms() {
 		temp, _ := getVmInfo(v)
-		coresUsed = coresUsed + (temp.CpuCores * temp.CpuSockets)
+		if vmLiveCheck(v) {
+			coresUsed = coresUsed + (temp.CpuCores * temp.CpuSockets)
+		}
 	}
 
 	result := float64(coresUsed / cpuLogicalCores)
