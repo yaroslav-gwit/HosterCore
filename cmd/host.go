@@ -134,6 +134,11 @@ type jsonOutputHostInfoStruct struct {
 	AllVms		 int    `json:"all_vms"`
 	BackupVms	 int    `json:"backup_vms"`
 	SystemUptime string `json:"system_uptime"`
+	CpuModel     string `json:"cpu_model"`
+	CpuArchitecture     string `json:"cpu_architecture"`
+	CpuSockets   int    `json:"cpu_sockets"`
+	CpuCores     int    `json:"cpu_cores"`
+	CpuThreads   int    `json:"cpu_threads"`
 	RamTotal     string `json:"ram_total"`
 	RamFree      string `json:"ram_free"`
 	RamUsed      string `json:"ram_used"`
@@ -155,6 +160,7 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	var tSystemUptime string
 	var tSystemRam = ramResponse{}
 	var tSwapInfo swapInfoStruct
+	var tCpuInfo CpuInfo
 	var tArcSize string
 	var tZrootInfo zrootInfoStruct
 
@@ -172,8 +178,8 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	go func() { defer wg.Done(); tArcSize = getArcSize() }()
 	wg.Add(1)
 	go func() { defer wg.Done(); tZrootInfo = getZrootInfo() }()
-	// wg.Add(1)
-	// go func() { defer wg.Done(); tAllVms = strconv.Itoa(len(getAllVms())) }()
+	wg.Add(1)
+	go func() { defer wg.Done(); tCpuInfo = getCpuInfo() }()
 
 	wg.Add(1)
 	go func() {
@@ -202,6 +208,11 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	jsonOutputVar.ZrootUsed = tZrootInfo.used
 	jsonOutputVar.ZrootFree = tZrootInfo.free
 	jsonOutputVar.ZrootStatus = tZrootInfo.status
+	jsonOutputVar.CpuModel = tCpuInfo.Model
+	jsonOutputVar.CpuArchitecture = tCpuInfo.Architecture
+	jsonOutputVar.CpuSockets = tCpuInfo.Sockets
+	jsonOutputVar.CpuCores = tCpuInfo.Cores
+	jsonOutputVar.CpuThreads = tCpuInfo.Threads
 
 	return jsonOutputVar
 }
@@ -558,10 +569,10 @@ func GetHostName() string {
 type CpuInfo struct {
 	Model 		   string
 	Architecture   string
-	Sockets  	   string
-	Cores 		   string
-	Threads        string
-	OverallCpus    string
+	Sockets  	   int
+	Cores 		   int
+	Threads        int
+	OverallCpus    int
 }
 
 func getCpuInfo() CpuInfo {
@@ -586,7 +597,7 @@ func getCpuInfo() CpuInfo {
 		fmt.Println("Error", err.Error())
 	}
 	cpuCores := strings.TrimSpace(string(command))
-	result.OverallCpus = cpuCores
+	result.OverallCpus, _ = strconv.Atoi(cpuCores)
 
 	command, err = exec.Command("grep", "-i", "threads", "/var/run/dmesg.boot").CombinedOutput()
 	if err != nil {
@@ -615,9 +626,9 @@ func getCpuInfo() CpuInfo {
 		tempCpuInfoListStripped = append(tempCpuInfoListStripped, v)
 	}
 
-	result.Sockets = tempCpuInfoListStripped[0]
-	result.Cores = tempCpuInfoListStripped[1]
-	result.Threads = tempCpuInfoListStripped[2]
+	result.Sockets, _ = strconv.Atoi(tempCpuInfoListStripped[0])
+	result.Cores, _ = strconv.Atoi(tempCpuInfoListStripped[1])
+	result.Threads, _ = strconv.Atoi(tempCpuInfoListStripped[2])
 
 	return result
 }
