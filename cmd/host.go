@@ -139,8 +139,7 @@ type jsonOutputHostInfoStruct struct {
 	CpuSockets   int    `json:"cpu_sockets"`
 	CpuCores     int    `json:"cpu_cores"`
 	CpuThreads   int    `json:"cpu_threads"`
-	VCPU2PCURatio string `json:"vcpu_2_pcpu_ratio"`
-	VCPU2PCUValue float64 `json:"vcpu_2_pcpu_value"`
+	VCPU2PCURatio float64 `json:"vcpu_2_pcpu_ratio"`
 	RamTotal     string `json:"ram_total"`
 	RamFree      string `json:"ram_free"`
 	RamUsed      string `json:"ram_used"`
@@ -165,8 +164,7 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	var tCpuInfo CpuInfo
 	var tArcSize string
 	var tZrootInfo zrootInfoStruct
-	var tVCPU2PCURatio string
-	var tVCPU2PCUValue float64
+	var tVCPU2PCURatio float64
 
 	var wg = &sync.WaitGroup{}
 	var err error
@@ -185,7 +183,7 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	wg.Add(1)
 	go func() { defer wg.Done(); tCpuInfo = getCpuInfo() }()
 	wg.Add(1)
-	go func() { defer wg.Done(); tVCPU2PCURatio, tVCPU2PCUValue = getPc2VcRatio() }()
+	go func() { defer wg.Done(); _, tVCPU2PCURatio = getPc2VcRatio() }()
 
 	wg.Add(1)
 	go func() {
@@ -220,7 +218,6 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	jsonOutputVar.CpuCores = tCpuInfo.Cores
 	jsonOutputVar.CpuThreads = tCpuInfo.Threads
 	jsonOutputVar.VCPU2PCURatio = tVCPU2PCURatio
-	jsonOutputVar.VCPU2PCUValue = tVCPU2PCUValue
 
 	return jsonOutputVar
 }
