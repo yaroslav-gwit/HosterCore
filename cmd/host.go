@@ -140,9 +140,12 @@ type jsonOutputHostInfoStruct struct {
 	CpuCores     int    `json:"cpu_cores"`
 	CpuThreads   int    `json:"cpu_threads"`
 	VCPU2PCURatio float64 `json:"vcpu_2_pcpu_ratio"`
-	RamTotal     string `json:"ram_total"`
-	RamFree      string `json:"ram_free"`
-	RamUsed      string `json:"ram_used"`
+	RamTotalH    string `json:"ram_total_human"`
+	RamTotalB    int `json:"ram_total_bytes"`
+	RamFreeH     string `json:"ram_free_human"`
+	RamFreeB     int `json:"ram_free_bytes"`
+	RamUsedH     string `json:"ram_used_human"`
+	RamUsedB     int `json:"ram_used_bytes"`
 	SwapTotal    string `json:"swap_total"`
 	SwapUsed     string `json:"swap_used"`
 	SwapFree     string `json:"swap_free"`
@@ -201,9 +204,12 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	jsonOutputVar.AllVms = tAllVms
 	jsonOutputVar.BackupVms = tBackupVms
 	jsonOutputVar.SystemUptime = tSystemUptime
-	jsonOutputVar.RamTotal = tSystemRam.all
-	jsonOutputVar.RamFree = tSystemRam.free
-	jsonOutputVar.RamUsed = tSystemRam.used
+	jsonOutputVar.RamTotalH = tSystemRam.all
+	jsonOutputVar.RamTotalB = tSystemRam.allBytes
+	jsonOutputVar.RamFreeH = tSystemRam.free
+	jsonOutputVar.RamFreeB = tSystemRam.freeBytes
+	jsonOutputVar.RamUsedH = tSystemRam.used
+	jsonOutputVar.RamUsedB = tSystemRam.usedBytes
 	jsonOutputVar.SwapTotal = tSwapInfo.total
 	jsonOutputVar.SwapUsed = tSwapInfo.used
 	jsonOutputVar.SwapFree = tSwapInfo.free
@@ -223,9 +229,12 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 }
 
 type ramResponse struct {
-	free string
-	used string
-	all  string
+	free      string
+	freeBytes int
+	used      string
+	usedBytes int
+	all  	  string
+	allBytes  int
 }
 
 // type swapResponse struct {
@@ -314,9 +323,15 @@ func getHostRam() ramResponse {
 	finalResultUsed := (finalResultReal - finalResultFree)
 
 	ramResponseVar := ramResponse{}
+
 	ramResponseVar.free = ByteConversion(finalResultFree)
+	ramResponseVar.freeBytes = finalResultFree
+	
 	ramResponseVar.used = ByteConversion(finalResultUsed)
+	ramResponseVar.usedBytes = finalResultUsed
+	
 	ramResponseVar.all = ByteConversion(finalResultReal)
+	ramResponseVar.allBytes = finalResultReal
 
 	return ramResponseVar
 }
