@@ -146,9 +146,12 @@ type jsonOutputHostInfoStruct struct {
 	RamFreeB     int `json:"ram_free_bytes"`
 	RamUsedH     string `json:"ram_used_human"`
 	RamUsedB     int `json:"ram_used_bytes"`
-	SwapTotal    string `json:"swap_total"`
-	SwapUsed     string `json:"swap_used"`
-	SwapFree     string `json:"swap_free"`
+	SwapTotalH    string `json:"swap_total_human"`
+	SwapTotalB    int `json:"swap_total_bytes"`
+	SwapUsedH     string `json:"swap_used_human"`
+	SwapUsedB     int `json:"swap_used_bytes"`
+	SwapFreeH     string `json:"swap_free_human"`
+	SwapFreeB     int `json:"swap_free_bytes"`
 	ArcSize      string `json:"zfs_acr_size"`
 	ZrootTotal   string `json:"zroot_total"`
 	ZrootUsed    string `json:"zroot_used"`
@@ -210,9 +213,12 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	jsonOutputVar.RamFreeB = tSystemRam.freeBytes
 	jsonOutputVar.RamUsedH = tSystemRam.used
 	jsonOutputVar.RamUsedB = tSystemRam.usedBytes
-	jsonOutputVar.SwapTotal = tSwapInfo.total
-	jsonOutputVar.SwapUsed = tSwapInfo.used
-	jsonOutputVar.SwapFree = tSwapInfo.free
+	jsonOutputVar.SwapTotalH = tSwapInfo.total
+	jsonOutputVar.SwapTotalB = tSwapInfo.totalBytes
+	jsonOutputVar.SwapUsedH = tSwapInfo.used
+	jsonOutputVar.SwapUsedB = tSwapInfo.usedBytes
+	jsonOutputVar.SwapFreeH = tSwapInfo.free
+	jsonOutputVar.SwapFreeB = tSwapInfo.freeBytes
 	jsonOutputVar.ArcSize = tArcSize
 	jsonOutputVar.ZrootTotal = tZrootInfo.total
 	jsonOutputVar.ZrootUsed = tZrootInfo.used
@@ -450,8 +456,11 @@ func getNumberOfRunningVms() string {
 
 type swapInfoStruct struct {
 	total string
+	totalBytes int
 	used  string
+	usedBytes  int
 	free  string
+	freeBytes  int
 }
 
 func getSwapInfo() (swapInfoStruct, error) {
@@ -484,8 +493,11 @@ func getSwapInfo() (swapInfoStruct, error) {
 	swapFreeBytes = swapFreeBytes * 1024
 
 	swapInfoVar.total = ByteConversion(swapTotalBytes)
+	swapInfoVar.totalBytes = swapTotalBytes
 	swapInfoVar.free = ByteConversion(swapFreeBytes)
+	swapInfoVar.freeBytes = swapFreeBytes
 	swapInfoVar.used = ByteConversion(swapUsedBytes)
+	swapInfoVar.usedBytes = swapUsedBytes
 
 	return swapInfoVar, nil
 }
