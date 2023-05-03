@@ -130,8 +130,9 @@ func hostMain() {
 
 type jsonOutputHostInfoStruct struct {
 	Hostname     string `json:"hostname"`
-	LiveVms      string `json:"live_vms"`
-	AllVms		 string `json:"all_vms"`
+	LiveVms      int    `json:"live_vms"`
+	AllVms		 int    `json:"all_vms"`
+	BackupVms	 int    `json:"backup_vms"`
 	SystemUptime string `json:"system_uptime"`
 	RamTotal     string `json:"ram_total"`
 	RamFree      string `json:"ram_free"`
@@ -148,9 +149,10 @@ type jsonOutputHostInfoStruct struct {
 
 func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	var tHostname string
-	var tLiveVms string
+	var tLiveVms int
+	var tAllVms int
+	var tBackupVms int
 	var tSystemUptime string
-	var tAllVms string
 	var tSystemRam = ramResponse{}
 	var tSwapInfo swapInfoStruct
 	var tArcSize string
@@ -161,7 +163,7 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	wg.Add(1)
 	go func() { defer wg.Done(); tHostname = GetHostName() }()
 	wg.Add(1)
-	go func() { defer wg.Done(); tLiveVms = getNumberOfRunningVms() }()
+	go func() { defer wg.Done(); tAllVms, tLiveVms, tBackupVms = vmNumbersOverview() }()
 	wg.Add(1)
 	go func() { defer wg.Done(); tSystemUptime = getSystemUptime() }()
 	wg.Add(1)
@@ -170,8 +172,8 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	go func() { defer wg.Done(); tArcSize = getArcSize() }()
 	wg.Add(1)
 	go func() { defer wg.Done(); tZrootInfo = getZrootInfo() }()
-	wg.Add(1)
-	go func() { defer wg.Done(); tAllVms = strconv.Itoa(len(getAllVms())) }()
+	// wg.Add(1)
+	// go func() { defer wg.Done(); tAllVms = strconv.Itoa(len(getAllVms())) }()
 
 	wg.Add(1)
 	go func() {
@@ -187,6 +189,7 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	jsonOutputVar.Hostname = tHostname
 	jsonOutputVar.LiveVms = tLiveVms
 	jsonOutputVar.AllVms = tAllVms
+	jsonOutputVar.BackupVms = tBackupVms
 	jsonOutputVar.SystemUptime = tSystemUptime
 	jsonOutputVar.RamTotal = tSystemRam.all
 	jsonOutputVar.RamFree = tSystemRam.free
@@ -652,6 +655,24 @@ func getPc2VcRatio() (string, float64) {
 	}
 
 	return ratio, result
+}
+
+// Returns 3 integers: All VMs, Online/Live VMs, and Backup VMs
+func vmNumbersOverview() (int, int, int) {
+	allVms := 0
+	onlineVms := 0
+	backupVms := 0
+	for _, v := range getAllVms() {
+		allVms = allVms + 1
+		if vmLiveCheck(v) {
+			onlineVms = onlineVms + 1
+		}
+		tempConf := vmConfig(v)
+		if tempConf.ParentHost != GetHostName() {
+			backupVms = backupVms + 1
+		}
+	}
+	return allVms, onlineVms, backupVms
 }
 
 func ByteConversion(bytes int) string {
