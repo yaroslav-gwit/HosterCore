@@ -615,7 +615,8 @@ func getCpuInfo() CpuInfo {
 		fmt.Println("Error", err.Error())
 	}
 	cpuModel := strings.TrimSpace(string(command))
-	result.Model = cpuModel
+	reStripCpuModel := regexp.MustCompile(`\(R\)|\(TM\)|@\s`)
+	result.Model = reStripCpuModel.ReplaceAllString(cpuModel, "")
 
 	command, err = exec.Command("sysctl", "-nq", "hw.machine").CombinedOutput()
 	if err != nil {
