@@ -56,6 +56,7 @@ func StartApiServer(port int, user string, password string) {
 	}))
 
 	app.Get("/host/info", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = "-"
 		result := jsonOutputHostInfo()
 		jsonResult, err := json.Marshal(result)
 		if err != nil {
@@ -68,8 +69,14 @@ func StartApiServer(port int, user string, password string) {
 	})
 
 	app.Get("/vm/list", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = "-"
 		result := getAllVms()
-		jsonResult, _ := json.Marshal(result)
+		jsonResult, err := json.Marshal(result)
+		if err != nil {
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusInternalServerError)
+			return fiberContext.JSON(fiber.Map{"error": err.Error()})
+		}
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.SendString(string(jsonResult))
 	})

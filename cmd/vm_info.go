@@ -74,7 +74,7 @@ func getVmInfo(vmName string) (vmInfoStruct, error) {
 	if slices.Contains(allVms, vmName) {
 		_ = true
 	} else {
-		return vmInfoStruct{}, errors.New("VM is not found in the system")
+		return vmInfoStruct{}, errors.New("VM " + vmName + " is not found on this system")
 	}
 
 	vmInfoVar.VmName = vmName
