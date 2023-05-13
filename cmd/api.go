@@ -38,11 +38,14 @@ func StartApiServer(port int, user string, password string) {
 	app.Use(requestid.New())
 
 	tagCustomError := new(string)
-	*tagCustomError = "-"
-
 	app.Use(logger.New(logger.Config{
 		// Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error(if any): ${" + tagCustomError + "} \n",
-		Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error: " + *tagCustomError + " \n",
+		Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error: " + func() string {
+			if tagCustomError != nil {
+				return *tagCustomError
+			}
+			return "default error message"
+		}() + " \n",
 	}))
 
 	app.Use(basicauth.New(basicauth.Config{
