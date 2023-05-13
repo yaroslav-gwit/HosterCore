@@ -46,7 +46,7 @@ func StartApiServer(port int, user string, password string) {
 				return output.WriteString(
 					func() string {
 						if len(tagCustomError) > 0 {
-							return LOG_SEPARATOR + "Error: " + tagCustomError
+							return LOG_SEPARATOR + "Error: " + LIGHT_RED + tagCustomError + NC
 						}
 						return ""
 					}(),
