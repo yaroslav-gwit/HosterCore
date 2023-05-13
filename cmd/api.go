@@ -54,10 +54,10 @@ func StartApiServer(port int, user string, password string) {
 	app.Get("/host/info", func(fiberContext *fiber.Ctx) error {
 		result := jsonOutputHostInfo()
 		jsonResult, err := json.Marshal(result)
+		*tagCustomError = "Bla"
 		if err != nil {
 			fiberContext.Status(fiber.StatusInternalServerError)
-			*tagCustomError = "Bla"
-			fiberContext.Locals(*tagCustomError, err.Error())
+			// fiberContext.Locals(*tagCustomError, err.Error())
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 		fiberContext.Status(fiber.StatusOK)
