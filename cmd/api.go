@@ -39,14 +39,21 @@ func StartApiServer(port int, user string, password string) {
 	app := fiber.New(fiber.Config{DisableStartupMessage: true, Prefork: false})
 	app.Use(requestid.New())
 
-	tagCustomError := "-"
+	tagCustomError := ""
 	app.Use(logger.New(logger.Config{
 		CustomTags: map[string]logger.LogFunc{
 			"custom_err_tag": func(output logger.Buffer, c *fiber.Ctx, data *logger.Data, extraParam string) (int, error) {
-				return output.WriteString(tagCustomError)
+				return output.WriteString(
+					func() string {
+						if len(tagCustomError) > 0 {
+							return LOG_SEPARATOR + "Error: " + tagCustomError
+						}
+						return ""
+					}(),
+				)
 			},
 		},
-		Format: " Source: ${ip}:${port}" + LOG_SEPARATOR + "Status: ${status}" + LOG_SEPARATOR + "Method: ${method}" + LOG_SEPARATOR + "Path: ${path}" + LOG_SEPARATOR + "ExecTime: ${latency}" + LOG_SEPARATOR + "BytesSent: ${bytesSent}" + LOG_SEPARATOR + "Error: ${custom_err_tag}\n",
+		Format: " Source: ${ip}:${port}" + LOG_SEPARATOR + "Status: ${status}" + LOG_SEPARATOR + "Method: ${method}" + LOG_SEPARATOR + "Path: ${path}" + LOG_SEPARATOR + "ExecTime: ${latency}" + LOG_SEPARATOR + "BytesSent: ${bytesSent}${custom_err_tag}\n",
 	}))
 
 	app.Use(basicauth.New(basicauth.Config{
@@ -56,7 +63,7 @@ func StartApiServer(port int, user string, password string) {
 	}))
 
 	app.Get("/host/info", func(fiberContext *fiber.Ctx) error {
-		tagCustomError = "-"
+		tagCustomError = ""
 		result := jsonOutputHostInfo()
 		jsonResult, err := json.Marshal(result)
 		if err != nil {
@@ -69,7 +76,7 @@ func StartApiServer(port int, user string, password string) {
 	})
 
 	app.Get("/vm/list", func(fiberContext *fiber.Ctx) error {
-		tagCustomError = "-"
+		tagCustomError = ""
 		result := getAllVms()
 		jsonResult, err := json.Marshal(result)
 		if err != nil {
