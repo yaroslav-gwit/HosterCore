@@ -37,15 +37,24 @@ func StartApiServer(port int, user string, password string) {
 	app := fiber.New(fiber.Config{DisableStartupMessage: true, Prefork: false})
 	app.Use(requestid.New())
 
-	tagCustomError := new(string)
+	tagCustomError := "-"
+	// app.Use(logger.New(logger.Config{
+	// 	// Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error(if any): ${" + tagCustomError + "} \n",
+	// 	Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error: " + func() string {
+	// 		if tagCustomError != nil {
+	// 			return *tagCustomError
+	// 		}
+	// 		return "default error message"
+	// 	}() + " \n",
+	// }))
+
 	app.Use(logger.New(logger.Config{
-		// Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error(if any): ${" + tagCustomError + "} \n",
-		Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error: " + func() string {
-			if tagCustomError != nil {
-				return *tagCustomError
-			}
-			return "default error message"
-		}() + " \n",
+		CustomTags: map[string]logger.LogFunc{
+			"custom_tag": func(output logger.Buffer, c *fiber.Ctx, data *logger.Data, extraParam string) (int, error) {
+				return output.WriteString(tagCustomError)
+			},
+		},
+		Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error(if any): ${custom_tag} \n",
 	}))
 
 	app.Use(basicauth.New(basicauth.Config{
@@ -57,10 +66,9 @@ func StartApiServer(port int, user string, password string) {
 	app.Get("/host/info", func(fiberContext *fiber.Ctx) error {
 		result := jsonOutputHostInfo()
 		jsonResult, err := json.Marshal(result)
-		*tagCustomError = "Bla"
+		tagCustomError = "Bla"
 		if err != nil {
 			fiberContext.Status(fiber.StatusInternalServerError)
-			fiberContext.Locals(*tagCustomError, err.Error())
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 		fiberContext.Status(fiber.StatusOK)
