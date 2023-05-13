@@ -89,13 +89,19 @@ func StartApiServer(port int, user string, password string) {
 	})
 
 	app.Get("/vm/info-all", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
 		allVms := getAllVms()
 		result := []vmInfoStruct{}
 		for _, v := range allVms {
 			tempRes, _ := getVmInfo(v)
 			result = append(result, tempRes)
 		}
-		jsonResult, _ := json.Marshal(result)
+		jsonResult, err := json.Marshal(result)
+		if err != nil {
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusInternalServerError)
+			return fiberContext.JSON(fiber.Map{"error": err.Error()})
+		}
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.SendString(string(jsonResult))
 	})
@@ -104,6 +110,7 @@ func StartApiServer(port int, user string, password string) {
 		Name string `json:"name" xml:"name" form:"name"`
 	}
 	app.Post("/vm/info", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
 		vm := new(vmName)
 		if err := fiberContext.BodyParser(vm); err != nil {
 			tagCustomError = err.Error()
@@ -127,24 +134,29 @@ func StartApiServer(port int, user string, password string) {
 	})
 
 	app.Post("/vm/destroy", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
 		vm := new(vmName)
 		if err := fiberContext.BodyParser(vm); err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 
 		err := vmDestroy(vm.Name)
 		if err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusInternalServerError)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 		err = generateNewDnsConfig()
 		if err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusInternalServerError)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 		err = reloadDnsService()
 		if err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusInternalServerError)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
@@ -154,14 +166,17 @@ func StartApiServer(port int, user string, password string) {
 	})
 
 	app.Post("/vm/start", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
 		vm := new(vmName)
 		if err := fiberContext.BodyParser(vm); err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 		// Using NOHUP option in order to avoid killing the VMs process when API server stops
 		execPath, err := os.Executable()
 		if err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusInternalServerError)
 			return fiberContext.SendString(`{ "message": "failed to start the process"}`)
 		}
@@ -171,6 +186,7 @@ func StartApiServer(port int, user string, password string) {
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 		err = cmd.Start()
 		if err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusInternalServerError)
 			return fiberContext.JSON(fiber.Map{"message": "failed to start the process"})
 		}
@@ -186,10 +202,13 @@ func StartApiServer(port int, user string, password string) {
 	})
 
 	app.Post("/vm/start-all", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
 		// Using NOHUP option in order to avoid killing all VMs when API server stops
 		execPath, err := os.Executable()
 		if err != nil {
-			return fiberContext.SendString(`{ "message": "failed to start the process"}`)
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusInternalServerError)
+			return fiberContext.JSON(fiber.Map{"message": "failed to start the process"})
 		}
 		execFile := path.Dir(execPath) + "/hoster"
 		// Execute start all from the terminal using nohup
@@ -197,6 +216,7 @@ func StartApiServer(port int, user string, password string) {
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 		err = cmd.Start()
 		if err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusInternalServerError)
 			return fiberContext.JSON(fiber.Map{"message": "failed to start the process"})
 		}
@@ -212,13 +232,16 @@ func StartApiServer(port int, user string, password string) {
 	})
 
 	app.Post("/vm/stop", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
 		vm := new(vmName)
 		if err := fiberContext.BodyParser(vm); err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 		err := vmStop(vm.Name, false)
 		if err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusBadRequest)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 
@@ -239,8 +262,10 @@ func StartApiServer(port int, user string, password string) {
 		SnapshotsToKeep int    `json:"s_to_keep" xml:"s_to_keep" form:"s_to_keep"`
 	}
 	app.Post("/vm/snapshot", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
 		vmSnapVar := new(vmSnap)
 		if err := fiberContext.BodyParser(vmSnapVar); err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
@@ -254,8 +279,10 @@ func StartApiServer(port int, user string, password string) {
 		SnapshotsToKeep int    `json:"s_to_keep" xml:"s_to_keep" form:"s_to_keep"`
 	}
 	app.Post("/vm/snapshot-all", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
 		vmSnapVar := new(vmAllSnap)
 		if err := fiberContext.BodyParser(vmSnapVar); err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
@@ -276,14 +303,17 @@ func StartApiServer(port int, user string, password string) {
 		ExpansionSize int    `json:"expansion_size" xml:"expansion_size" form:"expansion_size"`
 	}
 	app.Post("/vm/disk-expand", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
 		diskExpandVar := new(diskExpand)
 		if err := fiberContext.BodyParser(diskExpandVar); err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 
 		err := diskExpandOffline(diskExpandVar.VmName, diskExpandVar.DiskImage, diskExpandVar.ExpansionSize)
 		if err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusInternalServerError)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
