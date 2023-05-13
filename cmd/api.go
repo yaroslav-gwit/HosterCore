@@ -33,28 +33,20 @@ var (
 	}
 )
 
+// Light yellow-ish coloured log separator
+const LOG_SEPARATOR = "\033[0;93m" + " || " + "\033[0m"
 func StartApiServer(port int, user string, password string) {
 	app := fiber.New(fiber.Config{DisableStartupMessage: true, Prefork: false})
 	app.Use(requestid.New())
 
 	tagCustomError := "-"
-	// app.Use(logger.New(logger.Config{
-	// 	// Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error(if any): ${" + tagCustomError + "} \n",
-	// 	Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error: " + func() string {
-	// 		if tagCustomError != nil {
-	// 			return *tagCustomError
-	// 		}
-	// 		return "default error message"
-	// 	}() + " \n",
-	// }))
-
 	app.Use(logger.New(logger.Config{
 		CustomTags: map[string]logger.LogFunc{
-			"custom_tag": func(output logger.Buffer, c *fiber.Ctx, data *logger.Data, extraParam string) (int, error) {
+			"custom_err_tag": func(output logger.Buffer, c *fiber.Ctx, data *logger.Data, extraParam string) (int, error) {
 				return output.WriteString(tagCustomError)
 			},
 		},
-		Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error(if any): ${custom_tag} \n",
+		Format: " Source: ${ip}:${port}" + LOG_SEPARATOR + "Status: ${status}" + LOG_SEPARATOR + "Method: ${method}" + LOG_SEPARATOR + "Path: ${path}" + LOG_SEPARATOR + "ExecTime: ${latency}" + LOG_SEPARATOR + "BytesSent: ${bytesSent}" + LOG_SEPARATOR + "Error: ${custom_err_tag}\n",
 	}))
 
 	app.Use(basicauth.New(basicauth.Config{
@@ -66,8 +58,8 @@ func StartApiServer(port int, user string, password string) {
 	app.Get("/host/info", func(fiberContext *fiber.Ctx) error {
 		result := jsonOutputHostInfo()
 		jsonResult, err := json.Marshal(result)
-		tagCustomError = "Bla"
 		if err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusInternalServerError)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
@@ -100,17 +92,21 @@ func StartApiServer(port int, user string, password string) {
 	app.Post("/vm/info", func(fiberContext *fiber.Ctx) error {
 		vm := new(vmName)
 		if err := fiberContext.BodyParser(vm); err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 		result, err := getVmInfo(vm.Name)
 		if err != nil {
+			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusInternalServerError)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 		jsonResult, err := json.Marshal(result)
 		if err != nil {
-			log.Println(err)
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusInternalServerError)
+			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.SendString(string(jsonResult))
