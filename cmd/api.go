@@ -37,10 +37,12 @@ func StartApiServer(port int, user string, password string) {
 	app := fiber.New(fiber.Config{DisableStartupMessage: true, Prefork: false})
 	app.Use(requestid.New())
 
-	tagCustomError := "-"
+	tagCustomError := new(string)
+	*tagCustomError = "-"
+
 	app.Use(logger.New(logger.Config{
 		// Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error(if any): ${" + tagCustomError + "} \n",
-		Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error: " + tagCustomError + " \n",
+		Format: " ${ip}:${port} ${status} - ${method} ${path} - ExecTime: ${latency} - BytesSent: ${bytesSent} - Error: " + *tagCustomError + " \n",
 	}))
 
 	app.Use(basicauth.New(basicauth.Config{
@@ -54,8 +56,8 @@ func StartApiServer(port int, user string, password string) {
 		jsonResult, err := json.Marshal(result)
 		if err != nil {
 			fiberContext.Status(fiber.StatusInternalServerError)
-			tagCustomError = "Bla"
-			fiberContext.Locals(tagCustomError, err.Error())
+			*tagCustomError = "Bla"
+			fiberContext.Locals(*tagCustomError, err.Error())
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 		fiberContext.Status(fiber.StatusOK)
