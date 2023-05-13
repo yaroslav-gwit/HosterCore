@@ -60,7 +60,7 @@ func StartApiServer(port int, user string, password string) {
 		*tagCustomError = "Bla"
 		if err != nil {
 			fiberContext.Status(fiber.StatusInternalServerError)
-			// fiberContext.Locals(*tagCustomError, err.Error())
+			fiberContext.Locals(*tagCustomError, err.Error())
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 		fiberContext.Status(fiber.StatusOK)
