@@ -10,6 +10,7 @@ import (
 	"path"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
@@ -42,7 +43,7 @@ func StartApiServer(port int, user string, password string) {
 	tagCustomError := ""
 	app.Use(logger.New(logger.Config{
 		CustomTags: map[string]logger.LogFunc{
-			"custom_err_tag": func(output logger.Buffer, c *fiber.Ctx, data *logger.Data, extraParam string) (int, error) {
+			"custom_tag_err": func(output logger.Buffer, c *fiber.Ctx, data *logger.Data, extraParam string) (int, error) {
 				return output.WriteString(
 					func() string {
 						if len(tagCustomError) > 0 {
@@ -52,8 +53,15 @@ func StartApiServer(port int, user string, password string) {
 					}(),
 				)
 			},
+			"custom_tag_time": func(output logger.Buffer, c *fiber.Ctx, data *logger.Data, extraParam string) (int, error) {
+				return output.WriteString(
+					func() string {
+						return time.Now().Format("2006-01-02_15-04-05")
+					}(),
+				)
+			},
 		},
-		Format: " Source: ${ip}:${port}" + LOG_SEPARATOR + "Status: ${status}" + LOG_SEPARATOR + "Method: ${method}" + LOG_SEPARATOR + "Path: ${path}" + LOG_SEPARATOR + "ExecTime: ${latency}" + LOG_SEPARATOR + "BytesSent: ${bytesSent}${custom_err_tag}\n",
+		Format: " Date: {custom_tag_time}" + LOG_SEPARATOR + "Source: ${ip}:${port}" + LOG_SEPARATOR + "Status: ${status}" + LOG_SEPARATOR + "Method: ${method}" + LOG_SEPARATOR + "Path: ${path}" + LOG_SEPARATOR + "ExecTime: ${latency}" + LOG_SEPARATOR + "BytesSent: ${bytesSent}${custom_tag_err}\n",
 	}))
 
 	app.Use(basicauth.New(basicauth.Config{
