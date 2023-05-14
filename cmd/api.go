@@ -61,7 +61,7 @@ func StartApiServer(port int, user string, password string) {
 				)
 			},
 		},
-		Format: " Date: {custom_tag_time}" + LOG_SEPARATOR + "Source: ${ip}:${port}" + LOG_SEPARATOR + "Status: ${status}" + LOG_SEPARATOR + "Method: ${method}" + LOG_SEPARATOR + "Path: ${path}" + LOG_SEPARATOR + "ExecTime: ${latency}" + LOG_SEPARATOR + "BytesSent: ${bytesSent}${custom_tag_err}\n",
+		Format: " Date: ${custom_tag_time}" + LOG_SEPARATOR + "Source: ${ip}:${port}" + LOG_SEPARATOR + "Status: ${status}" + LOG_SEPARATOR + "Method: ${method}" + LOG_SEPARATOR + "Path: ${path}" + LOG_SEPARATOR + "ExecTime: ${latency}" + LOG_SEPARATOR + "BytesSent: ${bytesSent}${custom_tag_err}\n",
 	}))
 
 	app.Use(basicauth.New(basicauth.Config{
