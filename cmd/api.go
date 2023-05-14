@@ -250,8 +250,33 @@ func StartApiServer(port int, user string, password string) {
 		return fiberContext.JSON(fiber.Map{"message": "success"})
 	})
 
+	app.Post("/vm/stop-force", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
+		vm := new(vmName)
+		if err := fiberContext.BodyParser(vm); err != nil {
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusUnprocessableEntity)
+			return fiberContext.JSON(fiber.Map{"error": err.Error()})
+		}
+		err := vmStop(vm.Name, true)
+		if err != nil {
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusBadRequest)
+			return fiberContext.JSON(fiber.Map{"error": err.Error()})
+
+		}
+		fiberContext.Status(fiber.StatusOK)
+		return fiberContext.JSON(fiber.Map{"message": "success"})
+	})
+
 	app.Post("/vm/stop-all", func(fiberContext *fiber.Ctx) error {
 		go vmStopAll(false)
+		fiberContext.Status(fiber.StatusOK)
+		return fiberContext.JSON(fiber.Map{"message": "process started"})
+	})
+
+	app.Post("/vm/stop-all-force", func(fiberContext *fiber.Ctx) error {
+		go vmStopAll(true)
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.JSON(fiber.Map{"message": "process started"})
 	})
