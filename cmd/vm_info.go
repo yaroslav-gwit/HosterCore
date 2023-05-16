@@ -46,25 +46,26 @@ func printVmInfo(vmName string) {
 }
 
 type vmInfoStruct struct {
-	VmName             string `json:"vm_name,omitempty"`
-	MainIpAddress      string `json:"main_ip_address,omitempty"`
+	VmName             string `json:"vm_name"`
+	MainIpAddress      string `json:"main_ip_address"`
 	VmStatusLive       bool   `json:"vm_status_live"`
 	VmStatusEncrypted  bool   `json:"vm_status_encrypted"`
 	VmStatusProduction bool   `json:"vm_status_production"`
 	VmStatusBackup     bool   `json:"vm_status_backup"`
-	CpuSockets         int    `json:"cpu_sockets,omitempty"`
-	CpuCores           int    `json:"cpu_cores,omitempty"`
-	RamAmount          string `json:"ram_amount,omitempty"`
-	VncPort            int    `json:"vnc_port,omitempty"`
-	VncPassword        string `json:"vnc_password,omitempty"`
-	OsType             string `json:"os_type,omitempty"`
-	OsComment          string `json:"os_comment,omitempty"`
-	VmUptime           string `json:"vm_uptime,omitempty"`
-	VmDescription      string `json:"vm_description,omitempty"`
-	ParentHost         string `json:"parent_host,omitempty"`
-	Uptime             string `json:"uptime,omitempty"`
-	OsDiskTotal        string `json:"os_disk_total,omitempty"`
-	OsDiskUsed         string `json:"os_disk_used,omitempty"`
+	CpuSockets         int    `json:"cpu_sockets"`
+	CpuCores           int    `json:"cpu_cores"`
+	RamAmount          string `json:"ram_amount"`
+	VncPort            int    `json:"vnc_port"`
+	VncPassword        string `json:"vnc_password"`
+	OsType             string `json:"os_type"`
+	OsComment          string `json:"os_comment"`
+	VmUptime           string `json:"vm_uptime"`
+	VmDescription      string `json:"vm_description"`
+	ParentHost         string `json:"parent_host"`
+	CurrentHost        string `json:"current_host"`
+	Uptime             string `json:"uptime"`
+	OsDiskTotal        string `json:"os_disk_total"`
+	OsDiskUsed         string `json:"os_disk_used"`
 }
 
 func getVmInfo(vmName string) (vmInfoStruct, error) {
@@ -78,7 +79,7 @@ func getVmInfo(vmName string) (vmInfoStruct, error) {
 	}
 
 	vmInfoVar.VmName = vmName
-	vmInfoVar.ParentHost = GetHostName()
+	vmInfoVar.CurrentHost = GetHostName()
 
 	wg.Add(1)
 	go func() {
@@ -92,9 +93,11 @@ func getVmInfo(vmName string) (vmInfoStruct, error) {
 			vmInfoVar.VmStatusProduction = false
 		}
 
-		if vmConfigVar.ParentHost == vmInfoVar.ParentHost {
+		if vmInfoVar.CurrentHost == vmConfigVar.ParentHost {
+			vmInfoVar.ParentHost = vmInfoVar.CurrentHost
 			vmInfoVar.VmStatusBackup = false
 		} else {
+			vmInfoVar.ParentHost = vmConfigVar.ParentHost
 			vmInfoVar.VmStatusBackup = true
 		}
 
