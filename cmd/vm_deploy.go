@@ -422,7 +422,7 @@ const vmConfigFileTemplate = `
 
     "disks": [
         {
-            "disk_type": "virtio-blk",
+            "disk_type": "nvme",
             "disk_location": "internal",
             "disk_image": "disk0.img",
             "comment": "OS Drive"
