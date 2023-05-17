@@ -21,7 +21,12 @@ var (
 		Long:  `Destroy the VM and it's parent snapshot (uses zfs destroy)`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := vmDestroy(args[0])
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			err = vmDestroy(args[0])
 			if err != nil {
 				log.Fatal("vmDestroy() error: " + err.Error())
 			}

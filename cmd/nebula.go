@@ -25,6 +25,10 @@ var (
 		Short: "Nebula network service manager",
 		Long:  `Nebula network service manager`,
 		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
 			cmd.Help()
 		},
 	}
@@ -50,7 +54,11 @@ var (
 		Short: "Use `tail -f` to display Nebula's live log",
 		Long:  `Use "tail -f" to display Nebula's live log`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := tailNebulaLogFile()
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			err = tailNebulaLogFile()
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -68,6 +76,10 @@ var (
 		Short: "Start, stop, or reload Nebula process",
 		Long:  `Start, stop, or reload Nebula process`,
 		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
 			if nebulaServiceReload {
 				err := reloadNebulaService()
 				if err != nil {
@@ -99,6 +111,10 @@ var (
 		Short: "Download the latest changes from Nebula Control Plane API server",
 		Long:  `Download the latest changes from Nebula Control Plane API server`,
 		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
 			if nebulaUpdateConfig {
 				err := downloadNebulaConfig()
 				if err != nil {
@@ -120,7 +136,6 @@ var (
 	}
 )
 
-// const nebulaServiceFolder = "/opt/nebula_new/"
 const nebulaServiceFolder = "/opt/nebula/"
 
 func startNebulaService() error {

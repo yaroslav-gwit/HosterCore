@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/spf13/cobra"
 )
 
@@ -13,6 +15,11 @@ var (
 		Short: "Snapshot all running VMs on this system",
 		Long:  `Snapshot all running VMs on this system`,
 		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
 			snapshotAllRunningVms()
 		},
 	}

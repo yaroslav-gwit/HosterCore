@@ -43,7 +43,11 @@ var (
 		Short: "Download an image from the public or private repo",
 		Long:  `Download an image from the public or private repo`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := imageDownload(imageOsType)
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = imageDownload(imageOsType)
 			if err != nil {
 				log.Fatal(err)
 			}

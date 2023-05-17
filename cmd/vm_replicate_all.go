@@ -18,6 +18,11 @@ var (
 		Short: "Replicate all live and production VMs to a backup node",
 		Long:  `Replicate all live and production VMs to a backup node.`,
 		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
 			if len(replicationEndpointAll) < 1 {
 				log.Fatal("Please specify an endpoint!")
 			}

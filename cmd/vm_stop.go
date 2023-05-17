@@ -21,7 +21,12 @@ var (
 		Long:  `Stop a particular VM using it's name`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := vmStop(args[0], forceStop)
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			err = vmStop(args[0], forceStop)
 			if err != nil {
 				log.Fatal(err)
 			}

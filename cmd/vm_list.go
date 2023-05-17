@@ -26,6 +26,11 @@ var (
 		Short: "VM list",
 		Long:  `VM list in the form of tables, json, or json pretty`,
 		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			
 			vmListMain()
 		},
 	}

@@ -23,7 +23,12 @@ var (
 		Long:  `Reset VM's passwords, ssh keys, and network config (useful after VM migration)`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := ciReset(args[0], newVmName)
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			
+			err = ciReset(args[0], newVmName)
 			if err != nil {
 				log.Fatal("Fatal error:", err)
 			}

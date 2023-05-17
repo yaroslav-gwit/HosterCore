@@ -35,7 +35,12 @@ var (
 		Short: "Deploy the VM, using a pre-defined template",
 		Long:  `Deploy the VM, using a pre-defined template`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := deployVmMain(vmName, osType, zfsDataset, vmDeployCpus, vmDeployRam, vmDeployStartWhenReady)
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			err = deployVmMain(vmName, osType, zfsDataset, vmDeployCpus, vmDeployRam, vmDeployStartWhenReady)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -389,7 +394,7 @@ ethernets:
      gateway4: {{ .Gateway }}
      
      nameservers:
-       search: [gateway-it.internal, ]
+       search: [ {{ .ParentHost }}.internal.lan, ]
        addresses: [{{ .Gateway }}, ]
 `
 

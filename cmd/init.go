@@ -17,24 +17,34 @@ var (
 		Short: "Initialize system services and kernel modules required by Hoster Core",
 		Long:  `Initialize system services and kernel modules required by Hoster Core`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := loadMissingModules()
+			err := createInitFile()
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Warning)
+				err = nil
+			}
+
+			err = loadMissingModules()
 			if err != nil {
 				emojlog.PrintLogMessage("Could not load kernel modules: "+err.Error(), emojlog.Warning)
+				err = nil
 			}
 			err = applySysctls()
 			if err != nil {
 				emojlog.PrintLogMessage("Could not apply sysctls: "+err.Error(), emojlog.Warning)
+				err = nil
 			}
 			err = loadNetworkConfig()
 			if err != nil {
 				emojlog.PrintLogMessage("Could not load network config: "+err.Error(), emojlog.Warning)
+				err = nil
 			}
 			err = applyPfSettings()
 			if err != nil {
 				emojlog.PrintLogMessage("Could not reload pf: "+err.Error(), emojlog.Warning)
+				err = nil
 			}
 
-			// Load Unbound settings (monkey patch for fresh installations, or user initiated config changes)
+			// Load Unbound settings (monkey patch for fresh installations, or manual user config changes)
 			restartUnbound()
 
 			// Try to start Nebula if it's config file exists
@@ -43,6 +53,7 @@ var (
 				err := startNebulaService()
 				if err != nil {
 					emojlog.PrintLogMessage("Could not start Nebula service: "+err.Error(), emojlog.Warning)
+					err = nil
 				}
 			}
 
@@ -165,7 +176,7 @@ func applySysctls() error {
 	if !tapUpOnOpen {
 		err := exec.Command("sysctl", "net.link.tap.up_on_open=1").Run()
 		if err != nil {
-			return errors.New("error running sysctl: " + string(stdout) + " " + stderr.Error())
+			return errors.New("error running sysctl: " + err.Error())
 		}
 		emojlog.PrintLogMessage("Applied Sysctl setting: sysctl net.link.tap.up_on_open=1", emojlog.Changed)
 
@@ -249,4 +260,30 @@ func restartUnbound() {
 	if unboundErr != nil {
 		emojlog.PrintLogMessage("Could not restart Unbound: "+string(unboundOut), emojlog.Error)
 	}
+}
+
+func createInitFile() error {
+	stdout, stderr := exec.Command("touch", "/var/run/hoster_init").CombinedOutput()
+	if stderr != nil {
+		return errors.New("error creating hoster_init file: " + string(stdout) + " " + stderr.Error())
+	}
+	
+	stdout, stderr = exec.Command("chmod", "0600", "/var/run/hoster_init").CombinedOutput()
+	if stderr != nil {
+		return errors.New("error setting permissions for hoster_init file: " + string(stdout) + " " + stderr.Error())
+	}
+
+	emojlog.PrintLogMessage("State file /var/run/hoster_init has been created", emojlog.Changed)
+	return nil
+}
+
+func checkInitFile() error {
+	_, stderr := exec.Command("ls", "/var/run/hoster_init").CombinedOutput()
+	if stderr != nil {
+		// Add documentation for this error output in the online docs at some point
+		emojlog.PrintLogMessage("Please, execute `hoster init` to start using this utility", emojlog.Error)
+		return errors.New("hoster process state file is missing")
+	}
+
+	return nil
 }

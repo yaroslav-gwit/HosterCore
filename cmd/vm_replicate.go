@@ -29,11 +29,16 @@ var (
 		Long:  `Use ZFS replication to send this VM to another host`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
 			if len(replicationEndpoint) < 1 {
 				log.Fatal("Please specify an endpoint!")
 			}
 			vmName := args[0]
-			err := replicateVm(vmName, replicationEndpoint, endpointSshPort, sshKeyLocation)
+			err = replicateVm(vmName, replicationEndpoint, endpointSshPort, sshKeyLocation)
 			if err != nil {
 				log.Fatal(err)
 			}

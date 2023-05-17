@@ -29,6 +29,10 @@ var (
 		Short: "Start an API server",
 		Long:  `Start an API server on port 3000 (default).`,
 		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
 			StartApiServer(apiServerPort, apiServerUser, apiServerPassword)
 		},
 	}

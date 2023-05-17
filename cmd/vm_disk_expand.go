@@ -21,7 +21,12 @@ var (
 		Long:  `Expand the VM drive. Can only be done offline due to data loss possibility.`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := diskExpandOffline(args[0], diskImage, expansionSize)
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			err = diskExpandOffline(args[0], diskImage, expansionSize)
 			if err != nil {
 				log.Fatal(err)
 			}

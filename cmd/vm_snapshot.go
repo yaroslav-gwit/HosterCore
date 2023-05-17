@@ -23,7 +23,12 @@ var (
 		Long:  `Snapshot VM (using ZFS snapshot)`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := vmZfsSnapshot(args[0], snapshotType, snapshotsToKeep)
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			err = vmZfsSnapshot(args[0], snapshotType, snapshotsToKeep)
 			if err != nil {
 				log.Fatal(err)
 			}
