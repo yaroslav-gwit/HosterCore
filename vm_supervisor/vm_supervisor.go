@@ -95,6 +95,7 @@ func main() {
 						cmd.NetworkCleanup(vmName, true)
 						cmd.BhyvectlDestroy(vmName, true)
 						restartVmProcess(vmName)
+						logFileOutput("notice", "ALL DONE. WILL START THE VM AGAIN SHORTLY.")
 						os.Exit(0)
 					} else if exitCode == 1 || exitCode == 2 {
 						logFileOutput("stdout", "Bhyve received a shutdown signal: " + strconv.Itoa(exitCode) + ". Shutting down...")
@@ -102,12 +103,14 @@ func main() {
 						cmd.NetworkCleanup(vmName, true)
 						logFileOutput("stdout", "Performing Bhyve cleanup")
 						cmd.BhyvectlDestroy(vmName, true)
+						logFileOutput("notice", "ALL CLEANUP PROCEDURES ARE DONE.")
 						os.Exit(0)
 					} else {
 						logFileOutput("stderr", "Bhyve returned a panic exit code: " + strconv.Itoa(exitCode))
 						logFileOutput("stderr", "Shutting down all VM related processes and performing system clean up")
 						cmd.NetworkCleanup(vmName, true)
 						cmd.BhyvectlDestroy(vmName, true)
+						logFileOutput("notice", "ALL CLEANUP PROCEDURES ARE DONE.")
 						os.Exit(101)
 					}
 				}
