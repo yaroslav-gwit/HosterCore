@@ -62,8 +62,9 @@ func main() {
 		startVmProcess(hupCmd, done)
 		wg.Wait()
 
-		if err := <-done; err != nil {
-			logFileOutput("stdout", "VM child process ended: " + err.Error())
+		processErr := <-done
+		if processErr != nil || processErr == nil {
+			// logFileOutput("stdout", "VM child process ended: " + processErr.Error())
 			if exitError, ok := err.(*exec.ExitError); ok {
 				if status, ok := exitError.Sys().(interface{ ExitStatus() int }); ok {
 					exitCode := status.ExitStatus()
