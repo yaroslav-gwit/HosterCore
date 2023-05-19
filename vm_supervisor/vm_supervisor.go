@@ -8,9 +8,9 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 func main() {
@@ -57,8 +57,7 @@ func main() {
 		}()
 
 		done := make(chan error)
-		startCommand(hupCmd, done)
-
+		startVmProcess(hupCmd, done)
 		wg.Wait()
 
 		if err := <-done; err != nil {
@@ -66,7 +65,20 @@ func main() {
 			if exitError, ok := err.(*exec.ExitError); ok {
 				if status, ok := exitError.Sys().(interface{ ExitStatus() int }); ok {
 					exitCode := status.ExitStatus()
-					if exitCode != 1 {
+					// 
+					// List of Bhyve's exit codes (not confirmed yet!):
+					// 0: The virtual machine terminated normally without any errors.
+					// 1: The virtual machine terminated with an unspecified error.
+					// 2: The virtual machine terminated due to a fatal error or panic.
+					// 3: The virtual machine was reset or rebooted.
+					// 4: The virtual machine was terminated due to a guest-initiated shutdown or ACPI power button press.
+					// 5: The virtual machine was terminated due to a host-initiated shutdown or request.
+					// 6: The virtual machine was terminated due to a watchdog timeout.
+					// 7: The virtual machine was terminated due to an internal Bhyve error.
+					// 8: The virtual machine was terminated due to an invalid command-line argument or configuration.
+					// 9: The virtual machine was terminated due to an external signal (e.g., SIGINT, SIGTERM).
+					// 
+					if exitCode == 3 {
 						// 
 						// The below should fix a bug where VM goes unresponsive after 3-5 reboots
 						// executed from within the VM itself
@@ -77,23 +89,27 @@ func main() {
 						// The fix would also allow to pick up config changes across the
 						// regular VM reboots
 						// 
-						log.Printf("[stderr] VM child process returned non-zero exit code: %d, restarting...", exitCode)
-						time.Sleep(time.Second)
+						log.Println("[stdout] Bhyve received a reboot signal: " + strconv.Itoa(exitCode) + ". Rebooting...")
 						cmd.NetworkCleanup(vmName, true)
 						cmd.BhyvectlDestroy(vmName, true)
-						restartCommand(vmName)
+						restartVmProcess(vmName)
 						os.Exit(0)
+					} else if exitCode == 4 || exitCode == 5 {
+						log.Println("[stdout] Bhyve received a shutdown signal: " + strconv.Itoa(exitCode) + ". Shutting down...")
+						log.Println("[stdout] Performing network cleanup")
+						cmd.NetworkCleanup(vmName, true)
+						log.Println("[stdout] Performing Bhyve cleanup")
+						cmd.BhyvectlDestroy(vmName, true)
+						os.Exit(0)
+					} else {
+						log.Println("[stderr] Bhyve returned a panic exit code: " + strconv.Itoa(exitCode))
+						log.Println("[stdout] Shutting down all VM related processes and performing system clean up")
+						cmd.NetworkCleanup(vmName, true)
+						cmd.BhyvectlDestroy(vmName, true)
+						os.Exit(101)
 					}
 				}
 			}
-
-			log.Println("[stdout] Performing network cleanup")
-			cmd.NetworkCleanup(vmName, true)
-
-			log.Println("[stdout] Performing Bhyve cleanup")
-			cmd.BhyvectlDestroy(vmName, true)
-
-			log.Println("[stdout] Shutting down the VM supervisor process")
 			os.Exit(0)
 		}
 	}
@@ -115,7 +131,7 @@ func readAndLogOutput(reader *bufio.Reader, name string) {
 	}
 }
 
-func startCommand(cmd *exec.Cmd, done chan error) {
+func startVmProcess(cmd *exec.Cmd, done chan error) {
 	if err := cmd.Start(); err != nil {
 		log.Fatalf("Failed to start command: %v", err)
 	}
@@ -124,14 +140,12 @@ func startCommand(cmd *exec.Cmd, done chan error) {
 	}()
 }
 
-func restartCommand(vmName string) {
-	// Start VM supervisor process
+func restartVmProcess(vmName string) {
 	execPath, err := os.Executable()
 	if err != nil {
 		log.Fatalf("Failed to start command: %v", err)
 	}
 	execFile := path.Dir(execPath) + "/hoster"
-	
 	out, err := exec.Command("nohup", execFile, "start", vmName).CombinedOutput()
 	if err != nil {
 		log.Fatal("Could not restart the VM: " + string(out) + "; " + err.Error())
