@@ -80,7 +80,7 @@ func main() {
 					// 8: The virtual machine was terminated due to an invalid command-line argument or configuration.
 					// 9: The virtual machine was terminated due to an external signal (e.g., SIGINT, SIGTERM).
 					// 
-					if exitCode == 3 {
+					if exitCode == 0 {
 						// 
 						// The below should fix a bug where VM goes unresponsive after 3-5 reboots
 						// executed from within the VM itself
@@ -96,7 +96,7 @@ func main() {
 						cmd.BhyvectlDestroy(vmName, true)
 						restartVmProcess(vmName)
 						os.Exit(0)
-					} else if exitCode == 4 || exitCode == 5 {
+					} else if exitCode == 1 || exitCode == 2 {
 						logFileOutput("stdout", "Bhyve received a shutdown signal: " + strconv.Itoa(exitCode) + ". Shutting down...")
 						logFileOutput("stdout", "Performing network cleanup")
 						cmd.NetworkCleanup(vmName, true)
