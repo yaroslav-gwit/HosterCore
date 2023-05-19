@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -17,17 +18,6 @@ func main() {
 	vmStartCommand := os.Getenv("VM_START")
 	logFileLocation := os.Getenv("LOG_FILE")
 	vmName := os.Getenv("VM_NAME")
-
-	// DOESN'T WORK ON FREEBSD?
-	// Set the process name
-	// procName := "vm supervisor: " + vmName
-	// argv0str := (*reflect.StringHeader)(unsafe.Pointer(&os.Args[0]))
-	// argv0 := (*[1 << 30]byte)(unsafe.Pointer(argv0str.Data))[:argv0str.Len]
-
-	// n := copy(argv0, procName)
-	// if n < len(argv0) {
-	// 	argv0[n] = 0
-	// }
 
 	// Create or open the log file for writing
 	logFile, err := os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0640)
@@ -72,14 +62,27 @@ func main() {
 		wg.Wait()
 
 		if err := <-done; err != nil {
-			log.Printf("[stdout] VM has been shut down: %v", err)
+			log.Printf("[stdout] VM child process ended: " + err.Error())
 			if exitError, ok := err.(*exec.ExitError); ok {
 				if status, ok := exitError.Sys().(interface{ ExitStatus() int }); ok {
 					exitCode := status.ExitStatus()
 					if exitCode != 1 {
-						log.Printf("[stderr] VM returned non-zero exit code: %d, restarting...", exitCode)
+						// 
+						// The below should fix a bug where VM goes unresponsive after 3-5 reboots
+						// executed from within the VM itself
+						// 
+						// The idea is to kill current VM_SUPERVISOR parent and it's child process,
+						// then start a new one
+						// 
+						// The fix would also allow to pick up config changes across the
+						// regular VM reboots
+						// 
+						log.Printf("[stderr] VM child process returned non-zero exit code: %d, restarting...", exitCode)
 						time.Sleep(time.Second)
-						continue
+						cmd.NetworkCleanup(vmName, true)
+						cmd.BhyvectlDestroy(vmName, true)
+						restartCommand(vmName)
+						os.Exit(0)
 					}
 				}
 			}
@@ -93,8 +96,6 @@ func main() {
 			log.Println("[stdout] Shutting down the VM supervisor process")
 			os.Exit(0)
 		}
-
-		time.Sleep(time.Second)
 	}
 }
 
@@ -121,4 +122,18 @@ func startCommand(cmd *exec.Cmd, done chan error) {
 	go func() {
 		done <- cmd.Wait()
 	}()
+}
+
+func restartCommand(vmName string) {
+	// Start VM supervisor process
+	execPath, err := os.Executable()
+	if err != nil {
+		log.Fatalf("Failed to start command: %v", err)
+	}
+	execFile := path.Dir(execPath) + "/hoster"
+	
+	out, err := exec.Command("nohup", execFile, "start", vmName).CombinedOutput()
+	if err != nil {
+		log.Fatal("Could not restart the VM: " + string(out) + "; " + err.Error())
+	}
 }
