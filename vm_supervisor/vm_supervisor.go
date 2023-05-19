@@ -23,7 +23,7 @@ func main() {
 	// Start the process
 	parts := strings.Fields(vmStartCommand)
 	for {
-		logFileOutput(LOG_SUPERVISOR, "Starting the VM as a child process")
+		logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION STARTED: VM boot process has been initiated")
 		hupCmd := exec.Command(parts[0], parts[1:]...)
 		stdout, err := hupCmd.StdoutPipe()
 		if err != nil {
@@ -64,30 +64,32 @@ func main() {
 		if correctReturnType {
 			exitCode := processExitStatus.ProcessState.ExitCode()
 			if exitCode == 1 || exitCode == 2 {
-				logFileOutput(LOG_SUPERVISOR, "Bhyve received a shutdown signal: " + strconv.Itoa(exitCode) + ". Shutting down...")
+				logFileOutput(LOG_SUPERVISOR, "Bhyve received a shutdown signal: " + strconv.Itoa(exitCode) + ". Executing the shutdown sequence...")
 				logFileOutput(LOG_SUPERVISOR, "Performing network cleanup")
 				cmd.NetworkCleanup(vmName, true)
 				logFileOutput(LOG_SUPERVISOR, "Performing Bhyve cleanup")
 				cmd.BhyvectlDestroy(vmName, true)
-				logFileOutput(LOG_SUPERVISOR, "ALL CLEANUP PROCEDURES ARE DONE.")
+				logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. The VM has been shutdown.")
 				os.Exit(0)
 			} else {
 				logFileOutput(LOG_SUPERVISOR, "Bhyve returned a panic exit code: " + strconv.Itoa(exitCode))
 				logFileOutput(LOG_SUPERVISOR, "Shutting down all VM related processes and performing system clean up")
 				cmd.NetworkCleanup(vmName, true)
 				cmd.BhyvectlDestroy(vmName, true)
-				logFileOutput(LOG_SUPERVISOR, "ALL CLEANUP PROCEDURES ARE DONE.")
+				logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. Unexpected exit code.")
 				os.Exit(101)
 			}
 		} else {
-			logFileOutput(LOG_SUPERVISOR, "Bhyve received a reboot signal. Rebooting...")
+			logFileOutput(LOG_SUPERVISOR, "Bhyve received a reboot signal. Executing the reboot sequence...")
+			logFileOutput(LOG_SUPERVISOR, "Performing network cleanup")
 			cmd.NetworkCleanup(vmName, true)
+			logFileOutput(LOG_SUPERVISOR, "Performing Bhyve cleanup")
 			cmd.BhyvectlDestroy(vmName, true)
+			logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. The VM will start back up in a moment.")
 			restartVmProcess(vmName)
-			logFileOutput(LOG_SUPERVISOR, "ALL DONE. VM SHOULD BE UP AGAIN SHORTLY.")
 			os.Exit(0)
 		}
-		logFileOutput(LOG_SUPERVISOR, "SOMETHING UNPREDICTED HAPPENED! THE PROCESS HAD TO EXIT!")
+		logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. SOMETHING UNPREDICTED HAPPENED! THE PROCESS HAD TO EXIT!")
 		cmd.NetworkCleanup(vmName, true)
 		cmd.BhyvectlDestroy(vmName, true)
 		os.Exit(1000)
