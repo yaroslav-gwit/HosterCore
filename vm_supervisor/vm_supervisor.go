@@ -65,9 +65,9 @@ func main() {
 			exitCode := processExitStatus.ProcessState.ExitCode()
 			if exitCode == 1 || exitCode == 2 {
 				logFileOutput(LOG_SUPERVISOR, "Bhyve received a shutdown signal: " + strconv.Itoa(exitCode) + ". Executing the shutdown sequence...")
-				logFileOutput(LOG_SUPERVISOR, "Performing network cleanup")
+				logFileOutput(LOG_SUPERVISOR, "Shutting down -> Performing network cleanup")
 				cmd.NetworkCleanup(vmName, true)
-				logFileOutput(LOG_SUPERVISOR, "Performing Bhyve cleanup")
+				logFileOutput(LOG_SUPERVISOR, "Shutting down -> Performing Bhyve cleanup")
 				cmd.BhyvectlDestroy(vmName, true)
 				logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. The VM has been shutdown.")
 				os.Exit(0)
@@ -81,9 +81,9 @@ func main() {
 			}
 		} else {
 			logFileOutput(LOG_SUPERVISOR, "Bhyve received a reboot signal. Executing the reboot sequence...")
-			logFileOutput(LOG_SUPERVISOR, "Performing network cleanup")
+			logFileOutput(LOG_SUPERVISOR, "Rebooting -> Performing network cleanup")
 			cmd.NetworkCleanup(vmName, true)
-			logFileOutput(LOG_SUPERVISOR, "Performing Bhyve cleanup")
+			logFileOutput(LOG_SUPERVISOR, "Rebooting -> Performing Bhyve cleanup")
 			cmd.BhyvectlDestroy(vmName, true)
 			logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. The VM will start back up in a moment.")
 			restartVmProcess(vmName)
