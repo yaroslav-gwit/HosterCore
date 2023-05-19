@@ -63,61 +63,61 @@ func main() {
 		wg.Wait()
 
 		processErr := <-done
-		if processErr != nil || processErr == nil {
-			// logFileOutput("stdout", "VM child process ended: " + processErr.Error())
-			if exitError, ok := err.(*exec.ExitError); ok {
-				if status, ok := exitError.Sys().(interface{ ExitStatus() int }); ok {
-					exitCode := status.ExitStatus()
-					// 
-					// List of Bhyve's exit codes (not confirmed yet!):
-					// 0: The virtual machine terminated normally without any errors.
-					// 1: The virtual machine terminated with an unspecified error.
-					// 2: The virtual machine terminated due to a fatal error or panic.
-					// 3: The virtual machine was reset or rebooted.
-					// 4: The virtual machine was terminated due to a guest-initiated shutdown or ACPI power button press.
-					// 5: The virtual machine was terminated due to a host-initiated shutdown or request.
-					// 6: The virtual machine was terminated due to a watchdog timeout.
-					// 7: The virtual machine was terminated due to an internal Bhyve error.
-					// 8: The virtual machine was terminated due to an invalid command-line argument or configuration.
-					// 9: The virtual machine was terminated due to an external signal (e.g., SIGINT, SIGTERM).
-					// 
-					if exitCode == 0 {
-						// 
-						// The below should fix a bug where VM goes unresponsive after 3-5 reboots
-						// executed from within the VM itself
-						// 
-						// The idea is to kill current VM_SUPERVISOR parent and it's child process,
-						// then start a new one
-						// 
-						// The fix would also allow to pick up config changes across the
-						// regular VM reboots
-						// 
-						logFileOutput("stdout", "Bhyve received a reboot signal: " + strconv.Itoa(exitCode) + ". Rebooting...")
-						cmd.NetworkCleanup(vmName, true)
-						cmd.BhyvectlDestroy(vmName, true)
-						restartVmProcess(vmName)
-						logFileOutput("notice", "ALL DONE. WILL START THE VM AGAIN SHORTLY.")
-						os.Exit(0)
-					} else if exitCode == 1 || exitCode == 2 {
-						logFileOutput("stdout", "Bhyve received a shutdown signal: " + strconv.Itoa(exitCode) + ". Shutting down...")
-						logFileOutput("stdout", "Performing network cleanup")
-						cmd.NetworkCleanup(vmName, true)
-						logFileOutput("stdout", "Performing Bhyve cleanup")
-						cmd.BhyvectlDestroy(vmName, true)
-						logFileOutput("notice", "ALL CLEANUP PROCEDURES ARE DONE.")
-						os.Exit(0)
-					} else {
-						logFileOutput("stderr", "Bhyve returned a panic exit code: " + strconv.Itoa(exitCode))
-						logFileOutput("stderr", "Shutting down all VM related processes and performing system clean up")
-						cmd.NetworkCleanup(vmName, true)
-						cmd.BhyvectlDestroy(vmName, true)
-						logFileOutput("notice", "ALL CLEANUP PROCEDURES ARE DONE.")
-						os.Exit(101)
-					}
-				}
-			}
-			os.Exit(0)
+		if processErr != nil {
+			logFileOutput("stdout", "VM child process ended with a non-zero exit code: " + processErr.Error())
 		}
+		if exitError, ok := err.(*exec.ExitError); ok {
+			processState := exitError.ProcessState
+			exitCode := processState.ExitCode()
+			// 
+			// List of Bhyve's exit codes (not confirmed yet!):
+			// 0: The virtual machine terminated normally without any errors.
+			// 1: The virtual machine terminated with an unspecified error.
+			// 2: The virtual machine terminated due to a fatal error or panic.
+			// 3: The virtual machine was reset or rebooted.
+			// 4: The virtual machine was terminated due to a guest-initiated shutdown or ACPI power button press.
+			// 5: The virtual machine was terminated due to a host-initiated shutdown or request.
+			// 6: The virtual machine was terminated due to a watchdog timeout.
+			// 7: The virtual machine was terminated due to an internal Bhyve error.
+			// 8: The virtual machine was terminated due to an invalid command-line argument or configuration.
+			// 9: The virtual machine was terminated due to an external signal (e.g., SIGINT, SIGTERM).
+			// 
+			if exitCode == 0 {
+				// 
+				// The below should fix a bug where VM goes unresponsive after 3-5 reboots
+				// executed from within the VM itself
+				// 
+				// The idea is to kill current VM_SUPERVISOR parent and it's child process,
+				// then start a new one
+				// 
+				// The fix would also allow to pick up config changes across the
+				// regular VM reboots
+				// 
+				logFileOutput("stdout", "Bhyve received a reboot signal: " + strconv.Itoa(exitCode) + ". Rebooting...")
+				cmd.NetworkCleanup(vmName, true)
+				cmd.BhyvectlDestroy(vmName, true)
+				restartVmProcess(vmName)
+				logFileOutput("notice", "ALL DONE. WILL START THE VM AGAIN SHORTLY.")
+				os.Exit(0)
+			} else if exitCode == 1 || exitCode == 2 {
+				logFileOutput("stdout", "Bhyve received a shutdown signal: " + strconv.Itoa(exitCode) + ". Shutting down...")
+				logFileOutput("stdout", "Performing network cleanup")
+				cmd.NetworkCleanup(vmName, true)
+				logFileOutput("stdout", "Performing Bhyve cleanup")
+				cmd.BhyvectlDestroy(vmName, true)
+				logFileOutput("notice", "ALL CLEANUP PROCEDURES ARE DONE.")
+				os.Exit(0)
+			} else {
+				logFileOutput("stderr", "Bhyve returned a panic exit code: " + strconv.Itoa(exitCode))
+				logFileOutput("stderr", "Shutting down all VM related processes and performing system clean up")
+				cmd.NetworkCleanup(vmName, true)
+				cmd.BhyvectlDestroy(vmName, true)
+				logFileOutput("notice", "ALL CLEANUP PROCEDURES ARE DONE.")
+				os.Exit(101)
+			}
+		}
+		logFileOutput("notice", "SOMETHING UNPREDICTED HAPPENED! THE PROCESS HAD TO EXIT!")
+		os.Exit(1000)
 	}
 }
 
