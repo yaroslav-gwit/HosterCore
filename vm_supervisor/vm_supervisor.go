@@ -133,7 +133,7 @@ func restartVmProcess(vmName string) {
 		os.Exit(100)
 	}
 	execFile := path.Dir(execPath) + "/hoster"
-	out, err := exec.Command("nohup", execFile, "start", vmName).CombinedOutput()
+	out, err := exec.Command("nohup", execFile, "vm", "start", vmName).CombinedOutput()
 	if err != nil {
 		logFileOutput("stderr", "Could not restart the VM: " + string(out) + "; " + err.Error())
 		os.Exit(100)
