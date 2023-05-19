@@ -138,8 +138,8 @@ func restartVmProcess(vmName string) {
 }
 
 const LOG_SUPERVISOR = "supervisor"
-const LOG_SYS_OUT = "sys_stderr"
-const LOG_SYS_ERR = "sys_stdout"
+const LOG_SYS_OUT = "sys_stdout"
+const LOG_SYS_ERR = "sys_stderr"
 func logFileOutput(msgType string, msgString string) {
 	// Create or open the log file for writing
 	timeNow := time.Now().Format("2006-01-02 15:04:05")
