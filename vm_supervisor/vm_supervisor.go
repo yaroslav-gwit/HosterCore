@@ -4,41 +4,43 @@ import (
 	"bufio"
 	"hoster/cmd"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"path"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
+var logFileLocation string
 func main() {
 	// Get env vars passed from "hoster vm start"
 	vmStartCommand := os.Getenv("VM_START")
-	logFileLocation := os.Getenv("LOG_FILE")
 	vmName := os.Getenv("VM_NAME")
+	logFileLocation = os.Getenv("LOG_FILE")
 
 	// Create or open the log file for writing
-	logFile, err := os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0640)
-	if err != nil {
-		log.Fatal("Unable to open log file: " + err.Error())
-	}
-	// Redirect the output of log.Fatal to the log file
-	log.SetOutput(logFile)
+	// logFile, err := os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0640)
+	// if err != nil {
+	// 	log.Fatal("Unable to open log file: " + err.Error())
+	// }
+	// log.SetOutput(logFile)
 
 	// Start the process
 	parts := strings.Fields(vmStartCommand)
 	for {
-		log.Println("[stdout] Starting the VM as a child process")
+		logFileOutput("stdout", "Starting the VM as a child process")
 		hupCmd := exec.Command(parts[0], parts[1:]...)
 		stdout, err := hupCmd.StdoutPipe()
 		if err != nil {
-			log.Fatalf("[stderr] Failed to create stdout pipe: %v", err)
+			logFileOutput("stderr", "Failed to create stdout pipe: " + err.Error())
+			os.Exit(101)
 		}
 		stderr, err := hupCmd.StderrPipe()
 		if err != nil {
-			log.Fatalf("[stderr] Failed to create stderr pipe: %v", err)
+			logFileOutput("stderr", "Failed to create stderr pipe: " + err.Error())
+			os.Exit(102)
 		}
 
 		var wg sync.WaitGroup
@@ -61,7 +63,7 @@ func main() {
 		wg.Wait()
 
 		if err := <-done; err != nil {
-			log.Printf("[stdout] VM child process ended: " + err.Error())
+			logFileOutput("stdout", "VM child process ended: " + err.Error())
 			if exitError, ok := err.(*exec.ExitError); ok {
 				if status, ok := exitError.Sys().(interface{ ExitStatus() int }); ok {
 					exitCode := status.ExitStatus()
@@ -89,21 +91,21 @@ func main() {
 						// The fix would also allow to pick up config changes across the
 						// regular VM reboots
 						// 
-						log.Println("[stdout] Bhyve received a reboot signal: " + strconv.Itoa(exitCode) + ". Rebooting...")
+						logFileOutput("stdout", "Bhyve received a reboot signal: " + strconv.Itoa(exitCode) + ". Rebooting...")
 						cmd.NetworkCleanup(vmName, true)
 						cmd.BhyvectlDestroy(vmName, true)
 						restartVmProcess(vmName)
 						os.Exit(0)
 					} else if exitCode == 4 || exitCode == 5 {
-						log.Println("[stdout] Bhyve received a shutdown signal: " + strconv.Itoa(exitCode) + ". Shutting down...")
-						log.Println("[stdout] Performing network cleanup")
+						logFileOutput("stdout", "Bhyve received a shutdown signal: " + strconv.Itoa(exitCode) + ". Shutting down...")
+						logFileOutput("stdout", "Performing network cleanup")
 						cmd.NetworkCleanup(vmName, true)
-						log.Println("[stdout] Performing Bhyve cleanup")
+						logFileOutput("stdout", "Performing Bhyve cleanup")
 						cmd.BhyvectlDestroy(vmName, true)
 						os.Exit(0)
 					} else {
-						log.Println("[stderr] Bhyve returned a panic exit code: " + strconv.Itoa(exitCode))
-						log.Println("[stdout] Shutting down all VM related processes and performing system clean up")
+						logFileOutput("stderr", "Bhyve returned a panic exit code: " + strconv.Itoa(exitCode))
+						logFileOutput("stderr", "Shutting down all VM related processes and performing system clean up")
 						cmd.NetworkCleanup(vmName, true)
 						cmd.BhyvectlDestroy(vmName, true)
 						os.Exit(101)
@@ -122,18 +124,21 @@ func readAndLogOutput(reader *bufio.Reader, name string) {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Failed to read %s: %v", name, err)
+			logFileOutput(name, err.Error())
+			os.Exit(100)
 		}
 		line = strings.TrimSpace(line)
 		if line != "" {
-			log.Printf("[%s] %s\n", name, line)
+			logFileOutput(name, line)
 		}
 	}
 }
 
 func startVmProcess(cmd *exec.Cmd, done chan error) {
-	if err := cmd.Start(); err != nil {
-		log.Fatalf("Failed to start command: %v", err)
+	err := cmd.Start()
+	if err != nil {
+		logFileOutput("stderr", "Failed to start command: "+ err.Error())
+		os.Exit(100)
 	}
 	go func() {
 		done <- cmd.Wait()
@@ -143,11 +148,30 @@ func startVmProcess(cmd *exec.Cmd, done chan error) {
 func restartVmProcess(vmName string) {
 	execPath, err := os.Executable()
 	if err != nil {
-		log.Fatalf("Failed to start command: %v", err)
+		logFileOutput("stderr", "Could not find the executable path: "+ err.Error())
+		os.Exit(100)
 	}
 	execFile := path.Dir(execPath) + "/hoster"
 	out, err := exec.Command("nohup", execFile, "start", vmName).CombinedOutput()
 	if err != nil {
-		log.Fatal("Could not restart the VM: " + string(out) + "; " + err.Error())
+		logFileOutput("stderr", "Could not restart the VM: " + string(out) + "; " + err.Error())
+		os.Exit(100)
+	}
+}
+
+func logFileOutput(msgType string, msgString string) {
+	// Create or open the log file for writing
+	timeNow := time.Now().Format("2006-01-02 15:04:05")
+	logFile, err := os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0640)
+	if err != nil {
+		_ = exec.Command("logger", err.Error()).Run()
+	}
+	// log.SetOutput(logFile)
+	defer logFile.Close()
+
+	// Append the line to the file
+	_, err = logFile.WriteString(timeNow + " ["+msgType+"] " + msgString + "\n")
+	if err != nil {
+		_ = exec.Command("logger", err.Error()).Run()
 	}
 }
