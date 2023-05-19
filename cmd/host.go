@@ -750,7 +750,6 @@ func ByteConversion(bytes int) string {
 	return finalResult
 }
 
-
 // Console color outputs
 const LIGHT_RED = "\033[38;5;203m"
 const LIGHT_GREEN = "\033[0;92m"

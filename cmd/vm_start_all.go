@@ -25,7 +25,7 @@ var (
 )
 
 func vmStartAll(waitTime int) {
-	if waitTime > 0 {
+	if waitTime < 1 {
 		sleepTime := 5
 		for i, vm := range getAllVms() {
 			vmConfigVar := vmConfig(vm)

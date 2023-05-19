@@ -156,6 +156,10 @@ func deployVmMain(vmName string, osType string, dsParent string, cpus int, ram s
 		c.OsComment = "Windows 10"
 	case "windows11":
 		c.OsComment = "Windows 11"
+	case "windows-srv19":
+		c.OsComment = "Windows Server 19"
+	case "windowssrv19":
+		c.OsComment = "Windows Server 19"
 	default:
 		c.OsComment = "Custom OS"
 	}
@@ -743,24 +747,23 @@ func zfsDatasetClone(dsParent string, osType string, newVmName string) (bool, er
 	vmTemplate := dsParent + "/template-" + osType
 
 	snapName := "@deployment_" + newVmName + "_" + generateRandomPassword(8, false, true)
-	err = exec.Command("zfs", "snapshot", vmTemplate+snapName).Run()
+	out, err := exec.Command("zfs", "snapshot", vmTemplate+snapName).CombinedOutput()
 	if err != nil {
-		return false, errors.New("could not execute zfs snapshot: " + err.Error())
+		return false, errors.New("could not execute zfs snapshot: " + string(out) + "; " + err.Error())
 	}
 
-	err = exec.Command("zfs", "clone", vmTemplate+snapName, dsParent+"/"+newVmName).Run()
+	out, err = exec.Command("zfs", "clone", vmTemplate+snapName, dsParent+"/"+newVmName).CombinedOutput()
 	if err != nil {
-		return false, errors.New("could not execute zfs clone: " + err.Error())
+		return false, errors.New("could not execute zfs clone: " + string(out) + "; " + err.Error())
 	}
-
 	return true, nil
 }
 
 func createCiIso(vmFolder string) error {
 	ciFolder := vmFolder + "/cloud-init-files/"
-	err := exec.Command("genisoimage", "-output", vmFolder+"/seed.iso", "-volid", "cidata", "-joliet", "-rock", ciFolder+"user-data", ciFolder+"meta-data", ciFolder+"network-config").Run()
+	out, err := exec.Command("genisoimage", "-output", vmFolder+"/seed.iso", "-volid", "cidata", "-joliet", "-rock", ciFolder+"user-data", ciFolder+"meta-data", ciFolder+"network-config").CombinedOutput()
 	if err != nil {
-		return errors.New("there was a problem generating an ISO: " + err.Error())
+		return errors.New("there was a problem generating an ISO: " + string(out) + "; " + err.Error())
 	}
 
 	emojlog.PrintLogMessage("New CloudInit ISO has been created", emojlog.Info)
