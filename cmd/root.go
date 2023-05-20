@@ -94,6 +94,7 @@ func init() {
 	// VM cmd -> vm deploy
 	vmCmd.AddCommand(vmDeployCmd)
 	vmDeployCmd.Flags().StringVarP(&vmName, "name", "n", "test-vm", "Set the VM name (automatically generated if left empty)")
+	vmDeployCmd.Flags().StringVarP(&networkName, "network-name", "", "", "Use this network for new VM deployment")
 	vmDeployCmd.Flags().IntVarP(&vmDeployCpus, "cpu-cores", "c", 2, "Number of CPU cores to assign to this VM")
 	vmDeployCmd.Flags().StringVarP(&vmDeployRam, "ram", "r", "2G", "Amount of RAM to assign to this VM (ie 1500MB, 2GB, etc)")
 	vmDeployCmd.Flags().StringVarP(&osType, "os-stype", "t", "debian11", "OS or type or distribution (ie: debian11, ubuntu2004, etc)")

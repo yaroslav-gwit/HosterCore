@@ -24,6 +24,7 @@ import (
 
 var (
 	vmName                 string
+	networkName            string
 	osType                 string
 	zfsDataset             string
 	vmDeployCpus           int
@@ -40,7 +41,7 @@ var (
 				log.Fatal(err.Error())
 			}
 
-			err = deployVmMain(vmName, osType, zfsDataset, vmDeployCpus, vmDeployRam, vmDeployStartWhenReady)
+			err = deployVmMain(vmName, networkName, osType, zfsDataset, vmDeployCpus, vmDeployRam, vmDeployStartWhenReady)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -62,6 +63,8 @@ type ConfigOutputStruct struct {
 	GwitsuperPassword string
 	InstanceId        string
 	VmName            string
+	NetworkName		  string
+	NetworkComment    string
 	MacAddress        string
 	IpAddress         string
 	Subnet            string
@@ -75,7 +78,7 @@ type ConfigOutputStruct struct {
 	VncPassword       string
 }
 
-func deployVmMain(vmName string, osType string, dsParent string, cpus int, ram string, startWhenReady bool) error {
+func deployVmMain(vmName string, networkName string, osType string, dsParent string, cpus int, ram string, startWhenReady bool) error {
 	// Initialize values
 	c := ConfigOutputStruct{}
 	var err error
@@ -122,11 +125,28 @@ func deployVmMain(vmName string, osType string, dsParent string, cpus int, ram s
 
 	networkInfo, err := networkInfo()
 	if err != nil {
-		return errors.New("could not generate the IP")
+		return errors.New("could not read the network config")
 	}
-	c.Subnet = networkInfo[0].Subnet
-	c.NakedSubnet = strings.Split(networkInfo[0].Subnet, "/")[1]
-	c.Gateway = networkInfo[0].Gateway
+	if len(networkName) < 1 {
+		c.NetworkName = networkInfo[0].Name
+		c.Subnet = networkInfo[0].Subnet
+		c.NakedSubnet = strings.Split(networkInfo[0].Subnet, "/")[1]
+		c.Gateway = networkInfo[0].Gateway
+		c.NetworkComment = networkInfo[0].Comment
+	} else {
+		for _, v := range networkInfo {
+			if networkName == v.Name {
+				c.NetworkName = v.Name
+				c.Subnet = v.Subnet
+				c.NakedSubnet = strings.Split(v.Subnet, "/")[1]
+				c.Gateway = v.Gateway
+				c.NetworkComment = v.Comment
+			}
+		}
+		if len(c.NetworkName) < 1 {
+			return errors.New("network name supplied doesn't exist")
+		}
+	}
 
 	reMatchTest := regexp.MustCompile(`.*test`)
 	if reMatchTest.MatchString(c.VmName) {
@@ -417,10 +437,10 @@ const vmConfigFileTemplate = `
     "networks": [
         {
             "network_adaptor_type": "virtio-net",
-            "network_bridge": "internal",
+            "network_bridge": "{{ .NetworkName }}",
             "network_mac": "{{ .MacAddress }}",
             "ip_address": "{{ .IpAddress }}",
-            "comment": "Internal Network"
+            "comment": "{{ .NetworkComment }}"
         }
     ],
 
