@@ -275,7 +275,7 @@ func vmConfig(vmName string) VmConfigStruct {
 }
 
 // Returns a folder containing VM files, using this format:
-// "/zroot/vm-encrypted/"
+// "/zroot/vm-encrypted"
 func getVmFolder(vmName string) string {
 	var zfsDatasets []string
 	var dsFolder string

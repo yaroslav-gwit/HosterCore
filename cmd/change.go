@@ -3,7 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"hoster/emojlog"
 	"log"
 	"os"
 
@@ -53,9 +53,16 @@ func replaceParent(vmName string, newParent string) error {
 	if len(newParent) < 1 {
 		newParent = GetHostName()
 	}
+	if newParent == GetHostName() {
+		emojlog.PrintLogMessage("No changes applied, because the old parent value is the same as a new parent value", emojlog.Debug)
+		return nil
+	}
 
 	if !slices.Contains(getAllVms(), vmName) {
 		return errors.New("vm does not exist on this system")
+	}
+	if vmLiveCheck(vmName) {
+		return errors.New("vm must be offline to perform this operation")
 	}
 	vmFolder := getVmFolder(vmName)
 	vmConfigVar := vmConfig(vmName)
@@ -65,13 +72,9 @@ func replaceParent(vmName string, newParent string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(jsonOutput))
 
 	// Open the file in write-only mode, truncating it if it already exists
-	fmt.Println()
-	fmt.Println(vmFolder + "vm_config.json")
-
-	file, err := os.OpenFile(vmFolder+"vm_config.json", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
+	file, err := os.OpenFile(vmFolder+"/vm_config.json", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 	if err != nil {
 		return err
 	}
@@ -83,5 +86,6 @@ func replaceParent(vmName string, newParent string) error {
 		return err
 	}
 
+	emojlog.PrintLogMessage("The VM parent has been changed to: "+newParent, emojlog.Changed)
 	return nil
 }
