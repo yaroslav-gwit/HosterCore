@@ -79,6 +79,43 @@ type ConfigOutputStruct struct {
 }
 
 func deployVmMain(vmName string, networkName string, osType string, dsParent string, cpus int, ram string, startWhenReady bool) error {
+	// Start VM name constraints check
+	vmNameMinLength := 5
+	vmNameMaxLength := 22
+	vmNameCantStartWith := "1234567890-_"
+	vmNameValidChars := "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM_-1234567890"
+	// Check if vmName uses valid characters
+	for _, v := range vmName {
+		valid := false
+		for _, vv := range vmNameValidChars {
+			if v == vv {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return errors.New("vm name cannot contain " + string(v))
+		}
+	}
+	// Check if vmName starts with a valid character
+	for i, v := range vmName {
+		if i > 1 {
+			break
+		}
+		for _, vv := range vmNameCantStartWith {
+			if v == vv {
+				return errors.New("vm name cannot start with " + string(v))
+			}
+		}
+	}
+	// Check vmName length
+	if len(vmName) < vmNameMinLength {
+		return errors.New("vm name cannot contain less than " + strconv.Itoa(vmNameMinLength))
+	} else if len(vmName) > vmNameMaxLength {
+		return errors.New("vm name cannot contain more than " + strconv.Itoa(vmNameMaxLength))
+	}
+	// END VM name constraints check
+
 	// Initialize values
 	c := ConfigOutputStruct{}
 	var err error
