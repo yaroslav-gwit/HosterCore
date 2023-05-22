@@ -98,7 +98,7 @@ func replicateVm(vmName string, replicationEndpoint string, endpointSshPort int,
 	}
 
 	// Fixes the bug with unpredictable behavior, if VM has less than 2 active snapshots
-	if len(localVmSnaps) < 2 {
+	if len(localVmSnaps) < 3 {
 		_ = vmZfsSnapshot(vmName, "custom", 200)
 		time.Sleep(1500 * time.Millisecond)
 		_ = vmZfsSnapshot(vmName, "custom", 200)
