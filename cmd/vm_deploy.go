@@ -83,7 +83,7 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	vmNameMinLength := 5
 	vmNameMaxLength := 22
 	vmNameCantStartWith := "1234567890-_"
-	vmNameValidChars := "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM_-1234567890"
+	vmNameValidChars := "qwertyuiopasdfghjklzxcvbnm-QWERTYUIOPASDFGHJKLZXCVBNM_1234567890"
 	// Check if vmName uses valid characters
 	for _, v := range vmName {
 		valid := false
@@ -94,7 +94,7 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 			}
 		}
 		if !valid {
-			return errors.New("vm name cannot contain " + string(v))
+			return errors.New("vm name cannot contain '" + string(v) + "' character")
 		}
 	}
 	// Check if vmName starts with a valid character
@@ -104,15 +104,15 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 		}
 		for _, vv := range vmNameCantStartWith {
 			if v == vv {
-				return errors.New("vm name cannot start with " + string(v))
+				return errors.New("vm name cannot start with a number, an underscore or a hyphen")
 			}
 		}
 	}
 	// Check vmName length
 	if len(vmName) < vmNameMinLength {
-		return errors.New("vm name cannot contain less than " + strconv.Itoa(vmNameMinLength))
+		return errors.New("vm name cannot contain less than " + strconv.Itoa(vmNameMinLength) + " characters")
 	} else if len(vmName) > vmNameMaxLength {
-		return errors.New("vm name cannot contain more than " + strconv.Itoa(vmNameMaxLength))
+		return errors.New("vm name cannot contain more than " + strconv.Itoa(vmNameMaxLength) + " characters")
 	}
 	// END VM name constraints check
 
