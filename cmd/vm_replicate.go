@@ -323,13 +323,13 @@ func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementa
 		return err
 	}
 
-	cmd := exec.Command("sh", replicationScriptLocation)
-	stderr, err := cmd.StderrPipe()
+	shell := exec.Command("sh", replicationScriptLocation)
+	stderr, err := shell.StderrPipe()
 	if err != nil {
-		return err
+		return errors.New("error in shell.StderrPipe(): " + err.Error())
 	}
-	if err := cmd.Start(); err != nil {
-		return err
+	if err := shell.Start(); err != nil {
+		return errors.New("error in shell.Start(): " + err.Error())
 	}
 
 	// read stderr output line by line and update the progress bar, parsing the line sting
@@ -343,8 +343,8 @@ func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementa
 	}
 
 	// wait for command to finish
-	if err := cmd.Wait(); err != nil {
-		return err
+	if err := shell.Wait(); err != nil {
+		return errors.New("error in shell.Wait(): " + err.Error())
 	}
 
 	bar.Finish()
