@@ -176,12 +176,12 @@ func checkSshConnection(replicationEndpoint string, endpointSshPort int, sshKeyL
 	if stderr != nil {
 		if reMatchTimeout.MatchString(string(stdout)) {
 			return "", errors.New("ssh connection error: " + SshConnectionTimeout)
-		}
-		if reMatchCantResolve.MatchString(string(stdout)) {
+		} else if reMatchCantResolve.MatchString(string(stdout)) {
 			return "", errors.New("ssh connection error: " + SshConnectionCantResolve)
-		}
-		if reMatchLoginFailure.MatchString(string(stdout)) {
+		} else if reMatchLoginFailure.MatchString(string(stdout)) {
 			return "", errors.New("ssh connection error: " + SshConnectionLoginFailure)
+		} else {
+			return "", errors.New("ssh connection error (unexpected): " + string(stdout))
 		}
 	}
 
@@ -230,6 +230,7 @@ func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicat
 		if reMatchSize.MatchString(v) {
 			tempInt, _ := strconv.Atoi(reMatchWhitespace.Split(v, -1)[1])
 			snapshotSize = int(tempInt)
+			emojlog.PrintLogMessage("Snapshot size: "+ByteConversion(snapshotSize), emojlog.Debug)
 		}
 	}
 
@@ -304,6 +305,7 @@ func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementa
 		if reMatchSize.MatchString(v) {
 			tempInt, _ := strconv.Atoi(reMatchWhitespace.Split(v, -1)[1])
 			snapshotSize = int(tempInt)
+			emojlog.PrintLogMessage("Snapshot size: "+ByteConversion(snapshotSize), emojlog.Debug)
 		}
 	}
 
