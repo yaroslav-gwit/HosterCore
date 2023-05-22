@@ -30,7 +30,7 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			
+
 			vmListMain()
 		},
 	}
@@ -175,6 +175,7 @@ func vmTableOutput() {
 	t.Render()
 }
 
+// Return a simple list of all VMs on this system
 func getAllVms() []string {
 	var zfsDatasets []string
 	var configFileName = "/vm_config.json"
@@ -259,6 +260,7 @@ func vmLiveCheckString(vmName string) string {
 	}
 }
 
+// Returns active VM config, using VmConfigStruct struct
 func vmConfig(vmName string) VmConfigStruct {
 	var configFile = getVmFolder(vmName) + "/vm_config.json"
 	var jsonData = VmConfigStruct{}
@@ -272,6 +274,8 @@ func vmConfig(vmName string) VmConfigStruct {
 	return jsonData
 }
 
+// Returns a folder containing VM files, using this format:
+// "/zroot/vm-encrypted/"
 func getVmFolder(vmName string) string {
 	var zfsDatasets []string
 	var dsFolder string

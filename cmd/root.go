@@ -132,6 +132,12 @@ func init() {
 	imageDownloadCmd.Flags().StringVarP(&imageOsType, "os-type", "t", "debian11", "Specify the OS/distribution image type")
 	imageDownloadCmd.Flags().StringVarP(&imageDataset, "use-dataset", "d", "zroot/vm-encrypted", "Specify the dataset for this particular image")
 
+	// VM cmd -> change
+	rootCmd.AddCommand(changeCmd)
+	changeCmd.AddCommand(changeParentCmd)
+	changeParentCmd.Flags().StringVarP(&changeParentVmName, "vm", "", "", "VM Name (mandatory flag)")
+	changeParentCmd.Flags().StringVarP(&changeParentNewParent, "new-parent", "", "", "New parent name (optional, current hostname used by default)")
+
 	// VM cmd -> nebula
 	rootCmd.AddCommand(nebulaCmd)
 	nebulaCmd.AddCommand(nebulaInitCmd)
