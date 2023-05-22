@@ -50,12 +50,12 @@ func replaceParent(vmName string, newParent string) error {
 	if len(vmName) < 1 {
 		return errors.New("you must provide a VM name")
 	}
-	if len(newParent) < 1 {
-		newParent = GetHostName()
-	}
 	if newParent == GetHostName() {
 		emojlog.PrintLogMessage("No changes applied, because the old parent value is the same as a new parent value", emojlog.Debug)
 		return nil
+	}
+	if len(newParent) < 1 {
+		newParent = GetHostName()
 	}
 
 	if !slices.Contains(getAllVms(), vmName) {
