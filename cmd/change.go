@@ -26,8 +26,8 @@ var (
 )
 
 var (
-	changeParentNewParent string
 	changeParentVmName    string
+	changeParentNewParent string
 	changeParentCmd       = &cobra.Command{
 		Use:   "parent",
 		Short: "Change VM parent",
@@ -65,7 +65,15 @@ func replaceParent(vmName string, newParent string) error {
 		return err
 	}
 
-	err = os.WriteFile(vmFolder+"vm_config.json", jsonOutput, 0640)
+	// Open the file in write-only mode, truncating it if it already exists
+	file, err := os.OpenFile(vmFolder+"vm_config.json", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Write data to the file
+	_, err = file.Write(jsonOutput)
 	if err != nil {
 		return err
 	}
