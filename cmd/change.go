@@ -50,22 +50,22 @@ func replaceParent(vmName string, newParent string) error {
 	if len(vmName) < 1 {
 		return errors.New("you must provide a VM name")
 	}
-	if newParent == GetHostName() {
-		emojlog.PrintLogMessage("No changes applied, because the old parent value is the same as a new parent value", emojlog.Debug)
-		return nil
-	}
-	if len(newParent) < 1 {
-		newParent = GetHostName()
-	}
-
 	if !slices.Contains(getAllVms(), vmName) {
 		return errors.New("vm does not exist on this system")
 	}
 	if vmLiveCheck(vmName) {
 		return errors.New("vm must be offline to perform this operation")
 	}
+	if len(newParent) < 1 {
+		newParent = GetHostName()
+	}
+
 	vmFolder := getVmFolder(vmName)
 	vmConfigVar := vmConfig(vmName)
+	if vmConfigVar.ParentHost == newParent {
+		emojlog.PrintLogMessage("No changes applied, because the old parent value is the same as a new parent value", emojlog.Debug)
+		return nil
+	}
 	vmConfigVar.ParentHost = newParent
 
 	jsonOutput, err := json.MarshalIndent(vmConfigVar, "", "   ")
