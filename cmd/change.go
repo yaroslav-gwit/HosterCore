@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -64,8 +65,12 @@ func replaceParent(vmName string, newParent string) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println(string(jsonOutput))
 
 	// Open the file in write-only mode, truncating it if it already exists
+	fmt.Println()
+	fmt.Println(vmFolder + "vm_config.json")
+
 	file, err := os.OpenFile(vmFolder+"vm_config.json", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 	if err != nil {
 		return err
