@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"os"
@@ -127,6 +128,31 @@ func diskAddOffline(vmName string, imageSize int) error {
 		} else {
 			break
 		}
+	}
+
+	var diskConfig VmDiskStruct
+	diskConfig.DiskType = "nvme"
+	diskConfig.DiskLocation = "internal"
+	diskConfig.DiskImage = diskImage
+	diskConfig.Comment = "Additional disk image"
+	vmConfigVar.Disks = append(vmConfigVar.Disks, diskConfig)
+
+	jsonOutput, err := json.MarshalIndent(vmConfigVar, "", "   ")
+	if err != nil {
+		return err
+	}
+
+	// Open the file in write-only mode, truncating it if it already exists
+	file, err := os.OpenFile(vmFolder+"/vm_config.json", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Write data to the file
+	_, err = file.Write(jsonOutput)
+	if err != nil {
+		return err
 	}
 
 	stdOut, stdErr := exec.Command("touch", diskLocation).CombinedOutput()

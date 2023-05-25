@@ -397,6 +397,13 @@ func getOsDiskUsed(vmName string) string {
 	return osDiskDu
 }
 
+type VmDiskStruct struct {
+	DiskType     string `json:"disk_type"`
+	DiskLocation string `json:"disk_location"`
+	DiskImage    string `json:"disk_image"`
+	Comment      string `json:"comment"`
+}
+
 type VmConfigStruct struct {
 	CPUSockets string `json:"cpu_sockets"`
 	CPUCores   string `json:"cpu_cores"`
@@ -414,13 +421,8 @@ type VmConfigStruct struct {
 		IPAddress          string `json:"ip_address"`
 		Comment            string `json:"comment"`
 	} `json:"networks"`
-	Disks []struct {
-		DiskType     string `json:"disk_type"`
-		DiskLocation string `json:"disk_location"`
-		DiskImage    string `json:"disk_image"`
-		Comment      string `json:"comment"`
-	} `json:"disks"`
-	IncludeHostwideSSHKeys bool `json:"include_hostwide_ssh_keys"`
+	Disks                  []VmDiskStruct `json:"disks"`
+	IncludeHostwideSSHKeys bool           `json:"include_hostwide_ssh_keys"`
 	VmSshKeys              []struct {
 		KeyOwner string `json:"key_owner"`
 		KeyValue string `json:"key_value"`
