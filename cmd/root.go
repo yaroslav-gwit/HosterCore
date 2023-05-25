@@ -81,9 +81,12 @@ func init() {
 	vmCmd.AddCommand(vmEditConfigCmd)
 
 	// VM cmd -> expand disk
-	vmCmd.AddCommand(vmDistExpandCmd)
-	vmDistExpandCmd.Flags().StringVarP(&diskImage, "image", "i", "disk0.img", "Disk image name, which should be expanded")
-	vmDistExpandCmd.Flags().IntVarP(&expansionSize, "size", "s", 10, "How much size to add, in Gb")
+	vmCmd.AddCommand(vmDiskCmd)
+	vmDiskCmd.AddCommand(vmDiskExpandCmd)
+	vmDiskExpandCmd.Flags().StringVarP(&diskImage, "image", "i", "disk0.img", "Disk image name, which should be expanded")
+	vmDiskExpandCmd.Flags().IntVarP(&expansionSize, "size", "s", 10, "How much size to add, in Gb")
+	vmDiskCmd.AddCommand(vmDiskAddCmd)
+	vmDiskAddCmd.Flags().IntVarP(&vmDiskAddSize, "size", "s", 10, "Initial size of the image, in Gb")
 
 	// VM cmd -> connect to the serial console
 	vmCmd.AddCommand(vmSerialConsoleCmd)
