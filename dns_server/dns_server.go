@@ -49,7 +49,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 		}
 
 		if requestIsVmName {
-			rr, err := dns.NewRR(vmInfoList[vmListIndex].vmName + ". IN A " + vmInfoList[vmListIndex].vmAddress)
+			rr, err := dns.NewRR(q.Name + " IN A " + vmInfoList[vmListIndex].vmAddress)
 			if err != nil {
 				fmt.Println("Failed to create A record:", err)
 				continue
