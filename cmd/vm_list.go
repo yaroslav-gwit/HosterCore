@@ -175,6 +175,11 @@ func vmTableOutput() {
 	t.Render()
 }
 
+// Monkey patch to export getAllVms() func
+func GetAllVms() []string {
+	return getAllVms()
+}
+
 // Return a simple list of all VMs on this system
 func getAllVms() []string {
 	var zfsDatasets []string
@@ -258,6 +263,10 @@ func vmLiveCheckString(vmName string) string {
 	} else {
 		return "🔴"
 	}
+}
+
+func VmConfig(vmName string) VmConfigStruct {
+	return vmConfig(vmName)
 }
 
 // Returns active VM config, using VmConfigStruct struct
