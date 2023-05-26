@@ -17,6 +17,8 @@ var vmInfoList []VmInfoStruct
 func main() {
 	vmInfoList = getVmsInfo()
 	fmt.Println(vmInfoList)
+	fmt.Println()
+	fmt.Println()
 
 	server := dns.Server{Addr: ":53", Net: "udp"}
 	server.Handler = dns.HandlerFunc(handleDNSRequest)
@@ -39,7 +41,8 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 		requestIsVmName := false
 		vmListIndex := 0
 		for i, v := range vmInfoList {
-			if q.Name == v.vmName {
+			dnsName := strings.Split(q.Name, ".")[0]
+			if dnsName == v.vmName {
 				requestIsVmName = true
 				vmListIndex = i
 			}
