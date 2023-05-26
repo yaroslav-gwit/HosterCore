@@ -16,6 +16,8 @@ var vmInfoList []VmInfoStruct
 
 func main() {
 	vmInfoList = getVmsInfo()
+	fmt.Println(vmInfoList)
+
 	server := dns.Server{Addr: ":53", Net: "udp"}
 	server.Handler = dns.HandlerFunc(handleDNSRequest)
 
