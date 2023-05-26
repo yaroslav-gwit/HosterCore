@@ -89,7 +89,7 @@ server:
 	access-control: 192.168.0.0/16 allow
 
 
-	{{- range .}}
+	{{ range .}}
 	local-data: "{{.VmName}} A {{.IpAddress}}"
 	{{- end}}
 
