@@ -119,6 +119,9 @@ func parseAnswer(msg []dns.RR) string {
 			result = strings.Split(v, "]")[0]
 		}
 	}
+	if result == "[" {
+		result = "EMPTY RESPONSE"
+	}
 	return result
 }
 
