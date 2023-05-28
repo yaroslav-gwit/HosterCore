@@ -105,7 +105,7 @@ func startDnsServer() error {
 		return err
 	}
 	execFile := path.Dir(execPath) + "/dns_server"
-	err = exec.Command("nohup", execFile, "&").Run()
+	err = exec.Command("nohup", execFile, "&").Start()
 	if err != nil {
 		return err
 	}
