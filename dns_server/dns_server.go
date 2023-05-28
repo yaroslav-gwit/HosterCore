@@ -20,6 +20,7 @@ var vmInfoList []VmInfoStruct
 var logChannel chan LogMessage
 
 func init() {
+	_ = exec.Command("rm", "-f", "/var/run/dns_server").Run()
 	logChannel = make(chan LogMessage)
 	go startLogging("/var/run/dns_server", logChannel)
 }
@@ -71,8 +72,8 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 				continue
 			}
 			m.Answer = append(m.Answer, rr)
-			logLine = "  " + clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + " (from local DB)"
-			logFileOutput(LOG_SUPERVISOR, logLine, logChannel)
+			logLine = "  " + clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  local DB"
+			logFileOutput(LOG_DNS_LOCAL, logLine, logChannel)
 		} else {
 			response, server, err := queryExternalDNS(q)
 			if err != nil {
@@ -80,8 +81,8 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 				continue
 			}
 			m.Answer = append(m.Answer, response.Answer...)
-			logLine = "  " + clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + " (from server: " + server + ")"
-			logFileOutput(LOG_SUPERVISOR, logLine, logChannel)
+			logLine = "  " + clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  " + server
+			logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel)
 		}
 	}
 
@@ -162,6 +163,8 @@ const (
 	LOG_SUPERVISOR = "supervisor"
 	LOG_SYS_OUT    = "sys_stdout"
 	LOG_SYS_ERR    = "sys_stderr"
+	LOG_DNS_LOCAL  = "dns_locals"
+	LOG_DNS_GLOBAL = "dns_global"
 )
 
 type LogMessage struct {
@@ -184,7 +187,7 @@ func startLogging(logFileLocation string, logChannel chan LogMessage) {
 	defer logFile.Close()
 
 	for logMsg := range logChannel {
-		timeNow := time.Now().Format("2006-01-02_15:04:05")
+		timeNow := time.Now().Format("2006-01-02_15-04-05")
 		logLine := timeNow + " [" + logMsg.Type + "] " + logMsg.Message + "\n"
 		_, err := logFile.WriteString(logLine)
 		if err != nil {

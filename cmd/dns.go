@@ -1,0 +1,158 @@
+package cmd
+
+import (
+	"errors"
+	"log"
+	"os"
+	"os/exec"
+	"path"
+	"regexp"
+	"strings"
+
+	"github.com/spf13/cobra"
+)
+
+var (
+	dnsCmd = &cobra.Command{
+		Use:   "dns",
+		Short: "Hoster integrated DNS Server",
+		Long:  `Hoster integrated DNS Server`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			cmd.Help()
+		},
+	}
+)
+
+var (
+	dnsStartCmd = &cobra.Command{
+		Use:   "start",
+		Short: "Initialize Hoster integrated DNS Server",
+		Long:  `Initialize Hoster integrated DNS Server`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			err = startDnsServer()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+		},
+	}
+)
+
+var (
+	dnsStopCmd = &cobra.Command{
+		Use:   "stop",
+		Short: "Stop Hoster integrated DNS Server",
+		Long:  `Stop Hoster integrated DNS Server`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			err = stopDnsServer()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+		},
+	}
+)
+
+var (
+	dnsReloadCmd = &cobra.Command{
+		Use:   "reload",
+		Short: "Reload Hoster integrated DNS Server",
+		Long:  `Reload Hoster integrated DNS Server`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			err = reloadDnsServer()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+		},
+	}
+)
+
+var (
+	dnsShowLogCmd = &cobra.Command{
+		Use:   "show-log",
+		Short: "Show latest log records for the integrated DNS Server",
+		Long:  `Show latest log records for the integrated DNS Server`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			err = showLogDns()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+		},
+	}
+)
+
+func startDnsServer() error {
+	execPath, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	execFile := path.Dir(execPath) + "/dns_server"
+	out, err := exec.Command("nohup", execFile, "&").CombinedOutput()
+
+	if err != nil {
+		return errors.New(strings.ReplaceAll(string(out), "\n", "_") + "; " + err.Error())
+	}
+	return nil
+}
+
+func stopDnsServer() error {
+	stdOut, stdErr := exec.Command("pgrep", "-lf", "dns_server").CombinedOutput()
+	if stdErr != nil {
+		return errors.New("DNS server is not running")
+	}
+	reMatch := regexp.MustCompile(`\sdns_server`)
+	processId := ""
+	for _, v := range strings.Split(string(stdOut), "\n") {
+		if reMatch.MatchString(v) {
+			processId = strings.Split(v, " ")[0]
+		}
+	}
+	_ = exec.Command("kill", "-SIGKILL", processId).Run()
+	return nil
+}
+
+func reloadDnsServer() error {
+	stdOut, stdErr := exec.Command("pgrep", "-lf", "dns_server").CombinedOutput()
+	if stdErr != nil {
+		return errors.New("DNS server is not running")
+	}
+	reMatch := regexp.MustCompile(`\sdns_server`)
+	processId := ""
+	for _, v := range strings.Split(string(stdOut), "\n") {
+		if reMatch.MatchString(v) {
+			processId = strings.Split(v, " ")[0]
+		}
+	}
+	_ = exec.Command("kill", "-SIGHUP", processId).Run()
+	return nil
+}
+
+func showLogDns() error {
+	tailCmd := exec.Command("tail", "-35", "-f", "/var/run/dns_server")
+	tailCmd.Stdin = os.Stdin
+	tailCmd.Stdout = os.Stdout
+	tailCmd.Stderr = os.Stderr
+	err := tailCmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}

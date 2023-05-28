@@ -155,6 +155,13 @@ func init() {
 	nebulaUpdateCmd.Flags().BoolVarP(&nebulaUpdateBinary, "binary", "b", false, "Download a fresh Nebula binary")
 	nebulaUpdateCmd.Flags().BoolVarP(&nebulaUpdateConfig, "config", "c", false, "Request Nebula Control Plane to generate new config, and then download it")
 
+	// DNS server commands
+	rootCmd.AddCommand(dnsCmd)
+	dnsCmd.AddCommand(dnsStartCmd)
+	dnsCmd.AddCommand(dnsStopCmd)
+	dnsCmd.AddCommand(dnsReloadCmd)
+	dnsCmd.AddCommand(dnsShowLogCmd)
+
 	// Version command section
 	rootCmd.AddCommand(versionCmd)
 }
