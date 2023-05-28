@@ -72,7 +72,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 				continue
 			}
 			m.Answer = append(m.Answer, rr)
-			logLine = "  " + clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  local DB"
+			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  local DB"
 			logFileOutput(LOG_DNS_LOCAL, logLine, logChannel)
 		} else {
 			response, server, err := queryExternalDNS(q)
@@ -81,7 +81,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 				continue
 			}
 			m.Answer = append(m.Answer, response.Answer...)
-			logLine = "  " + clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  " + server
+			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  " + server
 			logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel)
 		}
 	}

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -124,6 +125,7 @@ func stopDnsServer() error {
 			processId = strings.Split(v, " ")[0]
 		}
 	}
+	fmt.Println("kill", "-SIGKILL", processId)
 	_ = exec.Command("kill", "-SIGKILL", processId).Run()
 	return nil
 }
@@ -140,6 +142,7 @@ func reloadDnsServer() error {
 			processId = strings.Split(v, " ")[0]
 		}
 	}
+	fmt.Println("kill", "-SIGHUP", processId)
 	_ = exec.Command("kill", "-SIGHUP", processId).Run()
 	return nil
 }
