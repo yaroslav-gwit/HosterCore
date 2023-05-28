@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
 	"regexp"
 	"strings"
+	"syscall"
 	"time"
 
 	"hoster/cmd"
@@ -15,6 +18,9 @@ import (
 var vmInfoList []VmInfoStruct
 
 func main() {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGHUP)
+
 	vmInfoList = getVmsInfo()
 	fmt.Println(vmInfoList)
 	fmt.Println()
@@ -24,10 +30,28 @@ func main() {
 	server.Handler = dns.HandlerFunc(handleDNSRequest)
 
 	fmt.Println("DNS server listening on :53")
+	fmt.Println()
+	fmt.Println()
+
 	err := server.ListenAndServe()
 	if err != nil {
 		fmt.Println("Failed to start DNS server:", err)
 	}
+
+	go func() {
+		for sig := range signals {
+			if sig == syscall.SIGHUP {
+				fmt.Println()
+				fmt.Println()
+				fmt.Println("Received a reload signal: " + sig.String())
+				vmInfoList = getVmsInfo()
+				fmt.Println("New VM list:")
+				fmt.Println(vmInfoList)
+				fmt.Println()
+				fmt.Println()
+			}
+		}
+	}()
 }
 
 func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
