@@ -119,10 +119,11 @@ func stopDnsServer() error {
 		return errors.New("DNS server is not running")
 	}
 	reMatch := regexp.MustCompile(`.*dns_server.*`)
+	reSplit := regexp.MustCompile(`\s+`)
 	processId := ""
 	for _, v := range strings.Split(string(stdOut), "\n") {
 		if reMatch.MatchString(v) {
-			processId = strings.Split(v, " ")[0]
+			processId = reSplit.Split(v, -1)[0]
 			break
 		}
 	}
@@ -137,10 +138,11 @@ func reloadDnsServer() error {
 		return errors.New("DNS server is not running")
 	}
 	reMatch := regexp.MustCompile(`.*dns_server.*`)
+	reSplit := regexp.MustCompile(`\s+`)
 	processId := ""
 	for _, v := range strings.Split(string(stdOut), "\n") {
 		if reMatch.MatchString(v) {
-			processId = strings.Split(v, " ")[0]
+			processId = reSplit.Split(v, -1)[0]
 			break
 		}
 	}
