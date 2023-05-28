@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"os/signal"
 	"regexp"
 	"strings"
@@ -16,37 +17,31 @@ import (
 
 // Global state vars
 var vmInfoList []VmInfoStruct
+var logChannel chan LogMessage
+
+func init() {
+	logChannel = make(chan LogMessage)
+	go startLogging("/var/run/dns_server", logChannel)
+}
 
 func main() {
+	logFileOutput(LOG_SUPERVISOR, "Starting DNS server", logChannel)
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGHUP)
 	go func() {
 		for sig := range signals {
 			if sig == syscall.SIGHUP {
-				fmt.Println()
-				fmt.Println()
-				fmt.Println("Received a reload signal: " + sig.String())
+				logFileOutput(LOG_SUPERVISOR, "Received a reload signal: SIGHUP", logChannel)
 				vmInfoList = getVmsInfo()
-				fmt.Println("New VM list:")
-				fmt.Println(vmInfoList)
-				fmt.Println()
-				fmt.Println()
 			}
 		}
 	}()
 
 	vmInfoList = getVmsInfo()
-	fmt.Println(vmInfoList)
-	fmt.Println()
-	fmt.Println()
-
 	server := dns.Server{Addr: ":53", Net: "udp"}
 	server.Handler = dns.HandlerFunc(handleDNSRequest)
 
-	fmt.Println("DNS server listening on :53")
-	fmt.Println()
-	fmt.Println()
-
+	logFileOutput(LOG_SUPERVISOR, "DNS server listening on :53", logChannel)
 	err := server.ListenAndServe()
 	if err != nil {
 		fmt.Println("Failed to start DNS server:", err)
@@ -56,11 +51,9 @@ func main() {
 func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 	m := new(dns.Msg)
 	m.SetReply(r)
-
+	var logLine string
 	for _, q := range r.Question {
 		clientIP := w.RemoteAddr().String()
-		reqTime := time.Now().Format("2006-01-02_15:04:05")
-
 		requestIsVmName := false
 		vmListIndex := 0
 		for i, v := range vmInfoList {
@@ -78,18 +71,17 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 				continue
 			}
 			m.Answer = append(m.Answer, rr)
-			fmt.Println(reqTime + "  " + clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + " (from local DB)")
+			logLine = "  " + clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + " (from local DB)"
+			logFileOutput(LOG_SUPERVISOR, logLine, logChannel)
 		} else {
 			response, server, err := queryExternalDNS(q)
 			if err != nil {
 				fmt.Println("Failed to query external DNS:", err)
 				continue
 			}
-			// for _, rr := range response.Answer {
-			// 	m.Answer = append(m.Answer, rr)
-			// }
 			m.Answer = append(m.Answer, response.Answer...)
-			fmt.Println(reqTime + "  " + clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + " (from server: " + server + ")")
+			logLine = "  " + clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + " (from server: " + server + ")"
+			logFileOutput(LOG_SUPERVISOR, logLine, logChannel)
 		}
 	}
 
@@ -164,4 +156,39 @@ func getVmsInfo() []VmInfoStruct {
 		vmInfoVar = append(vmInfoVar, tempInfo)
 	}
 	return vmInfoVar
+}
+
+const (
+	LOG_SUPERVISOR = "supervisor"
+	LOG_SYS_OUT    = "sys_stdout"
+	LOG_SYS_ERR    = "sys_stderr"
+)
+
+type LogMessage struct {
+	Type    string
+	Message string
+}
+
+func logFileOutput(msgType string, msgString string, logChannel chan LogMessage) {
+	logChannel <- LogMessage{
+		Type:    msgType,
+		Message: msgString,
+	}
+}
+
+func startLogging(logFileLocation string, logChannel chan LogMessage) {
+	logFile, err := os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0640)
+	if err != nil {
+		_ = exec.Command("logger", err.Error()).Run()
+	}
+	defer logFile.Close()
+
+	for logMsg := range logChannel {
+		timeNow := time.Now().Format("2006-01-02_15:04:05")
+		logLine := timeNow + " [" + logMsg.Type + "] " + logMsg.Message + "\n"
+		_, err := logFile.WriteString(logLine)
+		if err != nil {
+			_ = exec.Command("logger", err.Error()).Run()
+		}
+	}
 }
