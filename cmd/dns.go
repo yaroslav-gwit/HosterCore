@@ -118,7 +118,7 @@ func stopDnsServer() error {
 	if stdErr != nil {
 		return errors.New("DNS server is not running")
 	}
-	reMatch := regexp.MustCompile(`\sdns_server`)
+	reMatch := regexp.MustCompile(`.*\sdns_server.*`)
 	processId := ""
 	for _, v := range strings.Split(string(stdOut), "\n") {
 		if reMatch.MatchString(v) {
@@ -135,7 +135,7 @@ func reloadDnsServer() error {
 	if stdErr != nil {
 		return errors.New("DNS server is not running")
 	}
-	reMatch := regexp.MustCompile(`\sdns_server`)
+	reMatch := regexp.MustCompile(`.*\sdns_server.*`)
 	processId := ""
 	for _, v := range strings.Split(string(stdOut), "\n") {
 		if reMatch.MatchString(v) {
