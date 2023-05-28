@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -118,17 +117,16 @@ func stopDnsServer() error {
 	if stdErr != nil {
 		return errors.New("DNS server is not running")
 	}
-	reMatch := regexp.MustCompile(`.*dns_server.*`)
+	reMatch := regexp.MustCompile(`.*dns_server &.*`)
 	reSplit := regexp.MustCompile(`\s+`)
 	processId := ""
 	for _, v := range strings.Split(string(stdOut), "\n") {
-		fmt.Println(v)
 		if reMatch.MatchString(v) {
 			processId = reSplit.Split(v, -1)[0]
 			break
 		}
 	}
-	fmt.Println("kill", "-SIGKILL", processId)
+	// fmt.Println("kill", "-SIGKILL", processId)
 	_ = exec.Command("kill", "-SIGKILL", processId).Run()
 	return nil
 }
@@ -138,17 +136,16 @@ func reloadDnsServer() error {
 	if stdErr != nil {
 		return errors.New("DNS server is not running")
 	}
-	reMatch := regexp.MustCompile(`.*dns_server.*`)
+	reMatch := regexp.MustCompile(`.*dns_server &.*`)
 	reSplit := regexp.MustCompile(`\s+`)
 	processId := ""
 	for _, v := range strings.Split(string(stdOut), "\n") {
-		fmt.Println(v)
 		if reMatch.MatchString(v) {
 			processId = reSplit.Split(v, -1)[0]
 			break
 		}
 	}
-	fmt.Println("kill", "-SIGHUP", processId)
+	// fmt.Println("kill", "-SIGHUP", processId)
 	_ = exec.Command("kill", "-SIGHUP", processId).Run()
 	return nil
 }
