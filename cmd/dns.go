@@ -123,6 +123,7 @@ func stopDnsServer() error {
 	processId := ""
 	for _, v := range strings.Split(string(stdOut), "\n") {
 		if reMatch.MatchString(v) {
+			fmt.Println(v)
 			processId = reSplit.Split(v, -1)[0]
 			break
 		}
@@ -142,6 +143,7 @@ func reloadDnsServer() error {
 	processId := ""
 	for _, v := range strings.Split(string(stdOut), "\n") {
 		if reMatch.MatchString(v) {
+			fmt.Println(v)
 			processId = reSplit.Split(v, -1)[0]
 			break
 		}
