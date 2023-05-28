@@ -20,7 +20,7 @@ var vmInfoList []VmInfoStruct
 var logChannel chan LogMessage
 
 func init() {
-	_ = exec.Command("rm", "-f", "/var/run/dns_server").Run()
+	// _ = exec.Command("rm", "-f", "/var/run/dns_server").Run()
 	logChannel = make(chan LogMessage)
 	go startLogging("/var/run/dns_server", logChannel)
 }
@@ -180,7 +180,7 @@ func logFileOutput(msgType string, msgString string, logChannel chan LogMessage)
 }
 
 func startLogging(logFileLocation string, logChannel chan LogMessage) {
-	logFile, err := os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0640)
+	logFile, err := os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
 	if err != nil {
 		_ = exec.Command("logger", err.Error()).Run()
 	}
