@@ -51,6 +51,8 @@ var (
 			if err != nil {
 				emojlog.PrintLogMessage("Could not reload pf: "+err.Error(), emojlog.Error)
 				err = nil
+			} else {
+				emojlog.PrintLogMessage("Started the internal DNS server", emojlog.Changed)
 			}
 
 			// Try to start Nebula if it's config file exists
