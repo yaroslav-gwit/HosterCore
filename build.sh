@@ -19,4 +19,11 @@ go build
 mv self_update ../self_update_service
 echo "Done"
 
+echo "Building the dns_server module..."
+cd ..
+cd dns_server/
+go build
+mv dns_server ../dns_server
+echo "Done"
+
 echo "=== Build process done ==="

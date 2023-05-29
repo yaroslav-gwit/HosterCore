@@ -35,6 +35,10 @@ func main() {
 				logFileOutput(LOG_SUPERVISOR, "Received a reload signal: SIGHUP", logChannel)
 				vmInfoList = getVmsInfo()
 			}
+			if sig == syscall.SIGKILL {
+				logFileOutput(LOG_SUPERVISOR, "Received a stop signal: SIGKILL", logChannel)
+				os.Exit(0)
+			}
 		}
 	}()
 
