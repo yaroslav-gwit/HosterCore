@@ -19,40 +19,46 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			err := createInitFile()
 			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Warning)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				err = nil
 			}
 
 			err = loadMissingModules()
 			if err != nil {
-				emojlog.PrintLogMessage("Could not load kernel modules: "+err.Error(), emojlog.Warning)
+				emojlog.PrintLogMessage("Could not load kernel modules: "+err.Error(), emojlog.Error)
 				err = nil
 			}
 			err = applySysctls()
 			if err != nil {
-				emojlog.PrintLogMessage("Could not apply sysctls: "+err.Error(), emojlog.Warning)
+				emojlog.PrintLogMessage("Could not apply sysctls: "+err.Error(), emojlog.Error)
 				err = nil
 			}
 			err = loadNetworkConfig()
 			if err != nil {
-				emojlog.PrintLogMessage("Could not load network config: "+err.Error(), emojlog.Warning)
+				emojlog.PrintLogMessage("Could not load network config: "+err.Error(), emojlog.Error)
 				err = nil
 			}
 			err = applyPfSettings()
 			if err != nil {
-				emojlog.PrintLogMessage("Could not reload pf: "+err.Error(), emojlog.Warning)
+				emojlog.PrintLogMessage("Could not reload pf: "+err.Error(), emojlog.Error)
 				err = nil
 			}
 
 			// Load Unbound settings (monkey patch for fresh installations, or manual user config changes)
-			restartUnbound()
+			// restartUnbound()
+
+			err = startDnsServer()
+			if err != nil {
+				emojlog.PrintLogMessage("Could not reload pf: "+err.Error(), emojlog.Error)
+				err = nil
+			}
 
 			// Try to start Nebula if it's config file exists
 			_, err = readNebulaClusterConfig()
 			if err == nil {
 				err := startNebulaService()
 				if err != nil {
-					emojlog.PrintLogMessage("Could not start Nebula service: "+err.Error(), emojlog.Warning)
+					emojlog.PrintLogMessage("Could not start Nebula service: "+err.Error(), emojlog.Error)
 					err = nil
 				}
 			}
@@ -250,24 +256,24 @@ func applyPfSettings() error {
 	return nil
 }
 
-func restartUnbound() {
-	err := generateNewDnsConfig()
-	if err != nil {
-		emojlog.PrintLogMessage("Could not generate new Unbound config: "+err.Error(), emojlog.Error)
-	}
+// func restartUnbound() {
+// 	err := generateNewDnsConfig()
+// 	if err != nil {
+// 		emojlog.PrintLogMessage("Could not generate new Unbound config: "+err.Error(), emojlog.Error)
+// 	}
 
-	unboundOut, unboundErr := exec.Command("service", "local_unbound", "restart").CombinedOutput()
-	if unboundErr != nil {
-		emojlog.PrintLogMessage("Could not restart Unbound: "+string(unboundOut), emojlog.Error)
-	}
-}
+// 	unboundOut, unboundErr := exec.Command("service", "local_unbound", "restart").CombinedOutput()
+// 	if unboundErr != nil {
+// 		emojlog.PrintLogMessage("Could not restart Unbound: "+string(unboundOut), emojlog.Error)
+// 	}
+// }
 
 func createInitFile() error {
 	stdout, stderr := exec.Command("touch", "/var/run/hoster_init").CombinedOutput()
 	if stderr != nil {
 		return errors.New("error creating hoster_init file: " + string(stdout) + " " + stderr.Error())
 	}
-	
+
 	stdout, stderr = exec.Command("chmod", "0600", "/var/run/hoster_init").CombinedOutput()
 	if stderr != nil {
 		return errors.New("error setting permissions for hoster_init file: " + string(stdout) + " " + stderr.Error())

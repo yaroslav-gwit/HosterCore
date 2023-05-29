@@ -40,6 +40,7 @@ var (
 
 // Light yellow-ish coloured log separator
 const LOG_SEPARATOR = "\033[0;93m" + " || " + "\033[0m"
+
 func StartApiServer(port int, user string, password string) {
 	app := fiber.New(fiber.Config{DisableStartupMessage: true, Prefork: false})
 	app.Use(requestid.New())
@@ -160,17 +161,22 @@ func StartApiServer(port int, user string, password string) {
 			fiberContext.Status(fiber.StatusInternalServerError)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
-		err = generateNewDnsConfig()
+		// err = generateNewDnsConfig()
+		// if err != nil {
+		// 	tagCustomError = err.Error()
+		// 	fiberContext.Status(fiber.StatusInternalServerError)
+		// 	return fiberContext.JSON(fiber.Map{"error": err.Error()})
+		// }
+		// err = reloadDnsService()
+		// if err != nil {
+		// 	tagCustomError = err.Error()
+		// 	fiberContext.Status(fiber.StatusInternalServerError)
+		// 	return fiberContext.JSON(fiber.Map{"error": err.Error()})
+		// }
+
+		err = reloadDnsServer()
 		if err != nil {
-			tagCustomError = err.Error()
-			fiberContext.Status(fiber.StatusInternalServerError)
-			return fiberContext.JSON(fiber.Map{"error": err.Error()})
-		}
-		err = reloadDnsService()
-		if err != nil {
-			tagCustomError = err.Error()
-			fiberContext.Status(fiber.StatusInternalServerError)
-			return fiberContext.JSON(fiber.Map{"error": err.Error()})
+			log.Fatal("Could not reload the DNS server: " + err.Error())
 		}
 
 		fiberContext.Status(fiber.StatusOK)

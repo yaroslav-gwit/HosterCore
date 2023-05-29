@@ -21,8 +21,8 @@ echo "Done"
 
 echo "Building the dns_server module..."
 cd ..
-cd dns_server/
-go build
+cd dns_server_module/
+go build -o dns_server
 mv dns_server ../dns_server
 echo "Done"
 

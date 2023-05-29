@@ -27,7 +27,7 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			
+
 			err = ciReset(args[0], newVmName)
 			if err != nil {
 				log.Fatal("Fatal error:", err)
@@ -270,13 +270,18 @@ func ciReset(oldVmName string, newVmName string) error {
 		return errors.New(err.Error())
 	}
 
-	err = generateNewDnsConfig()
+	// err = generateNewDnsConfig()
+	// if err != nil {
+	// 	return errors.New(err.Error())
+	// }
+	// err = reloadDnsService()
+	// if err != nil {
+	// 	return errors.New(err.Error())
+	// }
+
+	err = reloadDnsServer()
 	if err != nil {
-		return errors.New(err.Error())
-	}
-	err = reloadDnsService()
-	if err != nil {
-		return errors.New(err.Error())
+		return err
 	}
 
 	return nil

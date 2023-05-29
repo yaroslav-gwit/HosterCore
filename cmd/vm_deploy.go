@@ -63,7 +63,7 @@ type ConfigOutputStruct struct {
 	GwitsuperPassword string
 	InstanceId        string
 	VmName            string
-	NetworkName		  string
+	NetworkName       string
 	NetworkComment    string
 	MacAddress        string
 	IpAddress         string
@@ -384,13 +384,18 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 		return errors.New(err.Error())
 	}
 
-	err = generateNewDnsConfig()
+	// err = generateNewDnsConfig()
+	// if err != nil {
+	// 	return errors.New(err.Error())
+	// }
+	// err = reloadDnsService()
+	// if err != nil {
+	// 	return errors.New(err.Error())
+	// }
+
+	err = reloadDnsServer()
 	if err != nil {
-		return errors.New(err.Error())
-	}
-	err = reloadDnsService()
-	if err != nil {
-		return errors.New(err.Error())
+		return err
 	}
 
 	// Start the VM when all of the above is complete
