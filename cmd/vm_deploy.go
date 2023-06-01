@@ -157,7 +157,7 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	// Generate and set random IP address (which is free in the pool of addresses)
 	c.IpAddress, err = generateNewIp(networkName)
 	if err != nil {
-		return errors.New("could not generate the IP")
+		return errors.New("could not generate the IP: " + err.Error())
 	}
 
 	networkInfo, err := networkInfo()
@@ -534,9 +534,23 @@ func generateNewIp(networkName string) (string, error) {
 		return "", errors.New(err.Error())
 	}
 
-	subnet := networks[0].Subnet
-	rangeStart := networks[0].RangeStart
-	rangeEnd := networks[0].RangeEnd
+	var subnet string
+	var rangeStart string
+	var rangeEnd string
+	networkNameFoundGlobal := false
+	for i, v := range networks {
+		if v.Name == networkName {
+			networkNameFoundGlobal = true
+			subnet = networks[i].Subnet
+			rangeStart = networks[i].RangeStart
+			rangeEnd = networks[i].RangeEnd
+		}
+	}
+	if !networkNameFoundGlobal {
+		subnet = networks[0].Subnet
+		rangeStart = networks[0].RangeStart
+		rangeEnd = networks[0].RangeEnd
+	}
 
 	var randomIp string
 	// var err error
