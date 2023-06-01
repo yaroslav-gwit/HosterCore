@@ -531,7 +531,7 @@ func generateNewIp(networkName string) (string, error) {
 
 	networks, err := networkInfo()
 	if err != nil {
-		return "", errors.New(err.Error())
+		return "", errors.New("could not read the config file: " + err.Error())
 	}
 
 	var subnet string
