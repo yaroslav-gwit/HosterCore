@@ -10,6 +10,7 @@ NETWORK_SUBNET="${DEF_NETWORK_SUBNET:=10.0.101.0/24}"
 NETWORK_RANGE_START="${DEF_NETWORK_RANGE_START:=10.0.101.10}"
 NETWORK_RANGE_END="${DEF_NETWORK_RANGE_END:=10.0.101.200}"
 PUBLIC_INTERFACE="${DEF_PUBLIC_INTERFACE:=$(ifconfig | head -1 | awk '{ print $1 }' | sed s/://)}"
+UPSTREAM_DNS_SERVER="${DEF_UPSTREAM_DNS_SERVER:=1.1.1.2}"
 
 #_ SET WORKING DIRECTORY _#
 HOSTER_WD="/opt/hoster-core/"
@@ -24,20 +25,29 @@ pkg install -y bhyve-firmware bhyve-rc grub2-bhyve uefi-edk2-bhyve-csm edk2-bhyv
 
 if [[ -f /bin/bash ]]; then rm /bin/bash; fi
 ln "$(which bash)" /bin/bash
-chsh -s bash
 
 
 #_ SET ENCRYPTED ZFS PASSWORD _#
 if [ -z "${DEF_ZFS_ENCRYPTION_PASSWORD}" ]; then 
-    ZFS_RANDOM_PASSWORD=$(openssl rand -base64 32 | sed "s/=//g" | sed "s/\///g" | sed "s/\+//g")
+    ZFS_RANDOM_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
 else 
     ZFS_RANDOM_PASSWORD=${DEF_ZFS_ENCRYPTION_PASSWORD}
 fi
 
 
 #_ GENERATE SSH KEYS _#
-if [[ ! -f /root/.ssh/id_rsa ]]; then ssh-keygen -b 4096 -t rsa -f /root/.ssh/id_rsa -q -N ""; else echo " 🔷 DEBUG: SSH key was found, no need to generate a new one"; fi
-if [[ ! -f /root/.ssh/config ]]; then touch /root/.ssh/config && chmod 600 /root/.ssh/config; fi
+if [[ ! -f /root/.ssh/id_rsa ]]
+then
+    ssh-keygen -b 4096 -t rsa -f /root/.ssh/id_rsa -q -N ""
+else
+    echo " 🔷 DEBUG: SSH key was found, no need to generate a new one"
+fi
+
+if [[ ! -f /root/.ssh/config ]]
+then
+    touch /root/.ssh/config && chmod 600 /root/.ssh/config
+fi
+
 HOST_SSH_KEY=$(cat /root/.ssh/id_rsa.pub)
 
 
@@ -82,6 +92,7 @@ CMD_LINE='pflog_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) 
 CMD_LINE='pflog_logfile="/var/log/pflog"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
 CMD_LINE='pflog_flags=""' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
 CMD_LINE='gateway_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
+CMD_LINE='rtclocaltime="NO"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
 
 
 #_ SET CORRECT PROFILE FILE _#
@@ -105,9 +116,11 @@ if [ -x /usr/bin/resizewin ] ; then /usr/bin/resizewin -z ; fi
 # if [ -x /usr/bin/fortune ] ; then /usr/bin/fortune -s ; fi
 
 export EDITOR=micro
-alias vmls="hoster vm list"
+
 EOF
 
+# Add vmls as alias to root's bashrc
+echo 'alias vmls="hoster vm list"' >> /root/.bashrc
 
 #_ GENERATE MINIMAL REQUIRED CONFIG FILES _#
 mkdir -p ${HOSTER_WD}config_files/
@@ -137,6 +150,9 @@ cat << EOF | cat > ${HOSTER_WD}config_files/host_config.json
         "zroot/vm-encrypted",
         "zroot/vm-unencrypted"
     ],
+    "dns_servers": [
+        "${UPSTREAM_DNS_SERVER}"
+    ],
     "host_dns_acls": [
         "${NETWORK_SUBNET}"
     ],
@@ -163,22 +179,22 @@ nat on { ${PUBLIC_INTERFACE} } from { ${NETWORK_SUBNET} } to any -> { ${PUBLIC_I
 
 
 ### INBOUND NAT EXAMPLES ###
-#rdr pass on { ${PUBLIC_INTERFACE} } proto { tcp udp } from any to EXTERNAL_INTERFACE_IP_HERE port 28967 -> 10.0.0.3 port 28967 # Inline comments go here
-
+# rdr pass on { ${PUBLIC_INTERFACE} } proto { tcp udp } from any to EXTERNAL_INTERFACE_IP_HERE port 80 -> 10.0.0.3 port 80                              # HTTP NAT Forwarding
+# rdr pass on ${PUBLIC_INTERFACE} inet proto tcp from EXTERNAL_INTERFACE_IP_HERE to any port 80 -> EXTERNAL_INTERFACE_IP_HERE port 80                   # HTTP NAT Reflection
 
 ### ANTISPOOF RULE ###
 antispoof quick for { ${PUBLIC_INTERFACE} } # DISABLE IF USING ANY ADDITIONAL ROUTERS IN THE VM, LIKE OPNSENSE
 
 
 ### FIREWALL RULES ###
-#block in quick log on egress from <private-ranges>
-#block return out quick on egress to <private-ranges>
+# block in quick log on egress from <private-ranges>
+# block return out quick on egress to <private-ranges>
 block in all
 pass out all keep state
 
 # Allow internal NAT networks to go out + examples #
-#pass in proto tcp to port 5900:5950 keep state
-#pass in quick inet proto { tcp udp icmp } from { ${NETWORK_SUBNET} } to any # Uncomment this rule to allow any traffic out
+# pass in proto tcp to port 5900:5950 keep state
+# pass in quick inet proto { tcp udp icmp } from { ${NETWORK_SUBNET} } to any                                                                           # Uncomment this rule to allow any traffic out
 pass in quick inet proto { udp } from { ${NETWORK_SUBNET} } to { ${NETWORK_BR_ADDR} } port 53
 block in quick inet from { ${NETWORK_SUBNET} } to <private-ranges>
 pass in quick inet proto { tcp udp icmp } from { ${NETWORK_SUBNET} } to any
@@ -187,8 +203,8 @@ pass in quick inet proto { tcp udp icmp } from { ${NETWORK_SUBNET} } to any
 ### INCOMING HOST RULES ###
 pass in quick on { ${PUBLIC_INTERFACE} } inet proto icmp all # allow PING in
 pass in quick on { ${PUBLIC_INTERFACE} } proto tcp to port 22 keep state #ALLOW_SSH_ACCESS_TO_HOST
-#pass in proto tcp to port 80 keep state #HTTP_NGINX_PROXY
-#pass in proto tcp to port 443 keep state #HTTPS_NGINX_PROXY
+# pass in proto tcp to port 80 keep state                                                                                                               # HTTP_NGINX_PROXY
+# pass in proto tcp to port 443 keep state                                                                                                              # HTTPS_NGINX_PROXY
 EOF
 
 

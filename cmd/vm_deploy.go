@@ -782,8 +782,27 @@ type HostConfig struct {
 	ImageServer    string          `json:"public_vm_image_server"`
 	BackupServers  []string        `json:"backup_servers"`
 	ActiveDatasets []string        `json:"active_datasets"`
-	HostDNSACLs    []string        `json:"host_dns_acls"`
+	DnsServers     []string        `json:"dns_servers,omitempty"`   // this is a new field, that might not be implemented on all of the nodes yet
+	HostDNSACLs    []string        `json:"host_dns_acls,omitempty"` // this field is deprecated, remains here for backwards compatibility, and will be removed at some point
 	HostSSHKeys    []HostConfigKey `json:"host_ssh_keys"`
+}
+
+func GetHostConfig() (HostConfig, error) {
+	hostConfig := HostConfig{}
+	execPath, err := os.Executable()
+	if err != nil {
+		return HostConfig{}, err
+	}
+	hostConfigFile := path.Dir(execPath) + "/config_files/host_config.json"
+	data, err := os.ReadFile(hostConfigFile)
+	if err != nil {
+		return HostConfig{}, err
+	}
+	err = json.Unmarshal(data, &hostConfig)
+	if err != nil {
+		return HostConfig{}, err
+	}
+	return hostConfig, nil
 }
 
 func getSystemSshKeys() ([]SshKey, error) {

@@ -18,11 +18,12 @@ import (
 // Global state vars
 var vmInfoList []VmInfoStruct
 var logChannel chan LogMessage
+var upstreamServers []string
 
 func init() {
-	// _ = exec.Command("rm", "-f", "/var/run/dns_server").Run()
 	logChannel = make(chan LogMessage)
 	go startLogging("/var/run/dns_server", logChannel)
+	loadUpstreamDnsServers()
 }
 
 func main() {
@@ -34,6 +35,7 @@ func main() {
 			if sig == syscall.SIGHUP {
 				logFileOutput(LOG_SUPERVISOR, "Received a reload signal: SIGHUP", logChannel)
 				vmInfoList = getVmsInfo()
+				loadUpstreamDnsServers()
 			}
 			if sig == syscall.SIGKILL {
 				logFileOutput(LOG_SUPERVISOR, "Received a stop signal: SIGKILL", logChannel)
@@ -50,6 +52,23 @@ func main() {
 	err := server.ListenAndServe()
 	if err != nil {
 		fmt.Println("Failed to start DNS server:", err)
+	}
+}
+
+func loadUpstreamDnsServers() {
+	hostConfig, err := cmd.GetHostConfig()
+	if err != nil {
+		logFileOutput(LOG_SUPERVISOR, "Error loading host config file: "+err.Error(), logChannel)
+	}
+	upstreamServers = []string{}
+	upstreamServers = append(upstreamServers, hostConfig.HostDNSACLs...)
+	reMatchPort := regexp.MustCompile(`.*:\d+`)
+	for i, v := range upstreamServers {
+		if reMatchPort.MatchString(v) {
+			continue
+		} else {
+			upstreamServers[i] = v + ":53"
+		}
 	}
 }
 
@@ -106,7 +125,9 @@ func queryExternalDNS(q dns.Question) (*dns.Msg, string, error) {
 	m.SetQuestion(q.Name, q.Qtype)
 
 	// Set the list of DNS servers to try
-	servers := []string{"9.9.9.9:53", "1.1.1.1:53"}
+	servers := upstreamServers
+	servers = append(servers, "9.9.9.9:53")
+	servers = append(servers, "1.1.1.1:53")
 
 	var response *dns.Msg
 	var err error

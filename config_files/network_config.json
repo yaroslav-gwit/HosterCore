@@ -7,8 +7,6 @@
         "network_range_end": "10.0.100.200",
         "bridge_interface": "None",
         "apply_bridge_address": true,
-        "dns_servers": ["10.0.100.254", "1.1.1.1"],
-        "dns_domain": "custom.dns-domain.lan",
         "comment": "Internal Network"
     }
 ]

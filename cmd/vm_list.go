@@ -184,11 +184,18 @@ func GetAllVms() []string {
 func getAllVms() []string {
 	var zfsDatasets []string
 	var configFileName = "/vm_config.json"
-	zfsDatasets = append(zfsDatasets, "zroot/vm-encrypted")
-	zfsDatasets = append(zfsDatasets, "zroot/vm-unencrypted")
+	hostConfig, err := GetHostConfig()
+	if err != nil {
+		fmt.Println(err)
+	}
+	if len(hostConfig.ActiveDatasets) < 1 {
+		zfsDatasets = append(zfsDatasets, "zroot/vm-encrypted")
+		zfsDatasets = append(zfsDatasets, "zroot/vm-unencrypted")
+	} else {
+		zfsDatasets = append(zfsDatasets, hostConfig.ActiveDatasets...)
+	}
 
 	var vmListSorted []string
-
 	for _, dataset := range zfsDatasets {
 		var dsFolder = "/" + dataset + "/"
 		var _, err = os.Stat(dsFolder)
@@ -286,11 +293,21 @@ func vmConfig(vmName string) VmConfigStruct {
 // Returns a folder containing VM files, using this format:
 // "/zroot/vm-encrypted"
 func getVmFolder(vmName string) string {
+	hostConfig, err := GetHostConfig()
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	var zfsDatasets []string
 	var dsFolder string
 	var finalResponse string
-	zfsDatasets = append(zfsDatasets, "zroot/vm-encrypted")
-	zfsDatasets = append(zfsDatasets, "zroot/vm-unencrypted")
+
+	if len(hostConfig.ActiveDatasets) < 1 {
+		zfsDatasets = append(zfsDatasets, "zroot/vm-encrypted")
+		zfsDatasets = append(zfsDatasets, "zroot/vm-unencrypted")
+	} else {
+		zfsDatasets = append(zfsDatasets, hostConfig.ActiveDatasets...)
+	}
 
 	for _, dataset := range zfsDatasets {
 		dsFolder = "/" + dataset + "/"
