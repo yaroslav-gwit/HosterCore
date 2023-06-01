@@ -155,7 +155,7 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	}
 
 	// Generate and set random IP address (which is free in the pool of addresses)
-	c.IpAddress, err = generateNewIp()
+	c.IpAddress, err = generateNewIp(networkName)
 	if err != nil {
 		return errors.New("could not generate the IP")
 	}
@@ -513,11 +513,20 @@ const vmConfigFileTemplate = `
 }
 `
 
-func generateNewIp() (string, error) {
+func generateNewIp(networkName string) (string, error) {
 	var existingIps []string
 	for _, v := range getAllVms() {
+		networkNameFound := false
 		tempConfig := vmConfig(v)
-		existingIps = append(existingIps, tempConfig.Networks[0].IPAddress)
+		for i, v := range tempConfig.Networks {
+			if v.NetworkBridge == networkName {
+				networkNameFound = true
+				existingIps = append(existingIps, tempConfig.Networks[i].IPAddress)
+			}
+		}
+		if !networkNameFound {
+			existingIps = append(existingIps, tempConfig.Networks[0].IPAddress)
+		}
 	}
 
 	networks, err := networkInfo()

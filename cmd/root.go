@@ -104,9 +104,10 @@ func init() {
 	vmDeployCmd.Flags().StringVarP(&zfsDataset, "dataset", "d", "zroot/vm-encrypted", "Choose the parent dataset for the VM deployment")
 	vmDeployCmd.Flags().BoolVarP(&vmDeployStartWhenReady, "start-now", "", false, "Whether to start the VM after it's deployed")
 
-	// VM cmd -> vm deploy
+	// VM cmd -> vm cireset
 	vmCmd.AddCommand(vmCiResetCmd)
 	vmCiResetCmd.Flags().StringVarP(&newVmName, "new-name", "n", "", "Set a new VM name (if you'd like to rename the VM as well)")
+	vmCiResetCmd.Flags().StringVarP(&ciResetNetworkName, "network-name", "", "", "Use the specific network instead of a default choice")
 
 	// VM cmd -> vm replicate
 	vmCmd.AddCommand(vmZfsReplicateCmd)
