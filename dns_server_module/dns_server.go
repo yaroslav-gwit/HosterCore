@@ -63,7 +63,10 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 		vmListIndex := 0
 		for i, v := range vmInfoList {
 			dnsName := strings.Split(q.Name, ".")[0]
-			if dnsName == strings.ToLower(v.vmName) {
+			if dnsName == v.vmName {
+				requestIsVmName = true
+				vmListIndex = i
+			} else if dnsName == strings.ToLower(v.vmName) {
 				requestIsVmName = true
 				vmListIndex = i
 			}
