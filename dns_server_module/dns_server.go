@@ -61,7 +61,7 @@ func loadUpstreamDnsServers() {
 		logFileOutput(LOG_SUPERVISOR, "Error loading host config file: "+err.Error(), logChannel)
 	}
 	upstreamServers = []string{}
-	upstreamServers = append(upstreamServers, hostConfig.HostDNSACLs...)
+	upstreamServers = append(upstreamServers, hostConfig.DnsServers...)
 	reMatchPort := regexp.MustCompile(`.*:\d+`)
 	for i, v := range upstreamServers {
 		if reMatchPort.MatchString(v) {
@@ -99,7 +99,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 			m.Answer = append(m.Answer, rr)
 			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  local DB"
-			logFileOutput(LOG_DNS_LOCAL, logLine, logChannel)
+			go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
 		} else {
 			response, server, err := queryExternalDNS(q)
 			if err != nil {
@@ -108,7 +108,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 			m.Answer = append(m.Answer, response.Answer...)
 			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  " + server
-			logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel)
+			go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
 		}
 	}
 
