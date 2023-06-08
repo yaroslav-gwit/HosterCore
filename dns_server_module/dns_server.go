@@ -70,7 +70,7 @@ func loadUpstreamDnsServers() {
 			upstreamServers = append(upstreamServers, v+":53")
 		}
 	}
-	debugText := fmt.Sprintf("%s", upstreamServers)
+	debugText := fmt.Sprintf("Loaded these servers from the host config file: %s", upstreamServers)
 	logFileOutput(LOG_DNS_GLOBAL, debugText, logChannel)
 }
 
@@ -128,8 +128,6 @@ func queryExternalDNS(q dns.Question) (*dns.Msg, string, error) {
 
 	// Set the list of DNS servers to try
 	servers := upstreamServers
-	debugText := fmt.Sprintf("%s", servers)
-	go func() { logFileOutput(LOG_DNS_GLOBAL, debugText, logChannel) }()
 	servers = append(servers, "9.9.9.9:53")
 	servers = append(servers, "1.1.1.1:53")
 
