@@ -72,7 +72,7 @@ func loadUpstreamDnsServers() {
 		}
 	}
 	debugText := fmt.Sprintf("Loaded these servers from the host config file: %s", upstreamServers)
-	logFileOutput(LOG_DNS_GLOBAL, debugText, logChannel)
+	logFileOutput(LOG_SUPERVISOR, debugText, logChannel)
 }
 
 func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
