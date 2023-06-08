@@ -60,16 +60,18 @@ func loadUpstreamDnsServers() {
 	if err != nil {
 		logFileOutput(LOG_SUPERVISOR, "Error loading host config file: "+err.Error(), logChannel)
 	}
+
 	upstreamServers = []string{}
-	upstreamServers = append(upstreamServers, hostConfig.DnsServers...)
 	reMatchPort := regexp.MustCompile(`.*:\d+`)
-	for i, v := range upstreamServers {
+	for _, v := range hostConfig.DnsServers {
 		if reMatchPort.MatchString(v) {
-			continue
+			upstreamServers = append(upstreamServers, v)
 		} else {
-			upstreamServers[i] = v + ":53"
+			upstreamServers = append(upstreamServers, v+":53")
 		}
 	}
+	debugText := fmt.Sprintf("%s", upstreamServers)
+	logFileOutput(LOG_DNS_GLOBAL, debugText, logChannel)
 }
 
 func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
