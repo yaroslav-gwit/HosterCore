@@ -23,7 +23,6 @@ var upstreamServers []string
 func init() {
 	logChannel = make(chan LogMessage)
 	go startLogging("/var/run/dns_server", logChannel)
-	loadUpstreamDnsServers()
 }
 
 func main() {
@@ -43,6 +42,8 @@ func main() {
 			}
 		}
 	}()
+
+	loadUpstreamDnsServers()
 
 	vmInfoList = getVmsInfo()
 	server := dns.Server{Addr: ":53", Net: "udp"}
