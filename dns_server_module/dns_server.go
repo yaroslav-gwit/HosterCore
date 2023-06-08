@@ -126,6 +126,7 @@ func queryExternalDNS(q dns.Question) (*dns.Msg, string, error) {
 
 	// Set the list of DNS servers to try
 	servers := upstreamServers
+	fmt.Println(servers)
 	servers = append(servers, "9.9.9.9:53")
 	servers = append(servers, "1.1.1.1:53")
 
