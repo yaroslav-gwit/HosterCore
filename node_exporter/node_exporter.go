@@ -72,8 +72,6 @@ func concatMetrics() string {
 	return metricsTextFinal
 }
 
-var endsWithNewline = regexp.MustCompile(".*\n$")
-
 type DiskInfo struct {
 	queueLength     int
 	opsPerSec       int
@@ -162,9 +160,6 @@ func getGstatMetrics() string {
 			busyPercent = "0"
 		}
 		result = result + "gstat{disk=\"" + v.deviceName + "\",info=\"busy_percent\"} " + busyPercent
-	}
-
-	if !endsWithNewline.MatchString(result) {
 		result = result + "\n"
 	}
 	return result
@@ -246,8 +241,6 @@ func getZpoolInfo() string {
 		zpoolDedup := fmt.Sprintf("%.2f", v.dedup)
 		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"dedup\"} " + zpoolDedup + "\n"
 		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"health\"} " + strconv.Itoa(v.health)
-	}
-	if !endsWithNewline.MatchString(result) {
 		result = result + "\n"
 	}
 	return result
@@ -264,10 +257,7 @@ func getNodeExporterMetrics() string {
 	if err != nil {
 		log.Fatalf("Failed to read the response body: %v", err)
 	}
-	metricsString := string(body)
-	if !endsWithNewline.MatchString(metricsString) {
-		metricsString = metricsString + "\n"
-	}
+	metricsString := string(body) + "\n"
 	return metricsString
 }
 
