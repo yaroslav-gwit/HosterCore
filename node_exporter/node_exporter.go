@@ -240,7 +240,7 @@ func getZpoolInfo() string {
 		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"cap\"} " + strconv.Itoa(v.cap) + "\n"
 		zpoolDedup := fmt.Sprintf("%.2f", v.dedup)
 		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"dedup\"} " + zpoolDedup + "\n"
-		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"health\"} " + strconv.Itoa(v.health)
+		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"healthy\"} " + strconv.Itoa(v.health)
 		result = result + "\n"
 	}
 	return result
