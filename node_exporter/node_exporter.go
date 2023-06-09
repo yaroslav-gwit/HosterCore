@@ -257,7 +257,7 @@ func getNodeExporterMetrics() string {
 	if err != nil {
 		log.Fatalf("Failed to read the response body: %v", err)
 	}
-	metricsString := string(body) + "\n"
+	metricsString := string(body)
 	return metricsString
 }
 
