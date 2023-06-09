@@ -15,7 +15,7 @@ import (
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; version=0.0.4")
+		w.Header().Set("Content-Type", "text/plain; version=1")
 		fmt.Fprint(w, "hoster metrics exporter\ngo to /metrics to see the exported metrics")
 	})
 
@@ -186,7 +186,7 @@ func getVmNumbers() string {
 	result = result + "hoster{counter=\"vms_all\"} " + strconv.Itoa(vmNumbers.all) + "\n"
 	result = result + "hoster{counter=\"vms_online\"} " + strconv.Itoa(vmNumbers.online) + "\n"
 	result = result + "hoster{counter=\"vms_backup\"} " + strconv.Itoa(vmNumbers.backup) + "\n"
-	result = result + "hoster{counter=\"vms_offline_in_production\"} " + strconv.Itoa(vmNumbers.offlineProduction)
+	result = result + "hoster{counter=\"vms_offline_in_production\"} " + strconv.Itoa(vmNumbers.offlineProduction) + "\n"
 
 	return result
 }
@@ -236,16 +236,19 @@ func getZpoolInfo() string {
 		result = "# HELP zpool_info A parsed output from the zpool info command under FreeBSD.\n"
 		result = result + "# TYPE zpool_info counter\n"
 		zpoolSize := fmt.Sprintf("%d", v.size)
-		result = result + "zpool_info{disk=\"" + v.name + "\",info=\"size\"} " + zpoolSize + "\n"
+		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"size\"} " + zpoolSize + "\n"
 		zpoolAllocated := fmt.Sprintf("%d", v.allocated)
-		result = result + "zpool_info{disk=\"" + v.name + "\",info=\"allocated\"} " + zpoolAllocated + "\n"
+		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"allocated\"} " + zpoolAllocated + "\n"
 		zpoolFree := fmt.Sprintf("%d", v.free)
-		result = result + "zpool_info{disk=\"" + v.name + "\",info=\"free\"} " + zpoolFree + "\n"
-		result = result + "zpool_info{disk=\"" + v.name + "\",info=\"fragmentation\"} " + strconv.Itoa(v.fragmentation) + "\n"
-		result = result + "zpool_info{disk=\"" + v.name + "\",info=\"cap\"} " + strconv.Itoa(v.cap) + "\n"
+		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"free\"} " + zpoolFree + "\n"
+		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"fragmentation\"} " + strconv.Itoa(v.fragmentation) + "\n"
+		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"cap\"} " + strconv.Itoa(v.cap) + "\n"
 		zpoolDedup := fmt.Sprintf("%.2f", v.dedup)
-		result = result + "zpool_info{disk=\"" + v.name + "\",info=\"dedup\"} " + zpoolDedup + "\n"
-		result = result + "zpool_info{disk=\"" + v.name + "\",info=\"health\"} " + strconv.Itoa(v.health)
+		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"dedup\"} " + zpoolDedup + "\n"
+		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"health\"} " + strconv.Itoa(v.health)
+	}
+	if !endsWithNewline.MatchString(result) {
+		result = result + "\n"
 	}
 	return result
 }
