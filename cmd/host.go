@@ -132,34 +132,35 @@ func hostMain() {
 }
 
 type jsonOutputHostInfoStruct struct {
-	Hostname     string `json:"hostname"`
-	LiveVms      int    `json:"live_vms"`
-	AllVms		 int    `json:"all_vms"`
-	BackupVms	 int    `json:"backup_vms"`
-	SystemUptime string `json:"system_uptime"`
-	CpuModel     string `json:"cpu_model"`
-	CpuArchitecture     string `json:"cpu_architecture"`
-	CpuSockets   int    `json:"cpu_sockets"`
-	CpuCores     int    `json:"cpu_cores"`
-	CpuThreads   int    `json:"cpu_threads"`
-	VCPU2PCURatio float64 `json:"vcpu_2_pcpu_ratio"`
-	RamTotalH    string `json:"ram_total_human"`
-	RamTotalB    int `json:"ram_total_bytes"`
-	RamFreeH     string `json:"ram_free_human"`
-	RamFreeB     int `json:"ram_free_bytes"`
-	RamUsedH     string `json:"ram_used_human"`
-	RamUsedB     int `json:"ram_used_bytes"`
-	SwapTotalH    string `json:"swap_total_human"`
-	SwapTotalB    int `json:"swap_total_bytes"`
-	SwapUsedH     string `json:"swap_used_human"`
-	SwapUsedB     int `json:"swap_used_bytes"`
-	SwapFreeH     string `json:"swap_free_human"`
-	SwapFreeB     int `json:"swap_free_bytes"`
-	ArcSize      string `json:"zfs_acr_size"`
-	ZrootTotal   string `json:"zroot_total"`
-	ZrootUsed    string `json:"zroot_used"`
-	ZrootFree    string `json:"zroot_free"`
-	ZrootStatus  string `json:"zroot_status"`
+	Hostname             string  `json:"hostname"`
+	LiveVms              int     `json:"live_vms"`
+	AllVms               int     `json:"all_vms"`
+	BackupVms            int     `json:"backup_vms"`
+	ProductionVmsOffline int     `json:"prod_vms_offline"`
+	SystemUptime         string  `json:"system_uptime"`
+	CpuModel             string  `json:"cpu_model"`
+	CpuArchitecture      string  `json:"cpu_architecture"`
+	CpuSockets           int     `json:"cpu_sockets"`
+	CpuCores             int     `json:"cpu_cores"`
+	CpuThreads           int     `json:"cpu_threads"`
+	VCPU2PCURatio        float64 `json:"vcpu_2_pcpu_ratio"`
+	RamTotalH            string  `json:"ram_total_human"`
+	RamTotalB            int     `json:"ram_total_bytes"`
+	RamFreeH             string  `json:"ram_free_human"`
+	RamFreeB             int     `json:"ram_free_bytes"`
+	RamUsedH             string  `json:"ram_used_human"`
+	RamUsedB             int     `json:"ram_used_bytes"`
+	SwapTotalH           string  `json:"swap_total_human"`
+	SwapTotalB           int     `json:"swap_total_bytes"`
+	SwapUsedH            string  `json:"swap_used_human"`
+	SwapUsedB            int     `json:"swap_used_bytes"`
+	SwapFreeH            string  `json:"swap_free_human"`
+	SwapFreeB            int     `json:"swap_free_bytes"`
+	ArcSize              string  `json:"zfs_acr_size"`
+	ZrootTotal           string  `json:"zroot_total"`
+	ZrootUsed            string  `json:"zroot_used"`
+	ZrootFree            string  `json:"zroot_free"`
+	ZrootStatus          string  `json:"zroot_status"`
 }
 
 func jsonOutputHostInfo() jsonOutputHostInfoStruct {
@@ -167,6 +168,7 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	var tLiveVms int
 	var tAllVms int
 	var tBackupVms int
+	var tProdVmsOffline int
 	var tSystemUptime string
 	var tSystemRam = ramResponse{}
 	var tSwapInfo swapInfoStruct
@@ -180,7 +182,7 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	wg.Add(1)
 	go func() { defer wg.Done(); tHostname = GetHostName() }()
 	wg.Add(1)
-	go func() { defer wg.Done(); tAllVms, tLiveVms, tBackupVms = vmNumbersOverview() }()
+	go func() { defer wg.Done(); tAllVms, tLiveVms, tBackupVms, tProdVmsOffline = VmNumbersOverview() }()
 	wg.Add(1)
 	go func() { defer wg.Done(); tSystemUptime = getSystemUptime() }()
 	wg.Add(1)
@@ -209,6 +211,7 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	jsonOutputVar.LiveVms = tLiveVms
 	jsonOutputVar.AllVms = tAllVms
 	jsonOutputVar.BackupVms = tBackupVms
+	jsonOutputVar.ProductionVmsOffline = tProdVmsOffline
 	jsonOutputVar.SystemUptime = tSystemUptime
 	jsonOutputVar.RamTotalH = tSystemRam.all
 	jsonOutputVar.RamTotalB = tSystemRam.allBytes
@@ -242,7 +245,7 @@ type ramResponse struct {
 	freeBytes int
 	used      string
 	usedBytes int
-	all  	  string
+	all       string
 	allBytes  int
 }
 
@@ -335,10 +338,10 @@ func getHostRam() ramResponse {
 
 	ramResponseVar.free = ByteConversion(finalResultFree)
 	ramResponseVar.freeBytes = finalResultFree
-	
+
 	ramResponseVar.used = ByteConversion(finalResultUsed)
 	ramResponseVar.usedBytes = finalResultUsed
-	
+
 	ramResponseVar.all = ByteConversion(finalResultReal)
 	ramResponseVar.allBytes = finalResultReal
 
@@ -348,11 +351,7 @@ func getHostRam() ramResponse {
 func getArcSize() string {
 	// GET SYSCTL "vm.stats.vm.v_free_count" AND RETURN THE VALUE
 	var arcSize string
-	arcSizeArg1 := "sysctl"
-	arcSizeArg2 := "-nq"
-	arcSizeArg3 := "kstat.zfs.misc.arcstats.size"
-
-	cmd := exec.Command(arcSizeArg1, arcSizeArg2, arcSizeArg3)
+	cmd := exec.Command("sysctl", "-nq", "kstat.zfs.misc.arcstats.size")
 	stdout, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Func getArcSize/arcSize: There has been an error:", err)
@@ -387,82 +386,12 @@ func getNumberOfRunningVms() string {
 	return finalResult
 }
 
-// func getZrootStatus() string {
-// 	var zrootStatus string
-// 	var zrootStatusArg1 = "zpool"
-// 	var zrootStatusArg2 = "status"
-// 	var zrootStatusArg3 = "zroot"
-
-// 	var cmd = exec.Command(zrootStatusArg1, zrootStatusArg2, zrootStatusArg3)
-// 	var stdout, err = cmd.Output()
-// 	if err != nil {
-// 		fmt.Println("Func getZrootStatus/zrootStatus: There has been an error:", err)
-// 		os.Exit(1)
-// 	} else {
-// 		zrootStatus = string(stdout)
-// 	}
-// 	var zrootStatusList []string
-// 	for _, i := range strings.Split(zrootStatus, "\n") {
-// 		if len(i) > 1 {
-// 			zrootStatusList = append(zrootStatusList, i)
-// 		}
-// 	}
-
-// 	var r, _ = regexp.Compile(".*state:.*")
-// 	for _, i := range zrootStatusList {
-// 		var reMatch = r.MatchString(i)
-// 		if reMatch {
-// 			zrootStatus = i
-// 		}
-// 	}
-
-// 	zrootStatus = strings.Replace(zrootStatus, "state:", "", -1)
-// 	zrootStatus = strings.Replace(zrootStatus, " ", "", -1)
-// 	if zrootStatus == "ONLINE" {
-// 		zrootStatus = "Online"
-// 	} else {
-// 		zrootStatus = "Problem!"
-// 	}
-
-// 	var finalResult = zrootStatus
-
-// 	return finalResult
-// }
-
-// func getFreeZfsSpace() string {
-// 	var zrootFree string
-// 	var zrootFreeArg1 = "zfs"
-// 	var zrootFreeArg2 = "list"
-// 	var zrootFreeArg3 = "zroot"
-
-// 	var cmd = exec.Command(zrootFreeArg1, zrootFreeArg2, zrootFreeArg3)
-// 	var stdout, err = cmd.Output()
-// 	if err != nil {
-// 		fmt.Println("Func getFreeZfsSpace/zrootFree: There has been an error:", err)
-// 		os.Exit(1)
-// 	} else {
-// 		zrootFree = string(stdout)
-// 	}
-// 	var zrootFreeList []string
-// 	for _, i := range strings.Split(zrootFree, " ") {
-// 		if len(i) > 1 {
-// 			zrootFreeList = append(zrootFreeList, i)
-// 		}
-// 	}
-
-// 	zrootFree = zrootFreeList[6]
-// 	zrootFree = strings.Replace(zrootFree, " ", "", -1)
-
-// 	var finalResult = zrootFree
-// 	return finalResult
-// }
-
 type swapInfoStruct struct {
-	total string
+	total      string
 	totalBytes int
-	used  string
+	used       string
 	usedBytes  int
-	free  string
+	free       string
 	freeBytes  int
 }
 
@@ -602,12 +531,12 @@ func GetHostName() string {
 }
 
 type CpuInfo struct {
-	Model 		   string
-	Architecture   string
-	Sockets  	   int
-	Cores 		   int
-	Threads        int
-	OverallCpus    int
+	Model        string
+	Architecture string
+	Sockets      int
+	Cores        int
+	Threads      int
+	OverallCpus  int
 }
 
 func getCpuInfo() CpuInfo {
@@ -650,10 +579,10 @@ func getCpuInfo() CpuInfo {
 	}
 	var tempCpuInfoList []string
 	var tempCpuInfoListStripped []string
-	
+
 	// The loop was replaced with the one liner right below it
 	// for _, v := range strings.Split(dmesg, " x ") {
-		// 	tempCpuInfoList = append(tempCpuInfoList, v)
+	// 	tempCpuInfoList = append(tempCpuInfoList, v)
 	// }
 	tempCpuInfoList = append(tempCpuInfoList, strings.Split(dmesg, " x ")...)
 
@@ -669,12 +598,16 @@ func getCpuInfo() CpuInfo {
 	return result
 }
 
+// If this ratio is > 6:1 you should really stop deploying more VMs to avoid performance issues
+//
+// This is a good read to better understand the Pc2Vc value:
+// https://download3.vmware.com/vcat/vmw-vcloud-architecture-toolkit-spv1-webworks/index.html#page/Core%20Platform/Architecting%20a%20vSphere%20Compute%20Platform/Architecting%20a%20vSphere%20Compute%20Platform.1.019.html
 func getPc2VcRatio() (string, float64) {
 	command, err := exec.Command("sysctl", "-nq", "hw.ncpu").CombinedOutput()
 	if err != nil {
 		fmt.Println("Error", err.Error())
 	}
-	
+
 	cpuLogicalCores, err := strconv.Atoi(strings.TrimSpace(string(command)))
 	if err != nil {
 		cpuLogicalCores = 1
@@ -704,22 +637,27 @@ func getPc2VcRatio() (string, float64) {
 	return ratio, result
 }
 
-// Returns 3 integers: All VMs, Online/Live VMs, and Backup VMs
-func vmNumbersOverview() (int, int, int) {
+// Returns 4 integers: All VMs, Online/Live VMs, Backup VMs, and Offline Production VMs
+//
+// Any monitoring system should report a disaster level trigger if "Offline Production VMs > 0"
+func VmNumbersOverview() (int, int, int, int) {
 	allVms := 0
 	onlineVms := 0
 	backupVms := 0
+	offlineProductionVms := 0
 	for _, v := range getAllVms() {
 		allVms = allVms + 1
-		if vmLiveCheck(v) {
-			onlineVms = onlineVms + 1
-		}
 		tempConf := vmConfig(v)
 		if tempConf.ParentHost != GetHostName() {
 			backupVms = backupVms + 1
 		}
+		if vmLiveCheck(v) {
+			onlineVms = onlineVms + 1
+		} else if tempConf.LiveStatus == "prod" || tempConf.LiveStatus == "production" {
+			offlineProductionVms = offlineProductionVms + 1
+		}
 	}
-	return allVms, onlineVms, backupVms
+	return allVms, onlineVms, backupVms, offlineProductionVms
 }
 
 func ByteConversion(bytes int) string {
