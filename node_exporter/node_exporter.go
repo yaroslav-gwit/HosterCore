@@ -130,15 +130,14 @@ func getGstatMetrics() string {
 		diskInfo = append(diskInfo, diskInfoTemp)
 	}
 
-	result := ""
+	result := "# HELP gstat A parsed output from the FreeBSD utility gstat for disk IO monitoring.\n"
+	result = result + "# TYPE gstat gauge\n"
 	for i, v := range diskInfo {
-		if i != 0 {
-			result = result + "\n"
-			_ = result // Static checker shits it's pants on the line above, that's why this is here
-		}
-		result = "# HELP gstat A parsed output from the FreeBSD utility gstat for disk IO monitoring.\n"
-		result = result + "# TYPE gstat gauge\n"
-
+		// if i != 0 {
+		// 	result = result + "\n"
+		// 	_ = result // Static checker shits it's pants on the line above, that's why this is here
+		// }
+		_ = i
 		result = result + "gstat{disk=\"" + v.deviceName + "\",info=\"queue_length\"} " + strconv.Itoa(diskInfo[0].queueLength) + "\n"
 		result = result + "gstat{disk=\"" + v.deviceName + "\",info=\"operations_per_second\"} " + strconv.Itoa(v.opsPerSec) + "\n"
 		result = result + "gstat{disk=\"" + v.deviceName + "\",info=\"reads_ops_per_second\"} " + strconv.Itoa(v.readsPerSecOp) + "\n"
