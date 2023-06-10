@@ -137,7 +137,7 @@ func getGstatMetrics() string {
 			_ = result // Static checker shits it's pants on the line above, that's why this is here
 		}
 		result = "# HELP gstat A parsed output from the FreeBSD utility gstat for disk IO monitoring.\n"
-		result = result + "# TYPE gstat counter\n"
+		result = result + "# TYPE gstat gauge\n"
 
 		result = result + "gstat{disk=\"" + v.deviceName + "\",info=\"queue_length\"} " + strconv.Itoa(diskInfo[0].queueLength) + "\n"
 		result = result + "gstat{disk=\"" + v.deviceName + "\",info=\"operations_per_second\"} " + strconv.Itoa(v.opsPerSec) + "\n"
@@ -177,7 +177,7 @@ func getVmNumbers() string {
 	vmNumbers.all, vmNumbers.online, vmNumbers.backup, vmNumbers.offlineProduction = cmd.VmNumbersOverview()
 
 	result := "# HELP HosterCore related FreeBSD metrics.\n"
-	result = result + "# TYPE hoster counter\n"
+	result = result + "# TYPE hoster gauge\n"
 	result = result + "hoster{counter=\"vms_all\"} " + strconv.Itoa(vmNumbers.all) + "\n"
 	result = result + "hoster{counter=\"vms_online\"} " + strconv.Itoa(vmNumbers.online) + "\n"
 	result = result + "hoster{counter=\"vms_backup\"} " + strconv.Itoa(vmNumbers.backup) + "\n"
@@ -229,7 +229,7 @@ func getZpoolInfo() string {
 			_ = result // Static checker shits it's pants on the line above, that's why this is here
 		}
 		result = "# HELP zpool_info A parsed output from the zpool info command under FreeBSD.\n"
-		result = result + "# TYPE zpool_info counter\n"
+		result = result + "# TYPE zpool_info gauge\n"
 		zpoolSize := fmt.Sprintf("%d", v.size)
 		result = result + "zpool_info{pool=\"" + v.name + "\",info=\"size\"} " + zpoolSize + "\n"
 		zpoolAllocated := fmt.Sprintf("%d", v.allocated)
