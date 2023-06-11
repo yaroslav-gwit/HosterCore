@@ -4,6 +4,7 @@ import (
 	"hoster/emojlog"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -46,9 +47,11 @@ func replicateAllProdVms(replicationEndpoint string, endpointSshPort int, sshKey
 		if !vmLiveCheck(v) {
 			continue
 		}
-		err := replicateVm(v, replicationEndpoint, endpointSshPort, sshKeyLocation)
-		if err != nil {
-			emojlog.PrintLogMessage("Replication failed for a VM: "+v+" || Exact error: "+err.Error(), emojlog.Error)
+		if strings.ToLower(vmConfigVar.LiveStatus) == "prod" || strings.ToLower(vmConfigVar.LiveStatus) == "production" {
+			err := replicateVm(v, replicationEndpoint, endpointSshPort, sshKeyLocation)
+			if err != nil {
+				emojlog.PrintLogMessage("Replication failed for a VM: "+v+" || Exact error: "+err.Error(), emojlog.Error)
+			}
 		}
 	}
 }
