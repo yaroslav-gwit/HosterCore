@@ -430,31 +430,35 @@ type VmDiskStruct struct {
 	Comment      string `json:"comment"`
 }
 
+type VmNetworkStruct struct {
+	NetworkAdaptorType string `json:"network_adaptor_type"`
+	NetworkBridge      string `json:"network_bridge"`
+	NetworkMac         string `json:"network_mac"`
+	IPAddress          string `json:"ip_address"`
+	Comment            string `json:"comment"`
+}
+
+type VmSshKey struct {
+	KeyOwner string `json:"key_owner"`
+	KeyValue string `json:"key_value"`
+	Comment  string `json:"comment"`
+}
+
 type VmConfigStruct struct {
-	CPUSockets string `json:"cpu_sockets"`
-	CPUCores   string `json:"cpu_cores"`
-	Memory     string `json:"memory"`
-	Loader     string `json:"loader"`
-	LiveStatus string `json:"live_status"`
-	OsType     string `json:"os_type"`
-	OsComment  string `json:"os_comment"`
-	Owner      string `json:"owner"`
-	ParentHost string `json:"parent_host"`
-	Networks   []struct {
-		NetworkAdaptorType string `json:"network_adaptor_type"`
-		NetworkBridge      string `json:"network_bridge"`
-		NetworkMac         string `json:"network_mac"`
-		IPAddress          string `json:"ip_address"`
-		Comment            string `json:"comment"`
-	} `json:"networks"`
-	Disks                  []VmDiskStruct `json:"disks"`
-	IncludeHostwideSSHKeys bool           `json:"include_hostwide_ssh_keys"`
-	VmSshKeys              []struct {
-		KeyOwner string `json:"key_owner"`
-		KeyValue string `json:"key_value"`
-		Comment  string `json:"comment"`
-	} `json:"vm_ssh_keys"`
-	VncPort     string `json:"vnc_port"`
-	VncPassword string `json:"vnc_password"`
-	Description string `json:"description"`
+	CPUSockets             string            `json:"cpu_sockets"`
+	CPUCores               string            `json:"cpu_cores"`
+	Memory                 string            `json:"memory"`
+	Loader                 string            `json:"loader"`
+	LiveStatus             string            `json:"live_status"`
+	OsType                 string            `json:"os_type"`
+	OsComment              string            `json:"os_comment"`
+	Owner                  string            `json:"owner"`
+	ParentHost             string            `json:"parent_host"`
+	Networks               []VmNetworkStruct `json:"networks"`
+	Disks                  []VmDiskStruct    `json:"disks"`
+	IncludeHostwideSSHKeys bool              `json:"include_hostwide_ssh_keys"`
+	VmSshKeys              []VmSshKey        `json:"vm_ssh_keys"`
+	VncPort                string            `json:"vnc_port"`
+	VncPassword            string            `json:"vnc_password"`
+	Description            string            `json:"description"`
 }

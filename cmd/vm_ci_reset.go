@@ -131,7 +131,6 @@ func ciReset(oldVmName string, newVmName string) error {
 	}
 
 	_ = os.Remove("/" + oldDsName + "/seed.iso")
-	_ = os.Remove("/" + oldDsName + "/vm_config.json")
 	_ = os.RemoveAll("/" + oldDsName + "/cloud-init-files")
 
 	// Generate template ciUserDataTemplate
@@ -167,17 +166,6 @@ func ciReset(oldVmName string, newVmName string) error {
 		return errors.New("could not generate ciMetaDataTemplate: " + err.Error())
 	}
 
-	// Generate template vmConfigFileTemplate
-	tmpl, err = template.New("vmConfigFileTemplate").Parse(vmConfigFileTemplate)
-	if err != nil {
-		return errors.New("could not generate vmConfigFileTemplate: " + err.Error())
-	}
-
-	var vmConfigFile strings.Builder
-	if err := tmpl.Execute(&vmConfigFile, c); err != nil {
-		return errors.New("could not generate vmConfigFileTemplate: " + err.Error())
-	}
-
 	// var vmName string
 	var newDsName string
 	if len(newVmName) > 0 {
@@ -195,24 +183,19 @@ func ciReset(oldVmName string, newVmName string) error {
 	// Write config files
 	newVmFolder := "/" + newDsName
 
-	// Open a new file for writing
-	vmConfigFileLocation, err := os.Create(newVmFolder + "/vm_config.json")
+	vmConfigVar.Networks[0].NetworkBridge = c.NetworkName
+	vmConfigVar.Networks[0].NetworkMac = c.MacAddress
+	vmConfigVar.Networks[0].IPAddress = c.IpAddress
+	vmConfigVar.Networks[0].Comment = c.NetworkComment
+	vmConfigVar.ParentHost = c.ParentHost
+	vmConfigVar.VncPort = c.VncPort
+	vmConfigVar.VncPassword = c.VncPassword
+	vmConfigVar.VmSshKeys = c.SshKeys
+
+	vmConfigFileLocation := newVmFolder + "/vm_config.json"
+	err = vmConfigFileWriter(vmConfigVar, vmConfigFileLocation)
 	if err != nil {
-		return errors.New(err.Error())
-	}
-	defer vmConfigFileLocation.Close()
-	// Create a new writer
-	writer := bufio.NewWriter(vmConfigFileLocation)
-	// Write a string to the file
-	str := vmConfigFile.String()
-	_, err = writer.WriteString(str)
-	if err != nil {
-		return errors.New(err.Error())
-	}
-	// Flush the writer to ensure all data has been written to the file
-	err = writer.Flush()
-	if err != nil {
-		return errors.New(err.Error())
+		return err
 	}
 
 	// Create cloud init folder
@@ -230,9 +213,9 @@ func ciReset(oldVmName string, newVmName string) error {
 	}
 	defer ciUserDataFileLocation.Close()
 	// Create a new writer
-	writer = bufio.NewWriter(ciUserDataFileLocation)
+	writer := bufio.NewWriter(ciUserDataFileLocation)
 	// Write a string to the file
-	str = ciUserData.String()
+	str := ciUserData.String()
 	_, err = writer.WriteString(str)
 	if err != nil {
 		return errors.New(err.Error())
@@ -287,15 +270,6 @@ func ciReset(oldVmName string, newVmName string) error {
 	if err != nil {
 		return errors.New(err.Error())
 	}
-
-	// err = generateNewDnsConfig()
-	// if err != nil {
-	// 	return errors.New(err.Error())
-	// }
-	// err = reloadDnsService()
-	// if err != nil {
-	// 	return errors.New(err.Error())
-	// }
 
 	err = reloadDnsServer()
 	if err != nil {

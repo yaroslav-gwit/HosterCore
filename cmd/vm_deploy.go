@@ -49,16 +49,10 @@ var (
 	}
 )
 
-type SshKey struct {
-	Key     string
-	Owner   string
-	Comment string
-}
-
 type ConfigOutputStruct struct {
 	Cpus              string
 	Ram               string
-	SshKeys           []SshKey
+	SshKeys           []VmSshKey
 	RootPassword      string
 	GwitsuperPassword string
 	InstanceId        string
@@ -217,12 +211,15 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 		c.OsComment = "Windows Server 19"
 	case "windowssrv19":
 		c.OsComment = "Windows Server 19"
+	case "windows-srv22":
+		c.OsComment = "Windows Server 22"
+	case "windowssrv22":
+		c.OsComment = "Windows Server 22"
 	default:
 		c.OsComment = "Custom OS"
 	}
 
 	c.ParentHost = GetHostName()
-
 	c.VncPort = generateRandomVncPort()
 	c.VncPassword = generateRandomPassword(8, true, true)
 	if err != nil {
@@ -270,45 +267,57 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	}
 	// fmt.Println(ciMetaData.String())
 
-	// Generate template vmConfigFileTemplate
-	tmpl, err = template.New("vmConfigFileTemplate").Parse(vmConfigFileTemplate)
-	if err != nil {
-		return errors.New("could not generate vmConfigFileTemplate: " + err.Error())
-	}
-
-	var vmConfigFile strings.Builder
-	if err := tmpl.Execute(&vmConfigFile, c); err != nil {
-		return errors.New("could not generate vmConfigFileTemplate: " + err.Error())
-	}
-	// fmt.Println(vmConfigFile.String())
-
 	zfsCloneResult, err := zfsDatasetClone(dsParent, osType, c.VmName)
 	if err != nil || !zfsCloneResult {
-		return errors.New(err.Error())
+		return err
 	}
 
 	// Write config files
 	emojlog.PrintLogMessage("Writing CloudInit config files", emojlog.Debug)
 	newVmFolder := "/" + dsParent + "/" + c.VmName
+	vmConfigFileLocation := newVmFolder + "/vm_config.json"
+	vmConfig := VmConfigStruct{}
+	networkConfig := VmNetworkStruct{}
+	diskConfig := VmDiskStruct{}
+	diskConfigList := []VmDiskStruct{}
+	vmConfig.CPUSockets = "1"
+	vmConfig.CPUCores = c.Cpus
+	vmConfig.Memory = c.Ram
+	vmConfig.Loader = "uefi"
+	vmConfig.LiveStatus = c.LiveStatus
+	vmConfig.OsType = c.OsType
+	vmConfig.OsComment = c.OsComment
+	vmConfig.Owner = "system"
+	vmConfig.ParentHost = c.ParentHost
 
-	// Open a new file for writing
-	vmConfigFileLocation, err := os.Create(newVmFolder + "/vm_config.json")
+	networkConfig.NetworkAdaptorType = "virtio-net"
+	networkConfig.NetworkBridge = c.NetworkName
+	networkConfig.NetworkMac = c.MacAddress
+	networkConfig.IPAddress = c.IpAddress
+	networkConfig.Comment = c.NetworkComment
+	vmConfig.Networks = append(vmConfig.Networks, networkConfig)
+
+	diskConfig.DiskType = "nvme"
+	diskConfig.DiskLocation = "internal"
+	diskConfig.DiskImage = "disk0.img"
+	diskConfig.Comment = "OS Disk"
+	diskConfigList = append(diskConfigList, diskConfig)
+	diskConfig.DiskType = "ahci-cd"
+	diskConfig.DiskLocation = "internal"
+	diskConfig.DiskImage = "seed.iso"
+	diskConfig.Comment = "CloudInit ISO"
+	diskConfigList = append(diskConfigList, diskConfig)
+	vmConfig.Disks = append(vmConfig.Disks, diskConfigList...)
+
+	vmConfig.IncludeHostwideSSHKeys = true
+	vmConfig.VmSshKeys = c.SshKeys
+	vmConfig.VncPort = c.VncPort
+	vmConfig.VncPassword = c.VncPassword
+	vmConfig.Description = "-"
+
+	err = vmConfigFileWriter(vmConfig, vmConfigFileLocation)
 	if err != nil {
-		return errors.New(err.Error())
-	}
-	defer vmConfigFileLocation.Close()
-	// Create a new writer
-	writer := bufio.NewWriter(vmConfigFileLocation)
-	// Write a string to the file
-	str := vmConfigFile.String()
-	_, err = writer.WriteString(str)
-	if err != nil {
-		return errors.New(err.Error())
-	}
-	// Flush the writer to ensure all data has been written to the file
-	err = writer.Flush()
-	if err != nil {
-		return errors.New(err.Error())
+		return err
 	}
 
 	// Create cloud init folder
@@ -318,7 +327,6 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 			return err
 		}
 	}
-
 	// Open /cloud-init-files/user-data for writing
 	ciUserDataFileLocation, err := os.Create(newVmFolder + "/cloud-init-files/user-data")
 	if err != nil {
@@ -326,9 +334,9 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	}
 	defer ciUserDataFileLocation.Close()
 	// Create a new writer
-	writer = bufio.NewWriter(ciUserDataFileLocation)
+	writer := bufio.NewWriter(ciUserDataFileLocation)
 	// Write a string to the file
-	str = ciUserData.String()
+	str := ciUserData.String()
 	_, err = writer.WriteString(str)
 	if err != nil {
 		return errors.New(err.Error())
@@ -384,15 +392,6 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 		return errors.New(err.Error())
 	}
 
-	// err = generateNewDnsConfig()
-	// if err != nil {
-	// 	return errors.New(err.Error())
-	// }
-	// err = reloadDnsService()
-	// if err != nil {
-	// 	return errors.New(err.Error())
-	// }
-
 	err = reloadDnsServer()
 	if err != nil {
 		return err
@@ -420,7 +419,7 @@ users:
     disable_root: false
     ssh_authorized_keys:
 	  {{- range .SshKeys}}
-      - {{ .Key }}
+      - {{ .KeyValue }}
 	  {{- end }}
 
   - name: gwitsuper
@@ -430,7 +429,7 @@ users:
     lock_passwd: false
     ssh_authorized_keys:
 	  {{- range .SshKeys}}
-      - {{ .Key }}
+      - {{ .KeyValue }}
 	  {{- end }}
 
 chpasswd:
@@ -450,68 +449,68 @@ local-hostname: {{ .VmName }}
 const ciNetworkConfigTemplate = `version: 2
 ethernets:
   interface0:
-     match:
-       macaddress: "{{ .MacAddress }}"
+    match:
+      macaddress: "{{ .MacAddress }}"
      
-     set-name: eth0
-     addresses:
-     - {{ .IpAddress }}/{{ .NakedSubnet }}
+    set-name: eth0
+    addresses:
+    - {{ .IpAddress }}/{{ .NakedSubnet }}
      
-     gateway4: {{ .Gateway }}
+    gateway4: {{ .Gateway }}
      
-     nameservers:
-       search: [ {{ .ParentHost }}.internal.lan, ]
-       addresses: [{{ .Gateway }}, ]
+    nameservers:
+      search: [ {{ .ParentHost }}.internal.lan, ]
+      addresses: [{{ .Gateway }}, ]
 `
 
-const vmConfigFileTemplate = `
-{
-    "cpu_sockets": "1",
-    "cpu_cores": "{{ .Cpus }}",
-    "memory": "{{ .Ram }}",
-    "loader": "uefi",
-    "live_status": "{{ .LiveStatus }}",
-    "os_type": "{{ .OsType }}",
-    "os_comment": "{{ .OsComment }}",
-    "owner": "System",
-    "parent_host": "{{ .ParentHost }}",
+// const vmConfigFileTemplate = `
+// {
+//     "cpu_sockets": "1",
+//     "cpu_cores": "{{ .Cpus }}",
+//     "memory": "{{ .Ram }}",
+//     "loader": "uefi",
+//     "live_status": "{{ .LiveStatus }}",
+//     "os_type": "{{ .OsType }}",
+//     "os_comment": "{{ .OsComment }}",
+//     "owner": "System",
+//     "parent_host": "{{ .ParentHost }}",
 
-    "networks": [
-        {
-            "network_adaptor_type": "virtio-net",
-            "network_bridge": "{{ .NetworkName }}",
-            "network_mac": "{{ .MacAddress }}",
-            "ip_address": "{{ .IpAddress }}",
-            "comment": "{{ .NetworkComment }}"
-        }
-    ],
+//     "networks": [
+//         {
+//             "network_adaptor_type": "virtio-net",
+//             "network_bridge": "{{ .NetworkName }}",
+//             "network_mac": "{{ .MacAddress }}",
+//             "ip_address": "{{ .IpAddress }}",
+//             "comment": "{{ .NetworkComment }}"
+//         }
+//     ],
 
-    "disks": [
-        {
-            "disk_type": "nvme",
-            "disk_location": "internal",
-            "disk_image": "disk0.img",
-            "comment": "OS Drive"
-        },
-        {
-            "disk_type": "ahci-cd",
-            "disk_location": "internal",
-            "disk_image": "seed.iso",
-            "comment": "Cloud Init ISO"
-        }
-    ],
+//     "disks": [
+//         {
+//             "disk_type": "nvme",
+//             "disk_location": "internal",
+//             "disk_image": "disk0.img",
+//             "comment": "OS Drive"
+//         },
+//         {
+//             "disk_type": "ahci-cd",
+//             "disk_location": "internal",
+//             "disk_image": "seed.iso",
+//             "comment": "Cloud Init ISO"
+//         }
+//     ],
 
-    "include_hostwide_ssh_keys": true,
-    "vm_ssh_keys": [
-        {}
-    ],
+//     "include_hostwide_ssh_keys": true,
+//     "vm_ssh_keys": [
+//         {}
+//     ],
 
-    "vnc_port": "{{ .VncPort }}",
-    "vnc_password": "{{ .VncPassword }}",
+//     "vnc_port": "{{ .VncPort }}",
+//     "vnc_password": "{{ .VncPassword }}",
 
-    "description": "-"
-}
-`
+//     "description": "-"
+// }
+// `
 
 func generateNewIp(networkName string) (string, error) {
 	var existingIps []string
@@ -805,8 +804,8 @@ func GetHostConfig() (HostConfig, error) {
 	return hostConfig, nil
 }
 
-func getSystemSshKeys() ([]SshKey, error) {
-	sshKeys := []SshKey{}
+func getSystemSshKeys() ([]VmSshKey, error) {
+	sshKeys := []VmSshKey{}
 	hostConfig := HostConfig{}
 	// JSON config file location
 	execPath, err := os.Executable()
@@ -828,10 +827,10 @@ func getSystemSshKeys() ([]SshKey, error) {
 	}
 
 	for _, v := range hostConfig.HostSSHKeys {
-		tempKey := SshKey{}
-		tempKey.Key = v.KeyValue
+		tempKey := VmSshKey{}
+		tempKey.KeyValue = v.KeyValue
 		tempKey.Comment = v.Comment
-		tempKey.Owner = "System"
+		tempKey.KeyOwner = "System"
 		sshKeys = append(sshKeys, tempKey)
 	}
 
@@ -871,5 +870,27 @@ func createCiIso(vmFolder string) error {
 	}
 
 	emojlog.PrintLogMessage("New CloudInit ISO has been created", emojlog.Info)
+	return nil
+}
+
+func vmConfigFileWriter(vmConfig VmConfigStruct, configLocation string) error {
+	vmFileJsonOutput, err := json.MarshalIndent(vmConfig, "", "   ")
+	if err != nil {
+		return err
+	}
+
+	// Open the file in write-only mode, truncating (overwriting) it if it already exists
+	file, err := os.OpenFile(configLocation, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Write data to the file
+	_, err = file.Write(vmFileJsonOutput)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

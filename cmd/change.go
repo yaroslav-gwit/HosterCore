@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"hoster/emojlog"
 	"log"
-	"os"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
@@ -68,20 +66,7 @@ func replaceParent(vmName string, newParent string) error {
 	}
 	vmConfigVar.ParentHost = newParent
 
-	jsonOutput, err := json.MarshalIndent(vmConfigVar, "", "   ")
-	if err != nil {
-		return err
-	}
-
-	// Open the file in write-only mode, truncating it if it already exists
-	file, err := os.OpenFile(vmFolder+"/vm_config.json", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	// Write data to the file
-	_, err = file.Write(jsonOutput)
+	err := vmConfigFileWriter(vmConfigVar, vmFolder+"/vm_config.json")
 	if err != nil {
 		return err
 	}

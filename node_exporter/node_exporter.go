@@ -86,6 +86,12 @@ type DiskInfo struct {
 }
 
 func getGstatMetrics() string {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("PANIC AVOIDED! Recovered: ", r)
+		}
+	}()
+
 	cmd := exec.Command("gstat", "-bp", "-I 850000")
 
 	output, err := cmd.Output()
