@@ -650,6 +650,7 @@ func VmNumbersOverview() (int, int, int, int) {
 		tempConf := vmConfig(v)
 		if tempConf.ParentHost != GetHostName() {
 			backupVms = backupVms + 1
+			continue
 		}
 		if vmLiveCheck(v) {
 			onlineVms = onlineVms + 1
