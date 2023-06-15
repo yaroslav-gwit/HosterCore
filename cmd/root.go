@@ -111,8 +111,8 @@ func init() {
 	vmCmd.AddCommand(vmCiResetCmd)
 	vmCiResetCmd.Flags().StringVarP(&newVmName, "new-name", "n", "", "Set a new VM name (if you'd like to rename the VM as well)")
 	vmCiResetCmd.Flags().StringVarP(&ciResetNetworkName, "network-name", "", "", "Use the specific network instead of a default choice")
-	vmDeployCmd.Flags().StringVarP(&ciResetIpAddress, "ip-address", "", "", "Set the IP address for your VM manually")
-	vmDeployCmd.Flags().StringVarP(&ciResetDnsServer, "dns-server", "", "", "Set a custom DNS server for your VM")
+	vmCiResetCmd.Flags().StringVarP(&ciResetIpAddress, "ip-address", "", "", "Set the IP address for your VM manually")
+	vmCiResetCmd.Flags().StringVarP(&ciResetDnsServer, "dns-server", "", "", "Set a custom DNS server for your VM")
 
 	// VM cmd -> vm replicate
 	vmCmd.AddCommand(vmZfsReplicateCmd)
