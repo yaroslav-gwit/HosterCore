@@ -17,6 +17,8 @@ import (
 var (
 	newVmName          string
 	ciResetNetworkName string
+	ciResetIpAddress   string
+	ciResetDnsServer   string
 
 	vmCiResetCmd = &cobra.Command{
 		Use:   "cireset",
@@ -77,9 +79,14 @@ func ciReset(oldVmName string, newVmName string) error {
 		return errors.New("could not generate vm name: " + err.Error())
 	}
 
-	c.IpAddress, err = generateNewIp(ciResetNetworkName)
-	if err != nil {
-		return errors.New("could not generate the IP")
+	if len(deployIpAddress) > 1 {
+		c.IpAddress = deployIpAddress
+	} else {
+		// Generate and set random IP address (which is free in the pool of addresses)
+		c.IpAddress, err = generateNewIp(networkName)
+		if err != nil {
+			return errors.New("could not generate the IP: " + err.Error())
+		}
 	}
 
 	networkInfo, err := networkInfo()
@@ -105,6 +112,12 @@ func ciReset(oldVmName string, newVmName string) error {
 		if len(c.NetworkName) < 1 {
 			return errors.New("network name supplied doesn't exist")
 		}
+	}
+
+	if len(deployDnsServer) > 1 {
+		c.DnsServer = deployDnsServer
+	} else {
+		c.DnsServer = c.Gateway
 	}
 
 	c.Cpus = vmConfigVar.CPUCores

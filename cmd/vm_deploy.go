@@ -25,6 +25,8 @@ import (
 var (
 	vmName                 string
 	networkName            string
+	deployIpAddress        string
+	deployDnsServer        string
 	osType                 string
 	osTypeAlias            string
 	zfsDataset             string
@@ -67,6 +69,7 @@ type ConfigOutputStruct struct {
 	Subnet            string
 	NakedSubnet       string
 	Gateway           string
+	DnsServer         string
 	LiveStatus        string
 	OsType            string
 	OsComment         string
@@ -151,10 +154,14 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 		return errors.New("could not generate vm name: " + err.Error())
 	}
 
-	// Generate and set random IP address (which is free in the pool of addresses)
-	c.IpAddress, err = generateNewIp(networkName)
-	if err != nil {
-		return errors.New("could not generate the IP: " + err.Error())
+	if len(deployIpAddress) > 1 {
+		c.IpAddress = deployIpAddress
+	} else {
+		// Generate and set random IP address (which is free in the pool of addresses)
+		c.IpAddress, err = generateNewIp(networkName)
+		if err != nil {
+			return errors.New("could not generate the IP: " + err.Error())
+		}
 	}
 
 	networkInfo, err := networkInfo()
@@ -180,6 +187,12 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 		if len(c.NetworkName) < 1 {
 			return errors.New("network name supplied doesn't exist")
 		}
+	}
+
+	if len(deployDnsServer) > 1 {
+		c.DnsServer = deployDnsServer
+	} else {
+		c.DnsServer = c.Gateway
 	}
 
 	reMatchTest := regexp.MustCompile(`.*test`)
@@ -463,57 +476,8 @@ ethernets:
      
     nameservers:
       search: [ {{ .ParentHost }}.internal.lan, ]
-      addresses: [{{ .Gateway }}, ]
+      addresses: [{{ .DnsServer }}, ]
 `
-
-// const vmConfigFileTemplate = `
-// {
-//     "cpu_sockets": "1",
-//     "cpu_cores": "{{ .Cpus }}",
-//     "memory": "{{ .Ram }}",
-//     "loader": "uefi",
-//     "live_status": "{{ .LiveStatus }}",
-//     "os_type": "{{ .OsType }}",
-//     "os_comment": "{{ .OsComment }}",
-//     "owner": "System",
-//     "parent_host": "{{ .ParentHost }}",
-
-//     "networks": [
-//         {
-//             "network_adaptor_type": "virtio-net",
-//             "network_bridge": "{{ .NetworkName }}",
-//             "network_mac": "{{ .MacAddress }}",
-//             "ip_address": "{{ .IpAddress }}",
-//             "comment": "{{ .NetworkComment }}"
-//         }
-//     ],
-
-//     "disks": [
-//         {
-//             "disk_type": "nvme",
-//             "disk_location": "internal",
-//             "disk_image": "disk0.img",
-//             "comment": "OS Drive"
-//         },
-//         {
-//             "disk_type": "ahci-cd",
-//             "disk_location": "internal",
-//             "disk_image": "seed.iso",
-//             "comment": "Cloud Init ISO"
-//         }
-//     ],
-
-//     "include_hostwide_ssh_keys": true,
-//     "vm_ssh_keys": [
-//         {}
-//     ],
-
-//     "vnc_port": "{{ .VncPort }}",
-//     "vnc_password": "{{ .VncPassword }}",
-
-//     "description": "-"
-// }
-// `
 
 func generateNewIp(networkName string) (string, error) {
 	var existingIps []string

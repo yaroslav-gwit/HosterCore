@@ -104,11 +104,15 @@ func init() {
 	vmDeployCmd.Flags().StringVarP(&osTypeAlias, "os-stype", "", "", "Alias for the os-type, because it was misspelled in the past as os-stype")
 	vmDeployCmd.Flags().StringVarP(&zfsDataset, "dataset", "d", "zroot/vm-encrypted", "Choose the parent dataset for the VM deployment")
 	vmDeployCmd.Flags().BoolVarP(&vmDeployStartWhenReady, "start-now", "", false, "Whether to start the VM after it's deployed")
+	vmDeployCmd.Flags().StringVarP(&deployIpAddress, "ip-address", "", "", "Set the IP address for your new VM manually")
+	vmDeployCmd.Flags().StringVarP(&deployDnsServer, "dns-server", "", "", "Set a custom DNS server for your new VM")
 
 	// VM cmd -> vm cireset
 	vmCmd.AddCommand(vmCiResetCmd)
 	vmCiResetCmd.Flags().StringVarP(&newVmName, "new-name", "n", "", "Set a new VM name (if you'd like to rename the VM as well)")
 	vmCiResetCmd.Flags().StringVarP(&ciResetNetworkName, "network-name", "", "", "Use the specific network instead of a default choice")
+	vmDeployCmd.Flags().StringVarP(&ciResetIpAddress, "ip-address", "", "", "Set the IP address for your VM manually")
+	vmDeployCmd.Flags().StringVarP(&ciResetDnsServer, "dns-server", "", "", "Set a custom DNS server for your VM")
 
 	// VM cmd -> vm replicate
 	vmCmd.AddCommand(vmZfsReplicateCmd)
