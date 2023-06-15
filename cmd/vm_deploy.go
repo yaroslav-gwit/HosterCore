@@ -26,6 +26,7 @@ var (
 	vmName                 string
 	networkName            string
 	osType                 string
+	osTypeAlias            string
 	zfsDataset             string
 	vmDeployCpus           int
 	vmDeployRam            string
@@ -40,7 +41,9 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-
+			if len(osTypeAlias) > 0 {
+				osType = osTypeAlias
+			}
 			err = deployVmMain(vmName, networkName, osType, zfsDataset, vmDeployCpus, vmDeployRam, vmDeployStartWhenReady)
 			if err != nil {
 				log.Fatal(err)

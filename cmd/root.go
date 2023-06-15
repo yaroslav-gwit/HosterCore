@@ -100,7 +100,8 @@ func init() {
 	vmDeployCmd.Flags().StringVarP(&networkName, "network-name", "", "", "Use this network for new VM deployment")
 	vmDeployCmd.Flags().IntVarP(&vmDeployCpus, "cpu-cores", "c", 2, "Number of CPU cores to assign to this VM")
 	vmDeployCmd.Flags().StringVarP(&vmDeployRam, "ram", "r", "2G", "Amount of RAM to assign to this VM (ie 1500MB, 2GB, etc)")
-	vmDeployCmd.Flags().StringVarP(&osType, "os-stype", "t", "debian11", "OS or type or distribution (ie: debian11, ubuntu2004, etc)")
+	vmDeployCmd.Flags().StringVarP(&osType, "os-type", "t", "debian11", "OS type or distribution (ie: debian11, ubuntu2004, etc)")
+	vmDeployCmd.Flags().StringVarP(&osTypeAlias, "os-stype", "", "", "Alias for the os-type, because it was misspelled in the past as os-stype")
 	vmDeployCmd.Flags().StringVarP(&zfsDataset, "dataset", "d", "zroot/vm-encrypted", "Choose the parent dataset for the VM deployment")
 	vmDeployCmd.Flags().BoolVarP(&vmDeployStartWhenReady, "start-now", "", false, "Whether to start the VM after it's deployed")
 
