@@ -39,7 +39,7 @@ func getSnapshotInfo(vmName string) (SnapshotInfo, error) {
 		return SnapshotInfo{}, err
 	}
 
-	out, err := exec.Command("zfs", "list", "-rpH", "-t", "-o", "name,used", vmDataset).CombinedOutput()
+	out, err := exec.Command("zfs", "list", "-rpH", "-t", "snapshot", "-o", "name,used", vmDataset).CombinedOutput()
 	fmt.Println("zfs", "list", "-rpH -t -o name,used", vmDataset)
 	fmt.Println(string(out))
 	if err != nil {
