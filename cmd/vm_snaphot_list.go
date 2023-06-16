@@ -39,9 +39,8 @@ func getSnapshotInfo(vmName string) (SnapshotInfo, error) {
 		return SnapshotInfo{}, err
 	}
 
-	command := []string{"zfs", "list", "-rpH -t -o name,used", vmDataset + "/" + vmName}
-	out, err := exec.Command(command[0], command[1:]...).CombinedOutput()
-	fmt.Println(command)
+	out, err := exec.Command("zfs", "list", "-rpH -t -o name,used", vmDataset).CombinedOutput()
+	fmt.Println("zfs", "list", "-rpH -t -o name,used", vmDataset)
 	fmt.Println(string(out))
 	if err != nil {
 		return SnapshotInfo{}, err
