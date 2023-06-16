@@ -22,6 +22,13 @@ var (
 		Short: "List VM specific snapshots",
 		Long:  `List VM specific snapshot information including snapshot name, size and time taken`,
 		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				fmt.Println("Error: Missing required argument!")
+				fmt.Println("Usage: snapshot-list [flags] vmName")
+				cmd.Help()
+				return
+			}
+
 			err := checkInitFile()
 			if err != nil {
 				log.Fatal(err)
@@ -35,7 +42,7 @@ var (
 )
 
 func generateSnapshotTable(vmName string) error {
-	info, err := getSnapshotInfo(vmName)
+	info, err := getSnapshotInfo(vmName, false)
 	if err != nil {
 		return err
 	}
@@ -97,17 +104,19 @@ type SnapshotInfo struct {
 	SizeHuman string
 }
 
-func getSnapshotInfo(vmName string) ([]SnapshotInfo, error) {
-	vmList := getAllVms()
-	vmExists := false
-	for _, v := range vmList {
-		if v == vmName {
-			vmExists = true
+func getSnapshotInfo(vmName string, ignoreVmExistsCheck bool) ([]SnapshotInfo, error) {
+	if !ignoreVmExistsCheck {
+		vmList := getAllVms()
+		vmExists := false
+		for _, v := range vmList {
+			if v == vmName {
+				vmExists = true
+			}
 		}
-	}
 
-	if !vmExists {
-		return []SnapshotInfo{}, errors.New("vm was not found")
+		if !vmExists {
+			return []SnapshotInfo{}, errors.New("vm was not found")
+		}
 	}
 
 	snapshotInfo := []SnapshotInfo{}
