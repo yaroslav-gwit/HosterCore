@@ -69,6 +69,9 @@ func init() {
 	vmZfsSnapshotCmd.Flags().StringVarP(&snapshotType, "stype", "t", "custom", "Snapshot type")
 	vmZfsSnapshotCmd.Flags().IntVarP(&snapshotsToKeep, "keep", "k", 5, "Number of snapshots to keep for this specific snapshot type")
 
+	// VM cmd -> snapshot list
+	vmCmd.AddCommand(vmSnapshotListCmd)
+
 	// VM cmd -> snapshot all
 	vmCmd.AddCommand(vmZfsSnapshotAllCmd)
 	vmZfsSnapshotAllCmd.Flags().StringVarP(&snapshotAllType, "stype", "t", "custom", "Snapshot type")
