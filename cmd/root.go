@@ -71,6 +71,7 @@ func init() {
 
 	// VM cmd -> snapshot list
 	vmCmd.AddCommand(vmSnapshotListCmd)
+	vmSnapshotListCmd.Flags().BoolVarP(&vmSnapshotListUnixStyleTable, "unix", "u", false, "Output the table using `Unix` style for further processing")
 
 	// VM cmd -> snapshot all
 	vmCmd.AddCommand(vmZfsSnapshotAllCmd)

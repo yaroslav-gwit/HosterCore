@@ -4,15 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
 
+	"github.com/aquasecurity/table"
 	"github.com/spf13/cobra"
 )
 
 var (
+	vmSnapshotListUnixStyleTable bool
+
 	vmSnapshotListCmd = &cobra.Command{
 		Use:   "snapshot-list [vmName]",
 		Short: "List VM specific snapshots",
@@ -20,16 +24,72 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
 			if err != nil {
-				log.Fatal(err.Error())
+				log.Fatal(err)
 			}
-			info, err := getSnapshotInfo(args[0])
+			err = generateSnapshotTable(args[0])
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Println(info)
 		},
 	}
 )
+
+func generateSnapshotTable(vmName string) error {
+	info, err := getSnapshotInfo(vmName)
+	if err != nil {
+		return err
+	}
+
+	var ID = 0
+	var t = table.New(os.Stdout)
+	t.SetAlignment(table.AlignCenter, //ID
+		table.AlignLeft,   // Snapshot Name
+		table.AlignCenter, // Snapshot Size Human
+		table.AlignCenter) // Snapshot Size Bytes
+
+	if vmSnapshotListUnixStyleTable {
+		t.SetDividers(table.Dividers{
+			ALL: " ",
+			NES: " ",
+			NSW: " ",
+			NEW: " ",
+			ESW: " ",
+			NE:  " ",
+			NW:  " ",
+			SW:  " ",
+			ES:  " ",
+			EW:  " ",
+			NS:  " ",
+		})
+		t.SetRowLines(false)
+		t.SetBorderTop(false)
+		t.SetBorderBottom(false)
+	} else {
+		t.SetHeaders("List of ZFS Snapshots for: " + vmName)
+		t.SetHeaderColSpans(0, 4)
+
+		t.AddHeaders(
+			"ID",
+			"Snapshot Name",
+			"Snapshot Size Human",
+			"Snapshot Size Bytes")
+
+		t.SetLineStyle(table.StyleBrightCyan)
+		t.SetDividers(table.UnicodeRoundedDividers)
+		t.SetHeaderStyle(table.StyleBold)
+	}
+
+	for _, vmSnap := range info {
+		ID = ID + 1
+		t.AddRow(strconv.Itoa(ID),
+			vmSnap.Name,
+			vmSnap.SizeHuman,
+			strconv.Itoa(int(vmSnap.SizeBytes)))
+	}
+
+	t.Render()
+	return nil
+}
 
 type SnapshotInfo struct {
 	Name      string
