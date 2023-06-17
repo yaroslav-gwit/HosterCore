@@ -146,7 +146,6 @@ func init() {
 	// VM cmd -> image
 	rootCmd.AddCommand(imageCmd)
 	imageCmd.AddCommand(imageDownloadCmd)
-	imageDownloadCmd.Flags().StringVarP(&imageOsType, "os-type", "t", "debian11", "Specify the OS/distribution image type")
 	imageDownloadCmd.Flags().StringVarP(&imageDataset, "use-dataset", "d", "zroot/vm-encrypted", "Specify the dataset for this particular image")
 
 	// VM cmd -> change

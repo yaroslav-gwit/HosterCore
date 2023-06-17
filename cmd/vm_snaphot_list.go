@@ -21,14 +21,8 @@ var (
 		Use:   "snapshot-list [vmName]",
 		Short: "List VM specific snapshots",
 		Long:  `List VM specific snapshot information including snapshot name, size and time taken`,
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
-				fmt.Println("Error: Missing required argument!")
-				fmt.Println("Usage: snapshot-list [flags] vmName")
-				cmd.Help()
-				return
-			}
-
 			err := checkInitFile()
 			if err != nil {
 				log.Fatal(err)

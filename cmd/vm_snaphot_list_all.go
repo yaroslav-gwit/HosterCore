@@ -34,6 +34,7 @@ func generateSnapshotAllTable() error {
 	var ID = 0
 	var t = table.New(os.Stdout)
 	t.SetAlignment(table.AlignRight, //ID
+		table.AlignLeft,  // VM Name
 		table.AlignLeft,  // Snapshot Name
 		table.AlignRight, // Snapshot Size Human
 		table.AlignRight) // Snapshot Size Bytes

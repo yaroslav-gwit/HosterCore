@@ -79,15 +79,15 @@ func vmTableOutput() {
 	var vmConfigVar VmConfigStruct
 
 	var t = table.New(os.Stdout)
-	t.SetAlignment(table.AlignCenter, //ID
+	t.SetAlignment(table.AlignRight, //ID
 		table.AlignLeft,   // VM Name
 		table.AlignCenter, // VM Status
 		table.AlignCenter, // CPU Sockets
 		table.AlignCenter, // CPU Cores
 		table.AlignCenter, // RAM
-		table.AlignCenter, // Main IP
-		table.AlignCenter, // OS Comment
-		table.AlignCenter, // VM Uptime
+		table.AlignLeft,   // Main IP
+		table.AlignLeft,   // OS Comment
+		table.AlignLeft,   // VM Uptime
 		table.AlignCenter, // OS Disk Used
 		table.AlignLeft)   // Description
 

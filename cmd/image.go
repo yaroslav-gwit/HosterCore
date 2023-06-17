@@ -35,23 +35,24 @@ var (
 )
 
 var (
-	imageOsType  string
 	imageDataset string
 
 	imageDownloadCmd = &cobra.Command{
-		Use:   "download",
+		Use:   "download [osType]",
 		Short: "Download an image from the public or private repo",
 		Long:  `Download an image from the public or private repo`,
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = imageDownload(imageOsType)
+
+			err = imageDownload(args[0])
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = imageUnzip(imageDataset, imageOsType)
+			err = imageUnzip(imageDataset, args[0])
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -290,7 +291,7 @@ func listAvailableImages() error {
 	// var imageList []string
 	for _, v := range vmImageMap["vm_images"] {
 		for key := range v {
-			fmt.Println(" " + key)
+			fmt.Println("  -> " + key)
 		}
 	}
 
