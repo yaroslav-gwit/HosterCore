@@ -15,7 +15,7 @@ var (
 	jsonPrettyVmInfo bool
 
 	vmInfoCmd = &cobra.Command{
-		Use:   "info [vm name]",
+		Use:   "info [vmName]",
 		Short: "Print out the VM Info",
 		Long:  `Print out the VM Info.`,
 		Args:  cobra.ExactArgs(1),
@@ -24,7 +24,7 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			
+
 			printVmInfo(args[0])
 		},
 	}
