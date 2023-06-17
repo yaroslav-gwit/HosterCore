@@ -114,14 +114,14 @@ func vmTableOutput() {
 
 		t.AddHeaders(
 			"ID",
-			"VM Name",
-			"VM Status",
+			"VM\nName",
+			"VM\nStatus",
 			"CPU\nSockets",
 			"CPU\nCores",
-			"RAM",
-			"Main IP",
-			"OS Type",
-			"VM Uptime",
+			"VM\nMemory",
+			"Main IP\nAddress",
+			"OS\nType",
+			"VM\nUptime",
 			"OS Disk\n(Used/Total)",
 			"VM\nDescription")
 
