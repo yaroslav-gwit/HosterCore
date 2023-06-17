@@ -143,10 +143,13 @@ func init() {
 	// Init command section
 	rootCmd.AddCommand(initCmd)
 
-	// VM cmd -> image
+	// Image command section
 	rootCmd.AddCommand(imageCmd)
 	imageCmd.AddCommand(imageDownloadCmd)
 	imageDownloadCmd.Flags().StringVarP(&imageDataset, "use-dataset", "d", "zroot/vm-encrypted", "Specify the dataset for this particular image")
+
+	// VM cmd -> secrets
+	vmCmd.AddCommand(vmSecretsCmd)
 
 	// VM cmd -> change
 	rootCmd.AddCommand(changeCmd)
