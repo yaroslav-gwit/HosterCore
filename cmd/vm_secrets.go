@@ -81,11 +81,11 @@ func vmSecretsTableOutput(vmName string) error {
 			rootPassword = v.password
 		}
 		if v.username == "gwitsuper" {
-			rootPassword = v.password
+			gwitSuperPassword = v.password
 		}
 	}
 
-	t.AddRow("1", "VNC Access", "VNC Port: "+vmConfigVar.VncPort+" >|< VNC Password: "+vmConfigVar.VncPassword)
+	t.AddRow("1", "VNC Access", "VNC Port: "+vmConfigVar.VncPort+" || VNC Password: "+vmConfigVar.VncPassword)
 	t.AddRow("2", "root/administrator password", rootPassword)
 	t.AddRow("3", "gwitsuper password", gwitSuperPassword)
 	t.Render()
@@ -117,13 +117,13 @@ func readCiUserSecrets(vmName string) ([]UserSecrets, error) {
 		if reRootPasswordMatch.MatchString(v) {
 			userSecret := UserSecrets{}
 			userSecret.username = "root"
-			reTrim.ReplaceAllString(v, "")
+			userSecret.password = reTrim.ReplaceAllString(v, "")
 			userSecrets = append(userSecrets, userSecret)
 		}
 		if reGwitsuperPasswordMatch.MatchString(v) {
 			userSecret := UserSecrets{}
 			userSecret.username = "gwitsuper"
-			reTrim.ReplaceAllString(v, "")
+			userSecret.password = reTrim.ReplaceAllString(v, "")
 			userSecrets = append(userSecrets, userSecret)
 		}
 	}
