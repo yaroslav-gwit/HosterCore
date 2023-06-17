@@ -77,16 +77,15 @@ func vmTableOutput() {
 	var vmEncrypted string
 	var vmProduction string
 	var vmConfigVar VmConfigStruct
-	var cpuFinal string
 
 	var t = table.New(os.Stdout)
 	t.SetAlignment(table.AlignCenter, //ID
 		table.AlignLeft,   // VM Name
 		table.AlignCenter, // VM Status
-		table.AlignCenter, // CPU and RAM
+		table.AlignCenter, // CPU Sockets
+		table.AlignCenter, // CPU Cores
+		table.AlignCenter, // RAM
 		table.AlignCenter, // Main IP
-		// table.AlignCenter, // VNC Port
-		// table.AlignCenter, // VNC Password
 		table.AlignCenter, // OS Comment
 		table.AlignCenter, // VM Uptime
 		table.AlignCenter, // OS Disk Used
@@ -111,17 +110,16 @@ func vmTableOutput() {
 		t.SetBorderBottom(false)
 	} else {
 		t.SetHeaders("List of VMs")
-		// t.SetHeaderColSpans(0, 11)
-		t.SetHeaderColSpans(0, 9)
+		t.SetHeaderColSpans(0, 11)
 
 		t.AddHeaders(
 			"ID",
 			"VM Name",
 			"VM Status",
-			"CPU/RAM",
+			"CPU\nSockets",
+			"CPU\nCores",
+			"RAM",
 			"Main IP",
-			// "VNC\nPort",
-			// "VNC\nPassword",
 			"OS Type",
 			"VM Uptime",
 			"OS Disk\n(Used/Total)",
@@ -156,17 +154,13 @@ func vmTableOutput() {
 			vmProduction = ""
 		}
 
-		var cpuCoresInt, _ = strconv.Atoi(vmConfigVar.CPUCores)
-		var cpuSocketsInt, _ = strconv.Atoi(vmConfigVar.CPUSockets)
-		cpuFinal = strconv.Itoa(cpuCoresInt * cpuSocketsInt)
-
 		t.AddRow(strconv.Itoa(ID),
 			vmName,
 			vmLive+vmEncrypted+vmProduction,
-			cpuFinal+"/"+vmConfigVar.Memory,
+			vmConfigVar.CPUSockets,
+			vmConfigVar.CPUCores,
+			vmConfigVar.Memory,
 			vmConfigVar.Networks[0].IPAddress,
-			// vmConfigVar.VncPort,
-			// vmConfigVar.VncPassword,
 			vmConfigVar.OsComment,
 			vmUptimeVar,
 			vmOsDiskFree+"/"+vmOsDiskFullSize,
