@@ -85,8 +85,8 @@ func vmTableOutput() {
 		table.AlignCenter, // VM Status
 		table.AlignCenter, // CPU and RAM
 		table.AlignCenter, // Main IP
-		table.AlignCenter, // VNC Port
-		table.AlignCenter, // VNC Password
+		// table.AlignCenter, // VNC Port
+		// table.AlignCenter, // VNC Password
 		table.AlignCenter, // OS Comment
 		table.AlignCenter, // VM Uptime
 		table.AlignCenter, // OS Disk Used
@@ -111,7 +111,8 @@ func vmTableOutput() {
 		t.SetBorderBottom(false)
 	} else {
 		t.SetHeaders("List of VMs")
-		t.SetHeaderColSpans(0, 11)
+		// t.SetHeaderColSpans(0, 11)
+		t.SetHeaderColSpans(0, 9)
 
 		t.AddHeaders(
 			"ID",
@@ -119,8 +120,8 @@ func vmTableOutput() {
 			"VM Status",
 			"CPU/RAM",
 			"Main IP",
-			"VNC\nPort",
-			"VNC\nPassword",
+			// "VNC\nPort",
+			// "VNC\nPassword",
 			"OS Type",
 			"VM Uptime",
 			"OS Disk\n(Used/Total)",
@@ -164,8 +165,8 @@ func vmTableOutput() {
 			vmLive+vmEncrypted+vmProduction,
 			cpuFinal+"/"+vmConfigVar.Memory,
 			vmConfigVar.Networks[0].IPAddress,
-			vmConfigVar.VncPort,
-			vmConfigVar.VncPassword,
+			// vmConfigVar.VncPort,
+			// vmConfigVar.VncPassword,
 			vmConfigVar.OsComment,
 			vmUptimeVar,
 			vmOsDiskFree+"/"+vmOsDiskFullSize,

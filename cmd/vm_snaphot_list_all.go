@@ -38,7 +38,7 @@ func generateSnapshotAllTable() error {
 		table.AlignCenter, // Snapshot Size Human
 		table.AlignCenter) // Snapshot Size Bytes
 
-	if vmSnapshotListUnixStyleTable {
+	if vmSnapshotListAllUnixStyleTable {
 		t.SetDividers(table.Dividers{
 			ALL: " ",
 			NES: " ",
