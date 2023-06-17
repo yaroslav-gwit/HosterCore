@@ -152,6 +152,11 @@ func init() {
 	vmCmd.AddCommand(vmSecretsCmd)
 	vmSecretsCmd.Flags().BoolVarP(&vmSecretsUnixTable, "unix-style", "u", false, "Show Unix style table (useful for scripting and smaller screens)")
 
+	// VM cmd -> ci-iso
+	vmCmd.AddCommand(vmCiIsoCmd)
+	vmCiIsoCmd.AddCommand(vmCiIsoMountCmd)
+	vmCiIsoCmd.AddCommand(vmCiIsoUnmountCmd)
+
 	// VM cmd -> change
 	rootCmd.AddCommand(changeCmd)
 	changeCmd.AddCommand(changeParentCmd)
