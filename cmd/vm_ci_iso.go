@@ -66,11 +66,11 @@ var (
 func mountCiIso(vmName string) error {
 	vmConfigVar := vmConfig(vmName)
 	vmFolder := getVmFolder(vmName)
-	if vmConfigVar.Disks[1].DiskLocation == "seed.iso" {
+	if vmConfigVar.Disks[1].DiskImage == "seed.iso" {
 		return errors.New("CloudInit ISO has already been mounted")
 	}
 
-	vmConfigVar.Disks[1].DiskLocation = "seed.iso"
+	vmConfigVar.Disks[1].DiskImage = "seed.iso"
 	vmConfigVar.Disks[1].Comment = "CloudInit ISO file"
 	err := vmConfigFileWriter(vmConfigVar, vmFolder+"/vm_config.json")
 	if err != nil {
@@ -88,7 +88,7 @@ func unmountCiIso(vmName string) error {
 	fileContents := []byte("placeholder file for an empty CI ISO file")
 	vmFolder := getVmFolder(vmName)
 	vmConfigVar := vmConfig(vmName)
-	if vmConfigVar.Disks[1].DiskLocation == "seed-empty.iso" {
+	if vmConfigVar.Disks[1].DiskImage == "seed-empty.iso" {
 		return errors.New("CloudInit ISO has already been unmounted")
 	}
 	err := os.WriteFile(vmFolder+"/placeholder", fileContents, 0640)
@@ -103,7 +103,7 @@ func unmountCiIso(vmName string) error {
 	}
 	_ = os.Remove(vmFolder + "/placeholder")
 
-	vmConfigVar.Disks[1].DiskLocation = "seed-empty.iso"
+	vmConfigVar.Disks[1].DiskImage = "seed-empty.iso"
 	vmConfigVar.Disks[1].Comment = "An empty CloudInit ISO file"
 	err = vmConfigFileWriter(vmConfigVar, vmFolder+"/vm_config.json")
 	if err != nil {
