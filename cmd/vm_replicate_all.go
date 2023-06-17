@@ -13,6 +13,7 @@ var (
 	replicationEndpointAll string
 	endpointSshPortAll     int
 	sshKeyLocationAll      string
+	vmReplicateAllFilter   string
 
 	vmReplicateAllCmd = &cobra.Command{
 		Use:   "replicate-all",
@@ -39,18 +40,48 @@ func replicateAllProdVms(replicationEndpoint string, endpointSshPort int, sshKey
 		log.Fatal("another replication process is already running (lock file exists): " + replicationScriptLocation)
 	}
 
-	for _, v := range getAllVms() {
-		vmConfigVar := vmConfig(v)
-		if vmConfigVar.ParentHost != GetHostName() {
-			continue
+	var filteredVmList []string
+	var filteredVmListTemp []string
+	if len(vmReplicateAllFilter) > 0 {
+		filteredVmListTemp = strings.Split(vmReplicateAllFilter, ",")
+		for _, v := range filteredVmListTemp {
+			v = strings.TrimSpace(v)
+			filteredVmList = append(filteredVmList, v)
 		}
-		if !vmLiveCheck(v) {
-			continue
-		}
-		if strings.ToLower(vmConfigVar.LiveStatus) == "prod" || strings.ToLower(vmConfigVar.LiveStatus) == "production" {
+	}
+
+	allVms := getAllVms()
+	if len(filteredVmList) > 0 {
+		for _, v := range filteredVmList {
+			vmFound := false
+			for _, vv := range allVms {
+				if vv == v {
+					vmFound = true
+				}
+			}
+			if !vmFound {
+				emojlog.PrintLogMessage("VM from the filtered list was not found: "+v, emojlog.Warning)
+				continue
+			}
 			err := replicateVm(v, replicationEndpoint, endpointSshPort, sshKeyLocation)
 			if err != nil {
 				emojlog.PrintLogMessage("Replication failed for a VM: "+v+" || Exact error: "+err.Error(), emojlog.Error)
+			}
+		}
+	} else {
+		for _, v := range allVms {
+			vmConfigVar := vmConfig(v)
+			if vmConfigVar.ParentHost != GetHostName() {
+				continue
+			}
+			if !vmLiveCheck(v) {
+				continue
+			}
+			if strings.ToLower(vmConfigVar.LiveStatus) == "prod" || strings.ToLower(vmConfigVar.LiveStatus) == "production" {
+				err := replicateVm(v, replicationEndpoint, endpointSshPort, sshKeyLocation)
+				if err != nil {
+					emojlog.PrintLogMessage("Replication failed for a VM: "+v+" || Exact error: "+err.Error(), emojlog.Error)
+				}
 			}
 		}
 	}

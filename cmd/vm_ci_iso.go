@@ -21,6 +21,7 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
+			cmd.Help()
 		},
 	}
 )
