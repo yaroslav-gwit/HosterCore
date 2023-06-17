@@ -3,6 +3,8 @@ package cmd
 import (
 	"log"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/aquasecurity/table"
 	"github.com/spf13/cobra"
@@ -67,10 +69,64 @@ func vmSecretsTableOutput(vmName string) error {
 		t.SetHeaderStyle(table.StyleBold)
 	}
 
-	t.AddRow("1", "VNC Access", "VNC Port: "+vmConfigVar.VncPort+" | VNC Password: "+vmConfigVar.VncPassword)
-	t.AddRow("2", "root password (administrator if Windows)", "VNC Port: "+vmConfigVar.VncPort+"   VNC Password: "+vmConfigVar.VncPassword)
-	t.AddRow("3", "gwitsuper password", "VNC Port: "+vmConfigVar.VncPort+"   VNC Password: "+vmConfigVar.VncPassword)
+	userSecrets, err := readCiUserSecrets(vmName)
+	if err != nil {
+		return err
+	}
+
+	rootPassword := ""
+	gwitSuperPassword := ""
+	for _, v := range userSecrets {
+		if v.username == "root" {
+			rootPassword = v.password
+		}
+		if v.username == "gwitsuper" {
+			rootPassword = v.password
+		}
+	}
+
+	t.AddRow("1", "VNC Access", "VNC Port: "+vmConfigVar.VncPort+" >|< VNC Password: "+vmConfigVar.VncPassword)
+	t.AddRow("2", "root/administrator password", rootPassword)
+	t.AddRow("3", "gwitsuper password", gwitSuperPassword)
 	t.Render()
 
 	return nil
+}
+
+type UserSecrets struct {
+	username string
+	password string
+}
+
+func readCiUserSecrets(vmName string) ([]UserSecrets, error) {
+	ciUserDataFilePath := getVmFolder(vmName) + "/cloud-init-files/user-data"
+	dat, err := os.ReadFile(ciUserDataFilePath)
+	if err != nil {
+		return []UserSecrets{}, err
+	}
+
+	userSecrets := []UserSecrets{}
+	reRootPasswordMatch := regexp.MustCompile(`^root:.*`)
+	reGwitsuperPasswordMatch := regexp.MustCompile(`^gwitsuper:.*`)
+	reTrim := regexp.MustCompile(`root:|gwitsuper:`)
+	for _, v := range strings.Split(string(dat), "\n") {
+		if len(v) < 1 {
+			continue
+		}
+		v = strings.TrimSpace(v)
+		if reRootPasswordMatch.MatchString(v) {
+			userSecret := UserSecrets{}
+			userSecret.username = "root"
+			reTrim.ReplaceAllString(v, "")
+			userSecrets = append(userSecrets, userSecret)
+		}
+		if reGwitsuperPasswordMatch.MatchString(v) {
+			userSecret := UserSecrets{}
+			userSecret.username = "gwitsuper"
+			reTrim.ReplaceAllString(v, "")
+			userSecrets = append(userSecrets, userSecret)
+		}
+	}
+
+	return userSecrets, nil
 }
