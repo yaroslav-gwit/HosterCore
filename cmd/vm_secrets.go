@@ -33,8 +33,8 @@ func vmSecretsTableOutput(vmName string) error {
 
 	var t = table.New(os.Stdout)
 	t.SetAlignment(table.AlignRight, //ID
-		table.AlignLeft,  // Secret Type
-		table.AlignRight) // Secret Info
+		table.AlignLeft, // Secret Type
+		table.AlignLeft) // Secret Info
 
 	if vmSnapshotListUnixStyleTable {
 		t.SetDividers(table.Dividers{
@@ -67,9 +67,9 @@ func vmSecretsTableOutput(vmName string) error {
 		t.SetHeaderStyle(table.StyleBold)
 	}
 
-	t.AddRow("VNC Access", "VNC Port: "+vmConfigVar.VncPort+"   VNC Password: "+vmConfigVar.VncPassword)
-	t.AddRow("root password (administrator if Windows)", "VNC Port: "+vmConfigVar.VncPort+"   VNC Password: "+vmConfigVar.VncPassword)
-	t.AddRow("gwitsuper password", "VNC Port: "+vmConfigVar.VncPort+"   VNC Password: "+vmConfigVar.VncPassword)
+	t.AddRow("1", "VNC Access", "VNC Port: "+vmConfigVar.VncPort+" | VNC Password: "+vmConfigVar.VncPassword)
+	t.AddRow("2", "root password (administrator if Windows)", "VNC Port: "+vmConfigVar.VncPort+"   VNC Password: "+vmConfigVar.VncPassword)
+	t.AddRow("3", "gwitsuper password", "VNC Port: "+vmConfigVar.VncPort+"   VNC Password: "+vmConfigVar.VncPassword)
 	t.Render()
 
 	return nil
