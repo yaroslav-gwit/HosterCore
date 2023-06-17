@@ -49,10 +49,10 @@ func generateSnapshotTable(vmName string) error {
 
 	var ID = 0
 	var t = table.New(os.Stdout)
-	t.SetAlignment(table.AlignCenter, //ID
-		table.AlignLeft,   // Snapshot Name
-		table.AlignCenter, // Snapshot Size Human
-		table.AlignCenter) // Snapshot Size Bytes
+	t.SetAlignment(table.AlignRight, //ID
+		table.AlignLeft,  // Snapshot Name
+		table.AlignRight, // Snapshot Size Human
+		table.AlignRight) // Snapshot Size Bytes
 
 	if vmSnapshotListUnixStyleTable {
 		t.SetDividers(table.Dividers{

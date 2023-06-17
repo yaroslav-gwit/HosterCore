@@ -89,7 +89,7 @@ func vmTableOutput() {
 		table.AlignCenter, // OS Comment
 		table.AlignCenter, // VM Uptime
 		table.AlignCenter, // OS Disk Used
-		table.AlignCenter) // Description
+		table.AlignLeft)   // Description
 
 	if tableUnixOutputVm {
 		t.SetDividers(table.Dividers{
