@@ -124,14 +124,14 @@ func init() {
 
 	// VM cmd -> vm replicate
 	vmCmd.AddCommand(vmZfsReplicateCmd)
-	vmZfsReplicateCmd.Flags().StringVarP(&replicationEndpoint, "endpoint", "e", "", "Set the endpoint SSH address")
-	vmZfsReplicateCmd.Flags().IntVarP(&endpointSshPort, "port", "p", 22, "Set the endpoint SSH port")
-	vmZfsReplicateCmd.Flags().StringVarP(&sshKeyLocation, "key", "k", "/root/.ssh/id_rsa", "Set the absolute location for the SSH key")
+	vmZfsReplicateCmd.Flags().StringVarP(&replicationEndpoint, "endpoint", "e", "", "Set the endpoint SSH address, for example: `192.168.118.3`")
+	vmZfsReplicateCmd.Flags().IntVarP(&endpointSshPort, "port", "p", 22, "Set the endpoint SSH port, for example `2202`")
+	vmZfsReplicateCmd.Flags().StringVarP(&sshKeyLocation, "key", "k", "/root/.ssh/id_rsa", "Set the absolute location for the SSH key, for example: `'/home/user-name/id_rsa'`")
 
 	// VM cmd -> vm replicate all
 	vmCmd.AddCommand(vmReplicateAllCmd)
 	vmReplicateAllCmd.Flags().StringVarP(&vmReplicateAllFilter, "filter", "f", "", "Filter the VMs that will be included in the replication (uses coma separated VM names, or coma + space): `'test-vm-1,test-vm-2'`")
-	vmReplicateAllCmd.Flags().StringVarP(&sshKeyLocationAll, "key", "k", "/root/.ssh/id_rsa", "Set the absolute location for the SSH key, for example: `'/root/.ssh/id_rsa'`")
+	vmReplicateAllCmd.Flags().StringVarP(&sshKeyLocationAll, "key", "k", "/root/.ssh/id_rsa", "Set the absolute location for the SSH key, for example: `'/home/user-name/id_rsa'`")
 	vmReplicateAllCmd.Flags().StringVarP(&replicationEndpointAll, "endpoint", "e", "", "Set the endpoint SSH address, for example: `192.168.118.3`")
 	vmReplicateAllCmd.Flags().IntVarP(&endpointSshPortAll, "port", "p", 22, "Set the endpoint SSH port, for example `2202`")
 
