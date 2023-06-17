@@ -42,7 +42,7 @@ func init() {
 	vmCmd.AddCommand(vmListCmd)
 	vmListCmd.Flags().BoolVarP(&jsonOutputVm, "json", "j", false, "Output as JSON (useful for automation)")
 	vmListCmd.Flags().BoolVarP(&jsonPrettyOutputVm, "json-pretty", "", false, "Pretty JSON Output")
-	vmListCmd.Flags().BoolVarP(&tableUnixOutputVm, "unix-style", "u", false, "Show Unix style table (useful for bash scripting)")
+	vmListCmd.Flags().BoolVarP(&tableUnixOutputVm, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
 
 	// VM cmd -> info
 	vmCmd.AddCommand(vmInfoCmd)
@@ -150,6 +150,7 @@ func init() {
 
 	// VM cmd -> secrets
 	vmCmd.AddCommand(vmSecretsCmd)
+	vmSecretsCmd.Flags().BoolVarP(&vmSecretsUnixTable, "unix-style", "u", false, "Show Unix style table (useful for scripting and smaller screens)")
 
 	// VM cmd -> change
 	rootCmd.AddCommand(changeCmd)

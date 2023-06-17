@@ -11,6 +11,8 @@ import (
 )
 
 var (
+	vmSecretsUnixTable bool
+
 	vmSecretsCmd = &cobra.Command{
 		Use:   "secrets [vmName]",
 		Short: "Print out the VM secrets",
@@ -38,7 +40,7 @@ func vmSecretsTableOutput(vmName string) error {
 		table.AlignLeft, // Secret Type
 		table.AlignLeft) // Secret Info
 
-	if vmSnapshotListUnixStyleTable {
+	if vmSecretsUnixTable {
 		t.SetDividers(table.Dividers{
 			ALL: " ",
 			NES: " ",
