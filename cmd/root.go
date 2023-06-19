@@ -54,7 +54,7 @@ func init() {
 
 	// VM cmd -> start all
 	vmCmd.AddCommand(vmStartAllCmd)
-	vmStartAllCmd.Flags().IntVarP(&waitTime, "wait-time", "t", 0, "Set a static wait time between VM starts")
+	vmStartAllCmd.Flags().IntVarP(&waitTime, "wait-time", "t", 5, "Set a static wait time between VM starts")
 
 	// VM cmd -> stop
 	vmCmd.AddCommand(vmStopCmd)

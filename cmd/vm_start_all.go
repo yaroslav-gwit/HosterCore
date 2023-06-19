@@ -24,41 +24,23 @@ var (
 	}
 )
 
+// Starts all production VMs, applying a wait time (in seconds) between issuing each `vm start` command
 func vmStartAll(waitTime int) {
 	allVms := getAllVms()
-	if waitTime < 1 {
-		sleepTime := 5
-		for i, vm := range allVms {
-			vmConfigVar := vmConfig(vm)
-			if vmConfigVar.ParentHost != GetHostName() {
-				continue
-			}
-			if !vmIsInProduction(vmConfigVar.LiveStatus) {
-				continue
-			}
-			if i == len(allVms)-1 {
-				_ = 0
-			} else if sleepTime < 30 {
-				sleepTime = sleepTime + 1
-			}
-			vmStart(vm)
+	iteration := 0
+	for _, vm := range allVms {
+		vmConfigVar := vmConfig(vm)
+		if vmConfigVar.ParentHost != GetHostName() {
+			continue
 		}
-	} else {
-		for i, vm := range allVms {
-			vmConfigVar := vmConfig(vm)
-			if vmConfigVar.ParentHost != GetHostName() {
-				continue
-			}
-			if !vmIsInProduction(vmConfigVar.LiveStatus) {
-				continue
-			}
-			if i == len(allVms)-1 {
-				_ = 0
-			} else if i > 0 {
-				time.Sleep(time.Second * time.Duration(waitTime))
-			}
-			vmStart(vm)
+		if !vmIsInProduction(vmConfigVar.LiveStatus) {
+			continue
 		}
+		iteration = iteration + 1
+		if iteration != 1 {
+			time.Sleep(time.Second * time.Duration(waitTime))
+		}
+		vmStart(vm)
 	}
 }
 
