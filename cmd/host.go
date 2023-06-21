@@ -586,6 +586,11 @@ func getCpuInfo() CpuInfo {
 		tempCpuInfoListStripped = append(tempCpuInfoListStripped, v)
 	}
 
+	if len(tempCpuInfoListStripped) == 1 {
+		fmt.Println(tempCpuInfoListStripped)
+		return result
+	}
+
 	if len(tempCpuInfoListStripped) < 2 {
 		result.Sockets, _ = strconv.Atoi(tempCpuInfoListStripped[0])
 		result.Cores, _ = strconv.Atoi(tempCpuInfoListStripped[1])
