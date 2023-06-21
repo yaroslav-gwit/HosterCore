@@ -569,7 +569,7 @@ func getCpuInfo() CpuInfo {
 		fmt.Println("Error", err.Error())
 	}
 	dmesg := string(command)
-	reCpuInfoMatch := regexp.MustCompile(`.*package.*core.*thread`)
+	reCpuInfoMatch := regexp.MustCompile(`.*package.*core`)
 	reStripPrefix := regexp.MustCompile(`.*FreeBSD/SMP:\s`)
 	for _, v := range strings.Split(dmesg, "\n") {
 		if reCpuInfoMatch.MatchString(v) {
