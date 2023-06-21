@@ -564,7 +564,7 @@ func getCpuInfo() CpuInfo {
 	cpuCores := strings.TrimSpace(string(command))
 	result.OverallCpus, _ = strconv.Atoi(cpuCores)
 
-	command, err = exec.Command("grep", "-i", "threads", "/var/run/dmesg.boot").CombinedOutput()
+	command, err = exec.Command("grep", "-i", "package", "/var/run/dmesg.boot").CombinedOutput()
 	if err != nil {
 		fmt.Println("Error", err.Error())
 	}
