@@ -161,18 +161,6 @@ func StartApiServer(port int, user string, password string) {
 			fiberContext.Status(fiber.StatusInternalServerError)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
-		// err = generateNewDnsConfig()
-		// if err != nil {
-		// 	tagCustomError = err.Error()
-		// 	fiberContext.Status(fiber.StatusInternalServerError)
-		// 	return fiberContext.JSON(fiber.Map{"error": err.Error()})
-		// }
-		// err = reloadDnsService()
-		// if err != nil {
-		// 	tagCustomError = err.Error()
-		// 	fiberContext.Status(fiber.StatusInternalServerError)
-		// 	return fiberContext.JSON(fiber.Map{"error": err.Error()})
-		// }
 
 		err = reloadDnsServer()
 		if err != nil {
@@ -338,6 +326,24 @@ func StartApiServer(port int, user string, password string) {
 		}()
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.JSON(fiber.Map{"message": "process started"})
+	})
+
+	app.Post("/vm/snapshot-list", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
+		vm := new(vmName)
+		if err := fiberContext.BodyParser(vm); err != nil {
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusUnprocessableEntity)
+			return fiberContext.JSON(fiber.Map{"error": err.Error()})
+		}
+		snapInfo, err := getSnapshotInfo(vm.Name, false)
+		if err != nil {
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusBadRequest)
+			return fiberContext.JSON(fiber.Map{"error": err.Error()})
+		}
+		fiberContext.Status(fiber.StatusOK)
+		return fiberContext.JSON(snapInfo)
 	})
 
 	type diskExpand struct {

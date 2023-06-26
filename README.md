@@ -46,6 +46,7 @@ Yes, part of the project roadmap includes the development of a WebUI using VueJS
 |  OS                 | State            | Notes                                                                                |
 | :--                 | :--:             | :--                                                                                  |
 | Debian 11           | 🟢 Ready         | VM image is ready to be downloaded directly from our public image server             |
+| Debian 12           | 🟢 Ready         | VM image is ready to be downloaded directly from our public image server             |
 | AlmaLinux 8         | 🟢 Ready         | VM image is ready to be downloaded directly from our public image server             |
 | RockyLinux 8        | 🟢 Ready         | VM image is ready to be downloaded directly from our public image server             |
 | Ubuntu 20.04        | 🟢 Ready         | VM image is ready to be downloaded directly from our public image server             |

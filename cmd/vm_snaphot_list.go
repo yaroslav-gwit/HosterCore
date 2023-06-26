@@ -93,9 +93,9 @@ func generateSnapshotTable(vmName string) error {
 }
 
 type SnapshotInfo struct {
-	Name      string
-	SizeBytes uint64
-	SizeHuman string
+	Name      string `json:"snapshot_name"`
+	SizeBytes uint64 `json:"snapshot_size_bytes"`
+	SizeHuman string `json:"snapshot_size_human"`
 }
 
 func getSnapshotInfo(vmName string, ignoreVmExistsCheck bool) ([]SnapshotInfo, error) {

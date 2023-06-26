@@ -207,6 +207,8 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	switch c.OsType {
 	case "debian11":
 		c.OsComment = "Debian 11"
+	case "debian12":
+		c.OsComment = "Debian 12"
 	case "ubuntu2004":
 		c.OsComment = "Ubuntu 20.04"
 	case "ubuntu2204":
