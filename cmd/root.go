@@ -18,6 +18,7 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err.Error())
 		}
 		hostMain()
+		printNetworkInfoTable()
 		vmListMain()
 	},
 }
@@ -36,9 +37,9 @@ func init() {
 	hostCmd.Flags().BoolVarP(&jsonPrettyHostInfoOutput, "json-pretty", "", false, "Pretty JSON Output")
 
 	// Host network info
-	rootCmd.AddCommand(hostNetworkCmd)
-	hostNetworkCmd.AddCommand(hostNetworkInfoCmd)
-	hostNetworkInfoCmd.Flags().BoolVarP(&hostNetworkInfoUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
+	rootCmd.AddCommand(networkCmd)
+	networkCmd.AddCommand(networkInfoCmd)
+	networkInfoCmd.Flags().BoolVarP(&networkInfoUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
 
 	// VM command section
 	rootCmd.AddCommand(vmCmd)

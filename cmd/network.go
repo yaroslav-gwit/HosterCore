@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	hostNetworkCmd = &cobra.Command{
+	networkCmd = &cobra.Command{
 		Use:   "network",
 		Short: "Network related operations",
 		Long:  `Network related operations.`,
@@ -26,9 +26,9 @@ var (
 )
 
 var (
-	hostNetworkInfoUnixStyleTable bool
+	networkInfoUnixStyleTable bool
 
-	hostNetworkInfoCmd = &cobra.Command{
+	networkInfoCmd = &cobra.Command{
 		Use:   "info",
 		Short: "Network information output",
 		Long:  `Network information output.`,
@@ -59,7 +59,7 @@ func printNetworkInfoTable() {
 		table.AlignLeft, // Network Comment
 	)
 
-	if hostNetworkInfoUnixStyleTable {
+	if networkInfoUnixStyleTable {
 		t.SetDividers(table.Dividers{
 			ALL: " ",
 			NES: " ",
@@ -98,9 +98,9 @@ func printNetworkInfoTable() {
 	for _, v := range netInfo {
 		ID = ID + 1
 
-		bridgeInterface := "NAT (no bridge)"
-		if v.ApplyBridgeAddr {
-			bridgeInterface = v.BridgeInterface
+		bridgeInterface := v.BridgeInterface
+		if v.BridgeInterface == "None" {
+			bridgeInterface = "NAT (no bridge)"
 		}
 
 		t.AddRow(
@@ -108,7 +108,7 @@ func printNetworkInfoTable() {
 			v.Name,
 			v.Gateway,
 			v.Subnet,
-			v.RangeStart+"-"+v.RangeEnd,
+			v.RangeStart+" - "+v.RangeEnd,
 			bridgeInterface,
 			v.Comment,
 		)
