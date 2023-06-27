@@ -35,6 +35,11 @@ func init() {
 	hostCmd.Flags().BoolVarP(&jsonHostInfoOutput, "json", "j", false, "Output as JSON (useful for automation)")
 	hostCmd.Flags().BoolVarP(&jsonPrettyHostInfoOutput, "json-pretty", "", false, "Pretty JSON Output")
 
+	// Host network info
+	rootCmd.AddCommand(hostNetworkCmd)
+	hostNetworkCmd.AddCommand(hostNetworkInfoCmd)
+	hostNetworkInfoCmd.Flags().BoolVarP(&hostNetworkInfoUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
+
 	// VM command section
 	rootCmd.AddCommand(vmCmd)
 
