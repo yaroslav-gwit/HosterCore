@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
 
+	"github.com/aquasecurity/table"
 	"github.com/spf13/cobra"
 )
 
@@ -22,8 +23,24 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			// cmd.Help()
-			fmt.Println(getZfsDatasetInfo())
+			cmd.Help()
+		},
+	}
+)
+
+var (
+	datasetListUnixStyleTable bool
+
+	datasetListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "List all Hoster related ZFS datasets",
+		Long:  `List all Hoster related ZFS datasets.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			printZfsDatasetInfo()
 		},
 	}
 )
@@ -35,6 +52,74 @@ type ZfsDatasetInfo struct {
 	SpaceUsed      int
 	SpaceUsedHuman string
 	Encrypted      bool
+}
+
+func printZfsDatasetInfo() {
+	dsInfo, err := getZfsDatasetInfo()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var ID = 0
+	var t = table.New(os.Stdout)
+	t.SetAlignment(table.AlignRight, //ID
+		table.AlignLeft, // ZFS Dataset
+		table.AlignLeft, // Space Used
+		table.AlignLeft, // Space Free
+		table.AlignLeft, // Encrypted
+	)
+
+	if datasetListUnixStyleTable {
+		t.SetDividers(table.Dividers{
+			ALL: " ",
+			NES: " ",
+			NSW: " ",
+			NEW: " ",
+			ESW: " ",
+			NE:  " ",
+			NW:  " ",
+			SW:  " ",
+			ES:  " ",
+			EW:  " ",
+			NS:  " ",
+		})
+		t.SetRowLines(false)
+		t.SetBorderTop(false)
+		t.SetBorderBottom(false)
+	} else {
+		t.SetHeaders("Hoster ZFS Datasets")
+		t.SetHeaderColSpans(0, 7)
+
+		t.AddHeaders(
+			"#",
+			"ZFS Dataset",
+			"Space Used",
+			"Space Available",
+			"Encrypted",
+		)
+
+		t.SetLineStyle(table.StyleBrightCyan)
+		t.SetDividers(table.UnicodeRoundedDividers)
+		t.SetHeaderStyle(table.StyleBold)
+	}
+
+	for _, v := range dsInfo {
+		ID = ID + 1
+
+		encrypted := "no"
+		if v.Encrypted {
+			encrypted = "yes"
+		}
+		t.AddRow(
+			strconv.Itoa(ID),
+			v.Name,
+			v.SpaceUsedHuman,
+			v.SpaceFreeHuman,
+			encrypted,
+		)
+	}
+
+	t.Render()
 }
 
 func getZfsDatasetInfo() ([]ZfsDatasetInfo, error) {

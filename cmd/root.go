@@ -38,12 +38,13 @@ func init() {
 
 	// Host network info
 	rootCmd.AddCommand(networkCmd)
-	networkCmd.AddCommand(networkInfoCmd)
-	networkInfoCmd.Flags().BoolVarP(&networkInfoUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
+	networkCmd.AddCommand(networkListCmd)
+	networkListCmd.Flags().BoolVarP(&networkListUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
 
 	// Host dataset info
 	rootCmd.AddCommand(datasetCmd)
-	datasetCmd.AddCommand(networkInfoCmd)
+	datasetCmd.AddCommand(datasetListCmd)
+	networkListCmd.Flags().BoolVarP(&datasetListUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
 
 	// VM command section
 	rootCmd.AddCommand(vmCmd)

@@ -26,12 +26,12 @@ var (
 )
 
 var (
-	networkInfoUnixStyleTable bool
+	networkListUnixStyleTable bool
 
-	networkInfoCmd = &cobra.Command{
-		Use:   "info",
-		Short: "Network information output",
-		Long:  `Network information output.`,
+	networkListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "List all Hoster related networks",
+		Long:  `List all Hoster related networks in a table format.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
 			if err != nil {
@@ -59,7 +59,7 @@ func printNetworkInfoTable() {
 		table.AlignLeft, // Network Comment
 	)
 
-	if networkInfoUnixStyleTable {
+	if networkListUnixStyleTable {
 		t.SetDividers(table.Dividers{
 			ALL: " ",
 			NES: " ",
