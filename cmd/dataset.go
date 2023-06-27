@@ -63,10 +63,10 @@ func printZfsDatasetInfo() {
 	var ID = 0
 	var t = table.New(os.Stdout)
 	t.SetAlignment(table.AlignRight, //ID
-		table.AlignLeft, // ZFS Dataset
-		table.AlignLeft, // Space Used
-		table.AlignLeft, // Space Free
-		table.AlignLeft, // Encrypted
+		table.AlignLeft,  // ZFS Dataset
+		table.AlignRight, // Space Used
+		table.AlignRight, // Space Free
+		table.AlignRight, // Encrypted
 	)
 
 	if datasetListUnixStyleTable {
@@ -88,7 +88,7 @@ func printZfsDatasetInfo() {
 		t.SetBorderBottom(false)
 	} else {
 		t.SetHeaders("Hoster ZFS Datasets")
-		t.SetHeaderColSpans(0, 7)
+		t.SetHeaderColSpans(0, 5)
 
 		t.AddHeaders(
 			"#",
@@ -145,10 +145,10 @@ func getZfsDatasetInfo() ([]ZfsDatasetInfo, error) {
 			if vv == temp[0] {
 				tempZfsDs := ZfsDatasetInfo{}
 				tempZfsDs.Name = temp[0]
-				tempZfsDs.SpaceFree, _ = strconv.Atoi(temp[1])
-				tempZfsDs.SpaceFreeHuman = ByteConversion(tempZfsDs.SpaceFree)
-				tempZfsDs.SpaceUsed, _ = strconv.Atoi(temp[2])
+				tempZfsDs.SpaceUsed, _ = strconv.Atoi(temp[1])
 				tempZfsDs.SpaceUsedHuman = ByteConversion(tempZfsDs.SpaceUsed)
+				tempZfsDs.SpaceFree, _ = strconv.Atoi(temp[2])
+				tempZfsDs.SpaceFreeHuman = ByteConversion(tempZfsDs.SpaceFree)
 				zfsDatasetInfo = append(zfsDatasetInfo, tempZfsDs)
 			}
 		}

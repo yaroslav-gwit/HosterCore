@@ -18,6 +18,7 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err.Error())
 		}
 		hostMain()
+		printZfsDatasetInfo()
 		printNetworkInfoTable()
 		vmListMain()
 	},
