@@ -109,11 +109,11 @@ func vmTableOutput() {
 		t.SetBorderTop(false)
 		t.SetBorderBottom(false)
 	} else {
-		t.SetHeaders("List of VMs")
+		t.SetHeaders("Hoster VMs")
 		t.SetHeaderColSpans(0, 11)
 
 		t.AddHeaders(
-			"ID",
+			"#",
 			"VM\nName",
 			"VM\nStatus",
 			"CPU\nSockets",

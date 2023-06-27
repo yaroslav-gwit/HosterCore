@@ -57,11 +57,11 @@ func generateSnapshotAllTable() error {
 		t.SetBorderTop(false)
 		t.SetBorderBottom(false)
 	} else {
-		t.SetHeaders("List of ZFS Snapshots for: " + vmName)
+		t.SetHeaders("Hoster ZFS Snapshots")
 		t.SetHeaderColSpans(0, 5)
 
 		t.AddHeaders(
-			"ID",
+			"#",
 			"VM Name",
 			"Snapshot Name",
 			"Snapshot Size Human",

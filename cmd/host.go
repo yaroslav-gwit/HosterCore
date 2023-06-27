@@ -102,7 +102,7 @@ func hostMain() {
 			table.AlignCenter, // Zpool status
 		)
 
-		t.SetHeaders("Brief Host Overview")
+		t.SetHeaders("Hoster Overview")
 		t.SetHeaderColSpans(0, 9)
 		t.AddHeaders(
 			"Hostname",

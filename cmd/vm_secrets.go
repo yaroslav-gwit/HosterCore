@@ -58,11 +58,11 @@ func vmSecretsTableOutput(vmName string) error {
 		t.SetBorderTop(false)
 		t.SetBorderBottom(false)
 	} else {
-		t.SetHeaders("Listing VM secrets for: " + vmName)
+		t.SetHeaders("VM secrets for: " + vmName)
 		t.SetHeaderColSpans(0, 3)
 
 		t.AddHeaders(
-			"ID",
+			"#",
 			"Secret Type",
 			"Secret Info")
 
