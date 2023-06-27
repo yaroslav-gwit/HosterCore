@@ -44,7 +44,7 @@ func init() {
 	// Host dataset info
 	rootCmd.AddCommand(datasetCmd)
 	datasetCmd.AddCommand(datasetListCmd)
-	networkListCmd.Flags().BoolVarP(&datasetListUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
+	datasetListCmd.Flags().BoolVarP(&datasetListUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
 
 	// VM command section
 	rootCmd.AddCommand(vmCmd)
