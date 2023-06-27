@@ -41,6 +41,10 @@ func init() {
 	networkCmd.AddCommand(networkInfoCmd)
 	networkInfoCmd.Flags().BoolVarP(&networkInfoUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
 
+	// Host dataset info
+	rootCmd.AddCommand(datasetCmd)
+	datasetCmd.AddCommand(networkInfoCmd)
+
 	// VM command section
 	rootCmd.AddCommand(vmCmd)
 
