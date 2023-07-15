@@ -84,7 +84,13 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 		requestIsVmName := false
 		vmListIndex := 0
 		for i, v := range vmInfoList {
-			dnsName := strings.Split(q.Name, ".")[0]
+			dnsName := q.Name
+			dnsNameSplit := strings.Split(dnsName, ".")
+			if dnsNameSplit[len(dnsNameSplit)-1] == "lan" && dnsNameSplit[len(dnsNameSplit)-2] == "internal" {
+				logLine = "DEV DEBUG: " + dnsNameSplit[len(dnsNameSplit)-1] + "; " + dnsNameSplit[len(dnsNameSplit)-2]
+				logFileOutput(LOG_DEV_DEBUG, logLine, logChannel)
+				dnsName = dnsNameSplit[0]
+			}
 			if dnsName == v.vmName {
 				requestIsVmName = true
 				vmListIndex = i
@@ -196,6 +202,7 @@ const (
 	LOG_SYS_ERR    = "sys_stderr"
 	LOG_DNS_LOCAL  = "dns_locals"
 	LOG_DNS_GLOBAL = "dns_global"
+	LOG_DEV_DEBUG  = "dev_debug"
 )
 
 type LogMessage struct {
