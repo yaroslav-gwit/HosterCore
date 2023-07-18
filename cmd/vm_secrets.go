@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"log"
 	"os"
 	"regexp"
@@ -9,6 +10,8 @@ import (
 	"github.com/aquasecurity/table"
 	"github.com/spf13/cobra"
 )
+
+const VM_DOESNT_EXIST_STRING = "vm doesn't exist on this system"
 
 var (
 	vmSecretsUnixTable bool
@@ -33,8 +36,17 @@ var (
 )
 
 func vmSecretsTableOutput(vmName string) error {
-	vmConfigVar := vmConfig(vmName)
+	vmFound := false
+	for _, vm := range getAllVms() {
+		if vm == vmName {
+			vmFound = true
+		}
+	}
+	if !vmFound {
+		return errors.New(VM_DOESNT_EXIST_STRING)
+	}
 
+	vmConfigVar := vmConfig(vmName)
 	var t = table.New(os.Stdout)
 	t.SetAlignment(table.AlignRight, //ID
 		table.AlignLeft, // Secret Type
