@@ -7,9 +7,6 @@ import (
 	"time"
 )
 
-// This binary is responsible for rate limiting the ZFS replication
-// by simply implementing the read/write buffer using UNIX pipes
-// and executing sleep in between writes as needed
 func main() {
 	// Step 1: Parse environment variable for speed limit
 	speedLimitMBPerSecond := 100 // Default value
@@ -25,6 +22,9 @@ func main() {
 	bufferSize := 1024 // Adjust the buffer size as per your requirements
 	buffer := make([]byte, bufferSize)
 
+	// Step 3: Initialize the limiter
+	limiter := time.Tick(time.Second)
+
 	for {
 		// Step 3: Read from stdin respecting the speed limit
 		startTime := time.Now()
@@ -35,25 +35,30 @@ func main() {
 			}
 			break // Exit loop on EOF
 		}
+
 		// Calculate the time taken to read the data
 		elapsedTime := time.Since(startTime)
 		dataSizeMB := float64(bytesRead) / (1024 * 1024)
 		durationSeconds := elapsedTime.Seconds()
 
-		// Calculate the actual speed of data transfer
-		actualSpeedMBPerSecond := dataSizeMB / durationSeconds
+		// Step 4: Wait for the limiter to control the speed
+		for range limiter {
+			// Calculate the actual speed of data transfer
+			actualSpeedMBPerSecond := dataSizeMB / durationSeconds
 
-		// If the actual speed exceeds the limit, sleep for a while to control the speed
-		if actualSpeedMBPerSecond > float64(speedLimitMBPerSecond) {
-			sleepTime := time.Duration((dataSizeMB / float64(speedLimitMBPerSecond)) * float64(time.Second))
-			time.Sleep(sleepTime)
+			// If the actual speed exceeds the limit, adjust the limiter to control the speed
+			if actualSpeedMBPerSecond > float64(speedLimitMBPerSecond) {
+				limiter = time.Tick(time.Second / time.Duration(speedLimitMBPerSecond))
+			}
+			break
 		}
 
-		// Step 4: Write to stdout
+		// Step 5: Write to stdout
 		_, err = os.Stdout.Write(buffer[:bytesRead])
 		if err != nil {
 			panic(err)
 		}
 	}
-	// Step 5: Finish writing and exit
+
+	// Step 6: Finish writing and exit
 }
