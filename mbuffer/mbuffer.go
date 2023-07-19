@@ -15,9 +15,11 @@ func main() {
 	if len(speedLimitStr) > 0 {
 		speedLimit, err := strconv.Atoi(speedLimitStr)
 		if err == nil && speedLimit > 0 {
-			log.Fatal(speedLimit)
+			log.Println("The speed limit is set to " + speedLimitStr + "MB")
 			speedLimitMBPerSecond = speedLimit
 		}
+	} else {
+		log.Println("The speed limit is set to 100MB")
 	}
 
 	// Step 2: Set up buffer
