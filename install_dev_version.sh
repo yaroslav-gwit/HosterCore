@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-set -e
+# set -e
 
 bash pull_changes.sh
 echo ""
