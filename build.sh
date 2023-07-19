@@ -26,4 +26,16 @@ go build -o dns_server
 mv dns_server ../dns_server
 echo "Done"
 
+echo "Building the mbuffer limiter..."
+cd ..
+cd mbuffer/
+go build 
+echo "Done"
+
+echo "Building the node_exporter (custom hoster specific version)..."
+cd ..
+cd node_exporter/
+go build 
+echo "Done"
+
 echo "=== Build process done ==="
