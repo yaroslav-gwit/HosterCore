@@ -32,7 +32,7 @@ cd mbuffer/
 go build 
 echo "Done"
 
-echo "Building the node_exporter (custom hoster specific version)..."
+echo "Building the node_exporter (hoster specific version)..."
 cd ..
 cd node_exporter/
 go build 
