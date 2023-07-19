@@ -52,7 +52,7 @@ func main() {
 
 			// If the actual speed exceeds the limit, adjust the limiter to control the speed
 			if actualSpeedMBPerSecond > float64(speedLimitMBPerSecond) {
-				limiter = time.Tick(time.Second / time.Duration(speedLimitMBPerSecond) * 6 / 10)
+				limiter = time.Tick(time.Second / time.Duration(speedLimitMBPerSecond) * 6)
 			}
 			break
 		}
