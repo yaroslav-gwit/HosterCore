@@ -19,7 +19,7 @@ func main() {
 	}
 
 	// Step 2: Set up buffer
-	bufferSize := 1024 // Adjust the buffer size as per your requirements
+	bufferSize := 1024 * 1024 // Adjust the buffer size as per your requirements
 	buffer := make([]byte, bufferSize)
 
 	// Step 3: Initialize the limiter
@@ -38,7 +38,7 @@ func main() {
 
 		// Calculate the time taken to read the data
 		elapsedTime := time.Since(startTime)
-		dataSizeMB := float64(bytesRead) / 1024 / 1024
+		dataSizeMB := float64(bytesRead)
 		durationSeconds := elapsedTime.Seconds()
 
 		// Step 4: Wait for the limiter to control the speed
@@ -48,7 +48,7 @@ func main() {
 
 			// If the actual speed exceeds the limit, adjust the limiter to control the speed
 			if actualSpeedMBPerSecond > float64(speedLimitMBPerSecond) {
-				limiter = time.Tick(time.Second / time.Duration(speedLimitMBPerSecond) / 980 / 980)
+				limiter = time.Tick(time.Second / time.Duration(speedLimitMBPerSecond))
 			}
 			break
 		}
