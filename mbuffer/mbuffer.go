@@ -38,7 +38,7 @@ func main() {
 
 		// Calculate the time taken to read the data
 		elapsedTime := time.Since(startTime)
-		dataSizeMB := float64(bytesRead) / (1024 * 1024)
+		dataSizeMB := float64(bytesRead) // (1024 * 1024)
 		durationSeconds := elapsedTime.Seconds()
 
 		// Step 4: Wait for the limiter to control the speed
@@ -48,7 +48,7 @@ func main() {
 
 			// If the actual speed exceeds the limit, adjust the limiter to control the speed
 			if actualSpeedMBPerSecond > float64(speedLimitMBPerSecond) {
-				limiter = time.Tick(time.Second / time.Duration(speedLimitMBPerSecond) / 1024)
+				limiter = time.Tick(time.Second / time.Duration(speedLimitMBPerSecond))
 			}
 			break
 		}
