@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"io"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -15,7 +15,7 @@ func main() {
 	if speedLimitStr != "" {
 		speedLimit, err := strconv.Atoi(speedLimitStr)
 		if err == nil && speedLimit > 0 {
-			fmt.Println(speedLimit)
+			log.Fatal(speedLimit)
 			speedLimitMBPerSecond = speedLimit
 		}
 	}
