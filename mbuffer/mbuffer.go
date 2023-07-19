@@ -38,7 +38,7 @@ func main() {
 
 		// Calculate the time taken to read the data
 		elapsedTime := time.Since(startTime)
-		dataSizeMB := float64(bytesRead) // (1024 * 1024)
+		dataSizeMB := float64(bytesRead) / 1024 / 1024
 		durationSeconds := elapsedTime.Seconds()
 
 		// Step 4: Wait for the limiter to control the speed
