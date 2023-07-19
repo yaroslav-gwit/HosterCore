@@ -12,7 +12,7 @@ func main() {
 	// Step 1: Parse environment variable for speed limit
 	speedLimitMBPerSecond := 100 // Default value
 	speedLimitStr := os.Getenv("SPEED_LIMIT_MBS")
-	if speedLimitStr != "" {
+	if len(speedLimitStr) > 0 {
 		speedLimit, err := strconv.Atoi(speedLimitStr)
 		if err == nil && speedLimit > 0 {
 			log.Fatal(speedLimit)
