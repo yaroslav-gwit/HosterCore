@@ -97,9 +97,11 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 		}
 
-		go func() { logFileOutput(LOG_DNS_GLOBAL, dnsNameSplit[len(dnsNameSplit)-1], logChannel) }()
-		if IsPublicDomain(dnsNameSplit[len(dnsNameSplit)-1]) {
-			requestIsPublic = true
+		if len(dnsNameSplit) > 1 {
+			go func() { logFileOutput(LOG_DNS_GLOBAL, dnsNameSplit[len(dnsNameSplit)-2], logChannel) }()
+			if IsPublicDomain(dnsNameSplit[len(dnsNameSplit)-2]) {
+				requestIsPublic = true
+			}
 		}
 
 		if requestIsPublic {
