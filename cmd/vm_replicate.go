@@ -255,7 +255,7 @@ func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicat
 		progressbar.OptionSetDescription(" 📤 Running ZFS send || "+snapshotToSend+" || "),
 	)
 
-	os.Setenv("SPEED_LIMIT_MBS", strconv.Itoa(speedLimit))
+	os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(speedLimit))
 	emojlog.PrintLogMessage("Replication speed limit is set to: "+strconv.Itoa(speedLimit)+"MB/s", emojlog.Debug)
 	bashScript := []byte("zfs send -Pv " + snapshotToSend + " | /opt/hoster-core/mbuffer | ssh -i " + sshKeyLocation + " " + replicationEndpoint + " zfs receive -F " + endpointDataset)
 	err = os.WriteFile(replicationScriptLocation, bashScript, 0600)
@@ -335,7 +335,7 @@ func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementa
 		progressbar.OptionSetDescription(" 📤 Sending incremental snapshot || "+incrementalSnap+" || "),
 	)
 
-	os.Setenv("SPEED_LIMIT_MBS", strconv.Itoa(speedLimit))
+	os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(speedLimit))
 	emojlog.PrintLogMessage("Replication speed limit is set to: "+strconv.Itoa(speedLimit)+"MB/s", emojlog.Debug)
 	bashScript := []byte("zfs send -Pvi " + prevSnap + " " + incrementalSnap + " | /opt/hoster-core/mbuffer | ssh -i " + sshKeyLocation + " " + replicationEndpoint + " zfs receive -F " + endpointDataset)
 	err = os.WriteFile(replicationScriptLocation, bashScript, 0600)
