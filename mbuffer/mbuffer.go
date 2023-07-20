@@ -10,7 +10,7 @@ import (
 func main() {
 	// Step 1: Parse environment variable for speed limit
 	speedLimitMBPerSecond := 100 // Default value
-	if speedLimitStr := os.Getenv("SPEED_LIMIT_MB"); speedLimitStr != "" {
+	if speedLimitStr := os.Getenv("SPEED_LIMIT_MBS"); speedLimitStr != "" {
 		speedLimit, err := strconv.Atoi(speedLimitStr)
 		if err == nil && speedLimit > 0 {
 			speedLimitMBPerSecond = speedLimit
@@ -22,7 +22,7 @@ func main() {
 	buffer := make([]byte, bufferSize)
 
 	for {
-		// Step 4: Read from stdin respecting the speed limit
+		// Step 3: Read from stdin respecting the speed limit
 		startTime := time.Now()
 		bytesRead, err := os.Stdin.Read(buffer)
 		if err != nil {
@@ -42,16 +42,21 @@ func main() {
 
 		// If the actual speed exceeds the limit, adjust the buffer size
 		if actualSpeedMBPerSecond > float64(speedLimitMBPerSecond) {
-			bufferSize = int(float64(bufferSize) * (float64(speedLimitMBPerSecond) / actualSpeedMBPerSecond))
-			buffer = make([]byte, bufferSize)
+			newBufferSize := int(float64(bufferSize) * (float64(speedLimitMBPerSecond) / actualSpeedMBPerSecond))
+			if newBufferSize > cap(buffer) {
+				newBuffer := make([]byte, newBufferSize)
+				copy(newBuffer, buffer)
+				buffer = newBuffer
+			}
+			bufferSize = newBufferSize
 		}
 
-		// Step 5: Write to stdout
+		// Step 4: Write to stdout
 		_, err = os.Stdout.Write(buffer[:bytesRead])
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	// Step 6: Finish writing and exit
+	// Step 5: Finish writing and exit
 }
