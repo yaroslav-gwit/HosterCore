@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	// Step 1: Parse environment variable for speed limit
+	// Parse environment variable for speed limit
 	speedLimitMBPerSecond := 100 // Default value
 	if speedLimitStr := os.Getenv("SPEED_LIMIT_MB_PER_SECOND"); speedLimitStr != "" {
 		speedLimit, err := strconv.Atoi(speedLimitStr)
@@ -17,12 +17,12 @@ func main() {
 		}
 	}
 
-	// Step 2: Set up buffer
-	bufferSize := 1024 // Adjust the buffer size as per your requirements
+	// Set up buffer
+	bufferSize := 1024
 	buffer := make([]byte, bufferSize)
 
 	for {
-		// Step 4: Read from stdin respecting the speed limit
+		// Read from stdin respecting the speed limit
 		startTime := time.Now()
 		bytesRead, err := os.Stdin.Read(buffer)
 		if err != nil {
@@ -47,12 +47,10 @@ func main() {
 			time.Sleep(sleepDuration)
 		}
 
-		// Step 5: Write to stdout
+		// Write to stdout
 		_, err = os.Stdout.Write(buffer[:bytesRead])
 		if err != nil {
 			panic(err)
 		}
 	}
-
-	// Step 6: Finish writing and exit
 }
