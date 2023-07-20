@@ -42,6 +42,8 @@ func main() {
 		// Sleep if the actual read time is less than the desired time
 		if elapsedTime.Seconds() < desiredTimeSeconds {
 			sleepDuration := time.Duration(desiredTimeSeconds*float64(time.Second)) - elapsedTime
+			// compensate the 40% we are missing
+			sleepDuration = sleepDuration - sleepDuration*40/100
 			time.Sleep(sleepDuration)
 		}
 
