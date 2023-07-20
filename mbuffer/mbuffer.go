@@ -21,9 +21,6 @@ func main() {
 	bufferSize := 1024 // Adjust the buffer size as per your requirements
 	buffer := make([]byte, bufferSize)
 
-	// Step 3: Initialize the limiter
-	limiter := time.Tick(time.Second)
-
 	for {
 		// Step 4: Read from stdin respecting the speed limit
 		startTime := time.Now()
@@ -44,11 +41,8 @@ func main() {
 
 		// Sleep if the actual read time is less than the desired time
 		if elapsedTime.Seconds() < desiredTimeSeconds {
-			sleepDuration := time.Duration((desiredTimeSeconds - elapsedTime.Seconds()) * float64(time.Second))
-			select {
-			case <-limiter:
-				time.Sleep(sleepDuration)
-			}
+			sleepDuration := time.Duration(desiredTimeSeconds*float64(time.Second)) - elapsedTime
+			time.Sleep(sleepDuration)
 		}
 
 		// Step 5: Write to stdout
