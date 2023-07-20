@@ -19,9 +19,11 @@ import (
 )
 
 var (
-	replicationEndpoint string
-	endpointSshPort     int
-	sshKeyLocation      string
+	replicationEndpoint     string
+	endpointSshPort         int
+	sshKeyLocation          string
+	replicateSpeedLimit     int
+	replicateScriptLocation string
 
 	vmZfsReplicateCmd = &cobra.Command{
 		Use:   "replicate [vmName]",
@@ -144,14 +146,14 @@ func replicateVm(vmName string, replicationEndpoint string, endpointSshPort int,
 	// fmt.Println(snapsToSend)
 
 	if len(remoteVmSnaps) < 1 {
-		err = sendInitialSnapshot(vmDataset, localVmSnaps[0], replicationEndpoint, endpointSshPort, sshKeyLocation)
+		err = sendInitialSnapshot(vmDataset, localVmSnaps[0], replicationEndpoint, endpointSshPort, sshKeyLocation, replicateScriptLocation, replicateSpeedLimit)
 		if err != nil {
 			return err
 		}
 	} else {
 		for i, v := range localVmSnaps {
 			if slices.Contains(snapsToSend, v) {
-				err = sendIncrementalSnapshot(vmDataset, localVmSnaps[i-1], v, replicationEndpoint, endpointSshPort, sshKeyLocation)
+				err = sendIncrementalSnapshot(vmDataset, localVmSnaps[i-1], v, replicationEndpoint, endpointSshPort, sshKeyLocation, replicateScriptLocation, replicateSpeedLimit)
 				if err != nil {
 					return err
 				}
@@ -214,8 +216,12 @@ func getRemoteZfsDatasets(replicationEndpoint string, endpointSshPort int, sshKe
 	return remoteDatasetList, nil
 }
 
-func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicationEndpoint string, endpointSshPort int, sshKeyLocation string) error {
-	replicationScriptLocation := "/tmp/replication.sh"
+// scriptLocation should be set to an empty string by default, unless you want to specify the replication script location
+func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicationEndpoint string, endpointSshPort int, sshKeyLocation string, scriptLocation string, speedLimit int) error {
+	replicationScriptLocation := "/var/run/hoster_default_replication_job.sh"
+	if len(scriptLocation) > 0 {
+		replicationScriptLocation = scriptLocation
+	}
 	emojlog.PrintLogMessage("Sending the initial snapshot: "+snapshotToSend, emojlog.Debug)
 
 	_, err := os.Stat(replicationScriptLocation)
@@ -249,7 +255,9 @@ func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicat
 		progressbar.OptionSetDescription(" 📤 Running ZFS send || "+snapshotToSend+" || "),
 	)
 
-	bashScript := []byte("zfs send -Pv " + snapshotToSend + " | ssh -i " + sshKeyLocation + " " + replicationEndpoint + " zfs receive -F " + endpointDataset)
+	os.Setenv("SPEED_LIMIT_MBS", strconv.Itoa(speedLimit))
+	emojlog.PrintLogMessage("Replication speed limit is set to: "+strconv.Itoa(speedLimit)+"MB/s", emojlog.Debug)
+	bashScript := []byte("zfs send -Pv " + snapshotToSend + " | /opt/hoster-core/mbuffer | ssh -i " + sshKeyLocation + " " + replicationEndpoint + " zfs receive -F " + endpointDataset)
 	err = os.WriteFile(replicationScriptLocation, bashScript, 0600)
 	if err != nil {
 		return err
@@ -289,8 +297,11 @@ func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicat
 	return nil
 }
 
-func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementalSnap string, replicationEndpoint string, endpointSshPort int, sshKeyLocation string) error {
-	replicationScriptLocation := "/tmp/replication.sh"
+func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementalSnap string, replicationEndpoint string, endpointSshPort int, sshKeyLocation string, scriptLocation string, speedLimit int) error {
+	replicationScriptLocation := "/var/run/hoster_default_replication_job.sh"
+	if len(scriptLocation) > 0 {
+		replicationScriptLocation = scriptLocation
+	}
 	emojlog.PrintLogMessage("Sending incremental snapshot: "+incrementalSnap, emojlog.Debug)
 
 	_, err := os.Stat(replicationScriptLocation)
@@ -324,7 +335,9 @@ func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementa
 		progressbar.OptionSetDescription(" 📤 Sending incremental snapshot || "+incrementalSnap+" || "),
 	)
 
-	bashScript := []byte("zfs send -Pvi " + prevSnap + " " + incrementalSnap + " | ssh -i " + sshKeyLocation + " " + replicationEndpoint + " zfs receive -F " + endpointDataset)
+	os.Setenv("SPEED_LIMIT_MBS", strconv.Itoa(speedLimit))
+	emojlog.PrintLogMessage("Replication speed limit is set to: "+strconv.Itoa(speedLimit)+"MB/s", emojlog.Debug)
+	bashScript := []byte("zfs send -Pvi " + prevSnap + " " + incrementalSnap + " | /opt/hoster-core/mbuffer | ssh -i " + sshKeyLocation + " " + replicationEndpoint + " zfs receive -F " + endpointDataset)
 	err = os.WriteFile(replicationScriptLocation, bashScript, 0600)
 	if err != nil {
 		return err
