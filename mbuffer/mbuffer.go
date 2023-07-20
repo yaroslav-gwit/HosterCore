@@ -43,7 +43,7 @@ func main() {
 		if elapsedTime.Seconds() < desiredTimeSeconds {
 			sleepDuration := time.Duration(desiredTimeSeconds*float64(time.Second)) - elapsedTime
 			// compensate the 40% we are missing
-			sleepDuration = sleepDuration - sleepDuration*40/100
+			sleepDuration = sleepDuration - sleepDuration*60/100
 			time.Sleep(sleepDuration)
 		}
 
