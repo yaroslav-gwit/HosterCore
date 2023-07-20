@@ -10,7 +10,7 @@ import (
 func main() {
 	// Step 1: Parse environment variable for speed limit
 	speedLimitMBPerSecond := 100 // Default value
-	if speedLimitStr := os.Getenv("SPEED_LIMIT_MBS"); speedLimitStr != "" {
+	if speedLimitStr := os.Getenv("SPEED_LIMIT_MB_PER_SECOND"); speedLimitStr != "" {
 		speedLimit, err := strconv.Atoi(speedLimitStr)
 		if err == nil && speedLimit > 0 {
 			speedLimitMBPerSecond = speedLimit
@@ -35,15 +35,14 @@ func main() {
 		// Calculate the time taken to read the data
 		elapsedTime := time.Since(startTime)
 		dataSizeMB := float64(bytesRead) / (1024 * 1024)
-		durationSeconds := elapsedTime.Seconds()
 
-		// Calculate the actual speed of data transfer
-		actualSpeedMBPerSecond := dataSizeMB / durationSeconds
+		// Calculate the desired time to read the data based on the speed limit
+		desiredTimeSeconds := dataSizeMB / float64(speedLimitMBPerSecond)
 
-		// If the actual speed exceeds the limit, wait to control the speed
-		if actualSpeedMBPerSecond > float64(speedLimitMBPerSecond) {
-			sleepTime := time.Duration((dataSizeMB / float64(speedLimitMBPerSecond)) * float64(time.Second))
-			time.Sleep(sleepTime)
+		// Sleep if the actual read time is less than the desired time
+		if elapsedTime.Seconds() < desiredTimeSeconds {
+			sleepDuration := time.Duration(desiredTimeSeconds*float64(time.Second)) - elapsedTime
+			time.Sleep(sleepDuration)
 		}
 
 		// Step 5: Write to stdout
