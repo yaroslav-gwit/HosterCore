@@ -67,7 +67,7 @@ func replicateVm(vmName string, replicationEndpoint string, endpointSshPort int,
 	if err != nil {
 		return err
 	}
-	err = vmZfsSnapshot(vmName, "replication", 2)
+	err = VmZfsSnapshot(vmName, "replication", 2)
 	if err != nil {
 		return err
 	}
@@ -102,15 +102,15 @@ func replicateVm(vmName string, replicationEndpoint string, endpointSshPort int,
 	// Fixes the bug with unpredictable behavior, if VM has less than 2 active snapshots
 	if len(localVmSnaps) < 5 {
 		emojlog.PrintLogMessage("VM doesn't have enough local snapshots to support replication, will take some now", emojlog.Debug)
-		_ = vmZfsSnapshot(vmName, "custom", 200)
+		_ = VmZfsSnapshot(vmName, "custom", 200)
 		time.Sleep(1100 * time.Millisecond)
-		_ = vmZfsSnapshot(vmName, "custom", 200)
+		_ = VmZfsSnapshot(vmName, "custom", 200)
 		time.Sleep(1100 * time.Millisecond)
-		_ = vmZfsSnapshot(vmName, "replication", 2)
+		_ = VmZfsSnapshot(vmName, "replication", 2)
 		time.Sleep(1100 * time.Millisecond)
-		_ = vmZfsSnapshot(vmName, "replication", 2)
+		_ = VmZfsSnapshot(vmName, "replication", 2)
 		time.Sleep(1100 * time.Millisecond)
-		_ = vmZfsSnapshot(vmName, "replication", 2)
+		_ = VmZfsSnapshot(vmName, "replication", 2)
 		time.Sleep(500 * time.Millisecond)
 		localVmSnaps, err = getVmSnapshots(vmDataset)
 		if err != nil {

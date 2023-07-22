@@ -410,7 +410,7 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 		return errors.New(err.Error())
 	}
 
-	err = reloadDnsServer()
+	err = ReloadDnsServer()
 	if err != nil {
 		return err
 	}

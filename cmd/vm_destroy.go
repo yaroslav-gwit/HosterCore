@@ -22,9 +22,9 @@ var (
 				log.Fatal(err.Error())
 			}
 
-			err = vmDestroy(args[0])
+			err = VmDestroy(args[0])
 			if err != nil {
-				log.Fatal("vmDestroy() error: " + err.Error())
+				log.Fatal("VmDestroy() error: " + err.Error())
 			}
 			// err = generateNewDnsConfig()
 			// if err != nil {
@@ -34,7 +34,7 @@ var (
 			// if err != nil {
 			// 	log.Fatal("reloadDnsService() error: " + err.Error())
 			// }
-			err = reloadDnsServer()
+			err = ReloadDnsServer()
 			if err != nil {
 				log.Fatal("Could not reload the DNS server: " + err.Error())
 			}
@@ -42,7 +42,7 @@ var (
 	}
 )
 
-func vmDestroy(vmName string) error {
+func VmDestroy(vmName string) error {
 	vmDataset, err := getVmDataset(vmName)
 	emojlog.PrintLogMessage("Destroying VM: "+vmName, emojlog.Info)
 	emojlog.PrintLogMessage("Removing this VM dataset: "+vmDataset, emojlog.Changed)

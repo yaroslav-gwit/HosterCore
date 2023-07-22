@@ -27,8 +27,8 @@ var (
 
 func snapshotAllRunningVms() {
 	for _, vm := range getAllVms() {
-		if vmLiveCheck(vm) {
-			vmZfsSnapshot(vm, snapshotAllType, snapshotsAllToKeep)
+		if VmLiveCheck(vm) {
+			VmZfsSnapshot(vm, snapshotAllType, snapshotsAllToKeep)
 		}
 	}
 }

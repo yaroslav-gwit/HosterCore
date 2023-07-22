@@ -74,7 +74,7 @@ func replicateAllProdVms(replicationEndpoint string, endpointSshPort int, sshKey
 			if vmConfigVar.ParentHost != GetHostName() {
 				continue
 			}
-			if !vmLiveCheck(v) {
+			if !VmLiveCheck(v) {
 				continue
 			}
 			if strings.ToLower(vmConfigVar.LiveStatus) == "prod" || strings.ToLower(vmConfigVar.LiveStatus) == "production" {

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"hoster/emojlog"
 	"log"
 	"os"
 	"os/exec"
@@ -73,7 +74,7 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			err = reloadDnsServer()
+			err = ReloadDnsServer()
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -117,8 +118,10 @@ func stopDnsServer() error {
 	if stdErr != nil {
 		return errors.New("DNS server is not running")
 	}
+
 	reMatch := regexp.MustCompile(`.*dns_server &.*`)
 	reSplit := regexp.MustCompile(`\s+`)
+
 	processId := ""
 	for _, v := range strings.Split(string(stdOut), "\n") {
 		if reMatch.MatchString(v) {
@@ -126,12 +129,14 @@ func stopDnsServer() error {
 			break
 		}
 	}
-	// fmt.Println("kill", "-SIGKILL", processId)
+
 	_ = exec.Command("kill", "-SIGKILL", processId).Run()
+	emojlog.PrintLogMessage("The process has been killed: "+processId, emojlog.Changed)
+
 	return nil
 }
 
-func reloadDnsServer() error {
+func ReloadDnsServer() error {
 	stdOut, stdErr := exec.Command("pgrep", "-lf", "dns_server").CombinedOutput()
 	if stdErr != nil {
 		return errors.New("DNS server is not running")
@@ -147,6 +152,7 @@ func reloadDnsServer() error {
 	}
 	// fmt.Println("kill", "-SIGHUP", processId)
 	_ = exec.Command("kill", "-SIGHUP", processId).Run()
+	emojlog.PrintLogMessage("DNS server config has been reloaded", emojlog.Changed)
 	return nil
 }
 

@@ -39,7 +39,7 @@ var (
 				log.Fatal(err.Error())
 			}
 
-			err = diskExpandOffline(args[0], diskImage, expansionSize)
+			err = DiskExpandOffline(args[0], diskImage, expansionSize)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -69,7 +69,7 @@ var (
 	}
 )
 
-func diskExpandOffline(vmName string, diskImage string, expansionSize int) error {
+func DiskExpandOffline(vmName string, diskImage string, expansionSize int) error {
 	allVms := getAllVms()
 	if slices.Contains(allVms, vmName) {
 		_ = 0
@@ -79,7 +79,7 @@ func diskExpandOffline(vmName string, diskImage string, expansionSize int) error
 
 	vmFolder := getVmFolder(vmName)
 	vmConfigVar := vmConfig(vmName)
-	if vmLiveCheck(vmName) {
+	if VmLiveCheck(vmName) {
 		return errors.New("vm has to be offline, due to the data loss possibility of online expansion")
 	}
 
@@ -109,7 +109,7 @@ func diskAddOffline(vmName string, imageSize int) error {
 
 	vmFolder := getVmFolder(vmName)
 	vmConfigVar := vmConfig(vmName)
-	if vmLiveCheck(vmName) {
+	if VmLiveCheck(vmName) {
 		return errors.New("vm has to be offline, due to the data loss possibility of online expansion")
 	}
 

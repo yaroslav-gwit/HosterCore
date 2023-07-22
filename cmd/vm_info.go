@@ -31,7 +31,7 @@ var (
 )
 
 func printVmInfo(vmName string) {
-	vmInfo, err := getVmInfo(vmName)
+	vmInfo, err := GetVmInfo(vmName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func printVmInfo(vmName string) {
 	}
 }
 
-type vmInfoStruct struct {
+type VmInfoStruct struct {
 	VmName             string `json:"vm_name"`
 	MainIpAddress      string `json:"main_ip_address"`
 	VmStatusLive       bool   `json:"vm_status_live"`
@@ -73,14 +73,14 @@ type vmInfoStruct struct {
 	OsDiskUsed         string `json:"os_disk_used"`
 }
 
-func getVmInfo(vmName string) (vmInfoStruct, error) {
-	var vmInfoVar = vmInfoStruct{}
+func GetVmInfo(vmName string) (VmInfoStruct, error) {
+	var vmInfoVar = VmInfoStruct{}
 
 	allVms := getAllVms()
 	if slices.Contains(allVms, vmName) {
 		_ = true
 	} else {
-		return vmInfoStruct{}, errors.New("VM " + vmName + " is not found on this system")
+		return VmInfoStruct{}, errors.New("VM " + vmName + " is not found on this system")
 	}
 
 	vmInfoVar.VmName = vmName
@@ -133,7 +133,7 @@ func getVmInfo(vmName string) (vmInfoStruct, error) {
 	go func() { defer wg.Done(); vmInfoVar.VmStatusEncrypted = encryptionCheck(vmName) }()
 
 	wg.Add(1)
-	go func() { defer wg.Done(); vmInfoVar.VmStatusLive = vmLiveCheck(vmName) }()
+	go func() { defer wg.Done(); vmInfoVar.VmStatusLive = VmLiveCheck(vmName) }()
 
 	wg.Add(1)
 	go func() { defer wg.Done(); vmInfoVar.OsDiskTotal = getOsDiskFullSize(vmName) }()

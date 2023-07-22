@@ -25,6 +25,7 @@ func main() {
 		// Read from stdin respecting the speed limit
 		startTime := time.Now()
 		bytesRead, err := os.Stdin.Read(buffer)
+
 		if err != nil {
 			if err != io.EOF {
 				panic(err)

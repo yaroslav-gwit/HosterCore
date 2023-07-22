@@ -36,14 +36,14 @@ var (
 
 func hostMain() {
 	if jsonPrettyHostInfoOutput {
-		jsonOutputVar := jsonOutputHostInfo()
+		jsonOutputVar := JsonOutputHostInfo()
 		jsonData, err := json.MarshalIndent(jsonOutputVar, "", "   ")
 		if err != nil {
 			log.Fatal("Function error: HostMain:", err)
 		}
 		fmt.Println(string(jsonData))
 	} else if jsonHostInfoOutput {
-		jsonOutputVar := jsonOutputHostInfo()
+		jsonOutputVar := JsonOutputHostInfo()
 		jsonData, err := json.Marshal(jsonOutputVar)
 		if err != nil {
 			log.Fatal("Function error: HostMain:", err)
@@ -131,7 +131,7 @@ func hostMain() {
 	}
 }
 
-type jsonOutputHostInfoStruct struct {
+type JsonOutputHostInfoStruct struct {
 	Hostname             string  `json:"hostname"`
 	LiveVms              int     `json:"live_vms"`
 	AllVms               int     `json:"all_vms"`
@@ -163,7 +163,7 @@ type jsonOutputHostInfoStruct struct {
 	ZrootStatus          string  `json:"zroot_status"`
 }
 
-func jsonOutputHostInfo() jsonOutputHostInfoStruct {
+func JsonOutputHostInfo() JsonOutputHostInfoStruct {
 	var tHostname string
 	var tLiveVms int
 	var tAllVms int
@@ -206,7 +206,7 @@ func jsonOutputHostInfo() jsonOutputHostInfoStruct {
 	}()
 	wg.Wait()
 
-	jsonOutputVar := jsonOutputHostInfoStruct{}
+	jsonOutputVar := JsonOutputHostInfoStruct{}
 	jsonOutputVar.Hostname = tHostname
 	jsonOutputVar.LiveVms = tLiveVms
 	jsonOutputVar.AllVms = tAllVms
@@ -616,8 +616,8 @@ func getPc2VcRatio() (string, float64) {
 
 	coresUsed := 0
 	for _, v := range getAllVms() {
-		temp, _ := getVmInfo(v)
-		if vmLiveCheck(v) {
+		temp, _ := GetVmInfo(v)
+		if VmLiveCheck(v) {
 			coresUsed = coresUsed + (temp.CpuCores * temp.CpuSockets)
 		}
 	}
@@ -652,7 +652,7 @@ func VmNumbersOverview() (int, int, int, int) {
 			backupVms = backupVms + 1
 			continue
 		}
-		if vmLiveCheck(v) {
+		if VmLiveCheck(v) {
 			onlineVms = onlineVms + 1
 		} else if tempConf.LiveStatus == "prod" || tempConf.LiveStatus == "production" {
 			offlineProductionVms = offlineProductionVms + 1

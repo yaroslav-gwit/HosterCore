@@ -36,7 +36,7 @@ var (
 )
 
 func generateSnapshotTable(vmName string) error {
-	info, err := getSnapshotInfo(vmName, false)
+	info, err := GetSnapshotInfo(vmName, false)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ type SnapshotInfo struct {
 	SizeHuman string `json:"snapshot_size_human"`
 }
 
-func getSnapshotInfo(vmName string, ignoreVmExistsCheck bool) ([]SnapshotInfo, error) {
+func GetSnapshotInfo(vmName string, ignoreVmExistsCheck bool) ([]SnapshotInfo, error) {
 	if !ignoreVmExistsCheck {
 		vmList := getAllVms()
 		vmExists := false

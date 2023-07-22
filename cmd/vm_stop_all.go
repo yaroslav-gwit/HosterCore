@@ -19,17 +19,17 @@ var (
 				log.Fatal(err.Error())
 			}
 
-			vmStopAll(forceStopAll)
+			VmStopAll(forceStopAll)
 		},
 	}
 )
 
-func vmStopAll(forceStopAll bool) {
+func VmStopAll(forceStopAll bool) {
 	sleepTime := 3
 	for i, vm := range getAllVms() {
 		if i != 0 {
 			time.Sleep(time.Second * time.Duration(sleepTime))
 		}
-		vmStop(vm, false)
+		VmStop(vm, false)
 	}
 }

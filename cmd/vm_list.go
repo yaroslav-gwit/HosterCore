@@ -249,7 +249,7 @@ func encryptionCheckString(vmName string) string {
 	}
 }
 
-func vmLiveCheck(vmName string) bool {
+func VmLiveCheck(vmName string) bool {
 	var _, err = os.Stat("/dev/vmm/" + vmName)
 	if !os.IsNotExist(err) {
 		return true
@@ -259,7 +259,7 @@ func vmLiveCheck(vmName string) bool {
 }
 
 func vmLiveCheckString(vmName string) string {
-	var vmLive = vmLiveCheck(vmName)
+	var vmLive = VmLiveCheck(vmName)
 	if vmLive {
 		return "🟢"
 	} else {

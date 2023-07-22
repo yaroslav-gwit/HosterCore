@@ -73,7 +73,7 @@ func generateSnapshotAllTable() error {
 	}
 
 	for _, vm := range getAllVms() {
-		info, err := getSnapshotInfo(vm, true)
+		info, err := GetSnapshotInfo(vm, true)
 		if err != nil {
 			return err
 		}

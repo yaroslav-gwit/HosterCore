@@ -43,7 +43,7 @@ func ciReset(oldVmName string, newVmName string) error {
 	if !slices.Contains(getAllVms(), oldVmName) {
 		return errors.New("vm doesn't exist")
 	}
-	if vmLiveCheck(oldVmName) {
+	if VmLiveCheck(oldVmName) {
 		return errors.New("vm has to be stopped")
 	}
 
@@ -284,7 +284,7 @@ func ciReset(oldVmName string, newVmName string) error {
 		return errors.New(err.Error())
 	}
 
-	err = reloadDnsServer()
+	err = ReloadDnsServer()
 	if err != nil {
 		return err
 	}

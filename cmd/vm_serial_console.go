@@ -35,7 +35,7 @@ var (
 func connectToSerialConsole(vmName string) error {
 	if !slices.Contains(getAllVms(), vmName) {
 		return errors.New("vm was not found")
-	} else if !vmLiveCheck(vmName) {
+	} else if !VmLiveCheck(vmName) {
 		return errors.New("vm is offline")
 	}
 

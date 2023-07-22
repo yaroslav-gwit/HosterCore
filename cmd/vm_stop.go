@@ -26,7 +26,7 @@ var (
 				log.Fatal(err.Error())
 			}
 
-			err = vmStop(args[0], forceStop)
+			err = VmStop(args[0], forceStop)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -34,11 +34,11 @@ var (
 	}
 )
 
-func vmStop(vmName string, forceStop bool) error {
+func VmStop(vmName string, forceStop bool) error {
 	allVms := getAllVms()
 	if !slices.Contains(allVms, vmName) {
 		return errors.New("VM is not found on this system")
-	} else if !vmLiveCheck(vmName) && !forceStop {
+	} else if !VmLiveCheck(vmName) && !forceStop {
 		return errors.New("VM is already stopped")
 	}
 

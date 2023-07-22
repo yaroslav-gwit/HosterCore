@@ -78,7 +78,7 @@ func mountCiIso(vmName string) error {
 		return nil
 	}
 
-	if vmLiveCheck(vmName) {
+	if VmLiveCheck(vmName) {
 		emojlog.PrintLogMessage("Please don't forget to reboot the VM to apply changes", emojlog.Debug)
 	}
 	emojlog.PrintLogMessage("CloudInit ISO has been mounted", emojlog.Changed)
@@ -111,7 +111,7 @@ func unmountCiIso(vmName string) error {
 		return nil
 	}
 
-	if vmLiveCheck(vmName) {
+	if VmLiveCheck(vmName) {
 		emojlog.PrintLogMessage("Please don't forget to reboot the VM to apply changes", emojlog.Debug)
 	}
 	emojlog.PrintLogMessage("CloudInit ISO has been unmounted", emojlog.Changed)

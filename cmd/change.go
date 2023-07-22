@@ -51,7 +51,7 @@ func replaceParent(vmName string, newParent string) error {
 	if !slices.Contains(getAllVms(), vmName) {
 		return errors.New("vm does not exist on this system")
 	}
-	if vmLiveCheck(vmName) {
+	if VmLiveCheck(vmName) {
 		return errors.New("vm must be offline to perform this operation")
 	}
 	if len(newParent) < 1 {
