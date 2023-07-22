@@ -35,7 +35,7 @@ cd node_exporter/
 go build 
 echo "Done"
 
-echo "Building the node_exporter (hoster specific version)..."
+echo "Building the REST API module..."
 cd ..
 cd rest_api/
 go build 
