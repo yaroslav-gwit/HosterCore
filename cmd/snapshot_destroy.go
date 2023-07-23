@@ -11,7 +11,7 @@ import (
 
 var (
 	snapshotDestroyCmd = &cobra.Command{
-		Use:   "snapshot-destroy [vmName] [snapshotName]",
+		Use:   "destroy [vmName] [snapshotName]",
 		Short: "Destroy one of the VM's snapshots",
 		Long:  `Destroy one of the VM's snapshots.`,
 		Args:  cobra.ExactArgs(2),
