@@ -418,7 +418,7 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	// Start the VM when all of the above is complete
 	if startWhenReady {
 		time.Sleep(time.Second * 1)
-		err := vmStart(c.VmName)
+		err := VmStart(c.VmName)
 		if err != nil {
 			return err
 		}

@@ -28,7 +28,7 @@ var (
 				log.Fatal(err.Error())
 			}
 
-			err = vmStart(args[0])
+			err = VmStart(args[0])
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -36,7 +36,8 @@ var (
 	}
 )
 
-func vmStart(vmName string) error {
+// Starts the VM using BhyveCTL and vm_supervisor_service
+func VmStart(vmName string) error {
 	allVms := getAllVms()
 	if !slices.Contains(allVms, vmName) {
 		return errors.New("VM is not found on this system")

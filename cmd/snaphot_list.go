@@ -15,10 +15,10 @@ import (
 )
 
 var (
-	vmSnapshotListUnixStyleTable bool
+	snapshotListUnixStyleTable bool
 
-	vmSnapshotListCmd = &cobra.Command{
-		Use:   "snapshot-list [vmName]",
+	snapshotListCmd = &cobra.Command{
+		Use:   "list [vmName]",
 		Short: "List VM specific snapshots",
 		Long:  `List VM specific snapshot information including snapshot name, size and time taken`,
 		Args:  cobra.ExactArgs(1),
@@ -48,7 +48,7 @@ func generateSnapshotTable(vmName string) error {
 		table.AlignRight, // Snapshot Size Human
 		table.AlignRight) // Snapshot Size Bytes
 
-	if vmSnapshotListUnixStyleTable {
+	if snapshotListUnixStyleTable {
 		t.SetDividers(table.Dividers{
 			ALL: " ",
 			NES: " ",
@@ -98,6 +98,8 @@ type SnapshotInfo struct {
 	SizeHuman string `json:"snapshot_size_human"`
 }
 
+// Returns a list of ZFS snapshots for a particular VM, along with other useful information,
+// like snapshot size in bytes, and human readable snapshot size
 func GetSnapshotInfo(vmName string, ignoreVmExistsCheck bool) ([]SnapshotInfo, error) {
 	if !ignoreVmExistsCheck {
 		vmList := getAllVms()

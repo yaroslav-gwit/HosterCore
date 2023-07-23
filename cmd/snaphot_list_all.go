@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	vmSnapshotListAllUnixStyleTable bool
+	snapshotListAllUnixStyleTable bool
 
-	vmSnapshotListAllCmd = &cobra.Command{
-		Use:   "snapshot-list-all",
+	snapshotListAllCmd = &cobra.Command{
+		Use:   "list-all",
 		Short: "List all ZFS snapshots",
 		Long:  `List all ZFS snapshots that are a part of Hoster VMs`,
 		Args:  cobra.NoArgs,
@@ -39,7 +39,7 @@ func generateSnapshotAllTable() error {
 		table.AlignRight, // Snapshot Size Human
 		table.AlignRight) // Snapshot Size Bytes
 
-	if vmSnapshotListAllUnixStyleTable {
+	if snapshotListAllUnixStyleTable {
 		t.SetDividers(table.Dividers{
 			ALL: " ",
 			NES: " ",

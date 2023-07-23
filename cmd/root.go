@@ -76,24 +76,6 @@ func init() {
 	vmCmd.AddCommand(vmStopAllCmd)
 	vmStopAllCmd.Flags().BoolVarP(&forceStopAll, "force", "f", false, "Use -SIGKILL signal to forcefully kill all of the VMs processes")
 
-	// VM cmd -> snapshot
-	vmCmd.AddCommand(vmZfsSnapshotCmd)
-	vmZfsSnapshotCmd.Flags().StringVarP(&snapshotType, "stype", "t", "custom", "Snapshot type")
-	vmZfsSnapshotCmd.Flags().IntVarP(&snapshotsToKeep, "keep", "k", 5, "Number of snapshots to keep for this specific snapshot type")
-
-	// VM cmd -> snapshot list
-	vmCmd.AddCommand(vmSnapshotListCmd)
-	vmSnapshotListCmd.Flags().BoolVarP(&vmSnapshotListUnixStyleTable, "unix", "u", false, "Output the table using `Unix` style for further processing")
-
-	// VM cmd -> snapshot list all
-	vmCmd.AddCommand(vmSnapshotListAllCmd)
-	vmSnapshotListAllCmd.Flags().BoolVarP(&vmSnapshotListAllUnixStyleTable, "unix", "u", false, "Output the table using `Unix` style for further processing")
-
-	// VM cmd -> snapshot all
-	vmCmd.AddCommand(vmZfsSnapshotAllCmd)
-	vmZfsSnapshotAllCmd.Flags().StringVarP(&snapshotAllType, "stype", "t", "custom", "Snapshot type")
-	vmZfsSnapshotAllCmd.Flags().IntVarP(&snapshotsAllToKeep, "keep", "k", 5, "Number of snapshots to keep for this specific snapshot type")
-
 	// VM cmd -> show log
 	vmCmd.AddCommand(vmShowLogCmd)
 
@@ -148,6 +130,35 @@ func init() {
 	vmReplicateAllCmd.Flags().StringVarP(&sshKeyLocationAll, "key", "k", "/root/.ssh/id_rsa", "Set the absolute location for the SSH key, for example: `'/home/user-name/id_rsa'`")
 	vmReplicateAllCmd.Flags().StringVarP(&replicationEndpointAll, "endpoint", "e", "", "Set the endpoint SSH address, for example: `192.168.118.3`")
 	vmReplicateAllCmd.Flags().IntVarP(&endpointSshPortAll, "port", "p", 22, "Set the endpoint SSH port, for example `2202`")
+
+	// Snapshot cmd
+	rootCmd.AddCommand(snapshotCmd)
+
+	// Snapshot cmd -> snapshot new
+	snapshotCmd.AddCommand(snapshotNewCmd)
+	snapshotNewCmd.Flags().StringVarP(&snapshotNewType, "stype", "t", "custom", "Snapshot type")
+	snapshotNewCmd.Flags().IntVarP(&snapshotNewSnapsToKeep, "keep", "k", 5, "Number of snapshots to keep for this specific snapshot type")
+
+	// Snapshot cmd -> snapshot list
+	snapshotCmd.AddCommand(snapshotListCmd)
+	snapshotListCmd.Flags().BoolVarP(&snapshotListUnixStyleTable, "unix", "u", false, "Output the table using `Unix` style for further processing")
+
+	// Snapshot cmd -> snapshot list all
+	snapshotCmd.AddCommand(snapshotListAllCmd)
+	snapshotListAllCmd.Flags().BoolVarP(&snapshotListAllUnixStyleTable, "unix", "u", false, "Output the table using `Unix` style for further processing")
+
+	// Snapshot cmd -> snapshot all
+	snapshotCmd.AddCommand(snapshotAllCmd)
+	snapshotAllCmd.Flags().StringVarP(&snapshotAllCmdType, "stype", "t", "custom", "Snapshot type")
+	snapshotAllCmd.Flags().IntVarP(&snapshotsAllCmdToKeep, "keep", "k", 5, "Number of snapshots to keep for this specific snapshot type")
+
+	// Snapshot cmd -> snapshot destroy
+	snapshotCmd.AddCommand(snapshotDestroyCmd)
+
+	// Snapshot cmd -> snapshot rollback
+	snapshotCmd.AddCommand(snapshotRollbackCmd)
+	snapshotRollbackCmd.Flags().BoolVarP(&snapshotRollbackForceStop, "force-stop", "", false, "Automatically stop the VM using --force flag")
+	snapshotRollbackCmd.Flags().BoolVarP(&snapshotRollbackForceStart, "force-start", "", false, "Automatically start the VM after roll-back operation")
 
 	// API command section
 	rootCmd.AddCommand(apiCmd)

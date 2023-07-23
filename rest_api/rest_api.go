@@ -196,7 +196,7 @@ func main() {
 			return fiberContext.SendString(`{ "message": "failed to start the process"}`)
 		}
 		execFile := path.Dir(execPath) + "/hoster"
-		// Execute start all from the terminal using nohup
+		// Execute vm start from the terminal using nohup
 		cmd := exec.Command("nohup", execFile, "vm", "start", vm.Name)
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 		err = cmd.Start()

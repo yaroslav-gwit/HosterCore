@@ -103,10 +103,10 @@ func startApiServer(port int, user string, password string) error {
 		return err
 	}
 
-	emojlog.PrintLogMessage("Started the API server on port: "+strconv.Itoa(port), emojlog.Info)
-	emojlog.PrintLogMessage("Using unencrypted http protocol", emojlog.Warning)
-	emojlog.PrintLogMessage("Username: "+user, emojlog.Info)
-	emojlog.PrintLogMessage("Password: "+password, emojlog.Info)
+	emojlog.PrintLogMessage("Started the REST API server on port: "+strconv.Itoa(port), emojlog.Info)
+	emojlog.PrintLogMessage("Using unencrypted/plain HTTP protocol", emojlog.Warning)
+	emojlog.PrintLogMessage("HTTP Basic auth username: "+user, emojlog.Info)
+	emojlog.PrintLogMessage("HTTP Basic Auth password: "+password, emojlog.Info)
 
 	return nil
 }

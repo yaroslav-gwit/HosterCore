@@ -7,13 +7,13 @@ import (
 )
 
 var (
-	snapshotAllType    string
-	snapshotsAllToKeep int
+	snapshotAllCmdType    string
+	snapshotsAllCmdToKeep int
 
-	vmZfsSnapshotAllCmd = &cobra.Command{
-		Use:   "snapshot-all",
+	snapshotAllCmd = &cobra.Command{
+		Use:   "all",
 		Short: "Snapshot all running VMs on this system",
-		Long:  `Snapshot all running VMs on this system`,
+		Long:  `Snapshot all running VMs on this system.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
 			if err != nil {
@@ -28,7 +28,7 @@ var (
 func snapshotAllRunningVms() {
 	for _, vm := range getAllVms() {
 		if VmLiveCheck(vm) {
-			VmZfsSnapshot(vm, snapshotAllType, snapshotsAllToKeep)
+			VmZfsSnapshot(vm, snapshotAllCmdType, snapshotsAllCmdToKeep)
 		}
 	}
 }
