@@ -298,10 +298,11 @@ func main() {
 
 	type vmSnap struct {
 		VmName          string `json:"vm_name" xml:"name" form:"name"`
+		SnapshotName    string `json:"s_name" xml:"s_name" form:"s_name"`
 		SnapshotType    string `json:"s_type" xml:"s_type" form:"s_type"`
 		SnapshotsToKeep int    `json:"s_to_keep" xml:"s_to_keep" form:"s_to_keep"`
 	}
-	app.Post("/vm/snapshot", func(fiberContext *fiber.Ctx) error {
+	app.Post("/vm/snapshot/new", func(fiberContext *fiber.Ctx) error {
 		tagCustomError = ""
 		vmSnapVar := new(vmSnap)
 		if err := fiberContext.BodyParser(vmSnapVar); err != nil {
@@ -311,14 +312,48 @@ func main() {
 		}
 		go cmd.VmZfsSnapshot(vmSnapVar.VmName, vmSnapVar.SnapshotType, vmSnapVar.SnapshotsToKeep)
 		fiberContext.Status(fiber.StatusOK)
-		return fiberContext.JSON(fiber.Map{"message": "process started"})
+		return fiberContext.JSON(fiber.Map{"message": "success"})
+	})
+	app.Post("/vm/snapshot/destroy", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
+		vmSnapVar := new(vmSnap)
+		if err := fiberContext.BodyParser(vmSnapVar); err != nil {
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusUnprocessableEntity)
+			return fiberContext.JSON(fiber.Map{"error": err.Error()})
+		}
+		err = cmd.ZfsSnapshotDestroy(vmSnapVar.VmName, vmSnapVar.SnapshotName)
+		if err := fiberContext.BodyParser(vmSnapVar); err != nil {
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusUnprocessableEntity)
+			return fiberContext.JSON(fiber.Map{"error": err.Error()})
+		}
+		fiberContext.Status(fiber.StatusOK)
+		return fiberContext.JSON(fiber.Map{"message": "success"})
+	})
+	app.Post("/vm/snapshot/rollback", func(fiberContext *fiber.Ctx) error {
+		tagCustomError = ""
+		vmSnapVar := new(vmSnap)
+		if err := fiberContext.BodyParser(vmSnapVar); err != nil {
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusUnprocessableEntity)
+			return fiberContext.JSON(fiber.Map{"error": err.Error()})
+		}
+		err = cmd.ZfsSnapshotRollback(vmSnapVar.VmName, vmSnapVar.SnapshotName, false, false)
+		if err := fiberContext.BodyParser(vmSnapVar); err != nil {
+			tagCustomError = err.Error()
+			fiberContext.Status(fiber.StatusUnprocessableEntity)
+			return fiberContext.JSON(fiber.Map{"error": err.Error()})
+		}
+		fiberContext.Status(fiber.StatusOK)
+		return fiberContext.JSON(fiber.Map{"message": "success"})
 	})
 
 	type vmAllSnap struct {
 		SnapshotType    string `json:"s_type" xml:"s_type" form:"s_type"`
 		SnapshotsToKeep int    `json:"s_to_keep" xml:"s_to_keep" form:"s_to_keep"`
 	}
-	app.Post("/vm/snapshot-all", func(fiberContext *fiber.Ctx) error {
+	app.Post("/vm/snapshot/all", func(fiberContext *fiber.Ctx) error {
 		tagCustomError = ""
 		vmSnapVar := new(vmAllSnap)
 		if err := fiberContext.BodyParser(vmSnapVar); err != nil {
@@ -334,7 +369,7 @@ func main() {
 			}
 		}()
 		fiberContext.Status(fiber.StatusOK)
-		return fiberContext.JSON(fiber.Map{"message": "process started"})
+		return fiberContext.JSON(fiber.Map{"message": "success"})
 	})
 
 	app.Post("/vm/snapshot-list", func(fiberContext *fiber.Ctx) error {

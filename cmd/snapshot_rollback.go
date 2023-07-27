@@ -24,7 +24,7 @@ var (
 				log.Fatal(err.Error())
 			}
 
-			err = zfsSnapshotRollback(args[0], args[1], snapshotRollbackForceStop, snapshotRollbackForceStart)
+			err = ZfsSnapshotRollback(args[0], args[1], snapshotRollbackForceStop, snapshotRollbackForceStart)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -34,7 +34,7 @@ var (
 
 // Rolls back the VM to a previous ZFS snapshot, and destroys any newer snapshot, that has been taken after it.
 // Can take "force" parameter in, that will stop the VM automatically, using "stop --force".
-func zfsSnapshotRollback(vmName string, snapshotName string, forceStop bool, forceStart bool) error {
+func ZfsSnapshotRollback(vmName string, snapshotName string, forceStop bool, forceStart bool) error {
 	allVms := getAllVms()
 	vmFound := false
 	for _, v := range allVms {

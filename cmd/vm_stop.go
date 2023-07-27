@@ -102,7 +102,7 @@ func StopBhyveProcess(vmName string, quiet bool, kill bool) {
 }
 
 func vmSupervisorCleanup(vmName string) {
-	emojlog.PrintLogMessage("Starting vm supervisor cleanup", emojlog.Debug)
+	emojlog.PrintLogMessage("Performing vm_supervisor cleanup", emojlog.Debug)
 	reMatchVm, _ := regexp.Compile(`for\s` + vmName + `\s&`)
 	processId := ""
 
@@ -128,15 +128,13 @@ func vmSupervisorCleanup(vmName string) {
 		}
 
 		if len(processId) < 1 {
-			emojlog.PrintLogMessage("VM process is already dead", emojlog.Debug)
+			emojlog.PrintLogMessage("VM process is dead", emojlog.Debug)
 			break
 		}
 
 		iteration = iteration + 1
 		if iteration > 3 {
-			stopCommand1 := "kill"
-			stopCommand2 := "-SIGKILL"
-			cmd := exec.Command(stopCommand1, stopCommand2, processId)
+			cmd := exec.Command("kill", "-SIGKILL", processId)
 			stderr := cmd.Run()
 			if stderr != nil {
 				emojlog.PrintLogMessage("kill was not successful: "+stderr.Error(), emojlog.Error)
