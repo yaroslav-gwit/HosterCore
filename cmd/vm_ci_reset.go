@@ -21,7 +21,7 @@ var (
 	ciResetDnsServer   string
 
 	vmCiResetCmd = &cobra.Command{
-		Use:   "cireset",
+		Use:   "cireset [vmName]",
 		Short: "Reset VM's passwords, ssh keys, and network config (useful after VM migration)",
 		Long:  `Reset VM's passwords, ssh keys, and network config (useful after VM migration)`,
 		Args:  cobra.ExactArgs(1),
