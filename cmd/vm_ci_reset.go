@@ -79,8 +79,8 @@ func ciReset(oldVmName string, newVmName string) error {
 		return errors.New("could not generate vm name: " + err.Error())
 	}
 
-	if len(deployIpAddress) > 1 {
-		c.IpAddress = deployIpAddress
+	if len(ciResetIpAddress) > 1 {
+		c.IpAddress = ciResetIpAddress
 	} else {
 		// Generate and set random IP address (which is free in the pool of addresses)
 		c.IpAddress, err = generateNewIp(networkName)
