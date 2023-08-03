@@ -115,7 +115,7 @@ func main() {
 		allVms := cmd.GetAllVms()
 		result := []cmd.VmInfoStruct{}
 		for _, v := range allVms {
-			tempRes, _ := cmd.GetVmInfo(v)
+			tempRes, _ := cmd.GetVmInfo(v, true)
 			result = append(result, tempRes)
 		}
 		jsonResult, err := json.Marshal(result)
@@ -139,7 +139,7 @@ func main() {
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
-		result, err := cmd.GetVmInfo(vm.Name)
+		result, err := cmd.GetVmInfo(vm.Name, false)
 		if err != nil {
 			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusInternalServerError)
@@ -302,6 +302,7 @@ func main() {
 		SnapshotType    string `json:"s_type" xml:"s_type" form:"s_type"`
 		SnapshotsToKeep int    `json:"s_to_keep" xml:"s_to_keep" form:"s_to_keep"`
 	}
+
 	app.Post("/vm/snapshot/new", func(fiberContext *fiber.Ctx) error {
 		tagCustomError = ""
 		vmSnapVar := new(vmSnap)
@@ -314,6 +315,7 @@ func main() {
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.JSON(fiber.Map{"message": "success"})
 	})
+
 	app.Post("/vm/snapshot/destroy", func(fiberContext *fiber.Ctx) error {
 		tagCustomError = ""
 		vmSnapVar := new(vmSnap)
@@ -331,6 +333,7 @@ func main() {
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.JSON(fiber.Map{"message": "success"})
 	})
+
 	app.Post("/vm/snapshot/rollback", func(fiberContext *fiber.Ctx) error {
 		tagCustomError = ""
 		vmSnapVar := new(vmSnap)

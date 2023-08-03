@@ -138,7 +138,7 @@ func vmTableOutput() {
 		go func() { defer wg.Done(); vmOsDiskFullSize = getOsDiskFullSize(vmName) }()
 		go func() { defer wg.Done(); vmOsDiskFree = getOsDiskUsed(vmName) }()
 		go func() { defer wg.Done(); vmEncrypted = encryptionCheckString(vmName) }()
-		go func() { defer wg.Done(); vmUptimeVar = getVmUptimeNew(vmName) }()
+		go func() { defer wg.Done(); vmUptimeVar = getVmUptimeNew(vmName, true) }()
 		wg.Wait()
 
 		vmConfigVar = vmConfig(vmName)
@@ -314,26 +314,26 @@ func getVmFolder(vmName string) string {
 	return finalResponse
 }
 
-func getVmUptimeNew(vmName string) string {
+func getVmUptimeNew(vmName string, useGlobal bool) string {
 	var vmsUptime []string
-	if len(allVmsUptime) > 0 && allVmsUptimeTimesUsed < 15 {
+	if len(allVmsUptime) > 0 && useGlobal && allVmsUptimeTimesUsed < 15 {
+		allVmsUptimeTimesUsed += 1
 		vmsUptime = allVmsUptime
-		allVmsUptimeTimesUsed = allVmsUptimeTimesUsed + 1
 	} else {
-		allVmsUptimeTimesUsed = 0
-		var psEtime1 = "ps"
-		var psEtime2 = "axwww"
-		var psEtime3 = "-o"
-		var psEtime4 = "etimes,command"
+		if !useGlobal {
+			allVmsUptimeTimesUsed = 0
+		}
 
-		var cmd = exec.Command(psEtime1, psEtime2, psEtime3, psEtime4)
+		var cmd = exec.Command("ps", "axwww", "-o", "etimes,command")
 		stdout, err := cmd.Output()
 		if err != nil {
 			log.Fatal("getVmUptimeNew Error: ", err)
 		}
+
 		allVmsUptime = strings.Split(string(stdout), "\n")
 		vmsUptime = allVmsUptime
 	}
+
 	rexMatchVmName, _ := regexp.Compile(`.*bhyve: ` + vmName + `.*`)
 	var finalResult string
 	for i, v := range vmsUptime {
@@ -356,6 +356,7 @@ func getVmUptimeNew(vmName string) string {
 			finalResult = finalResult + strconv.Itoa(hoursModulus) + "h "
 			finalResult = finalResult + strconv.Itoa(minutesModulus) + "m "
 			finalResult = finalResult + strconv.Itoa(secondsModulus) + "s"
+
 			break
 		} else if i == (len(vmsUptime) - 1) {
 			finalResult = "0s"

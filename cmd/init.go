@@ -44,8 +44,8 @@ var (
 				err = nil
 			}
 
-			// Load Unbound settings (monkey patch for fresh installations, or manual user config changes)
-			// restartUnbound()
+			// Stop and disable Local Unbound to avoid conflicts with our own DNS server
+			stopAndDisableUnbound()
 
 			err = startDnsServer()
 			if err != nil {
@@ -258,17 +258,10 @@ func applyPfSettings() error {
 	return nil
 }
 
-// func restartUnbound() {
-// 	err := generateNewDnsConfig()
-// 	if err != nil {
-// 		emojlog.PrintLogMessage("Could not generate new Unbound config: "+err.Error(), emojlog.Error)
-// 	}
-
-// 	unboundOut, unboundErr := exec.Command("service", "local_unbound", "restart").CombinedOutput()
-// 	if unboundErr != nil {
-// 		emojlog.PrintLogMessage("Could not restart Unbound: "+string(unboundOut), emojlog.Error)
-// 	}
-// }
+func stopAndDisableUnbound() {
+	exec.Command("service", "local_unbound", "stop").Run()
+	exec.Command("service", "local_unbound", "disable").Run()
+}
 
 func createInitFile() error {
 	stdout, stderr := exec.Command("touch", "/var/run/hoster_init").CombinedOutput()

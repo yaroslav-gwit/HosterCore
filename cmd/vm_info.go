@@ -31,7 +31,7 @@ var (
 )
 
 func printVmInfo(vmName string) {
-	vmInfo, err := GetVmInfo(vmName)
+	vmInfo, err := GetVmInfo(vmName, false)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -73,7 +73,7 @@ type VmInfoStruct struct {
 	OsDiskUsed         string `json:"os_disk_used"`
 }
 
-func GetVmInfo(vmName string) (VmInfoStruct, error) {
+func GetVmInfo(vmName string, useGlobalUptime bool) (VmInfoStruct, error) {
 	var vmInfoVar = VmInfoStruct{}
 
 	allVms := getAllVms()
@@ -142,7 +142,7 @@ func GetVmInfo(vmName string) (VmInfoStruct, error) {
 	go func() { defer wg.Done(); vmInfoVar.OsDiskUsed = getOsDiskUsed(vmName) }()
 
 	wg.Add(1)
-	go func() { defer wg.Done(); vmInfoVar.Uptime = getVmUptimeNew(vmName) }()
+	go func() { defer wg.Done(); vmInfoVar.Uptime = getVmUptimeNew(vmName, useGlobalUptime) }()
 
 	wg.Wait()
 	return vmInfoVar, nil
