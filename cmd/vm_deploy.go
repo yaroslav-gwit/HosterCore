@@ -38,6 +38,7 @@ var (
 		Use:   "deploy",
 		Short: "Deploy the VM, using a pre-defined template",
 		Long:  `Deploy the VM, using a pre-defined template`,
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
 			if err != nil {
