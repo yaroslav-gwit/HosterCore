@@ -92,7 +92,7 @@ func getGstatMetrics() string {
 		}
 	}()
 
-	cmd := exec.Command("gstat", "-bp", "-I 850000")
+	cmd := exec.Command("gstat", "-bp", "-I 1500000")
 	output, err := cmd.Output()
 	if err != nil {
 		log.Fatalf("Failed to execute gstat: %v", err)
@@ -253,13 +253,17 @@ func getNodeExporterMetrics() string {
 	url := "http://localhost:9100/metrics"
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Failed to make the HTTP GET request: %v", err)
+		log.Println("Failed to make the HTTP GET request: " + err.Error())
+		return ""
 	}
 	defer resp.Body.Close()
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("Failed to read the response body: %v", err)
+		log.Println("Failed to read the response body: " + err.Error())
+		return ""
 	}
+
 	metricsString := string(body)
 	return metricsString
 }

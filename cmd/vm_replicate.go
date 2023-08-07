@@ -19,11 +19,11 @@ import (
 )
 
 var (
-	replicationEndpoint     string
-	endpointSshPort         int
-	sshKeyLocation          string
-	replicateSpeedLimit     int
-	replicateScriptLocation string
+	replicationEndpoint string
+	endpointSshPort     int
+	sshKeyLocation      string
+	replicateSpeedLimit int
+	replicateScriptName string
 
 	vmZfsReplicateCmd = &cobra.Command{
 		Use:   "replicate [vmName]",
@@ -146,14 +146,14 @@ func replicateVm(vmName string, replicationEndpoint string, endpointSshPort int,
 	// fmt.Println(snapsToSend)
 
 	if len(remoteVmSnaps) < 1 {
-		err = sendInitialSnapshot(vmDataset, localVmSnaps[0], replicationEndpoint, endpointSshPort, sshKeyLocation, replicateScriptLocation, replicateSpeedLimit)
+		err = sendInitialSnapshot(vmDataset, localVmSnaps[0], replicationEndpoint, endpointSshPort, sshKeyLocation, replicateScriptName, replicateSpeedLimit)
 		if err != nil {
 			return err
 		}
 	} else {
 		for i, v := range localVmSnaps {
 			if slices.Contains(snapsToSend, v) {
-				err = sendIncrementalSnapshot(vmDataset, localVmSnaps[i-1], v, replicationEndpoint, endpointSshPort, sshKeyLocation, replicateScriptLocation, replicateSpeedLimit)
+				err = sendIncrementalSnapshot(vmDataset, localVmSnaps[i-1], v, replicationEndpoint, endpointSshPort, sshKeyLocation, replicateScriptName, replicateSpeedLimit)
 				if err != nil {
 					return err
 				}
@@ -217,10 +217,12 @@ func getRemoteZfsDatasets(replicationEndpoint string, endpointSshPort int, sshKe
 }
 
 // scriptLocation should be set to an empty string by default, unless you want to specify the replication script location
-func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicationEndpoint string, endpointSshPort int, sshKeyLocation string, scriptLocation string, speedLimit int) error {
-	replicationScriptLocation := "/var/run/hoster_default_replication_job.sh"
-	if len(scriptLocation) > 0 {
-		replicationScriptLocation = scriptLocation
+func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicationEndpoint string, endpointSshPort int, sshKeyLocation string, replScriptName string, speedLimit int) error {
+	replicationDir := "/var/run/replication"
+	os.Mkdir(replicationDir, 0750)
+	replicationScriptLocation := replicationDir + "/aa_default_replication_job.sh"
+	if len(replScriptName) > 0 {
+		replicationScriptLocation = replicationDir + "/" + replScriptName
 	}
 	emojlog.PrintLogMessage("Sending the initial snapshot: "+snapshotToSend, emojlog.Debug)
 
@@ -268,6 +270,7 @@ func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicat
 	if err != nil {
 		return err
 	}
+
 	if err := cmd.Start(); err != nil {
 		return err
 	}
@@ -284,7 +287,8 @@ func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicat
 
 	// wait for command to finish
 	if err := cmd.Wait(); err != nil {
-		return err
+		errorText := scanner.Text() + "; " + err.Error()
+		return errors.New(errorText)
 	}
 
 	bar.Finish()
@@ -297,10 +301,12 @@ func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicat
 	return nil
 }
 
-func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementalSnap string, replicationEndpoint string, endpointSshPort int, sshKeyLocation string, scriptLocation string, speedLimit int) error {
-	replicationScriptLocation := "/var/run/hoster_default_replication_job.sh"
-	if len(scriptLocation) > 0 {
-		replicationScriptLocation = scriptLocation
+func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementalSnap string, replicationEndpoint string, endpointSshPort int, sshKeyLocation string, replScriptName string, speedLimit int) error {
+	replicationDir := "/var/run/replication"
+	os.Mkdir(replicationDir, 0750)
+	replicationScriptLocation := replicationDir + "/aa_default_replication_job.sh"
+	if len(replScriptName) > 0 {
+		replicationScriptLocation = replicationDir + "/" + replScriptName
 	}
 	emojlog.PrintLogMessage("Sending incremental snapshot: "+incrementalSnap, emojlog.Debug)
 
@@ -348,6 +354,7 @@ func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementa
 	if err != nil {
 		return errors.New("error in shell.StderrPipe(): " + err.Error())
 	}
+
 	if err := shell.Start(); err != nil {
 		return errors.New("error in shell.Start(): " + err.Error())
 	}
@@ -364,7 +371,8 @@ func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementa
 
 	// wait for command to finish
 	if err := shell.Wait(); err != nil {
-		return errors.New("error in shell.Wait(): " + err.Error())
+		errorText := scanner.Text() + "; " + err.Error()
+		return errors.New(errorText)
 	}
 
 	bar.Finish()

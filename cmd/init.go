@@ -108,6 +108,16 @@ func returnMissingModules() ([]string, error) {
 
 	var loadedModules []string
 	kernelModuleList := []string{"vmm", "nmdm", "if_bridge", "pf", "pflog"}
+
+	// Add CPU temperature module
+	cpuInfo := getCpuInfo()
+	reMatchIntelCpu := regexp.MustCompile(`.*[Ii]ntel.*`)
+	if reMatchIntelCpu.MatchString(cpuInfo.Model) {
+		kernelModuleList = append(kernelModuleList, "coretemp")
+	} else {
+		kernelModuleList = append(kernelModuleList, "amdtemp")
+	}
+
 	for _, v := range strings.Split(string(stdout), "\n") {
 		if reMatchKo.MatchString(v) {
 			for _, vv := range kernelModuleList {
