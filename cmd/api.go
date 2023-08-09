@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"hoster/emojlog"
 	"log"
 	"os"
 	"os/exec"
 	"path"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -138,28 +136,17 @@ func startApiServer(port int, user string, password string, haMode bool) error {
 }
 
 func stopApiServer() error {
-	stdOut, stdErr := exec.Command("pgrep", "-lf", "hoster_rest_api").CombinedOutput()
-	if stdErr != nil {
-		return errors.New("REST API server is not running")
+	out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
+	if err == nil && len(string(out)) > 0 {
+		_ = exec.Command("kill", "-SIGTERM", strings.TrimSpace(string(out))).Run()
+		emojlog.PrintLogMessage("HA_WATCHDOG service stopped using PID: "+strings.TrimSpace(string(out)), emojlog.Changed)
 	}
 
-	reMatch := regexp.MustCompile(`.*hoster_rest_api &.*`)
-	reSplit := regexp.MustCompile(`\s+`)
-
-	processId := ""
-	for _, v := range strings.Split(string(stdOut), "\n") {
-		if reMatch.MatchString(v) {
-			processId = reSplit.Split(v, -1)[0]
-			break
-		}
+	out, err = exec.Command("pgrep", "hoster_rest_api").CombinedOutput()
+	if err == nil && len(string(out)) > 0 {
+		_ = exec.Command("kill", "-SIGTERM", strings.TrimSpace(string(out))).Run()
+		emojlog.PrintLogMessage("REST API service stopped using PID: "+strings.TrimSpace(string(out)), emojlog.Changed)
 	}
-
-	out, _ := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
-	_ = exec.Command("kill", "-SIGTERM", strings.TrimSpace(string(out)))
-	emojlog.PrintLogMessage("HA_WATCHDOG service stopped using PID: "+strings.TrimSpace(string(out)), emojlog.Changed)
-
-	_ = exec.Command("kill", "-SIGTERM", processId).Run()
-	emojlog.PrintLogMessage("REST API service stopped using PID: "+processId, emojlog.Changed)
 
 	return nil
 }
