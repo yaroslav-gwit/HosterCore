@@ -434,8 +434,7 @@ func main() {
 			for {
 				out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
 				if err != nil {
-					errorValue := "Error: " + string(out) + "; Exit code: " + err.Error()
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", errorValue).Run()
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "process is not running: HA_WATCHDOG").Run()
 					timesFailed += 1
 				} else {
 					pid := strings.TrimSpace(string(out))
