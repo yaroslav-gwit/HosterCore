@@ -438,7 +438,10 @@ func main() {
 					timesFailed += 1
 				} else {
 					pid := strings.TrimSpace(string(out))
-					_ = exec.Command("kill", "-SIGHUP", pid).Run()
+					out, err := exec.Command("kill", "-SIGHUP", pid).CombinedOutput()
+					if err != nil {
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", string(out)).Run()
+					}
 					timesFailed = 0
 				}
 

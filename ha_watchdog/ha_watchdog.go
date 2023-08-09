@@ -33,7 +33,7 @@ func main() {
 		time.Sleep(time.Second * 5)
 
 		if timesFailed >= timesFailedMax {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "rebooting the system due to failed HA state, pings failed (number of times): "+strconv.Itoa(timesFailed)).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "rebooting the system due to failed HA state, pings failed: "+strconv.Itoa(timesFailed)).Run()
 			os.Exit(0)
 		}
 
