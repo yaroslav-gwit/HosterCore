@@ -154,11 +154,12 @@ func stopApiServer() error {
 		}
 	}
 
-	_ = exec.Command("kill", "-SIGTERM", processId).Run()
-	emojlog.PrintLogMessage("The process has been killed: "+processId, emojlog.Changed)
-
 	out, _ := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
-	_ = exec.Command("kill", "-SIGKILL", strings.TrimSpace(string(out)))
+	_ = exec.Command("kill", "-SIGTERM", strings.TrimSpace(string(out)))
+	emojlog.PrintLogMessage("HA_WATCHDOG service stopped using PID: "+strings.TrimSpace(string(out)), emojlog.Changed)
+
+	_ = exec.Command("kill", "-SIGTERM", processId).Run()
+	emojlog.PrintLogMessage("REST API service stopped using PID: "+processId, emojlog.Changed)
 
 	return nil
 }

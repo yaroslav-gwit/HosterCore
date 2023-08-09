@@ -438,10 +438,10 @@ func main() {
 					timesFailed += 1
 				} else {
 					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: found PID: "+strings.TrimSpace(string(out))).Run()
-					out, err = exec.Command("kill", "-SIGHUP", strings.TrimSpace(string(out))).CombinedOutput()
-					if err != nil {
-						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", string(out)).Run()
-					}
+					_ = exec.Command("kill", "-SIGHUP", strings.TrimSpace(string(out))).Run()
+					// if err != nil {
+					// 	_ = exec.Command("logger", "-t", "HOSTER_HA_REST", string(out)).Run()
+					// }
 					timesFailed = 0
 				}
 

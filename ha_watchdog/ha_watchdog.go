@@ -20,7 +20,7 @@ func main() {
 		for sig := range signals {
 			if sig == syscall.SIGHUP {
 				lastReachOut = time.Now().Unix()
-				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "REST API is still alive: "+strconv.Itoa(int(lastReachOut))).Run()
+				// _ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "REST API is still alive: "+strconv.Itoa(int(lastReachOut))).Run()
 			}
 			if sig == syscall.SIGKILL || sig == syscall.SIGTERM {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "received kill or term signal, exiting").Run()
