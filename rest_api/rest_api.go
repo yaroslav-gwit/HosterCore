@@ -457,16 +457,18 @@ func main() {
 		}()
 	}
 
+	hosterRestLabel := "HOSTER_REST"
+	if haMode {
+		hosterRestLabel = "HOSTER_HA_REST"
+	}
+
+	_ = exec.Command("logger", "-t", hosterRestLabel, "service start-up").Run()
+
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGTERM)
 	go func() {
 		for sig := range signals {
 			if sig == syscall.SIGTERM {
-				hosterRestLabel := "HOSTER_REST"
-				if haMode {
-					hosterRestLabel = "HOSTER_HA_REST"
-				}
-
 				_ = exec.Command("logger", "-t", hosterRestLabel, "shutting the server down").Run()
 
 				err := app.Shutdown()
