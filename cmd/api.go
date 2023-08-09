@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"hoster/emojlog"
 	"log"
 	"os"
@@ -33,6 +34,7 @@ var (
 	apiStartPort     int
 	apiStartUser     string
 	apiStartPassword string
+	apiHaMode        bool
 
 	apiStartCmd = &cobra.Command{
 		Use:   "start",
@@ -43,7 +45,7 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			err = startApiServer(apiStartPort, apiStartUser, apiStartPassword)
+			err = startApiServer(apiStartPort, apiStartUser, apiStartPassword, apiHaMode)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -70,6 +72,27 @@ var (
 )
 
 var (
+	apiStatusCmd = &cobra.Command{
+		Use:   "status",
+		Short: "Display status of the API server",
+		Long:  `Display status of the API server.`,
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			out, err := exec.Command("pgrep", "hoster_rest_api").CombinedOutput()
+			if err != nil {
+				log.Fatal(string(out), err)
+			} else {
+				fmt.Println("The process is running as PID: " + strings.TrimSpace(string(out)))
+			}
+		},
+	}
+)
+
+var (
 	apiShowLogCmd = &cobra.Command{
 		Use:   "show-log",
 		Short: "Show log for the API server",
@@ -87,10 +110,13 @@ var (
 	}
 )
 
-func startApiServer(port int, user string, password string) error {
+func startApiServer(port int, user string, password string, haMode bool) error {
 	os.Setenv("REST_API_PORT", strconv.Itoa(port))
 	os.Setenv("REST_API_USER", user)
 	os.Setenv("REST_API_PASSWORD", password)
+	if haMode {
+		os.Setenv("REST_API_HA_MODE", "true")
+	}
 
 	execPath, err := os.Executable()
 	if err != nil {
@@ -130,6 +156,9 @@ func stopApiServer() error {
 
 	_ = exec.Command("kill", "-SIGTERM", processId).Run()
 	emojlog.PrintLogMessage("The process has been killed: "+processId, emojlog.Changed)
+
+	out, _ := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
+	_ = exec.Command("kill", "-SIGKILL", strings.TrimSpace(string(out)))
 
 	return nil
 }

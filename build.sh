@@ -41,4 +41,10 @@ cd rest_api/
 go build 
 echo "Done"
 
+echo "Building the HA Watchdog module..."
+cd ..
+cd ha_watchdog/
+go build 
+echo "Done"
+
 echo "=== Build process done ==="

@@ -15,6 +15,7 @@ cp -v dns_server/dns_server /opt/hoster-core/
 cp -v mbuffer/mbuffer /opt/hoster-core/
 cp -v node_exporter/node_exporter /opt/hoster-core/node_exporter_custom
 cp -v rest_api/rest_api /opt/hoster-core/hoster_rest_api
+cp -v ha_watchdog/ha_watchdog /opt/hoster-core/
 echo "Copied over executable files"
 
 echo "=== Installation process done ==="

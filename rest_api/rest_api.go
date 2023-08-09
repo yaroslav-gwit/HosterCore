@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"path"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -25,10 +26,12 @@ func main() {
 	user := "admin"
 	password := "123456"
 	port := 3000
+	haMode := false
 
 	portEnv := os.Getenv("REST_API_PORT")
 	userEnv := os.Getenv("REST_API_USER")
 	passwordEnv := os.Getenv("REST_API_PASSWORD")
+	haModeEnv := os.Getenv("REST_API_HA_MODE")
 
 	var err error
 	if len(portEnv) > 0 {
@@ -43,6 +46,10 @@ func main() {
 	if len(passwordEnv) > 0 {
 		password = passwordEnv
 	}
+	if len(haModeEnv) > 0 {
+		haMode = true
+	}
+
 	app := fiber.New(fiber.Config{DisableStartupMessage: true, Prefork: false})
 	app.Use(requestid.New())
 
@@ -418,6 +425,34 @@ func main() {
 		return fiberContext.JSON(fiber.Map{"message": "success"})
 
 	})
+
+	timesFailed := 0
+	timesFailedMax := 5
+	if haMode {
+		exec.Command("nohup", "/opt/hoster-core/ha_watchdog", "&").Run()
+		go func() {
+			for {
+				out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
+				if err != nil {
+					errorValue := "Error: " + string(out) + "; Exit code: " + err.Error()
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", errorValue).Run()
+					timesFailed += 1
+				} else {
+					pid := strings.TrimSpace(string(out))
+					_ = exec.Command("kill", "-SIGHUP", pid).Run()
+					timesFailed = 0
+				}
+
+				if timesFailed >= timesFailedMax {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "process exited due to HA_WATCHDOG failure").Run()
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "the host system shall reboot soon").Run()
+					os.Exit(1)
+				}
+
+				time.Sleep(time.Second * 4)
+			}
+		}()
+	}
 
 	// This is required to make the VMs started using NOHUP to continue running normally
 	go func() {

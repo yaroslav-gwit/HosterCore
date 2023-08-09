@@ -1,0 +1,21 @@
+{
+    "node_type": "worker",
+    "managers": [
+        {
+            "address": "192.168.100.10",
+            "port": "3000",
+            "protocol": "http",
+            "user": "admin",
+            "password": "123456"
+        }
+    ],
+    "candidates": [
+        {
+            "address": "192.168.100.12",
+            "port": "3000",
+            "protocol": "http",
+            "user": "admin",
+            "password": "123456"
+        }
+    ]
+}

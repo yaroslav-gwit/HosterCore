@@ -166,6 +166,8 @@ func init() {
 	apiStartCmd.Flags().IntVarP(&apiStartPort, "port", "p", 3000, "Specify the port to listen on")
 	apiStartCmd.Flags().StringVarP(&apiStartUser, "user", "u", "admin", "Username for API authentication")
 	apiStartCmd.Flags().StringVarP(&apiStartPassword, "password", "", "123456", "Password for API authentication")
+	apiStartCmd.Flags().BoolVarP(&apiHaMode, "ha-mode", "", false, "Whether to activate HA during the service boot time")
+	apiCmd.AddCommand(apiStatusCmd)
 	apiCmd.AddCommand(apiStopCmd)
 	apiCmd.AddCommand(apiShowLogCmd)
 
