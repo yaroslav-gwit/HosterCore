@@ -430,6 +430,7 @@ func main() {
 	timesFailedMax := 5
 	if haMode {
 		exec.Command("nohup", "/opt/hoster-core/ha_watchdog", "&").Start()
+		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "service start-up").Run()
 		go func() {
 			for {
 				out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
@@ -456,17 +457,23 @@ func main() {
 		}()
 	}
 
-	// This is required to make the VMs started using NOHUP to continue running normally
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGTERM)
 	go func() {
-		ch := make(chan os.Signal, 1)
-		signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-		<-ch
+		for sig := range signals {
+			if sig == syscall.SIGTERM {
+				hosterRestLabel := "HOSTER_REST"
+				if haMode {
+					hosterRestLabel = "HOSTER_HA_REST"
+				}
 
-		// Gracefully shut down the server
-		log.Println("Shutting down the API Server gracefully...")
-		err := app.Shutdown()
-		if err != nil {
-			log.Printf("Error shutting down server: %s\n", err)
+				_ = exec.Command("logger", "-t", hosterRestLabel, "shutting the server down").Run()
+
+				err := app.Shutdown()
+				if err != nil {
+					_ = exec.Command("logger", "-t", hosterRestLabel, "ERROR while shutting the server down: "+err.Error()).Run()
+				}
+			}
 		}
 	}()
 
@@ -474,5 +481,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error starting server: %s\n", err)
 	}
+
 	os.Exit(0)
 }

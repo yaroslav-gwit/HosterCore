@@ -10,6 +10,8 @@ import (
 )
 
 func main() {
+	_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "service start-up").Run()
+
 	timesFailed := 0
 	timesFailedMax := 10
 	lastReachOut := time.Now().Unix()
