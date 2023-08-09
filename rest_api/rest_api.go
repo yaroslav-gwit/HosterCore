@@ -429,7 +429,7 @@ func main() {
 	timesFailed := 0
 	timesFailedMax := 5
 	if haMode {
-		exec.Command("nohup", "/opt/hoster-core/ha_watchdog", "&").Run()
+		exec.Command("nohup", "/opt/hoster-core/ha_watchdog", "&").Start()
 		go func() {
 			for {
 				out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
@@ -437,10 +437,10 @@ func main() {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "process is not running: HA_WATCHDOG").Run()
 					timesFailed += 1
 				} else {
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: found PID: "+strings.TrimSpace(string(out))).Run()
-					out1, err1 := exec.Command("kill", "-SIGHUP", strings.TrimSpace(string(out))).CombinedOutput()
-					if err1 != nil {
-						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", string(out1)).Run()
+					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: found PID: "+strings.TrimSpace(string(out))).Run()
+					out, err = exec.Command("kill", "-SIGHUP", strings.TrimSpace(string(out))).CombinedOutput()
+					if err != nil {
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", string(out)).Run()
 					}
 					timesFailed = 0
 				}
