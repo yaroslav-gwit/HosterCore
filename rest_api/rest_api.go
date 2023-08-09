@@ -427,10 +427,14 @@ func main() {
 	})
 
 	timesFailed := 0
-	timesFailedMax := 5
+	timesFailedMax := 50
+	hosterRestLabel := "HOSTER_REST"
 	if haMode {
+		hosterRestLabel = "HOSTER_HA_REST"
+		_ = exec.Command("logger", "-t", hosterRestLabel, "service start-up").Run()
+
 		exec.Command("nohup", "/opt/hoster-core/ha_watchdog", "&").Start()
-		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "service start-up").Run()
+
 		go func() {
 			for {
 				out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
@@ -447,7 +451,7 @@ func main() {
 				}
 
 				if timesFailed >= timesFailedMax {
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "process exited due to HA_WATCHDOG failure").Run()
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "process will exit due to HA_WATCHDOG failure").Run()
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "the host system shall reboot soon").Run()
 					os.Exit(1)
 				}
@@ -457,19 +461,12 @@ func main() {
 		}()
 	}
 
-	hosterRestLabel := "HOSTER_REST"
-	if haMode {
-		hosterRestLabel = "HOSTER_HA_REST"
-	}
-
-	_ = exec.Command("logger", "-t", hosterRestLabel, "service start-up").Run()
-
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGTERM)
 	go func() {
 		for sig := range signals {
 			if sig == syscall.SIGTERM {
-				_ = exec.Command("logger", "-t", hosterRestLabel, "shutting the server down").Run()
+				_ = exec.Command("logger", "-t", hosterRestLabel, "received SIGTERM, exiting").Run()
 
 				err := app.Shutdown()
 				if err != nil {

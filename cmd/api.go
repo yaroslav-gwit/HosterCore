@@ -136,16 +136,24 @@ func startApiServer(port int, user string, password string, haMode bool) error {
 }
 
 func stopApiServer() error {
+	timesKilled := 0
+
 	out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
 	if err == nil && len(string(out)) > 0 {
+		timesKilled += 1
 		_ = exec.Command("kill", "-SIGTERM", strings.TrimSpace(string(out))).Run()
 		emojlog.PrintLogMessage("HA_WATCHDOG service stopped using PID: "+strings.TrimSpace(string(out)), emojlog.Changed)
 	}
 
 	out, err = exec.Command("pgrep", "hoster_rest_api").CombinedOutput()
 	if err == nil && len(string(out)) > 0 {
+		timesKilled += 1
 		_ = exec.Command("kill", "-SIGTERM", strings.TrimSpace(string(out))).Run()
 		emojlog.PrintLogMessage("REST API service stopped using PID: "+strings.TrimSpace(string(out)), emojlog.Changed)
+	}
+
+	if timesKilled < 1 {
+		emojlog.PrintLogMessage("Sorry, the REST API service is not running", emojlog.Error)
 	}
 
 	return nil
