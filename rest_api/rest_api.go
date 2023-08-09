@@ -436,16 +436,14 @@ func main() {
 				if err != nil {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "process is not running: HA_WATCHDOG").Run()
 					timesFailed += 1
-					time.Sleep(time.Second * 4)
-					continue
+				} else {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: found PID: "+strings.TrimSpace(string(out))).Run()
+					out1, err1 := exec.Command("kill", "-SIGHUP", strings.TrimSpace(string(out))).CombinedOutput()
+					if err1 != nil {
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", string(out1)).Run()
+					}
+					timesFailed = 0
 				}
-
-				pid := strings.TrimSpace(string(out))
-				out1, err1 := exec.Command("kill", "-SIGHUP", pid).CombinedOutput()
-				if err1 != nil {
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", string(out1)).Run()
-				}
-				timesFailed = 0
 
 				if timesFailed >= timesFailedMax {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "process exited due to HA_WATCHDOG failure").Run()
