@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -45,8 +43,8 @@ func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 	hosterHaNode.NodeInfo = *hosterNode
 	haHostsDb = append(haHostsDb, hosterHaNode)
 
-	jsonOutput, _ := json.Marshal(haHostsDb)
-	return fiberContext.JSON(fiber.Map{"message": "done", "context": string(jsonOutput)})
+	// jsonOutput, _ := json.Marshal(haHostsDb)
+	return fiberContext.JSON(fiber.Map{"message": "done", "context": haHostsDb})
 }
 
 func handleHaPing(fiberContext *fiber.Ctx) error {
