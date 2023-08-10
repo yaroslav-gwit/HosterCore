@@ -46,7 +46,7 @@ func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 	haHostsDb = append(haHostsDb, hosterHaNode)
 
 	jsonOutput, _ := json.Marshal(haHostsDb)
-	return fiberContext.JSON(fiber.Map{"message": "done", "context": jsonOutput})
+	return fiberContext.JSON(fiber.Map{"message": "done", "context": &jsonOutput})
 }
 
 func handleHaPing(fiberContext *fiber.Ctx) error {
