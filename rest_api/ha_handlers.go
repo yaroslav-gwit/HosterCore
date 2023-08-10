@@ -33,7 +33,7 @@ var haHostsDb []HosterHaNodeStruct
 func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 	tagCustomError = ""
 
-	hosterNode := NodeStruct{}
+	hosterNode := new(NodeStruct)
 	if err := fiberContext.BodyParser(hosterNode); err != nil {
 		tagCustomError = err.Error()
 		fiberContext.Status(fiber.StatusUnprocessableEntity)
@@ -42,11 +42,11 @@ func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 
 	hosterHaNode := HosterHaNodeStruct{}
 	hosterHaNode.IsManager = false
-	hosterHaNode.NodeInfo = hosterNode
+	hosterHaNode.NodeInfo = *hosterNode
 	haHostsDb = append(haHostsDb, hosterHaNode)
 
 	jsonOutput, _ := json.Marshal(haHostsDb)
-	return fiberContext.JSON(fiber.Map{"message": "done", "context": &jsonOutput})
+	return fiberContext.JSON(fiber.Map{"message": "done", "context": string(jsonOutput)})
 }
 
 func handleHaPing(fiberContext *fiber.Ctx) error {
