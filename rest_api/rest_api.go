@@ -22,6 +22,8 @@ import (
 // Light yellow-ish coloured log separator
 const LOG_SEPARATOR = " || "
 
+var tagCustomError string
+
 func main() {
 	user := "admin"
 	password := "123456"
@@ -60,7 +62,7 @@ func main() {
 	}
 	defer file.Close()
 
-	tagCustomError := ""
+	tagCustomError = ""
 	app.Use(logger.New(logger.Config{
 		CustomTags: map[string]logger.LogFunc{
 			"custom_tag_err": func(output logger.Buffer, c *fiber.Ctx, data *logger.Data, extraParam string) (int, error) {
@@ -425,6 +427,18 @@ func main() {
 		return fiberContext.JSON(fiber.Map{"message": "success"})
 
 	})
+
+	api := app.Group("/api")
+	v1 := api.Group("/v1")
+
+	ha := v1.Group("/ha")
+	ha.Post("/register", handleHaManagerRegistration)
+	ha.Get("/share-candidates", handleHaShareCandidates)
+	ha.Get("/share-workers", handleHaShareWorkers)
+	ha.Get("/share-manager", handleHaShareManager)
+	ha.Post("/terminate", handleHaTerminate)
+	ha.Post("/promote", handleHaPromote)
+	ha.Get("/ping", handleHaPing)
 
 	timesFailed := 0
 	timesFailedMax := 50
