@@ -27,6 +27,31 @@ type HaConfigJsonStruct struct {
 }
 
 var haHostsDb []HosterHaNodeStruct
+var haChannelAdd = make(chan HosterHaNodeStruct, 20)
+var haChannelRemove = make(chan HosterHaNodeStruct, 20)
+
+func init() {
+	go addHaNode(haChannelAdd)
+	go removeHaNode(haChannelRemove)
+}
+
+func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
+	for msg := range haChannelAdd {
+		haHostsDb = append(haHostsDb, msg)
+	}
+}
+
+func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
+	haHosts := []HosterHaNodeStruct{}
+	for msg := range haChannelAdd {
+		for _, v := range haHostsDb {
+			if msg != v {
+				haHosts = append(haHosts, v)
+			}
+		}
+	}
+	haHostsDb = haHosts
+}
 
 func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 	tagCustomError = ""
@@ -40,11 +65,11 @@ func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 
 	hosterHaNode := HosterHaNodeStruct{}
 	hosterHaNode.IsManager = false
+	hosterHaNode.IsCandidate = false
 	hosterHaNode.IsWorker = true
 	hosterHaNode.NodeInfo = *hosterNode
-	haHostsDb = append(haHostsDb, hosterHaNode)
+	haChannelAdd <- hosterHaNode
 
-	// jsonOutput, _ := json.Marshal(haHostsDb)
 	return fiberContext.JSON(fiber.Map{"message": "done", "context": hosterHaNode})
 }
 
@@ -71,9 +96,21 @@ func handleHaShareWorkers(fiberContext *fiber.Ctx) error {
 }
 
 func handleHaShareManager(fiberContext *fiber.Ctx) error {
-	return fiberContext.JSON(fiber.Map{"message": "done"})
+	manager := HosterHaNodeStruct{}
+	for _, v := range haHostsDb {
+		if v.IsManager {
+			manager = v
+		}
+	}
+	return fiberContext.JSON(manager)
 }
 
 func handleHaShareCandidates(fiberContext *fiber.Ctx) error {
-	return fiberContext.JSON(fiber.Map{"message": "done"})
+	candidates := []HosterHaNodeStruct{}
+	for _, v := range haHostsDb {
+		if v.IsCandidate {
+			candidates = append(candidates, v)
+		}
+	}
+	return fiberContext.JSON(candidates)
 }
