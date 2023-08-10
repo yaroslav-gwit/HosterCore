@@ -40,11 +40,12 @@ func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 
 	hosterHaNode := HosterHaNodeStruct{}
 	hosterHaNode.IsManager = false
+	hosterHaNode.IsWorker = true
 	hosterHaNode.NodeInfo = *hosterNode
 	haHostsDb = append(haHostsDb, hosterHaNode)
 
 	// jsonOutput, _ := json.Marshal(haHostsDb)
-	return fiberContext.JSON(fiber.Map{"message": "done", "context": haHostsDb})
+	return fiberContext.JSON(fiber.Map{"message": "done", "context": hosterHaNode})
 }
 
 func handleHaPing(fiberContext *fiber.Ctx) error {
@@ -60,7 +61,13 @@ func handleHaPromote(fiberContext *fiber.Ctx) error {
 }
 
 func handleHaShareWorkers(fiberContext *fiber.Ctx) error {
-	return fiberContext.JSON(fiber.Map{"message": "done"})
+	workers := []HosterHaNodeStruct{}
+	for _, v := range haHostsDb {
+		if v.IsWorker {
+			workers = append(workers, v)
+		}
+	}
+	return fiberContext.JSON(workers)
 }
 
 func handleHaShareManager(fiberContext *fiber.Ctx) error {

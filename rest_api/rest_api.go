@@ -433,9 +433,9 @@ func main() {
 
 	ha := v1.Group("/ha")
 	ha.Post("/register", handleHaManagerRegistration)
-	ha.Get("/share-candidates", handleHaShareCandidates)
-	ha.Get("/share-workers", handleHaShareWorkers)
-	ha.Get("/share-manager", handleHaShareManager)
+	ha.Get("/candidates", handleHaShareCandidates)
+	ha.Get("/workers", handleHaShareWorkers)
+	ha.Get("/manager", handleHaShareManager)
 	ha.Post("/terminate", handleHaTerminate)
 	ha.Post("/promote", handleHaPromote)
 	ha.Get("/ping", handleHaPing)
