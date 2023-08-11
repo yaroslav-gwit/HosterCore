@@ -440,7 +440,7 @@ func main() {
 		ha.Get("/manager", handleHaShareManager)
 		ha.Post("/terminate", handleHaTerminate)
 		ha.Post("/promote", handleHaPromote)
-		ha.Get("/ping", handleHaPing)
+		ha.Post("/ping", handleHaPing)
 		ha.Get("/monitor", handleHaMonitor)
 	}
 
