@@ -1,5 +1,6 @@
 {
     "node_type": "worker",
+    "failover_strategy": "cireset",
     "manager": {
         "hostname": "hoster-test-0103",
         "protocol": "http",

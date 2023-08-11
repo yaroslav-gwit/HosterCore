@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -34,10 +35,11 @@ type HosterHaNodeStruct struct {
 }
 
 type HaConfigJsonStruct struct {
-	NodeType    string       `json:"node_type"`
-	StartupTime int64        `json:"startup_time"`
-	Candidates  []NodeStruct `json:"candidates"`
-	Manager     NodeStruct   `json:"manager"`
+	NodeType         string       `json:"node_type"`
+	StartupTime      int64        `json:"startup_time"`
+	FailOverStrategy string       `json:"failover_strategy"`
+	Candidates       []NodeStruct `json:"candidates"`
+	Manager          NodeStruct   `json:"manager"`
 }
 
 var haHostsDb []HosterHaNodeStruct
@@ -78,6 +80,7 @@ func initializeHaCluster() {
 	hosterNode.IsManager = true
 	hosterNode.LastPing = time.Now().UnixMicro()
 	hosterNode.NodeInfo = haConfig.Manager
+	hosterNode.NodeInfo.FailOverStrategy = haConfig.FailOverStrategy
 
 	haChannelAdd <- hosterNode
 	iAmRegistered = true
@@ -113,6 +116,7 @@ func joinHaCluster() {
 	host.Password = password
 	host.Port = strconv.Itoa(port)
 	host.Protocol = "http"
+	host.FailOverStrategy = haConfig.FailOverStrategy
 
 	jsonPayload, _ := json.Marshal(host)
 	payload := strings.NewReader(string(jsonPayload))
@@ -121,11 +125,13 @@ func joinHaCluster() {
 	req, _ := http.NewRequest("POST", url, payload)
 	auth := haConfig.Manager.User + ":" + haConfig.Manager.Password
 	authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", "Basic "+authEncoded)
 
 	for !iAmRegistered {
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Could not join the manager: "+err.Error()).Run()
 			time.Sleep(time.Second * 30)
 			continue
 		}
