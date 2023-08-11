@@ -50,10 +50,11 @@ var haChannelRemove = make(chan HosterHaNodeStruct, 100)
 var iAmManager = false
 var iAmCandidate = false
 var iAmRegistered = false
+var lastManagerContact int64
 
 func init() {
 	_ = iAmCandidate
-	_ = iAmRegistered
+	_ = lastManagerContact
 	go addHaNode(haChannelAdd)
 	go removeHaNode(haChannelRemove)
 
@@ -146,6 +147,7 @@ func joinHaCluster() {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully joined the cluster: "+string(body)).Run()
 
 			iAmRegistered = true
+			lastManagerContact = time.Now().Unix()
 			break
 		}
 	}
@@ -173,6 +175,7 @@ func pingPong() {
 				time.Sleep(time.Second * 10)
 				continue
 			}
+			lastManagerContact = time.Now().Unix()
 			time.Sleep(time.Second * 4)
 			continue
 		} else {
@@ -201,7 +204,7 @@ func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Registered a new node: "+msg.NodeInfo.Hostname).Run()
 					haHostsDb = append(haHostsDb, msg)
 				} else {
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Updated last ping time: "+msg.NodeInfo.Hostname).Run()
+					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Updated last ping time: "+msg.NodeInfo.Hostname).Run()
 					haHostsDb[hostIndex].LastPing = time.Now().Unix()
 				}
 			}
