@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -137,6 +138,9 @@ func joinHaCluster() {
 		}
 
 		defer res.Body.Close()
+		body, _ := io.ReadAll(res.Body)
+		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", string(body)).Run()
+
 		iAmRegistered = true
 		return
 	}
