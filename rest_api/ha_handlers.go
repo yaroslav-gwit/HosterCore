@@ -45,8 +45,8 @@ type HaConfigJsonStruct struct {
 
 var haHostsDb []HosterHaNodeStruct
 var haConfig HaConfigJsonStruct
-var haChannelAdd = make(chan HosterHaNodeStruct, 20)
-var haChannelRemove = make(chan HosterHaNodeStruct, 20)
+var haChannelAdd = make(chan HosterHaNodeStruct, 100)
+var haChannelRemove = make(chan HosterHaNodeStruct, 100)
 var iAmManager = false
 var iAmCandidate = false
 var iAmRegistered = false
@@ -69,6 +69,7 @@ func init() {
 		initializeHaCluster()
 	} else {
 		go joinHaCluster()
+		go pingPong()
 	}
 }
 
@@ -77,7 +78,7 @@ func initializeHaCluster() {
 	hosterNode.IsCandidate = false
 	hosterNode.IsWorker = false
 	hosterNode.IsManager = true
-	hosterNode.LastPing = time.Now().UnixMicro()
+	hosterNode.LastPing = time.Now().Unix()
 	hosterNode.NodeInfo = haConfig.Manager
 	hosterNode.NodeInfo.FailOverStrategy = haConfig.FailOverStrategy
 
@@ -137,33 +138,98 @@ func joinHaCluster() {
 
 		defer res.Body.Close()
 		body, _ := io.ReadAll(res.Body)
-		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", string(body)).Run()
+		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully joined the cluster: "+string(body)).Run()
 
 		iAmRegistered = true
-		return
+		break
 	}
 }
 
+func pingPong() {
+	for {
+		if iAmRegistered {
+			host := NodeStruct{}
+			host.Hostname = cmd.GetHostName()
+
+			jsonPayload, _ := json.Marshal(host)
+			payload := strings.NewReader(string(jsonPayload))
+
+			url := haConfig.Manager.Protocol + "://" + haConfig.Manager.Address + ":" + haConfig.Manager.Port + "/api/v1/ha/ping"
+			req, _ := http.NewRequest("POST", url, payload)
+			auth := haConfig.Manager.User + ":" + haConfig.Manager.Password
+			authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+			req.Header.Add("Content-Type", "application/json")
+			req.Header.Add("Authorization", "Basic "+authEncoded)
+			_, err := http.DefaultClient.Do(req)
+			if err != nil {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Failed to ping the manager: "+err.Error()).Run()
+				time.Sleep(time.Second * 10)
+				continue
+			}
+			time.Sleep(time.Second * 4)
+			continue
+		} else {
+			time.Sleep(time.Second * 10)
+			continue
+		}
+	}
+}
+
+var listLocked = false
+
 func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
-	for msg := range haChannelAdd {
-		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Registered a new node: "+msg.NodeInfo.Hostname).Run()
-		haHostsDb = append(haHostsDb, msg)
+	for {
+		if !listLocked {
+			listLocked = true
+			for msg := range haChannelAdd {
+				hostFound := false
+				hostIndex := 0
+				for i, v := range haHostsDb {
+					if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
+						hostFound = true
+						hostIndex = i
+					}
+				}
+				if !hostFound {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Registered a new node: "+msg.NodeInfo.Hostname).Run()
+					haHostsDb = append(haHostsDb, msg)
+				} else {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Updated last ping time: "+msg.NodeInfo.Hostname).Run()
+					haHostsDb[hostIndex].LastPing = time.Now().Unix()
+				}
+			}
+			listLocked = false
+			break
+		} else {
+			time.Sleep(time.Millisecond * 500)
+			continue
+		}
 	}
 }
 
 func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
-	haHosts := []HosterHaNodeStruct{}
-	for msg := range haChannelRemove {
-		for _, v := range haHostsDb {
-			if msg.NodeInfo.Hostname != v.NodeInfo.Hostname {
-				haHosts = append(haHosts, v)
+	for {
+		if !listLocked {
+			listLocked = true
+			haHosts := []HosterHaNodeStruct{}
+			for msg := range haChannelRemove {
+				for _, v := range haHostsDb {
+					if msg.NodeInfo.Hostname != v.NodeInfo.Hostname {
+						haHosts = append(haHosts, v)
+					}
+					if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster: "+msg.NodeInfo.Hostname).Run()
+					}
+				}
 			}
-			if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster: "+msg.NodeInfo.Hostname).Run()
-			}
+			haHostsDb = haHosts
+			listLocked = false
+			break
+		} else {
+			time.Sleep(time.Millisecond * 500)
+			continue
 		}
 	}
-	haHostsDb = haHosts
 }
 
 func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
@@ -182,13 +248,27 @@ func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 	hosterHaNode.IsWorker = true
 	hosterHaNode.NodeInfo = *hosterNode
 	hosterHaNode.NodeInfo.Address = fiberContext.IP()
-	hosterHaNode.LastPing = time.Now().UTC().UnixMicro()
+	hosterHaNode.LastPing = time.Now().Unix()
 
 	haChannelAdd <- hosterHaNode
 	return fiberContext.JSON(fiber.Map{"message": "done", "context": hosterHaNode})
 }
 
 func handleHaPing(fiberContext *fiber.Ctx) error {
+	tagCustomError = ""
+	hosterNode := new(NodeStruct)
+	if err := fiberContext.BodyParser(hosterNode); err != nil {
+		tagCustomError = err.Error()
+		fiberContext.Status(fiber.StatusUnprocessableEntity)
+		return fiberContext.JSON(fiber.Map{"error": err.Error()})
+	}
+
+	hosterHaNode := HosterHaNodeStruct{}
+	hosterHaNode.NodeInfo = *hosterNode
+	hosterHaNode.NodeInfo.Address = fiberContext.IP()
+	hosterHaNode.LastPing = time.Now().Unix()
+
+	haChannelAdd <- hosterHaNode
 	return fiberContext.JSON(fiber.Map{"message": "pong"})
 }
 
