@@ -1,5 +1,13 @@
 {
     "node_type": "worker",
+    "manager": {
+        "hostname": "hoster-test-0103",
+        "protocol": "http",
+        "address": "192.168.100.103",
+        "port": "3000",
+        "user": "admin",
+        "password": "123456"
+    },
     "candidates": [
         {
             "hostname": "hoster-test-0101",

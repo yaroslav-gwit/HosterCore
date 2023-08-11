@@ -1,16 +1,28 @@
 package main
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
+	"hoster/cmd"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 type NodeStruct struct {
-	Hostname string `json:"hostname"`
-	Protocol string `json:"protocol"`
-	Address  string `json:"address"`
-	Port     string `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"password"`
+	Hostname         string `json:"hostname"`
+	Protocol         string `json:"protocol"`
+	Address          string `json:"address"`
+	Port             string `json:"port"`
+	User             string `json:"user"`
+	Password         string `json:"password"`
+	FailOverStrategy string `json:"failover_strategy"`
 }
 
 type HosterHaNodeStruct struct {
@@ -22,17 +34,106 @@ type HosterHaNodeStruct struct {
 }
 
 type HaConfigJsonStruct struct {
-	NodeType   string       `json:"node_type"`
-	Candidates []NodeStruct `json:"candidates"`
+	NodeType    string       `json:"node_type"`
+	StartupTime int64        `json:"startup_time"`
+	Candidates  []NodeStruct `json:"candidates"`
+	Manager     NodeStruct   `json:"manager"`
 }
 
 var haHostsDb []HosterHaNodeStruct
+var haConfig HaConfigJsonStruct
 var haChannelAdd = make(chan HosterHaNodeStruct, 20)
 var haChannelRemove = make(chan HosterHaNodeStruct, 20)
+var haChannelUpdate = make(chan HosterHaNodeStruct, 20)
+var iAmManager = false
+var iAmCandidate = false
+var iAmRegistered = false
 
 func init() {
+	_ = iAmCandidate
+	_ = iAmRegistered
 	go addHaNode(haChannelAdd)
 	go removeHaNode(haChannelRemove)
+	go updateHaNode(haChannelUpdate)
+
+	file, _ := os.ReadFile("/opt/hoster-core/config_files/ha_config.json")
+	_ = json.Unmarshal(file, &haConfig)
+
+	haConfig.StartupTime = time.Now().UnixMicro()
+	if haConfig.NodeType == "candidate" {
+		iAmCandidate = true
+	} else if haConfig.NodeType == "manager" {
+		iAmManager = true
+		iAmCandidate = false
+		initializeHaCluster()
+	} else {
+		go joinHaCluster()
+	}
+}
+
+func initializeHaCluster() {
+	hosterNode := HosterHaNodeStruct{}
+	hosterNode.IsCandidate = false
+	hosterNode.IsWorker = false
+	hosterNode.IsManager = true
+	hosterNode.LastPing = time.Now().UnixMicro()
+	hosterNode.NodeInfo = haConfig.Manager
+
+	haChannelAdd <- hosterNode
+	iAmRegistered = true
+}
+
+func joinHaCluster() {
+	user := "admin"
+	password := "123456"
+	port := 3000
+
+	portEnv := os.Getenv("REST_API_PORT")
+	userEnv := os.Getenv("REST_API_USER")
+	passwordEnv := os.Getenv("REST_API_PASSWORD")
+
+	var err error
+	if len(portEnv) > 0 {
+		port, err = strconv.Atoi(portEnv)
+		if err != nil {
+			log.Fatal("please make sure port is an integer!")
+		}
+	}
+	if len(userEnv) > 0 {
+		user = userEnv
+	}
+	if len(passwordEnv) > 0 {
+		password = passwordEnv
+	}
+
+	host := NodeStruct{}
+	host.Hostname = cmd.GetHostName()
+	host.FailOverStrategy = "cireset"
+	host.User = user
+	host.Password = password
+	host.Port = strconv.Itoa(port)
+	host.Protocol = "http"
+
+	jsonPayload, _ := json.Marshal(host)
+	payload := strings.NewReader(string(jsonPayload))
+
+	url := haConfig.Manager.Protocol + "://" + haConfig.Manager.Address + ":" + haConfig.Manager.Port + "/api/v1/ha/register"
+	req, _ := http.NewRequest("POST", url, payload)
+	auth := haConfig.Manager.User + ":" + haConfig.Manager.Password
+	authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+	req.Header.Add("Authorization", "Basic "+authEncoded)
+
+	for !iAmRegistered {
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			time.Sleep(time.Second * 30)
+			continue
+		}
+
+		defer res.Body.Close()
+		iAmRegistered = true
+		return
+	}
 }
 
 func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
@@ -45,7 +146,21 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 	haHosts := []HosterHaNodeStruct{}
 	for msg := range haChannelAdd {
 		for _, v := range haHostsDb {
-			if msg != v {
+			if msg.NodeInfo.Hostname != v.NodeInfo.Hostname {
+				haHosts = append(haHosts, v)
+			}
+		}
+	}
+	haHostsDb = haHosts
+}
+
+func updateHaNode(haChannelRemove chan HosterHaNodeStruct) {
+	haHosts := []HosterHaNodeStruct{}
+	for msg := range haChannelAdd {
+		for _, v := range haHostsDb {
+			if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
+				haHosts = append(haHosts, msg)
+			} else {
 				haHosts = append(haHosts, v)
 			}
 		}
@@ -68,6 +183,7 @@ func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 	hosterHaNode.IsCandidate = false
 	hosterHaNode.IsWorker = true
 	hosterHaNode.NodeInfo = *hosterNode
+	hosterHaNode.NodeInfo.Address = fiberContext.IP()
 	haChannelAdd <- hosterHaNode
 
 	return fiberContext.JSON(fiber.Map{"message": "done", "context": hosterHaNode})
@@ -82,6 +198,10 @@ func handleHaTerminate(fiberContext *fiber.Ctx) error {
 }
 
 func handleHaPromote(fiberContext *fiber.Ctx) error {
+	return fiberContext.JSON(fiber.Map{"message": "done"})
+}
+
+func handleHaMonitor(fiberContext *fiber.Ctx) error {
 	return fiberContext.JSON(fiber.Map{"message": "done"})
 }
 
@@ -113,4 +233,12 @@ func handleHaShareCandidates(fiberContext *fiber.Ctx) error {
 		}
 	}
 	return fiberContext.JSON(candidates)
+}
+
+func handleHaShareAllMembers(fiberContext *fiber.Ctx) error {
+	if iAmManager {
+		return fiberContext.JSON(haHostsDb)
+	} else {
+		return fiberContext.JSON([]HosterHaNodeStruct{})
+	}
 }

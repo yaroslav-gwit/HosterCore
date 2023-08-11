@@ -431,14 +431,18 @@ func main() {
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
 
-	ha := v1.Group("/ha")
-	ha.Post("/register", handleHaManagerRegistration)
-	ha.Get("/candidates", handleHaShareCandidates)
-	ha.Get("/workers", handleHaShareWorkers)
-	ha.Get("/manager", handleHaShareManager)
-	ha.Post("/terminate", handleHaTerminate)
-	ha.Post("/promote", handleHaPromote)
-	ha.Get("/ping", handleHaPing)
+	if haMode {
+		ha := v1.Group("/ha")
+		ha.Post("/register", handleHaManagerRegistration)
+		ha.Get("/all-members", handleHaShareAllMembers)
+		ha.Get("/candidates", handleHaShareCandidates)
+		ha.Get("/workers", handleHaShareWorkers)
+		ha.Get("/manager", handleHaShareManager)
+		ha.Post("/terminate", handleHaTerminate)
+		ha.Post("/promote", handleHaPromote)
+		ha.Get("/ping", handleHaPing)
+		ha.Get("/monitor", handleHaMonitor)
+	}
 
 	timesFailed := 0
 	timesFailedMax := 50
