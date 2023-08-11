@@ -87,61 +87,67 @@ func initializeHaCluster() {
 }
 
 func joinHaCluster() {
-	user := "admin"
-	password := "123456"
-	port := 3000
-
-	portEnv := os.Getenv("REST_API_PORT")
-	userEnv := os.Getenv("REST_API_USER")
-	passwordEnv := os.Getenv("REST_API_PASSWORD")
-
-	var err error
-	if len(portEnv) > 0 {
-		port, err = strconv.Atoi(portEnv)
-		if err != nil {
-			log.Fatal("please make sure port is an integer!")
-		}
-	}
-	if len(userEnv) > 0 {
-		user = userEnv
-	}
-	if len(passwordEnv) > 0 {
-		password = passwordEnv
-	}
-
-	host := NodeStruct{}
-	host.Hostname = cmd.GetHostName()
-	host.FailOverStrategy = "cireset"
-	host.User = user
-	host.Password = password
-	host.Port = strconv.Itoa(port)
-	host.Protocol = "http"
-	host.FailOverStrategy = haConfig.FailOverStrategy
-
-	jsonPayload, _ := json.Marshal(host)
-	payload := strings.NewReader(string(jsonPayload))
-
-	url := haConfig.Manager.Protocol + "://" + haConfig.Manager.Address + ":" + haConfig.Manager.Port + "/api/v1/ha/register"
-	req, _ := http.NewRequest("POST", url, payload)
-	auth := haConfig.Manager.User + ":" + haConfig.Manager.Password
-	authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Basic "+authEncoded)
-
 	for {
-		res, err := http.DefaultClient.Do(req)
-		if err != nil {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Could not join the manager: "+err.Error()).Run()
-			time.Sleep(time.Second * 30)
+		if iAmRegistered {
+			time.Sleep(time.Second * 10)
 			continue
 		}
+		user := "admin"
+		password := "123456"
+		port := 3000
 
-		defer res.Body.Close()
-		body, _ := io.ReadAll(res.Body)
-		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully joined the cluster: "+string(body)).Run()
+		portEnv := os.Getenv("REST_API_PORT")
+		userEnv := os.Getenv("REST_API_USER")
+		passwordEnv := os.Getenv("REST_API_PASSWORD")
 
-		iAmRegistered = true
-		break
+		var err error
+		if len(portEnv) > 0 {
+			port, err = strconv.Atoi(portEnv)
+			if err != nil {
+				log.Fatal("please make sure port is an integer!")
+			}
+		}
+		if len(userEnv) > 0 {
+			user = userEnv
+		}
+		if len(passwordEnv) > 0 {
+			password = passwordEnv
+		}
+
+		host := NodeStruct{}
+		host.Hostname = cmd.GetHostName()
+		host.FailOverStrategy = "cireset"
+		host.User = user
+		host.Password = password
+		host.Port = strconv.Itoa(port)
+		host.Protocol = "http"
+		host.FailOverStrategy = haConfig.FailOverStrategy
+
+		jsonPayload, _ := json.Marshal(host)
+		payload := strings.NewReader(string(jsonPayload))
+
+		url := haConfig.Manager.Protocol + "://" + haConfig.Manager.Address + ":" + haConfig.Manager.Port + "/api/v1/ha/register"
+		req, _ := http.NewRequest("POST", url, payload)
+		auth := haConfig.Manager.User + ":" + haConfig.Manager.Password
+		authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add("Authorization", "Basic "+authEncoded)
+
+		for {
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Could not join the manager: "+err.Error()).Run()
+				time.Sleep(time.Second * 30)
+				continue
+			}
+
+			defer res.Body.Close()
+			body, _ := io.ReadAll(res.Body)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully joined the cluster: "+string(body)).Run()
+
+			iAmRegistered = true
+			break
+		}
 	}
 }
 
@@ -163,6 +169,7 @@ func pingPong() {
 			_, err := http.DefaultClient.Do(req)
 			if err != nil {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Failed to ping the manager: "+err.Error()).Run()
+				iAmRegistered = false
 				time.Sleep(time.Second * 10)
 				continue
 			}
