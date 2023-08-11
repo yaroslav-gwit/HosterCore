@@ -47,7 +47,6 @@ var haHostsDb []HosterHaNodeStruct
 var haConfig HaConfigJsonStruct
 var haChannelAdd = make(chan HosterHaNodeStruct, 20)
 var haChannelRemove = make(chan HosterHaNodeStruct, 20)
-var haChannelUpdate = make(chan HosterHaNodeStruct, 20)
 var iAmManager = false
 var iAmCandidate = false
 var iAmRegistered = false
@@ -57,7 +56,6 @@ func init() {
 	_ = iAmRegistered
 	go addHaNode(haChannelAdd)
 	go removeHaNode(haChannelRemove)
-	go updateHaNode(haChannelUpdate)
 
 	file, _ := os.ReadFile("/opt/hoster-core/config_files/ha_config.json")
 	_ = json.Unmarshal(file, &haConfig)
@@ -148,30 +146,20 @@ func joinHaCluster() {
 
 func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
 	for msg := range haChannelAdd {
+		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Registered a new node: "+msg.NodeInfo.Hostname).Run()
 		haHostsDb = append(haHostsDb, msg)
 	}
 }
 
 func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 	haHosts := []HosterHaNodeStruct{}
-	for msg := range haChannelAdd {
+	for msg := range haChannelRemove {
 		for _, v := range haHostsDb {
 			if msg.NodeInfo.Hostname != v.NodeInfo.Hostname {
 				haHosts = append(haHosts, v)
 			}
-		}
-	}
-	haHostsDb = haHosts
-}
-
-func updateHaNode(haChannelRemove chan HosterHaNodeStruct) {
-	haHosts := []HosterHaNodeStruct{}
-	for msg := range haChannelAdd {
-		for _, v := range haHostsDb {
 			if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
-				haHosts = append(haHosts, msg)
-			} else {
-				haHosts = append(haHosts, v)
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster: "+msg.NodeInfo.Hostname).Run()
 			}
 		}
 	}
@@ -194,8 +182,9 @@ func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 	hosterHaNode.IsWorker = true
 	hosterHaNode.NodeInfo = *hosterNode
 	hosterHaNode.NodeInfo.Address = fiberContext.IP()
-	haChannelAdd <- hosterHaNode
+	hosterHaNode.LastPing = time.Now().UTC().UnixMicro()
 
+	haChannelAdd <- hosterHaNode
 	return fiberContext.JSON(fiber.Map{"message": "done", "context": hosterHaNode})
 }
 
