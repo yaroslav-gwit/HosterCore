@@ -128,7 +128,7 @@ func joinHaCluster() {
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", "Basic "+authEncoded)
 
-	for !iAmRegistered {
+	for {
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Could not join the manager: "+err.Error()).Run()
