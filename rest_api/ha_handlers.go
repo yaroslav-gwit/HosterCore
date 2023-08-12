@@ -227,7 +227,7 @@ func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "addHaNode() Recovered from error: "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "addHaNode() Recovered from panic: "+errorValue).Run()
 		}
 	}()
 
@@ -254,7 +254,7 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "removeHaNode() Recovered from error: "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "removeHaNode() Recovered from panic: "+errorValue).Run()
 		}
 	}()
 
@@ -288,12 +288,11 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "failoverHostVms() Recovered from error: "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "failoverHostVms() Recovered from panic: "+errorValue).Run()
 		}
 	}()
 
 	haVms := []HaVm{}
-
 	for _, v := range haHostsDb {
 		haVmsTemp := []HaVm{}
 		if v.NodeInfo.Hostname == haNode.NodeInfo.Hostname {
@@ -307,6 +306,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 		req.Header.Add("Authorization", "Basic "+authEncoded)
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Line 309: "+err.Error()).Run()
 			continue
 		}
 
@@ -315,6 +315,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 
 		err = json.Unmarshal(body, &haVmsTemp)
 		if err != nil {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Line 318: "+err.Error()).Run()
 			continue
 		}
 
@@ -354,34 +355,32 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 				payloadMap["name"] = v.VmName
 				jsonPayload, _ := json.Marshal(payloadMap)
 				payload := strings.NewReader(string(jsonPayload))
+				auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
+				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 
 				// Use failover strategy to failover the VM
 				if vv.NodeInfo.FailOverStrategy == "cireset" || vv.NodeInfo.FailOverStrategy == "ci-reset" {
 					url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/cireset"
 					req, _ := http.NewRequest("POST", url, payload)
-					auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
-					authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 
 					req.Header.Add("Content-Type", "application/json")
 					req.Header.Add("Authorization", "Basic "+authEncoded)
 					res, err := http.DefaultClient.Do(req)
-
 					if res.StatusCode != 200 {
-						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILED TO MOVE THE VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost+"; ERROR: "+err.Error()).Run()
+						_ = err
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILED TO MOVE THE VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost+"; ERROR: ").Run()
 						continue
 					}
 				} else if vv.NodeInfo.FailOverStrategy == "changeparent" || vv.NodeInfo.FailOverStrategy == "change-parent" {
 					url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/change-parent"
 					req, _ := http.NewRequest("POST", url, payload)
-					auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
-					authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 
 					req.Header.Add("Content-Type", "application/json")
 					req.Header.Add("Authorization", "Basic "+authEncoded)
 					res, err := http.DefaultClient.Do(req)
-
 					if res.StatusCode != 200 {
-						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILED TO MOVE THE VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost+"; ERROR: "+err.Error()).Run()
+						_ = err
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILED TO MOVE THE VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost+"; ERROR: ").Run()
 						continue
 					}
 				}
@@ -389,18 +388,17 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 				// Start VM on a new host
 				url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/start"
 				req, _ := http.NewRequest("POST", url, payload)
-				auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
-				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 
 				req.Header.Add("Content-Type", "application/json")
 				req.Header.Add("Authorization", "Basic "+authEncoded)
 				res, err := http.DefaultClient.Do(req)
 
 				if res.StatusCode == 200 {
+					_ = err
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILING OVER VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
 					continue
 				} else {
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILED TO MOVE THE VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost+"; ERROR: "+err.Error()).Run()
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILED TO MOVE THE VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost+"; ERROR: ").Run()
 					continue
 				}
 			}
