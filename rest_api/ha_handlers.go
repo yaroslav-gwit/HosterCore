@@ -194,60 +194,52 @@ func pingPong() {
 var listLocked = false
 
 func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
-	for {
-		if !listLocked {
-			listLocked = true
-			for msg := range haChannelAdd {
-				hostFound := false
-				hostIndex := 0
-				for i, v := range haHostsDb {
-					if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
-						hostFound = true
-						hostIndex = i
-					}
-				}
-				if !hostFound {
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Registered a new node: "+msg.NodeInfo.Hostname).Run()
-					haHostsDb = append(haHostsDb, msg)
-				} else {
-					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Updated last ping time: "+msg.NodeInfo.Hostname).Run()
-					haHostsDb[hostIndex].LastPing = time.Now().Unix()
+	if !listLocked {
+		listLocked = true
+		for msg := range haChannelAdd {
+			hostFound := false
+			hostIndex := 0
+			for i, v := range haHostsDb {
+				if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
+					hostFound = true
+					hostIndex = i
 				}
 			}
-			listLocked = false
-			break
-		} else {
-			time.Sleep(time.Millisecond * 500)
-			continue
+			if !hostFound {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Registered a new node: "+msg.NodeInfo.Hostname).Run()
+				haHostsDb = append(haHostsDb, msg)
+			} else {
+				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Updated last ping time: "+msg.NodeInfo.Hostname).Run()
+				haHostsDb[hostIndex].LastPing = time.Now().Unix()
+			}
 		}
+		listLocked = false
+	} else {
+		time.Sleep(time.Millisecond * 500)
 	}
 }
 
 func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
-	for {
-		if !listLocked {
-			listLocked = true
-			haHosts := []HosterHaNodeStruct{}
-			for msg := range haChannelRemove {
-				for _, v := range haHostsDb {
-					if msg.NodeInfo.Hostname != v.NodeInfo.Hostname {
-						haHosts = append(haHosts, v)
-						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "NODE NOT THE SAME!: "+msg.NodeInfo.Hostname).Run()
-						continue
-					}
-					if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
-						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster due to a failure: "+msg.NodeInfo.Hostname).Run()
-						continue
-					}
+	if !listLocked {
+		listLocked = true
+		haHosts := []HosterHaNodeStruct{}
+		for msg := range haChannelRemove {
+			for _, v := range haHostsDb {
+				if msg.NodeInfo.Hostname != v.NodeInfo.Hostname {
+					haHosts = append(haHosts, v)
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "NODE NOT THE SAME!: "+msg.NodeInfo.Hostname).Run()
+					continue
+				}
+				if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster due to a failure: "+msg.NodeInfo.Hostname).Run()
+					continue
 				}
 			}
-			haHostsDb = haHosts
-			listLocked = false
-			break
-		} else {
-			time.Sleep(time.Millisecond * 500)
-			continue
 		}
+		haHostsDb = haHosts
+		listLocked = false
+	} else {
+		time.Sleep(time.Millisecond * 500)
 	}
 }
 
