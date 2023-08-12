@@ -253,6 +253,7 @@ func manageOfflineNodes() {
 		for i, v := range haHostsDb {
 			_ = v
 			if (time.Now().Unix() > haHostsDb[i].LastPing+60) && !haHostsDb[i].IsManager {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Sent node in for removal: "+v.NodeInfo.Hostname).Run()
 				haChannelRemove <- haHostsDb[i]
 			}
 		}
