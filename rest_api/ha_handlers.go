@@ -232,9 +232,12 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 				for _, v := range haHostsDb {
 					if msg.NodeInfo.Hostname != v.NodeInfo.Hostname {
 						haHosts = append(haHosts, v)
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "NODE NOT THE SAME!: "+msg.NodeInfo.Hostname).Run()
+						continue
 					}
 					if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster due to a failure: "+msg.NodeInfo.Hostname).Run()
+						continue
 					}
 				}
 			}
