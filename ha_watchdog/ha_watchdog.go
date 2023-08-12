@@ -26,7 +26,7 @@ func main() {
 	}
 
 	timesFailed := 0
-	timesFailedMax := 10
+	timesFailedMax := 4
 	lastReachOut := time.Now().Unix()
 
 	signals := make(chan os.Signal, 1)

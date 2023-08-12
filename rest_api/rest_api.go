@@ -444,7 +444,7 @@ func main() {
 	}
 
 	timesFailed := 0
-	timesFailedMax := 50
+	timesFailedMax := 5
 	hosterRestLabel := "HOSTER_REST"
 	if haMode {
 		if debugMode {
