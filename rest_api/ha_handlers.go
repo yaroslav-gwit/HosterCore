@@ -247,8 +247,10 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 func manageOfflineNodes() {
 	for {
 		for _, v := range haHostsDb {
-			if time.Now().Unix() > v.LastPing+60 {
+			if time.Now().Unix() > v.LastPing+60 && !v.IsManager {
 				haChannelRemove <- v
+			} else {
+				continue
 			}
 		}
 		time.Sleep(time.Second * 10)
