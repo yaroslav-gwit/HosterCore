@@ -264,7 +264,7 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 				haHostsDb[i] = haHostsDb[len(haHostsDb)-1]
 				haHostsDb[len(haHostsDb)-1] = HosterHaNodeStruct{}
 				haHostsDb = haHostsDb[0 : len(haHostsDb)-1]
-				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Failed node has been removed from the cluster: "+msg.NodeInfo.Hostname).Run()
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Host has been removed from the cluster: "+msg.NodeInfo.Hostname).Run()
 				break
 			}
 		}
@@ -354,13 +354,13 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 				// payloadMap := make(map[string]string)
 				// payloadMap["name"] = v.VmName
 				// jsonPayload, _ := json.Marshal(payloadMap)
-				payload := strings.NewReader(`{ "name": "` + v.VmName + `" }`)
 				auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
 				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 
 				// Use failover strategy to failover the VM
 				if vv.NodeInfo.FailOverStrategy == "cireset" || vv.NodeInfo.FailOverStrategy == "ci-reset" {
 					url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/cireset"
+					payload := strings.NewReader(`{ "name": "` + v.VmName + `" }`)
 					req, _ := http.NewRequest("POST", url, payload)
 
 					req.Header.Add("Content-Type", "application/json")
@@ -373,6 +373,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 					}
 				} else if vv.NodeInfo.FailOverStrategy == "changeparent" || vv.NodeInfo.FailOverStrategy == "change-parent" {
 					url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/change-parent"
+					payload := strings.NewReader(`{ "name": "` + v.VmName + `" }`)
 					req, _ := http.NewRequest("POST", url, payload)
 
 					req.Header.Add("Content-Type", "application/json")
@@ -387,6 +388,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 
 				// Start VM on a new host
 				url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/start"
+				payload := strings.NewReader(`{ "name": "` + v.VmName + `" }`)
 				req, _ := http.NewRequest("POST", url, payload)
 
 				req.Header.Add("Content-Type", "application/json")
