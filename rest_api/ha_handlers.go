@@ -96,7 +96,7 @@ func initializeHaCluster() {
 func joinHaCluster() {
 	for {
 		if iAmRegistered {
-			time.Sleep(time.Second * 10)
+			time.Sleep(time.Second * 5)
 			continue
 		}
 		user := "admin"
@@ -150,11 +150,17 @@ func joinHaCluster() {
 
 			defer res.Body.Close()
 			body, _ := io.ReadAll(res.Body)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully joined the cluster: "+string(body)).Run()
+
+			if !initialRegistrationPerformed {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully joined the cluster: "+string(body)).Run()
+			} else {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully restored the connection to the cluster manager: "+string(body)).Run()
+			}
 
 			iAmRegistered = true
 			initialRegistrationPerformed = true
 			lastManagerContact = time.Now().Unix()
+
 			break
 		}
 	}
@@ -350,4 +356,48 @@ func handleHaShareAllMembers(fiberContext *fiber.Ctx) error {
 	} else {
 		return fiberContext.JSON([]HosterHaNodeStruct{})
 	}
+}
+
+type HaVm struct {
+	VmName         string `json:"vm_name"`
+	Live           bool   `json:"live"`
+	LatestSnapshot string `json:"latest_snapshot"`
+	ParentHost     string `json:"parent_host"`
+}
+
+func haVmsList() []HaVm {
+	haVms := []HaVm{}
+	vmList := cmd.GetAllVms()
+
+	for _, vm := range vmList {
+		vmFound := false
+		for _, haVm := range haVms {
+			if vm == haVm.VmName {
+				vmFound = true
+			}
+		}
+		if vmFound {
+			continue
+		}
+
+		vmConfig := cmd.VmConfig(vm)
+		if !cmd.VmIsInProduction(vmConfig.LiveStatus) {
+			continue
+		}
+
+		haVmTemp := HaVm{}
+		haVmTemp.VmName = vm
+		haVmTemp.ParentHost = vmConfig.ParentHost
+		haVmTemp.Live = cmd.VmLiveCheck(vm)
+		snapshotList, _ := cmd.GetSnapshotInfo(vm, true)
+		haVmTemp.LatestSnapshot = snapshotList[len(snapshotList)-1].Name
+
+		haVms = append(haVms, haVmTemp)
+	}
+
+	return haVms
+}
+
+func handleHaVmsList(fiberContext *fiber.Ctx) error {
+	return fiberContext.JSON(haVmsList())
 }

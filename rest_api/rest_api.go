@@ -442,6 +442,7 @@ func main() {
 		ha.Post("/promote", handleHaPromote)
 		ha.Post("/ping", handleHaPing)
 		ha.Get("/monitor", handleHaMonitor)
+		ha.Get("/ha-vms-list", handleHaVmsList)
 	}
 
 	timesFailed := 0

@@ -33,7 +33,7 @@ func vmStartAll(waitTime int) {
 		if vmConfigVar.ParentHost != GetHostName() {
 			continue
 		}
-		if !vmIsInProduction(vmConfigVar.LiveStatus) {
+		if !VmIsInProduction(vmConfigVar.LiveStatus) {
 			continue
 		}
 		iteration = iteration + 1
@@ -45,7 +45,7 @@ func vmStartAll(waitTime int) {
 }
 
 // Check if VM is in production using vmConfig.LiveStatus as input
-func vmIsInProduction(s string) bool {
+func VmIsInProduction(s string) bool {
 	if s == "production" || s == "prod" {
 		return true
 	}
