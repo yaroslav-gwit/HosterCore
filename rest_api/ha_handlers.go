@@ -50,7 +50,7 @@ var haChannelRemove = make(chan HosterHaNodeStruct, 100)
 var iAmManager = false
 var iAmCandidate = false
 var iAmRegistered = false
-var lastManagerContact int64
+var lastManagerContact = time.Now().Unix()
 
 func init() {
 	_ = iAmCandidate
