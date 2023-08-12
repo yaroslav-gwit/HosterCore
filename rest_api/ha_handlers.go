@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -250,11 +251,68 @@ func manageOfflineNodes() {
 	for {
 		for i, v := range haHostsDb {
 			if (time.Now().Unix() > v.LastPing+60) && !v.IsManager {
-				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Sent node in for removal: "+v.NodeInfo.Hostname).Run()
+				failoverHostVms(v)
 				haChannelRemove <- haHostsDb[i]
 			}
 		}
 		time.Sleep(time.Second * 10)
+	}
+}
+
+func failoverHostVms(haNode HosterHaNodeStruct) {
+	haVms := []HaVm{}
+
+	for _, v := range haHostsDb {
+		haVmsTemp := []HaVm{}
+		if v.NodeInfo.Hostname == haNode.NodeInfo.Hostname {
+			continue
+		}
+
+		url := v.NodeInfo.Protocol + "://" + v.NodeInfo.Address + ":" + v.NodeInfo.Port + "/api/v1/ha/vms"
+		req, _ := http.NewRequest("GET", url, nil)
+		auth := v.NodeInfo.User + ":" + v.NodeInfo.Password
+		authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+		req.Header.Add("Authorization", "Basic "+authEncoded)
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			continue
+		}
+
+		defer res.Body.Close()
+		body, _ := io.ReadAll(res.Body)
+
+		err = json.Unmarshal(body, &haVmsTemp)
+		if err != nil {
+			continue
+		}
+
+		for _, vv := range haVmsTemp {
+			if vv.ParentHost == v.NodeInfo.Hostname {
+				haVms = append(haVms, vv)
+			}
+		}
+	}
+
+	sortBySnapshotDate := func(i, j int) bool {
+		return haVms[i].LatestSnapshot < haVms[j].LatestSnapshot
+	}
+	sort.Slice(haVms, sortBySnapshotDate)
+
+	uniqueHaVms := []HaVm{}
+	for _, v := range haVms {
+		vmExists := false
+		for _, vv := range uniqueHaVms {
+			if v.VmName == vv.VmName {
+				vmExists = true
+			}
+		}
+		if !vmExists {
+			uniqueHaVms = append(uniqueHaVms, v)
+		}
+	}
+
+	for _, v := range uniqueHaVms {
+		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILING OVER VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
 	}
 }
 
@@ -363,6 +421,7 @@ type HaVm struct {
 	Live           bool   `json:"live"`
 	LatestSnapshot string `json:"latest_snapshot"`
 	ParentHost     string `json:"parent_host"`
+	CurrentHost    string `json:"current_host"`
 }
 
 func haVmsList() []HaVm {
@@ -395,6 +454,7 @@ func haVmsList() []HaVm {
 		haVmTemp := HaVm{}
 		haVmTemp.VmName = vm
 		haVmTemp.ParentHost = vmConfig.ParentHost
+		haVmTemp.CurrentHost = cmd.GetHostName()
 		haVmTemp.Live = cmd.VmLiveCheck(vm)
 		snapshotList, _ := cmd.GetSnapshotInfo(vm, true)
 		if len(snapshotList) > 0 {
