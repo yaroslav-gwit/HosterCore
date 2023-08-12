@@ -58,8 +58,14 @@ var iAmCandidate = false
 var iAmRegistered = false
 var initialRegistrationPerformed = false
 var lastManagerContact = time.Now().Unix()
+var debugMode bool
 
 func init() {
+	debugModeEnv := os.Getenv("REST_API_HA_DEBUG")
+	if len(debugModeEnv) > 0 {
+		debugMode = true
+	}
+
 	_ = iAmCandidate
 	go addHaNode(haChannelAdd)
 	go removeHaNode(haChannelRemove)
@@ -70,7 +76,7 @@ func init() {
 	if haConfig.FailOverTime < 1 {
 		haConfig.FailOverTime = 60
 	}
-	_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Cluster failover time is: "+strconv.Itoa(int(haConfig.FailOverTime))).Run()
+	_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Cluster failover time is: "+strconv.Itoa(int(haConfig.FailOverTime))+" seconds").Run()
 
 	haConfig.StartupTime = time.Now().UnixMicro()
 	if haConfig.NodeType == "candidate" {
@@ -248,7 +254,7 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 				haHostsDb[i] = haHostsDb[len(haHostsDb)-1]
 				haHostsDb[len(haHostsDb)-1] = HosterHaNodeStruct{}
 				haHostsDb = haHostsDb[0 : len(haHostsDb)-1]
-				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster due to a failure: "+msg.NodeInfo.Hostname).Run()
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Failed node has been removed from the cluster: "+msg.NodeInfo.Hostname).Run()
 				break
 			}
 		}
@@ -321,7 +327,64 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 	}
 
 	for _, v := range uniqueHaVms {
-		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILING OVER VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
+		if debugMode {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: FAILING OVER VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
+			continue
+		}
+		for _, vv := range haHostsDb {
+			if vv.NodeInfo.Hostname == v.CurrentHost {
+				payloadMap := make(map[string]string)
+				payloadMap["name"] = v.VmName
+				jsonPayload, _ := json.Marshal(payloadMap)
+				payload := strings.NewReader(string(jsonPayload))
+
+				// Use failover strategy to failover the VM
+				if vv.NodeInfo.FailOverStrategy == "cireset" || vv.NodeInfo.FailOverStrategy == "ci-reset" {
+					url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/cireset"
+					req, _ := http.NewRequest("POST", url, payload)
+					auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
+					authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+
+					req.Header.Add("Authorization", "Basic "+authEncoded)
+					res, err := http.DefaultClient.Do(req)
+
+					if res.StatusCode != 200 {
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILED TO MOVE THE VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost+"; ERROR: "+err.Error()).Run()
+						continue
+					}
+				} else if vv.NodeInfo.FailOverStrategy == "changeparent" || vv.NodeInfo.FailOverStrategy == "change-parent" {
+					url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/change-parent"
+					req, _ := http.NewRequest("POST", url, payload)
+					auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
+					authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+
+					req.Header.Add("Authorization", "Basic "+authEncoded)
+					res, err := http.DefaultClient.Do(req)
+
+					if res.StatusCode != 200 {
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILED TO MOVE THE VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost+"; ERROR: "+err.Error()).Run()
+						continue
+					}
+				}
+
+				// Start VM on a new host
+				url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/start"
+				req, _ := http.NewRequest("POST", url, payload)
+				auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
+				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+
+				req.Header.Add("Authorization", "Basic "+authEncoded)
+				res, err := http.DefaultClient.Do(req)
+
+				if res.StatusCode == 200 {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILING OVER VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
+					continue
+				} else {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILED TO MOVE THE VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost+"; ERROR: "+err.Error()).Run()
+					continue
+				}
+			}
+		}
 	}
 }
 

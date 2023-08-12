@@ -36,7 +36,7 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			err = replaceParent(changeParentVmName, changeParentNewParent)
+			err = ReplaceParent(changeParentVmName, changeParentNewParent)
 			if err != nil {
 				log.Fatal("could not set a new parent: " + err.Error())
 			}
@@ -44,7 +44,7 @@ var (
 	}
 )
 
-func replaceParent(vmName string, newParent string) error {
+func ReplaceParent(vmName string, newParent string) error {
 	if len(vmName) < 1 {
 		return errors.New("you must provide a VM name")
 	}

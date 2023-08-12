@@ -16,8 +16,8 @@ import (
 var (
 	apiCmd = &cobra.Command{
 		Use:   "api",
-		Short: "Start an API server",
-		Long:  `Start an API server on port 3000 (default).`,
+		Short: "API Server Menu",
+		Long:  `API Server Menu.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
 			if err != nil {
@@ -33,6 +33,7 @@ var (
 	apiStartUser     string
 	apiStartPassword string
 	apiHaMode        bool
+	apiHaDebug       bool
 
 	apiStartCmd = &cobra.Command{
 		Use:   "start",
@@ -43,7 +44,7 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			err = startApiServer(apiStartPort, apiStartUser, apiStartPassword, apiHaMode)
+			err = startApiServer(apiStartPort, apiStartUser, apiStartPassword, apiHaMode, apiHaDebug)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -108,12 +109,15 @@ var (
 	}
 )
 
-func startApiServer(port int, user string, password string, haMode bool) error {
+func startApiServer(port int, user string, password string, haMode bool, haDebug bool) error {
 	os.Setenv("REST_API_PORT", strconv.Itoa(port))
 	os.Setenv("REST_API_USER", user)
 	os.Setenv("REST_API_PASSWORD", password)
 	if haMode {
 		os.Setenv("REST_API_HA_MODE", "true")
+	}
+	if haDebug {
+		os.Setenv("REST_API_HA_DEBUG", "true")
 	}
 
 	execPath, err := os.Executable()

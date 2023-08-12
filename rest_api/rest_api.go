@@ -19,7 +19,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 )
 
-// Light yellow-ish coloured log separator
 const LOG_SEPARATOR = " || "
 
 var tagCustomError string
@@ -431,6 +430,10 @@ func main() {
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
 
+	v1.Post("/vm/start", handleVmStart)
+	v1.Post("/vm/change-parent", handleVmChangeParent)
+	v1.Post("/vm/cireset", handleVmCiReset)
+
 	if haMode {
 		ha := v1.Group("/ha")
 		ha.Post("/register", handleHaManagerRegistration)
@@ -449,6 +452,10 @@ func main() {
 	timesFailedMax := 50
 	hosterRestLabel := "HOSTER_REST"
 	if haMode {
+		if debugMode {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: HA_API_SERVER started in DEBUG mode").Run()
+		}
+
 		hosterRestLabel = "HOSTER_HA_REST"
 		_ = exec.Command("logger", "-t", hosterRestLabel, "service start-up").Run()
 
@@ -461,18 +468,20 @@ func main() {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "process is not running: HA_WATCHDOG").Run()
 					timesFailed += 1
 				} else {
-					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: found PID: "+strings.TrimSpace(string(out))).Run()
 					_ = exec.Command("kill", "-SIGHUP", strings.TrimSpace(string(out))).Run()
-					// if err != nil {
-					// 	_ = exec.Command("logger", "-t", "HOSTER_HA_REST", string(out)).Run()
-					// }
 					timesFailed = 0
 				}
 
 				if timesFailed >= timesFailedMax {
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "process will exit due to HA_WATCHDOG failure").Run()
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "the host system shall reboot soon").Run()
-					os.Exit(1)
+					if debugMode {
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: process will exit due to HA_WATCHDOG failure").Run()
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: the host system shall reboot soon").Run()
+					} else {
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: process will exit due to HA_WATCHDOG failure").Run()
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: the host system shall reboot soon").Run()
+						exec.Command("nohup", "reboot", "&").Start()
+						os.Exit(1)
+					}
 				}
 
 				time.Sleep(time.Second * 4)

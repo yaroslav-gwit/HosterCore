@@ -31,7 +31,7 @@ var (
 				log.Fatal(err.Error())
 			}
 
-			err = ciReset(args[0], newVmName)
+			err = CiReset(args[0], newVmName)
 			if err != nil {
 				log.Fatal("Fatal error:", err)
 			}
@@ -39,7 +39,7 @@ var (
 	}
 )
 
-func ciReset(oldVmName string, newVmName string) error {
+func CiReset(oldVmName string, newVmName string) error {
 	if !slices.Contains(getAllVms(), oldVmName) {
 		return errors.New("vm doesn't exist")
 	}

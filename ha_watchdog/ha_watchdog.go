@@ -12,6 +12,16 @@ import (
 func main() {
 	_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "service start-up").Run()
 
+	var debugMode bool
+	debugModeEnv := os.Getenv("REST_API_HA_DEBUG")
+	if len(debugModeEnv) > 0 {
+		debugMode = true
+	}
+
+	if debugMode {
+		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: HA_WATCHDOG started in DEBUG mode").Run()
+	}
+
 	timesFailed := 0
 	timesFailedMax := 10
 	lastReachOut := time.Now().Unix()
@@ -22,7 +32,6 @@ func main() {
 		for sig := range signals {
 			if sig == syscall.SIGHUP {
 				lastReachOut = time.Now().Unix()
-				// _ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "REST API is still alive: "+strconv.Itoa(int(lastReachOut))).Run()
 			}
 			if sig == syscall.SIGTERM {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "received SIGTERM, exiting").Run()
@@ -35,8 +44,14 @@ func main() {
 		time.Sleep(time.Second * 5)
 
 		if timesFailed >= timesFailedMax {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "rebooting the system due to failed HA state, pings failed: "+strconv.Itoa(timesFailed)).Run()
-			os.Exit(0)
+			if debugMode {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "DEBUG: rebooting the system due to failed HA state, pings failed: "+strconv.Itoa(timesFailed)).Run()
+				os.Exit(0)
+			} else {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "PROD: rebooting the system due to failed HA state, pings failed: "+strconv.Itoa(timesFailed)).Run()
+				exec.Command("nohup", "reboot", "&").Start()
+				os.Exit(0)
+			}
 		}
 
 		if time.Now().Unix() > lastReachOut+5 {
