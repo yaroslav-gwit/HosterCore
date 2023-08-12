@@ -227,25 +227,23 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 		}
 	}()
 
-	haHosts := []HosterHaNodeStruct{}
 	for msg := range haChannelRemove {
-		for _, v := range haHostsDb {
-			if msg.NodeInfo.Hostname != v.NodeInfo.Hostname {
-				haHosts = append(haHosts, v)
-			}
+		for i, v := range haHostsDb {
 			if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
+				haHostsDb[i] = haHostsDb[len(haHostsDb)-1]
+				haHostsDb[len(haHostsDb)-1] = HosterHaNodeStruct{}
+				haHostsDb = haHostsDb[0 : len(haHostsDb)-1]
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster due to a failure: "+msg.NodeInfo.Hostname).Run()
 			}
 		}
 	}
-	haHostsDb = haHosts
 }
 
 func manageOfflineNodes() {
 	for {
 		for i, v := range haHostsDb {
 			if (time.Now().Unix() > v.LastPing+60) && !v.IsManager {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Sent node in for removal: "+v.NodeInfo.Hostname).Run()
+				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Sent node in for removal: "+v.NodeInfo.Hostname).Run()
 				haChannelRemove <- haHostsDb[i]
 			}
 		}
