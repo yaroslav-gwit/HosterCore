@@ -254,6 +254,7 @@ func manageOfflineNodes() {
 			}
 		}
 		time.Sleep(time.Second * 10)
+		continue
 	}
 }
 
