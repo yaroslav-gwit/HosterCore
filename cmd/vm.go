@@ -21,3 +21,13 @@ var (
 		},
 	}
 )
+
+func LockAllVms() {
+	allVms := GetAllVms()
+	for _, vm := range allVms {
+		vmConfig := VmConfig(vm)
+		if VmIsInProduction(vmConfig.LiveStatus) {
+			ReplaceParent(vm, "__HA_LOCKED__", true)
+		}
+	}
+}

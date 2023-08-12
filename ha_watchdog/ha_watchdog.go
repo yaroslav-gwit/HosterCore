@@ -1,6 +1,7 @@
 package main
 
 import (
+	"hoster/cmd"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -20,6 +21,8 @@ func main() {
 
 	if debugMode {
 		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: HA_WATCHDOG started in DEBUG mode").Run()
+	} else {
+		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "HA_WATCHDOG started in PRODUCTION mode").Run()
 	}
 
 	timesFailed := 0
@@ -49,6 +52,7 @@ func main() {
 				os.Exit(0)
 			} else {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "PROD: rebooting the system due to failed HA state, pings failed: "+strconv.Itoa(timesFailed)).Run()
+				cmd.LockAllVms()
 				exec.Command("nohup", "reboot", "&").Start()
 				os.Exit(0)
 			}

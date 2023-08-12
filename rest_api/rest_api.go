@@ -27,12 +27,10 @@ func main() {
 	user := "admin"
 	password := "123456"
 	port := 3000
-	haMode := false
 
 	portEnv := os.Getenv("REST_API_PORT")
 	userEnv := os.Getenv("REST_API_USER")
 	passwordEnv := os.Getenv("REST_API_PASSWORD")
-	haModeEnv := os.Getenv("REST_API_HA_MODE")
 
 	var err error
 	if len(portEnv) > 0 {
@@ -46,9 +44,6 @@ func main() {
 	}
 	if len(passwordEnv) > 0 {
 		password = passwordEnv
-	}
-	if len(haModeEnv) > 0 {
-		haMode = true
 	}
 
 	app := fiber.New(fiber.Config{DisableStartupMessage: true, Prefork: false})
@@ -454,6 +449,8 @@ func main() {
 	if haMode {
 		if debugMode {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: HA_API_SERVER started in DEBUG mode").Run()
+		} else {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "HA_API_SERVER started in PRODUCTION mode").Run()
 		}
 
 		hosterRestLabel = "HOSTER_HA_REST"
@@ -478,6 +475,7 @@ func main() {
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: the host system shall reboot soon").Run()
 					} else {
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: process will exit due to HA_WATCHDOG failure").Run()
+						cmd.LockAllVms()
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: the host system shall reboot soon").Run()
 						exec.Command("nohup", "reboot", "&").Start()
 						os.Exit(1)

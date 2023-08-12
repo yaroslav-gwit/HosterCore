@@ -36,7 +36,7 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			err = ReplaceParent(changeParentVmName, changeParentNewParent)
+			err = ReplaceParent(changeParentVmName, changeParentNewParent, false)
 			if err != nil {
 				log.Fatal("could not set a new parent: " + err.Error())
 			}
@@ -44,16 +44,21 @@ var (
 	}
 )
 
-func ReplaceParent(vmName string, newParent string) error {
+func ReplaceParent(vmName string, newParent string, ignoreLiveCheck bool) error {
 	if len(vmName) < 1 {
 		return errors.New("you must provide a VM name")
 	}
+
 	if !slices.Contains(getAllVms(), vmName) {
 		return errors.New("vm does not exist on this system")
 	}
-	if VmLiveCheck(vmName) {
-		return errors.New("vm must be offline to perform this operation")
+
+	if !ignoreLiveCheck {
+		if VmLiveCheck(vmName) {
+			return errors.New("vm must be offline to perform this operation")
+		}
 	}
+
 	if len(newParent) < 1 {
 		newParent = GetHostName()
 	}

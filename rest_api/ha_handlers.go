@@ -58,9 +58,19 @@ var iAmCandidate = false
 var iAmRegistered = false
 var initialRegistrationPerformed = false
 var lastManagerContact = time.Now().Unix()
+
+var haMode bool
 var debugMode bool
 
 func init() {
+	haModeEnv := os.Getenv("REST_API_HA_MODE")
+	if len(haModeEnv) > 0 {
+		haMode = true
+	} else {
+		_ = exec.Command("logger", "-t", "HOSTER_REST", "STARING REST API SERVER IN REGULAR (NON-HA) MODE").Run()
+		return
+	}
+
 	debugModeEnv := os.Getenv("REST_API_HA_DEBUG")
 	if len(debugModeEnv) > 0 {
 		debugMode = true

@@ -82,7 +82,7 @@ func handleVmChangeParent(fiberContext *fiber.Ctx) error {
 		return fiberContext.JSON(fiber.Map{"message": "vm is not a backup"})
 	}
 
-	err := cmd.ReplaceParent(vm.Name, cmd.GetHostName())
+	err := cmd.ReplaceParent(vm.Name, cmd.GetHostName(), false)
 	if err != nil {
 		fiberContext.Status(fiber.StatusInternalServerError)
 		return fiberContext.JSON(fiber.Map{"error": err.Error()})
