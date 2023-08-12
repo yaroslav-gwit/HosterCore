@@ -49,12 +49,11 @@ func main() {
 		if timesFailed >= timesFailedMax {
 			if debugMode {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "DEBUG: rebooting the system due to failed HA state, pings failed: "+strconv.Itoa(timesFailed)).Run()
-				os.Exit(0)
+				os.Exit(1)
 			} else {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "PROD: rebooting the system due to failed HA state, pings failed: "+strconv.Itoa(timesFailed)).Run()
 				cmd.LockAllVms()
-				exec.Command("nohup", "reboot", "&").Start()
-				os.Exit(0)
+				_ = exec.Command("reboot").Run()
 			}
 		}
 

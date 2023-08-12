@@ -26,7 +26,7 @@ func LockAllVms() {
 	allVms := GetAllVms()
 	for _, vm := range allVms {
 		vmConfig := VmConfig(vm)
-		if VmIsInProduction(vmConfig.LiveStatus) {
+		if VmIsInProduction(vmConfig.LiveStatus) && vmConfig.ParentHost == GetHostName() {
 			ReplaceParent(vm, "__HA_LOCKED__", true)
 		}
 	}

@@ -473,12 +473,12 @@ func main() {
 					if debugMode {
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: process will exit due to HA_WATCHDOG failure").Run()
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: the host system shall reboot soon").Run()
+						os.Exit(1)
 					} else {
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: process will exit due to HA_WATCHDOG failure").Run()
 						cmd.LockAllVms()
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: the host system shall reboot soon").Run()
-						exec.Command("nohup", "reboot", "&").Start()
-						os.Exit(1)
+						_ = exec.Command("reboot").Run()
 					}
 				}
 

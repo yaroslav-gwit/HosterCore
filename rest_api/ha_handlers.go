@@ -285,6 +285,13 @@ func manageOfflineNodes() {
 }
 
 func failoverHostVms(haNode HosterHaNodeStruct) {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "failoverHostVms() Recovered from error: "+errorValue).Run()
+		}
+	}()
+
 	haVms := []HaVm{}
 
 	for _, v := range haHostsDb {
@@ -355,6 +362,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 					auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
 					authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 
+					req.Header.Add("Content-Type", "application/json")
 					req.Header.Add("Authorization", "Basic "+authEncoded)
 					res, err := http.DefaultClient.Do(req)
 
@@ -368,6 +376,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 					auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
 					authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 
+					req.Header.Add("Content-Type", "application/json")
 					req.Header.Add("Authorization", "Basic "+authEncoded)
 					res, err := http.DefaultClient.Do(req)
 
@@ -383,6 +392,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 				auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
 				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 
+				req.Header.Add("Content-Type", "application/json")
 				req.Header.Add("Authorization", "Basic "+authEncoded)
 				res, err := http.DefaultClient.Do(req)
 
