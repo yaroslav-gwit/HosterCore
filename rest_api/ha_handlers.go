@@ -369,7 +369,7 @@ func haVmsList() []HaVm {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "removeHaNode() Recovered from error: "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "haVmsList() Recovered from error: "+errorValue).Run()
 		}
 	}()
 
@@ -397,7 +397,9 @@ func haVmsList() []HaVm {
 		haVmTemp.ParentHost = vmConfig.ParentHost
 		haVmTemp.Live = cmd.VmLiveCheck(vm)
 		snapshotList, _ := cmd.GetSnapshotInfo(vm, true)
-		haVmTemp.LatestSnapshot = snapshotList[len(snapshotList)-1].Name
+		if len(snapshotList) > 0 {
+			haVmTemp.LatestSnapshot = snapshotList[len(snapshotList)-1].Name
+		}
 
 		haVms = append(haVms, haVmTemp)
 	}
