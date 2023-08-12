@@ -234,6 +234,7 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 				haHostsDb[len(haHostsDb)-1] = HosterHaNodeStruct{}
 				haHostsDb = haHostsDb[0 : len(haHostsDb)-1]
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster due to a failure: "+msg.NodeInfo.Hostname).Run()
+				break
 			}
 		}
 	}
