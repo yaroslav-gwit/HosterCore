@@ -45,11 +45,14 @@ type HaConfigJsonStruct struct {
 
 var haHostsDb []HosterHaNodeStruct
 var haConfig HaConfigJsonStruct
+
 var haChannelAdd = make(chan HosterHaNodeStruct, 100)
 var haChannelRemove = make(chan HosterHaNodeStruct, 100)
+
 var iAmManager = false
 var iAmCandidate = false
 var iAmRegistered = false
+var initialRegistrationPerformed = false
 var lastManagerContact = time.Now().Unix()
 
 func init() {
@@ -149,6 +152,7 @@ func joinHaCluster() {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully joined the cluster: "+string(body)).Run()
 
 			iAmRegistered = true
+			initialRegistrationPerformed = true
 			lastManagerContact = time.Now().Unix()
 			break
 		}
@@ -246,21 +250,19 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 
 func manageOfflineNodes() {
 	for {
-		for _, v := range haHostsDb {
-			if time.Now().Unix() > v.LastPing+60 && !v.IsManager {
-				haChannelRemove <- v
-			} else {
-				continue
+		for i, v := range haHostsDb {
+			_ = v
+			if (time.Now().Unix() > haHostsDb[i].LastPing+60) && !haHostsDb[i].IsManager {
+				haChannelRemove <- haHostsDb[i]
 			}
 		}
 		time.Sleep(time.Second * 10)
-		continue
 	}
 }
 
 func ensureManagerConnection() {
 	for {
-		if time.Now().Unix() > lastManagerContact+70 {
+		if (time.Now().Unix() > lastManagerContact+70) && initialRegistrationPerformed {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Could not reach manager for 70 seconds, exiting the process").Run()
 			os.Exit(1)
 		}
