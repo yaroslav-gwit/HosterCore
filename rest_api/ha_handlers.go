@@ -351,10 +351,10 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 		}
 		for _, vv := range haHostsDb {
 			if vv.NodeInfo.Hostname == v.CurrentHost {
-				payloadMap := make(map[string]string)
-				payloadMap["name"] = v.VmName
-				jsonPayload, _ := json.Marshal(payloadMap)
-				payload := strings.NewReader(string(jsonPayload))
+				// payloadMap := make(map[string]string)
+				// payloadMap["name"] = v.VmName
+				// jsonPayload, _ := json.Marshal(payloadMap)
+				payload := strings.NewReader(`{ "name": "` + v.VmName + `" }`)
 				auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
 				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 
@@ -392,7 +392,6 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 				req.Header.Add("Content-Type", "application/json")
 				req.Header.Add("Authorization", "Basic "+authEncoded)
 				res, err := http.DefaultClient.Do(req)
-
 				if res.StatusCode == 200 {
 					_ = err
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILING OVER VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
