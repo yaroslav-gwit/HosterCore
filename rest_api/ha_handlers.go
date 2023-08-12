@@ -366,6 +366,13 @@ type HaVm struct {
 }
 
 func haVmsList() []HaVm {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "removeHaNode() Recovered from error: "+errorValue).Run()
+		}
+	}()
+
 	haVms := []HaVm{}
 	vmList := cmd.GetAllVms()
 
