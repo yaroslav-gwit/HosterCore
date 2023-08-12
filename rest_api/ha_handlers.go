@@ -251,6 +251,7 @@ func manageOfflineNodes() {
 	for {
 		for i, v := range haHostsDb {
 			if (time.Now().Unix() > v.LastPing+60) && !v.IsManager {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Host has gone offline: "+v.NodeInfo.Hostname).Run()
 				failoverHostVms(v)
 				haChannelRemove <- haHostsDb[i]
 			}
@@ -287,7 +288,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 		}
 
 		for _, vv := range haVmsTemp {
-			if vv.ParentHost == v.NodeInfo.Hostname {
+			if vv.ParentHost == haNode.NodeInfo.Hostname {
 				haVms = append(haVms, vv)
 			}
 		}
