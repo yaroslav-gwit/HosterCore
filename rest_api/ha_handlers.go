@@ -68,9 +68,11 @@ func init() {
 		iAmManager = true
 		iAmCandidate = false
 		initializeHaCluster()
+		go manageOfflineNodes()
 	} else {
 		go joinHaCluster()
 		go pingPong()
+		go ensureManagerConnection()
 	}
 }
 
@@ -228,7 +230,7 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 						haHosts = append(haHosts, v)
 					}
 					if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
-						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster: "+msg.NodeInfo.Hostname).Run()
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster due to a failure: "+msg.NodeInfo.Hostname).Run()
 					}
 				}
 			}
@@ -239,6 +241,27 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 			time.Sleep(time.Millisecond * 500)
 			continue
 		}
+	}
+}
+
+func manageOfflineNodes() {
+	for {
+		for _, v := range haHostsDb {
+			if time.Now().Unix() > v.LastPing+60 {
+				haChannelRemove <- v
+			}
+		}
+		time.Sleep(time.Second * 10)
+	}
+}
+
+func ensureManagerConnection() {
+	for {
+		if time.Now().Unix() > lastManagerContact+70 {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Could not reach manager for 70 seconds, exiting the process").Run()
+			os.Exit(1)
+		}
+		time.Sleep(time.Second * 5)
 	}
 }
 

@@ -83,7 +83,7 @@ func main() {
 				)
 			},
 		},
-		Format: "Date: ${custom_tag_time}" + LOG_SEPARATOR + "Source: ${ip}:${port}" + LOG_SEPARATOR + "Status: ${status}" + LOG_SEPARATOR + "Method: ${method}" + LOG_SEPARATOR + "Path: ${path}" + LOG_SEPARATOR + "ExecTime: ${latency}" + LOG_SEPARATOR + "BytesSent: ${bytesSent}${custom_tag_err}\n",
+		Format: "${custom_tag_time}" + LOG_SEPARATOR + "${ip}:${port}" + LOG_SEPARATOR + "${status}" + LOG_SEPARATOR + "${method}" + LOG_SEPARATOR + "${path}" + LOG_SEPARATOR + "${latency}" + LOG_SEPARATOR + "bytesSent: ${bytesSent}${custom_tag_err}\n",
 		Output: file,
 	}))
 
