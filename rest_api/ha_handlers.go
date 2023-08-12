@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -192,6 +193,13 @@ func pingPong() {
 }
 
 func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "addHaNode() Recovered from error: "+errorValue).Run()
+		}
+	}()
+
 	for msg := range haChannelAdd {
 		hostFound := false
 		hostIndex := 0
@@ -212,17 +220,21 @@ func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
 }
 
 func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "removeHaNode() Recovered from error: "+errorValue).Run()
+		}
+	}()
+
 	haHosts := []HosterHaNodeStruct{}
 	for msg := range haChannelRemove {
 		for _, v := range haHostsDb {
 			if msg.NodeInfo.Hostname != v.NodeInfo.Hostname {
 				haHosts = append(haHosts, v)
-				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "NODE NOT THE SAME!: "+msg.NodeInfo.Hostname).Run()
-				continue
 			}
 			if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Removed node from a cluster due to a failure: "+msg.NodeInfo.Hostname).Run()
-				continue
 			}
 		}
 	}
@@ -232,8 +244,7 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 func manageOfflineNodes() {
 	for {
 		for i, v := range haHostsDb {
-			_ = v
-			if (time.Now().Unix() > haHostsDb[i].LastPing+60) && !haHostsDb[i].IsManager {
+			if (time.Now().Unix() > v.LastPing+60) && !v.IsManager {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Sent node in for removal: "+v.NodeInfo.Hostname).Run()
 				haChannelRemove <- haHostsDb[i]
 			}
