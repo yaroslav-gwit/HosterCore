@@ -27,6 +27,7 @@ type NodeStruct struct {
 	User             string `json:"user"`
 	Password         string `json:"password"`
 	FailOverStrategy string `json:"failover_strategy"`
+	FailOverTime     int64  `json:"failover_time"`
 }
 
 type HosterHaNodeStruct struct {
@@ -41,6 +42,7 @@ type HaConfigJsonStruct struct {
 	NodeType         string       `json:"node_type"`
 	StartupTime      int64        `json:"startup_time"`
 	FailOverStrategy string       `json:"failover_strategy"`
+	FailOverTime     int64        `json:"failover_time"`
 	Candidates       []NodeStruct `json:"candidates"`
 	Manager          NodeStruct   `json:"manager"`
 }
@@ -59,12 +61,16 @@ var lastManagerContact = time.Now().Unix()
 
 func init() {
 	_ = iAmCandidate
-	_ = lastManagerContact
 	go addHaNode(haChannelAdd)
 	go removeHaNode(haChannelRemove)
 
 	file, _ := os.ReadFile("/opt/hoster-core/config_files/ha_config.json")
 	_ = json.Unmarshal(file, &haConfig)
+
+	if haConfig.FailOverTime < 1 {
+		haConfig.FailOverTime = 60
+	}
+	_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Cluster failover time is: "+strconv.Itoa(int(haConfig.FailOverTime))).Run()
 
 	haConfig.StartupTime = time.Now().UnixMicro()
 	if haConfig.NodeType == "candidate" {
@@ -89,6 +95,7 @@ func initializeHaCluster() {
 	hosterNode.LastPing = time.Now().Unix()
 	hosterNode.NodeInfo = haConfig.Manager
 	hosterNode.NodeInfo.FailOverStrategy = haConfig.FailOverStrategy
+	hosterNode.NodeInfo.FailOverTime = haConfig.FailOverTime
 
 	haChannelAdd <- hosterNode
 	iAmRegistered = true
@@ -130,6 +137,7 @@ func joinHaCluster() {
 		host.Port = strconv.Itoa(port)
 		host.Protocol = "http"
 		host.FailOverStrategy = haConfig.FailOverStrategy
+		host.FailOverTime = haConfig.FailOverTime
 
 		jsonPayload, _ := json.Marshal(host)
 		payload := strings.NewReader(string(jsonPayload))
@@ -250,7 +258,7 @@ func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
 func manageOfflineNodes() {
 	for {
 		for i, v := range haHostsDb {
-			if (time.Now().Unix() > v.LastPing+60) && !v.IsManager {
+			if (time.Now().Unix() > v.LastPing+v.NodeInfo.FailOverTime) && !v.IsManager {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Host has gone offline: "+v.NodeInfo.Hostname).Run()
 				failoverHostVms(v)
 				haChannelRemove <- haHostsDb[i]
@@ -319,8 +327,8 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 
 func ensureManagerConnection() {
 	for {
-		if (time.Now().Unix() > lastManagerContact+70) && initialRegistrationPerformed {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Could not reach manager for 70 seconds, exiting the process").Run()
+		if (time.Now().Unix() > lastManagerContact+haConfig.FailOverTime) && initialRegistrationPerformed {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Could not reach cluster manager for "+strconv.Itoa(int(haConfig.FailOverTime))+" seconds, exiting the process").Run()
 			os.Exit(1)
 		}
 		time.Sleep(time.Second * 5)
