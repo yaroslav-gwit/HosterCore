@@ -1,7 +1,8 @@
 {
     "node_type": "worker",
     "failover_strategy": "cireset",
-    "failover_time": 70,
+    "failover_time": 60,
+    "backup_node": false,
     "manager": {
         "hostname": "hoster-test-0103",
         "protocol": "http",

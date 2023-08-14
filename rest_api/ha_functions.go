@@ -79,7 +79,10 @@ func init() {
 	go removeHaNode(haChannelRemove)
 
 	file, _ := os.ReadFile("/opt/hoster-core/config_files/ha_config.json")
-	_ = json.Unmarshal(file, &haConfig)
+	err := json.Unmarshal(file, &haConfig)
+	if err != nil {
+		panic("Cannot parse the HA configuration file: " + err.Error())
+	}
 
 	if haConfig.FailOverTime < 1 {
 		haConfig.FailOverTime = 60
