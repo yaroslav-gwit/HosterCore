@@ -52,8 +52,11 @@ var haChannelRemove = make(chan HosterHaNodeStruct, 100)
 
 var iAmManager = false
 var iAmCandidate = false
+
 var iAmRegisteredWithManager = false
-var iAmRegisteredWithCandidate = false
+var iAmRegisteredWithCandidateZero = false
+var iAmRegisteredWithCandidateOne = false
+
 var initialRegistrationPerformed = false
 var lastManagerContact = time.Now().Unix() + 100
 var lastCandidate0Contact = time.Now().Unix() + 100
@@ -213,7 +216,7 @@ func joinClusterManager() {
 
 func joinClusterCandidates() {
 	for {
-		if iAmRegisteredWithCandidate {
+		if iAmRegisteredWithCandidateZero && iAmRegisteredWithCandidateOne {
 			time.Sleep(time.Second * 5)
 			continue
 		}
@@ -276,12 +279,13 @@ func joinClusterCandidates() {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully restored the connection to the cluster manager: "+string(body)).Run()
 				}
 
-				iAmRegisteredWithCandidate = true
 				if i == 0 {
 					lastCandidate0Contact = time.Now().Unix()
+					iAmRegisteredWithCandidateZero = true
 				}
 				if i == 1 {
 					lastCandidate1Contact = time.Now().Unix()
+					iAmRegisteredWithCandidateOne = true
 				}
 
 				break
