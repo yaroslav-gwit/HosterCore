@@ -81,6 +81,7 @@ func init() {
 	file, _ := os.ReadFile("/opt/hoster-core/config_files/ha_config.json")
 	err := json.Unmarshal(file, &haConfig)
 	if err != nil {
+		_ = exec.Command("logger", "-t", "HOSTER_HA", "Cannot parse the HA configuration file: "+err.Error()).Run()
 		panic("Cannot parse the HA configuration file: " + err.Error())
 	}
 
