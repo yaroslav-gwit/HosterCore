@@ -157,7 +157,7 @@ func trackManager() {
 	for {
 		if clusterInitialized {
 			var myNumber int64
-			var clusterNumber int64
+			var clusterNumber int64 = 0
 			var myHostname = cmd.GetHostName()
 
 			for _, v := range haHostsDb {
@@ -167,14 +167,14 @@ func trackManager() {
 						continue
 					}
 					if v.NodeInfo.Hostname == vv.Hostname {
-						if clusterNumber < v.NodeInfo.StartupTime {
+						if clusterNumber > v.NodeInfo.StartupTime || clusterNumber == 0 {
 							clusterNumber = v.NodeInfo.StartupTime
 						}
 						continue
 					}
 				}
 			}
-			if myNumber > clusterNumber {
+			if myNumber < clusterNumber {
 				if !iAmManager {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: becoming new cluster manager").Run()
 				}
