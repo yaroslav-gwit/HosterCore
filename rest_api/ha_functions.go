@@ -209,30 +209,37 @@ func joinHaCluster() {
 func pingPong() {
 	for {
 		if iAmRegistered {
-			host := NodeStruct{}
-			host.Hostname = cmd.GetHostName()
+			if haConfig.NodeType != "manager" {
+				host := NodeStruct{}
+				host.Hostname = cmd.GetHostName()
 
-			jsonPayload, _ := json.Marshal(host)
-			payload := strings.NewReader(string(jsonPayload))
+				jsonPayload, _ := json.Marshal(host)
+				payload := strings.NewReader(string(jsonPayload))
 
-			url := haConfig.Manager.Protocol + "://" + haConfig.Manager.Address + ":" + haConfig.Manager.Port + "/api/v1/ha/ping"
-			req, _ := http.NewRequest("POST", url, payload)
-			auth := haConfig.Manager.User + ":" + haConfig.Manager.Password
-			authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
-			req.Header.Add("Content-Type", "application/json")
-			req.Header.Add("Authorization", "Basic "+authEncoded)
-			_, err := http.DefaultClient.Do(req)
-			if err != nil {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Failed to ping the manager: "+err.Error()).Run()
-				iAmRegistered = false
+				url := haConfig.Manager.Protocol + "://" + haConfig.Manager.Address + ":" + haConfig.Manager.Port + "/api/v1/ha/ping"
+				req, _ := http.NewRequest("POST", url, payload)
+				auth := haConfig.Manager.User + ":" + haConfig.Manager.Password
+				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+				req.Header.Add("Content-Type", "application/json")
+				req.Header.Add("Authorization", "Basic "+authEncoded)
+				_, err := http.DefaultClient.Do(req)
+				if err != nil {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Failed to ping the manager: "+err.Error()).Run()
+					iAmRegistered = false
+				}
+				lastManagerContact = time.Now().Unix()
 			}
-			lastManagerContact = time.Now().Unix()
 
 			for _, v := range haConfig.Candidates {
-				// if v.Hostname == cmd.GetHostName() {
-				// 	continue
-				// }
+				if v.Hostname == cmd.GetHostName() {
+					continue
+				}
+				host := NodeStruct{}
+				host.Hostname = cmd.GetHostName()
+
+				jsonPayload, _ := json.Marshal(host)
 				payload := strings.NewReader(string(jsonPayload))
+
 				url := v.Protocol + "://" + v.Address + ":" + v.Port + "/api/v1/ha/ping"
 				req, _ := http.NewRequest("POST", url, payload)
 				auth := haConfig.Manager.User + ":" + haConfig.Manager.Password
