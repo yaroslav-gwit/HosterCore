@@ -99,6 +99,8 @@ func init() {
 		go joinHaCluster()
 		go iAmCandidateOnline()
 		go managerTemporaryFailover()
+
+		go pingPong()
 	} else if haConfig.NodeType == "manager" {
 		iAmManager = true
 		iAmCandidate = false
@@ -106,11 +108,14 @@ func init() {
 		initializeHaCluster()
 		go manageOfflineNodes()
 		go iAmManagerOnline()
+
+		go pingPong()
 	} else {
 		go joinHaCluster()
 		go iAmWorkerOnline()
+
+		go pingPong()
 	}
-	go pingPong()
 }
 
 func initializeHaCluster() {
