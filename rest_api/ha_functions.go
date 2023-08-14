@@ -124,6 +124,7 @@ func trackCandidatesOnline() {
 	}()
 
 	for {
+		candidatesRegistered = 0
 		for _, v := range haConfig.Candidates {
 			if v.Registered {
 				candidatesRegistered += 1
@@ -243,13 +244,23 @@ func registerNode() {
 }
 
 func sendPing() {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: registerNode(): "+errorValue).Run()
+		}
+	}()
+
 	for {
 		if !clusterInitialized {
 			time.Sleep(time.Second * 10)
 			continue
 		}
-		for _, v := range haConfig.Candidates {
-			go func(v NodeInfoStruct) {
+		for i, v := range haConfig.Candidates {
+			if !v.Registered {
+				continue
+			}
+			go func(i int, v NodeInfoStruct) {
 				host := NodeInfoStruct{}
 				host.Hostname = cmd.GetHostName()
 
@@ -265,8 +276,9 @@ func sendPing() {
 				_, err := http.DefaultClient.Do(req)
 				if err != nil {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: failed to ping the candidate node: "+err.Error()).Run()
+					haConfig.Candidates[i].Registered = false
 				}
-			}(v)
+			}(i, v)
 		}
 		time.Sleep(time.Second * 5)
 	}
