@@ -166,11 +166,14 @@ func trackManager() {
 			for _, host := range copyHaHostsDb {
 				for _, candidate := range haConfig.Candidates {
 					if host.NodeInfo.Hostname == candidate.Hostname {
-						filteredCandidates = append(filteredCandidates, host)
+						if candidate.Registered {
+							filteredCandidates = append(filteredCandidates, host)
+						}
 						break
 					}
 				}
 			}
+
 			if filteredCandidates[0].NodeInfo.Hostname == myHostname {
 				if !iAmManager {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: becoming new cluster manager").Run()
@@ -182,7 +185,8 @@ func trackManager() {
 					iAmManager = false
 				}
 			}
-			time.Sleep(time.Second * 10)
+
+			time.Sleep(time.Second * 7)
 		}
 	}
 }
