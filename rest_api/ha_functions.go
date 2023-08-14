@@ -25,6 +25,7 @@ type NodeInfoStruct struct {
 	FailOverTime     int64  `json:"failover_time"`
 	BackupNode       bool   `json:"backup_node"`
 	StartupTime      int64  `json:"startup_time"`
+	Registered       bool
 }
 
 type HosterHaNodeStruct struct {
@@ -53,44 +54,12 @@ var haChannelRemove = make(chan HosterHaNodeStruct, 100)
 var haMode bool
 var debugMode bool
 
+var user = "admin"
+var password = "123456"
+var port = 3000
+var protocol = "http"
+
 func init() {
-	haModeEnv := os.Getenv("REST_API_HA_MODE")
-	if len(haModeEnv) > 0 {
-		haMode = true
-	} else {
-		_ = exec.Command("logger", "-t", "HOSTER_REST", "STARING REST API SERVER IN REGULAR (NON-HA) MODE").Run()
-		return
-	}
-
-	debugModeEnv := os.Getenv("REST_API_HA_DEBUG")
-	if len(debugModeEnv) > 0 {
-		debugMode = true
-	}
-
-	go addHaNode(haChannelAdd)
-	go removeHaNode(haChannelRemove)
-
-	file, _ := os.ReadFile("/opt/hoster-core/config_files/ha_config.json")
-	err := json.Unmarshal(file, &haConfig)
-	if err != nil {
-		_ = exec.Command("logger", "-t", "HOSTER_HA", "Cannot parse the HA configuration file: "+err.Error()).Run()
-		panic("Cannot parse the HA configuration file: " + err.Error())
-	}
-
-	if haConfig.FailOverTime < 1 {
-		haConfig.FailOverTime = 60
-	}
-	_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Cluster failover time is: "+strconv.Itoa(int(haConfig.FailOverTime))+" seconds").Run()
-
-	haConfig.StartupTime = time.Now().UnixMicro()
-	go registerNode()
-}
-
-func registerNode() {
-	user := "admin"
-	password := "123456"
-	port := 3000
-
 	portEnv := os.Getenv("REST_API_PORT")
 	userEnv := os.Getenv("REST_API_USER")
 	passwordEnv := os.Getenv("REST_API_PASSWORD")
@@ -109,40 +78,110 @@ func registerNode() {
 		password = passwordEnv
 	}
 
-	time.Sleep(time.Second * 30)
-	for i, v := range haConfig.Candidates {
-		_ = i
+	haModeEnv := os.Getenv("REST_API_HA_MODE")
+	if len(haModeEnv) > 0 {
+		haMode = true
+	} else {
+		_ = exec.Command("logger", "-t", "HOSTER_REST", "STARING REST API SERVER IN REGULAR (NON-HA) MODE").Run()
+		return
+	}
 
-		host := NodeInfoStruct{}
-		host.Hostname = cmd.GetHostName()
-		host.FailOverStrategy = haConfig.FailOverStrategy
-		host.User = user
-		host.Password = password
-		host.Port = strconv.Itoa(port)
-		host.Protocol = "http"
-		host.FailOverStrategy = haConfig.FailOverStrategy
-		host.FailOverTime = haConfig.FailOverTime
-		host.StartupTime = haConfig.StartupTime
+	debugModeEnv := os.Getenv("REST_API_HA_DEBUG")
+	if len(debugModeEnv) > 0 {
+		debugMode = true
+	}
 
-		jsonPayload, _ := json.Marshal(host)
-		payload := strings.NewReader(string(jsonPayload))
+	go addHaNode(haChannelAdd)
+	go removeHaNode(haChannelRemove)
 
-		url := v.Protocol + "://" + v.Address + ":" + v.Port + "/api/v1/ha/register"
-		req, _ := http.NewRequest("POST", url, payload)
-		auth := v.User + ":" + v.Password
-		authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
-		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add("Authorization", "Basic "+authEncoded)
-		res, err := http.DefaultClient.Do(req)
-		if err != nil {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Could not join the candidate: "+err.Error()).Run()
-			time.Sleep(time.Second * 30)
-			continue
-		} else {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "SUCCESS: Joined the candidate: "+v.Hostname).Run()
+	file, _ := os.ReadFile("/opt/hoster-core/config_files/ha_config.json")
+	err = json.Unmarshal(file, &haConfig)
+	if err != nil {
+		_ = exec.Command("logger", "-t", "HOSTER_HA", "PANIC: could not parse the HA configuration file: "+err.Error()).Run()
+		panic("Cannot parse the HA configuration file: " + err.Error())
+	}
+
+	if haConfig.FailOverTime < 1 {
+		haConfig.FailOverTime = 60
+	}
+	_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Cluster failover time is: "+strconv.Itoa(int(haConfig.FailOverTime))+" seconds").Run()
+
+	haConfig.StartupTime = time.Now().UnixMicro()
+	go registerNode()
+	go trackCandidatesOnline()
+}
+
+var candidatesRegistered = 0
+
+func trackCandidatesOnline() {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "trackCandidatesOnline() Recovered from panic: "+errorValue).Run()
 		}
+	}()
 
-		defer res.Body.Close()
+	for {
+		for _, v := range haConfig.Candidates {
+			if v.Registered {
+				candidatesRegistered += 1
+			} else {
+				candidatesRegistered -= 1
+			}
+		}
+		time.Sleep(time.Second * 5)
+	}
+}
+
+func registerNode() {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "registerNode() Recovered from panic: "+errorValue).Run()
+		}
+	}()
+
+	for {
+		if candidatesRegistered >= 3 {
+			time.Sleep(time.Second * 10)
+			continue
+		}
+		for i, v := range haConfig.Candidates {
+			if v.Registered {
+				continue
+			}
+			host := NodeInfoStruct{}
+			host.Hostname = cmd.GetHostName()
+			host.FailOverStrategy = haConfig.FailOverStrategy
+			host.User = user
+			host.Password = password
+			host.Port = strconv.Itoa(port)
+			host.Protocol = protocol
+			host.FailOverStrategy = haConfig.FailOverStrategy
+			host.FailOverTime = haConfig.FailOverTime
+			host.StartupTime = haConfig.StartupTime
+
+			jsonPayload, _ := json.Marshal(host)
+			payload := strings.NewReader(string(jsonPayload))
+
+			url := v.Protocol + "://" + v.Address + ":" + v.Port + "/api/v1/ha/register"
+			req, _ := http.NewRequest("POST", url, payload)
+			auth := v.User + ":" + v.Password
+			authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+			req.Header.Add("Content-Type", "application/json")
+			req.Header.Add("Authorization", "Basic "+authEncoded)
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: could not join the candidate: "+err.Error()).Run()
+				time.Sleep(time.Second * 30)
+				continue
+			} else {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "SUCCESS: joined the candidate: "+v.Hostname).Run()
+				haConfig.Candidates[i].Registered = true
+			}
+			_ = res
+		}
+		time.Sleep(time.Second * 10)
 	}
 }
 

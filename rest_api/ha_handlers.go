@@ -52,7 +52,7 @@ func handleHaTerminate(fiberContext *fiber.Ctx) error {
 }
 
 func handleHaShareAllMembers(fiberContext *fiber.Ctx) error {
-	return fiberContext.JSON(fiber.Map{"message": "done"})
+	return fiberContext.JSON(haHostsDb)
 }
 
 func handleHaMonitor(fiberContext *fiber.Ctx) error {
