@@ -83,7 +83,7 @@ func init() {
 	_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Cluster failover time is: "+strconv.Itoa(int(haConfig.FailOverTime))+" seconds").Run()
 
 	haConfig.StartupTime = time.Now().UnixMicro()
-	registerNode()
+	go registerNode()
 }
 
 func registerNode() {
