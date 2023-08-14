@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -29,9 +30,8 @@ type NodeInfoStruct struct {
 }
 
 type HosterHaNodeStruct struct {
-	IsManager bool           `json:"is_manager"`
-	LastPing  int64          `json:"last_ping"`
-	NodeInfo  NodeInfoStruct `json:"node_info"`
+	LastPing int64          `json:"last_ping"`
+	NodeInfo NodeInfoStruct `json:"node_info"`
 }
 
 type HaConfigJsonStruct struct {
@@ -156,41 +156,32 @@ func trackManager() {
 
 	for {
 		if clusterInitialized {
-			var myNumber int64 = haConfig.StartupTime
-			var theirNumber int64 = 0
+			var copyHaHostsDb = haHostsDb
+			var filteredCandidates []HosterHaNodeStruct
 
-			for _, v := range haHostsDb {
-				for _, vv := range haConfig.Candidates {
-					if !vv.Registered {
-						continue
-					}
-					if myHostname == vv.Hostname {
-						continue
-					}
-					if theirNumber == 0 {
-						theirNumber = v.NodeInfo.StartupTime
-					}
-					if v.NodeInfo.Hostname == vv.Hostname {
-						if theirNumber < v.NodeInfo.StartupTime {
-							theirNumber = v.NodeInfo.StartupTime
-						}
-						continue
+			sort.Slice(copyHaHostsDb, func(i, j int) bool {
+				return copyHaHostsDb[i].NodeInfo.StartupTime < copyHaHostsDb[j].NodeInfo.StartupTime
+			})
+
+			for _, host := range copyHaHostsDb {
+				for _, candidate := range haConfig.Candidates {
+					if host.NodeInfo.Hostname == candidate.Hostname {
+						filteredCandidates = append(filteredCandidates, host)
+						break
 					}
 				}
 			}
-
-			if myNumber < theirNumber {
+			if filteredCandidates[0].NodeInfo.Hostname == myHostname {
 				if !iAmManager {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: becoming new cluster manager").Run()
+					iAmManager = true
 				}
-				iAmManager = true
 			} else {
 				if iAmManager {
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: stepping down as a cluster manager").Run()
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: stepping down as a cluster manager").Run()
+					iAmManager = false
 				}
-				iAmManager = false
 			}
-
 			time.Sleep(time.Second * 10)
 		}
 	}
