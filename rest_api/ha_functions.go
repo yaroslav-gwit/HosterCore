@@ -52,7 +52,8 @@ var haChannelRemove = make(chan HosterHaNodeStruct, 100)
 
 var iAmManager = false
 var iAmCandidate = false
-var iAmRegistered = false
+var iAmRegisteredWithManager = false
+var iAmRegisteredWithCandidate = false
 var initialRegistrationPerformed = false
 var lastManagerContact = time.Now().Unix() + 100
 var lastCandidate0Contact = time.Now().Unix() + 100
@@ -96,7 +97,9 @@ func init() {
 		iAmManager = false
 		go manageOfflineNodes()
 
-		go joinHaCluster()
+		initializeHaCluster()
+		go joinClusterManager()
+
 		go iAmCandidateOnline()
 		go managerTemporaryFailover()
 
@@ -106,12 +109,15 @@ func init() {
 		iAmCandidate = false
 
 		initializeHaCluster()
+		go joinClusterCandidates()
+
 		go manageOfflineNodes()
 		go iAmManagerOnline()
 
 		go pingPong()
 	} else {
-		go joinHaCluster()
+		go joinClusterManager()
+		go joinClusterCandidates()
 		go iAmWorkerOnline()
 
 		go pingPong()
@@ -123,18 +129,17 @@ func initializeHaCluster() {
 	hosterNode.IsCandidate = false
 	hosterNode.IsWorker = false
 	hosterNode.IsManager = true
-	hosterNode.LastPing = time.Now().Unix()
+	hosterNode.LastPing = 9223372036854775807
 	hosterNode.NodeInfo = haConfig.Manager
 	hosterNode.NodeInfo.FailOverStrategy = haConfig.FailOverStrategy
 	hosterNode.NodeInfo.FailOverTime = haConfig.FailOverTime
 
 	haChannelAdd <- hosterNode
-	iAmRegistered = true
 }
 
-func joinHaCluster() {
+func joinClusterManager() {
 	for {
-		if iAmRegistered {
+		if iAmRegisteredWithManager {
 			time.Sleep(time.Second * 5)
 			continue
 		}
@@ -197,7 +202,7 @@ func joinHaCluster() {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully restored the connection to the cluster manager: "+string(body)).Run()
 			}
 
-			iAmRegistered = true
+			iAmRegisteredWithManager = true
 			initialRegistrationPerformed = true
 			lastManagerContact = time.Now().Unix()
 
@@ -206,9 +211,88 @@ func joinHaCluster() {
 	}
 }
 
+func joinClusterCandidates() {
+	for {
+		if iAmRegisteredWithCandidate {
+			time.Sleep(time.Second * 5)
+			continue
+		}
+		user := "admin"
+		password := "123456"
+		port := 3000
+
+		portEnv := os.Getenv("REST_API_PORT")
+		userEnv := os.Getenv("REST_API_USER")
+		passwordEnv := os.Getenv("REST_API_PASSWORD")
+
+		var err error
+		if len(portEnv) > 0 {
+			port, err = strconv.Atoi(portEnv)
+			if err != nil {
+				log.Fatal("please make sure port is an integer!")
+			}
+		}
+		if len(userEnv) > 0 {
+			user = userEnv
+		}
+		if len(passwordEnv) > 0 {
+			password = passwordEnv
+		}
+
+		for i, v := range haConfig.Candidates {
+			host := NodeStruct{}
+			host.Hostname = cmd.GetHostName()
+			host.FailOverStrategy = "cireset"
+			host.User = user
+			host.Password = password
+			host.Port = strconv.Itoa(port)
+			host.Protocol = "http"
+			host.FailOverStrategy = haConfig.FailOverStrategy
+			host.FailOverTime = haConfig.FailOverTime
+
+			for {
+				jsonPayload, _ := json.Marshal(host)
+				payload := strings.NewReader(string(jsonPayload))
+
+				url := v.Protocol + "://" + v.Address + ":" + v.Port + "/api/v1/ha/register"
+				req, _ := http.NewRequest("POST", url, payload)
+				auth := haConfig.Manager.User + ":" + haConfig.Manager.Password
+				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+				req.Header.Add("Content-Type", "application/json")
+				req.Header.Add("Authorization", "Basic "+authEncoded)
+				res, err := http.DefaultClient.Do(req)
+				if err != nil {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Could not join the manager: "+err.Error()).Run()
+					time.Sleep(time.Second * 30)
+					continue
+				}
+
+				defer res.Body.Close()
+				body, _ := io.ReadAll(res.Body)
+
+				if !initialRegistrationPerformed {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully joined the cluster: "+string(body)).Run()
+				} else {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Successfully restored the connection to the cluster manager: "+string(body)).Run()
+				}
+
+				iAmRegisteredWithCandidate = true
+				if i == 0 {
+					lastCandidate0Contact = time.Now().Unix()
+				}
+				if i == 1 {
+					lastCandidate1Contact = time.Now().Unix()
+				}
+
+				break
+			}
+		}
+	}
+}
+
 func pingPong() {
 	for {
-		if iAmRegistered {
+		if iAmRegisteredWithManager {
 			if haConfig.NodeType != "manager" {
 				host := NodeStruct{}
 				host.Hostname = cmd.GetHostName()
@@ -225,7 +309,7 @@ func pingPong() {
 				_, err := http.DefaultClient.Do(req)
 				if err != nil {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Failed to ping the manager: "+err.Error()).Run()
-					iAmRegistered = false
+					iAmRegisteredWithManager = false
 				}
 				lastManagerContact = time.Now().Unix()
 			}
