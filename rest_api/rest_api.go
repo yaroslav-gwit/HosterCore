@@ -431,14 +431,9 @@ func main() {
 
 	if haMode {
 		ha := v1.Group("/ha")
-		ha.Post("/register", handleHaManagerRegistration)
+		ha.Post("/register", handleHaRegistration)
 		ha.Get("/all-members", handleHaShareAllMembers)
-		ha.Get("/candidates", handleHaShareCandidates)
-		ha.Get("/workers", handleHaShareWorkers)
-		ha.Get("/manager", handleHaShareManager)
 		ha.Post("/terminate", handleHaTerminate)
-		ha.Post("/promote", handleHaPromote)
-		ha.Post("/new-manager-notification", handleHaPromote)
 		ha.Post("/ping", handleHaPing)
 		ha.Get("/monitor", handleHaMonitor)
 		ha.Get("/vms", handleHaVmsList)

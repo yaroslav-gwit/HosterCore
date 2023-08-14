@@ -1,29 +1,28 @@
 {
-    "node_type": "worker",
     "failover_strategy": "cireset",
     "failover_time": 60,
     "backup_node": false,
-    "manager": {
-        "hostname": "hoster-test-0103",
-        "protocol": "http",
-        "address": "192.168.100.103",
-        "port": "3000",
-        "user": "admin",
-        "password": "123456"
-    },
     "candidates": [
         {
-            "hostname": "hoster-test-0101",
+            "hostname": "hoster-0105",
             "protocol": "http",
-            "address": "192.168.100.101",
+            "address": "192.168.118.24",
             "port": "3000",
             "user": "admin",
             "password": "123456"
         },
         {
-            "hostname": "hoster-test-0102",
+            "hostname": "hoster-0106",
             "protocol": "http",
-            "address": "192.168.100.102",
+            "address": "192.168.118.26",
+            "port": "3000",
+            "user": "admin",
+            "password": "123456"
+        },
+        {
+            "hostname": "hoster-0107",
+            "protocol": "http",
+            "address": "192.168.118.27",
             "port": "3000",
             "user": "admin",
             "password": "123456"

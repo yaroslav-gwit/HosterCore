@@ -10,10 +10,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
+func handleHaRegistration(fiberContext *fiber.Ctx) error {
 	tagCustomError = ""
 
-	hosterNode := new(NodeStruct)
+	hosterNode := new(NodeInfoStruct)
 	if err := fiberContext.BodyParser(hosterNode); err != nil {
 		tagCustomError = err.Error()
 		fiberContext.Status(fiber.StatusUnprocessableEntity)
@@ -21,9 +21,6 @@ func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 	}
 
 	hosterHaNode := HosterHaNodeStruct{}
-	hosterHaNode.IsManager = false
-	hosterHaNode.IsCandidate = false
-	hosterHaNode.IsWorker = true
 	hosterHaNode.NodeInfo = *hosterNode
 	hosterHaNode.NodeInfo.Address = fiberContext.IP()
 	hosterHaNode.LastPing = time.Now().Unix()
@@ -34,7 +31,7 @@ func handleHaManagerRegistration(fiberContext *fiber.Ctx) error {
 
 func handleHaPing(fiberContext *fiber.Ctx) error {
 	tagCustomError = ""
-	hosterNode := new(NodeStruct)
+	hosterNode := new(NodeInfoStruct)
 	if err := fiberContext.BodyParser(hosterNode); err != nil {
 		tagCustomError = err.Error()
 		fiberContext.Status(fiber.StatusUnprocessableEntity)
@@ -54,50 +51,12 @@ func handleHaTerminate(fiberContext *fiber.Ctx) error {
 	return fiberContext.JSON(fiber.Map{"message": "done"})
 }
 
-func handleHaPromote(fiberContext *fiber.Ctx) error {
+func handleHaShareAllMembers(fiberContext *fiber.Ctx) error {
 	return fiberContext.JSON(fiber.Map{"message": "done"})
 }
 
 func handleHaMonitor(fiberContext *fiber.Ctx) error {
 	return fiberContext.JSON(fiber.Map{"message": "done"})
-}
-
-func handleHaShareWorkers(fiberContext *fiber.Ctx) error {
-	workers := []HosterHaNodeStruct{}
-	for _, v := range haHostsDb {
-		if v.IsWorker {
-			workers = append(workers, v)
-		}
-	}
-	return fiberContext.JSON(workers)
-}
-
-func handleHaShareManager(fiberContext *fiber.Ctx) error {
-	manager := HosterHaNodeStruct{}
-	for _, v := range haHostsDb {
-		if v.IsManager {
-			manager = v
-		}
-	}
-	return fiberContext.JSON(manager)
-}
-
-func handleHaShareCandidates(fiberContext *fiber.Ctx) error {
-	candidates := []HosterHaNodeStruct{}
-	for _, v := range haHostsDb {
-		if v.IsCandidate {
-			candidates = append(candidates, v)
-		}
-	}
-	return fiberContext.JSON(candidates)
-}
-
-func handleHaShareAllMembers(fiberContext *fiber.Ctx) error {
-	if iAmManager {
-		return fiberContext.JSON(haHostsDb)
-	} else {
-		return fiberContext.JSON([]HosterHaNodeStruct{})
-	}
 }
 
 type HaVm struct {
