@@ -93,18 +93,7 @@ func joinClusterManager() {
 
 
 
-func manageOfflineNodes() {
-	for {
-		for i, v := range haHostsDb {
-			if (time.Now().Unix() > v.LastPing+v.NodeInfo.FailOverTime) && !v.IsManager {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "Host has gone offline: "+v.NodeInfo.Hostname).Run()
-				failoverHostVms(v)
-				haChannelRemove <- haHostsDb[i]
-			}
-		}
-		time.Sleep(time.Second * 10)
-	}
-}
+
 
 func failoverHostVms(haNode HosterHaNodeStruct) {
 	defer func() {

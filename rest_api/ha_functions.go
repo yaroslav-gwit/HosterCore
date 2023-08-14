@@ -109,6 +109,7 @@ func init() {
 	go trackCandidatesOnline()
 	go trackManager()
 	go sendPing()
+	go removeOfflineNodes()
 }
 
 var candidatesRegistered = 0
@@ -128,8 +129,6 @@ func trackCandidatesOnline() {
 		for _, v := range haConfig.Candidates {
 			if v.Registered {
 				candidatesRegistered += 1
-			} else {
-				candidatesRegistered -= 1
 			}
 		}
 
@@ -162,6 +161,9 @@ func trackManager() {
 
 			for _, v := range haHostsDb {
 				for _, vv := range haConfig.Candidates {
+					if !vv.Registered {
+						continue
+					}
 					if myHostname == vv.Hostname {
 						myNumber = v.NodeInfo.StartupTime
 						continue
@@ -281,6 +283,26 @@ func sendPing() {
 			}(i, v)
 		}
 		time.Sleep(time.Second * 5)
+	}
+}
+
+func removeOfflineNodes() {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: removeOfflineNodes(): "+errorValue).Run()
+		}
+	}()
+
+	for {
+		for i, v := range haHostsDb {
+			if time.Now().Unix() > v.LastPing+v.NodeInfo.FailOverTime {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has gone offline: "+v.NodeInfo.Hostname).Run()
+				// failoverHostVms(v)
+				haChannelRemove <- haHostsDb[i]
+			}
+		}
+		time.Sleep(time.Second * 10)
 	}
 }
 
