@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 )
@@ -26,7 +25,7 @@ func main() {
 	}
 
 	timesFailed := 0
-	timesFailedMax := 4
+	timesFailedMax := 2
 	lastReachOut := time.Now().Unix()
 
 	signals := make(chan os.Signal, 1)
@@ -48,19 +47,19 @@ func main() {
 
 		if timesFailed >= timesFailedMax {
 			if debugMode {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "DEBUG: rebooting the system due to failed HA state, pings failed: "+strconv.Itoa(timesFailed)).Run()
+				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "DEBUG: HOSTER_HA_REST process has failed, rebooting the system now").Run()
 				os.Exit(1)
 			} else {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "PROD: rebooting the system due to failed HA state, pings failed: "+strconv.Itoa(timesFailed)).Run()
+				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "HOSTER_HA_REST process has failed, rebooting the system now").Run()
 				cmd.LockAllVms()
 				_ = exec.Command("reboot").Run()
 			}
 		}
 
 		if time.Now().Unix() > lastReachOut+5 {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "ping failed, previous alive timestamp: "+strconv.Itoa(int(lastReachOut))).Run()
+			// _ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "ping failed, previous alive timestamp: "+strconv.Itoa(int(lastReachOut))).Run()
 			timesFailed += 1
-			_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "pings missed so far: "+strconv.Itoa(timesFailed)+"; will terminate the system at: "+strconv.Itoa(timesFailedMax)).Run()
+			// _ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "pings missed so far: "+strconv.Itoa(timesFailed)+"; will terminate the system at: "+strconv.Itoa(timesFailedMax)).Run()
 		} else {
 			timesFailed = 0
 		}

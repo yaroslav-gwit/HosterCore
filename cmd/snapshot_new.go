@@ -4,6 +4,7 @@ import (
 	"errors"
 	"hoster/emojlog"
 	"log"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -36,8 +37,29 @@ var (
 	}
 )
 
+func isReplicationRunningSnapshotCheck() error {
+	replicationDir := "/var/run/replication"
+	os.Mkdir(replicationDir, 0750)
+
+	replicationFiles, err := os.ReadDir(replicationDir)
+	if err != nil {
+		return err
+	}
+
+	if len(replicationFiles) > 0 {
+		return errors.New("cannot perform snapshot operations while the replication is in progress: " + replicationFiles[0].Name())
+	}
+
+	return nil
+}
+
 // Snapshot a given VM. Returns an error, if something wrong happened in the process.
 func VmZfsSnapshot(vmName string, snapshotType string, snapshotsToKeep int) error {
+	err := isReplicationRunningSnapshotCheck()
+	if err != nil {
+		return err
+	}
+
 	possibleSnapshotTypes := []string{"hourly", "daily", "weekly", "monthly", "yearly", "replication", "custom"}
 	if !slices.Contains(possibleSnapshotTypes, snapshotType) {
 		return errors.New("this snapshot type `" + snapshotType + "` is not supported by our system")

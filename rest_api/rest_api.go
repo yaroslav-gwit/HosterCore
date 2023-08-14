@@ -438,13 +438,14 @@ func main() {
 		ha.Get("/manager", handleHaShareManager)
 		ha.Post("/terminate", handleHaTerminate)
 		ha.Post("/promote", handleHaPromote)
+		ha.Post("/new-manager-notification", handleHaPromote)
 		ha.Post("/ping", handleHaPing)
 		ha.Get("/monitor", handleHaMonitor)
 		ha.Get("/vms", handleHaVmsList)
 	}
 
 	timesFailed := 0
-	timesFailedMax := 5
+	timesFailedMax := 3
 	hosterRestLabel := "HOSTER_REST"
 	if haMode {
 		if debugMode {
