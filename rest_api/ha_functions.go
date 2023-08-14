@@ -129,7 +129,7 @@ func initializeHaCluster() {
 	hosterNode.IsCandidate = false
 	hosterNode.IsWorker = false
 	hosterNode.IsManager = true
-	hosterNode.LastPing = 9223372036854775807
+	hosterNode.LastPing = 9223372036854770000
 	hosterNode.NodeInfo = haConfig.Manager
 	hosterNode.NodeInfo.FailOverStrategy = haConfig.FailOverStrategy
 	hosterNode.NodeInfo.FailOverTime = haConfig.FailOverTime
