@@ -115,6 +115,7 @@ func init() {
 var candidatesRegistered = 0
 var clusterInitialized = false
 var iAmManager = false
+var myHostname = cmd.GetHostName()
 
 func trackCandidatesOnline() {
 	defer func() {
@@ -155,9 +156,8 @@ func trackManager() {
 
 	for {
 		if clusterInitialized {
-			var myNumber int64
-			var clusterNumber int64 = 0
-			var myHostname = cmd.GetHostName()
+			var myNumber int64 = haConfig.StartupTime
+			var theirNumber int64 = 0
 
 			for _, v := range haHostsDb {
 				for _, vv := range haConfig.Candidates {
@@ -165,18 +165,21 @@ func trackManager() {
 						continue
 					}
 					if myHostname == vv.Hostname {
-						myNumber = v.NodeInfo.StartupTime
 						continue
 					}
+					if theirNumber == 0 {
+						theirNumber = v.NodeInfo.StartupTime
+					}
 					if v.NodeInfo.Hostname == vv.Hostname {
-						if clusterNumber > v.NodeInfo.StartupTime || clusterNumber == 0 {
-							clusterNumber = v.NodeInfo.StartupTime
+						if theirNumber < v.NodeInfo.StartupTime {
+							theirNumber = v.NodeInfo.StartupTime
 						}
 						continue
 					}
 				}
 			}
-			if myNumber < clusterNumber {
+
+			if myNumber < theirNumber {
 				if !iAmManager {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: becoming new cluster manager").Run()
 				}
@@ -187,8 +190,9 @@ func trackManager() {
 				}
 				iAmManager = false
 			}
+
+			time.Sleep(time.Second * 10)
 		}
-		time.Sleep(time.Second * 20)
 	}
 }
 
@@ -279,6 +283,8 @@ func sendPing() {
 				if err != nil {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: failed to ping the candidate node: "+err.Error()).Run()
 					haConfig.Candidates[i].Registered = false
+				} else {
+					haConfig.Candidates[i].Registered = true
 				}
 			}(i, v)
 		}
