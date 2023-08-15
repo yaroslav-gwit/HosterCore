@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hoster/cmd"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -159,7 +160,7 @@ func trackManager() {
 			var copyHaHostsDb = haHostsDb
 			var filteredCandidates []HosterHaNodeStruct
 
-			sort.Slice(copyHaHostsDb, func(i, j int) bool {
+			sort.Slice(copyHaHostsDb, func(i int, j int) bool {
 				return copyHaHostsDb[i].NodeInfo.StartupTime < copyHaHostsDb[j].NodeInfo.StartupTime
 			})
 
@@ -218,6 +219,7 @@ func registerNode() {
 			host.FailOverStrategy = haConfig.FailOverStrategy
 			host.FailOverTime = haConfig.FailOverTime
 			host.StartupTime = haConfig.StartupTime
+			host.BackupNode = haConfig.BackupNode
 
 			jsonPayload, _ := json.Marshal(host)
 			payload := strings.NewReader(string(jsonPayload))
@@ -299,11 +301,140 @@ func removeOfflineNodes() {
 		for i, v := range haHostsDb {
 			if time.Now().Unix() > v.LastPing+v.NodeInfo.FailOverTime {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has gone offline: "+v.NodeInfo.Hostname).Run()
-				// failoverHostVms(v)
+				failoverHostVms(v)
 				haChannelRemove <- haHostsDb[i]
 			}
 		}
 		time.Sleep(time.Second * 10)
+	}
+}
+
+func failoverHostVms(haNode HosterHaNodeStruct) {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: failoverHostVms(): "+errorValue).Run()
+		}
+	}()
+
+	if !iAmManager {
+		time.Sleep(time.Second * 10)
+		return
+	}
+
+	haVms := []HaVm{}
+	for _, v := range haHostsDb {
+		haVmsTemp := []HaVm{}
+
+		// Skip the failed node (passed via function parameters, and not offline-d yet)
+		if v.NodeInfo.Hostname == haNode.NodeInfo.Hostname {
+			continue
+		}
+		// Skip if the node in question is a backup host, participating purely for quorum purposes
+		if v.NodeInfo.BackupNode {
+			continue
+		}
+
+		url := v.NodeInfo.Protocol + "://" + v.NodeInfo.Address + ":" + v.NodeInfo.Port + "/api/v1/ha/vms"
+		req, _ := http.NewRequest("GET", url, nil)
+		auth := v.NodeInfo.User + ":" + v.NodeInfo.Password
+		authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+		req.Header.Add("Authorization", "Basic "+authEncoded)
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: line 345: "+err.Error()).Run()
+			continue
+		}
+
+		defer res.Body.Close()
+		body, _ := io.ReadAll(res.Body)
+
+		err = json.Unmarshal(body, &haVmsTemp)
+		if err != nil {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: line 354: "+err.Error()).Run()
+			continue
+		}
+
+		for _, vv := range haVmsTemp {
+			if vv.ParentHost == haNode.NodeInfo.Hostname {
+				haVms = append(haVms, vv)
+			}
+		}
+	}
+
+	sort.Slice(haVms, func(i int, j int) bool {
+		return haVms[i].LatestSnapshot < haVms[j].LatestSnapshot
+	})
+
+	uniqueHaVms := []HaVm{}
+	for _, v := range haVms {
+		vmExists := false
+		for _, vv := range uniqueHaVms {
+			if v.VmName == vv.VmName {
+				vmExists = true
+			}
+		}
+		if !vmExists {
+			uniqueHaVms = append(uniqueHaVms, v)
+		}
+	}
+
+	for _, v := range uniqueHaVms {
+		if debugMode {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: FAILING OVER VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
+			continue
+		}
+		for _, vv := range haHostsDb {
+			if vv.NodeInfo.Hostname == v.CurrentHost {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILING OVER VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
+
+				auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
+				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+
+				// Use failover strategy to failover the VM
+				if vv.NodeInfo.FailOverStrategy == "cireset" || vv.NodeInfo.FailOverStrategy == "ci-reset" {
+					url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/cireset"
+					payload := strings.NewReader(`{ "name": "` + v.VmName + `" }`)
+					req, _ := http.NewRequest("POST", url, payload)
+
+					req.Header.Add("Content-Type", "application/json")
+					req.Header.Add("Authorization", "Basic "+authEncoded)
+					res, err := http.DefaultClient.Do(req)
+					if res.StatusCode != 200 {
+						_ = err
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "CIRESET FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
+						continue
+					}
+				} else if vv.NodeInfo.FailOverStrategy == "changeparent" || vv.NodeInfo.FailOverStrategy == "change-parent" {
+					url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/change-parent"
+					payload := strings.NewReader(`{ "name": "` + v.VmName + `" }`)
+					req, _ := http.NewRequest("POST", url, payload)
+
+					req.Header.Add("Content-Type", "application/json")
+					req.Header.Add("Authorization", "Basic "+authEncoded)
+					res, err := http.DefaultClient.Do(req)
+					if res.StatusCode != 200 {
+						_ = err
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "CHANGE PARENT FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
+						continue
+					}
+				}
+
+				// Start VM on a new host
+				url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/start"
+				payload := strings.NewReader(`{ "name": "` + v.VmName + `" }`)
+				req, _ := http.NewRequest("POST", url, payload)
+
+				req.Header.Add("Content-Type", "application/json")
+				req.Header.Add("Authorization", "Basic "+authEncoded)
+				res, err := http.DefaultClient.Do(req)
+				if res.StatusCode != 200 {
+					_ = err
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "VM START FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
+					continue
+				}
+			}
+		}
 	}
 }
 
