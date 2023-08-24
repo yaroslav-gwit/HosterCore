@@ -107,7 +107,7 @@ func returnMissingModules() ([]string, error) {
 	reSplitSpace := regexp.MustCompile(`\s+`)
 
 	var loadedModules []string
-	kernelModuleList := []string{"vmm", "nmdm", "if_bridge", "pf", "pflog"}
+	kernelModuleList := []string{"vmm", "nmdm", "if_bridge", "if_vxlan", "pf", "pflog"}
 
 	// Add CPU temperature module
 	cpuInfo := getCpuInfo()

@@ -50,6 +50,9 @@ func init() {
 	// VM command section
 	rootCmd.AddCommand(vmCmd)
 
+	// VM cmd -> unlock-all
+	vmCmd.AddCommand(vmUnlockAllCmd)
+
 	// VM cmd -> list
 	vmCmd.AddCommand(vmListCmd)
 	vmListCmd.Flags().BoolVarP(&jsonOutputVm, "json", "j", false, "Output as JSON (useful for automation)")

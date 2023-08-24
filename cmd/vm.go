@@ -1,7 +1,11 @@
 package cmd
 
 import (
+	"fmt"
+	"hoster/emojlog"
 	"log"
+	"regexp"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -22,12 +26,46 @@ var (
 	}
 )
 
+var (
+	vmUnlockAllCmd = &cobra.Command{
+		Use:   "unlock-all",
+		Short: "Unlock all HA locked VMs",
+		Long:  `Unlock all HA locked VMs.`,
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			UnlockAllVms()
+			emojlog.PrintLogMessage("All VMs have now been unlocked", emojlog.Debug)
+		},
+	}
+)
+
 func LockAllVms() {
 	allVms := GetAllVms()
+
+	timeNow := time.Now().Format("2006-01-02_15-04-05")
+	haLockedString := fmt.Sprintf("__HA_LOCKED_%s__", timeNow)
+
 	for _, vm := range allVms {
 		vmConfig := VmConfig(vm)
 		if VmIsInProduction(vmConfig.LiveStatus) && vmConfig.ParentHost == GetHostName() {
-			ReplaceParent(vm, "__HA_LOCKED__", true)
+			ReplaceParent(vm, haLockedString, true)
+		}
+	}
+}
+
+func UnlockAllVms() {
+	allVms := GetAllVms()
+	reHaLockedString := regexp.MustCompile(`__HA_LOCKED_.*`)
+
+	for _, vm := range allVms {
+		vmConfig := VmConfig(vm)
+		if VmIsInProduction(vmConfig.LiveStatus) && reHaLockedString.MatchString(vmConfig.ParentHost) {
+			ReplaceParent(vm, GetHostName(), true)
 		}
 	}
 }

@@ -28,6 +28,7 @@ type NodeInfoStruct struct {
 	BackupNode       bool   `json:"backup_node"`
 	StartupTime      int64  `json:"startup_time"`
 	Registered       bool   `json:"registered"`
+	TimesFailed      int    `json:"times_failed"`
 }
 
 type HosterHaNodeStruct struct {
@@ -266,6 +267,7 @@ func sendPing() {
 			go func(i int, v NodeInfoStruct) {
 				host := NodeInfoStruct{}
 				host.Hostname = cmd.GetHostName()
+				host.StartupTime = haConfig.StartupTime
 
 				jsonPayload, _ := json.Marshal(host)
 				payload := strings.NewReader(string(jsonPayload))
@@ -279,8 +281,14 @@ func sendPing() {
 				_, err := http.DefaultClient.Do(req)
 				if err != nil {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: failed to ping the candidate node: "+err.Error()).Run()
-					haConfig.Candidates[i].Registered = false
+					haConfig.Candidates[i].TimesFailed += 1
+					if haConfig.Candidates[i].TimesFailed >= 3 {
+						haConfig.Candidates[i].Registered = false
+					}
 				} else {
+					if haConfig.Candidates[i].TimesFailed > 0 {
+						haConfig.Candidates[i].TimesFailed -= 1
+					}
 					haConfig.Candidates[i].Registered = true
 				}
 			}(i, v)
@@ -381,12 +389,12 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 
 	for _, v := range uniqueHaVms {
 		if debugMode {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: FAILING OVER VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: MOVING VM: "+v.VmName+" FROM offline parent: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
 			continue
 		}
 		for _, vv := range haHostsDb {
 			if vv.NodeInfo.Hostname == v.CurrentHost {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "FAILING OVER VM: "+v.VmName+" FROM: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: MOVING VM: "+v.VmName+" FROM offline parent: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
 
 				auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
 				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
@@ -402,7 +410,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 					res, err := http.DefaultClient.Do(req)
 					if res.StatusCode != 200 {
 						_ = err
-						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "CIRESET FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: CIRESET FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
 						continue
 					}
 				} else if vv.NodeInfo.FailOverStrategy == "changeparent" || vv.NodeInfo.FailOverStrategy == "change-parent" {
@@ -415,7 +423,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 					res, err := http.DefaultClient.Do(req)
 					if res.StatusCode != 200 {
 						_ = err
-						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "CHANGE PARENT FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: CHANGE PARENT FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
 						continue
 					}
 				}
@@ -430,7 +438,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 				res, err := http.DefaultClient.Do(req)
 				if res.StatusCode != 200 {
 					_ = err
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "VM START FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: VM START FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
 					continue
 				}
 			}
@@ -461,6 +469,9 @@ func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
 		} else {
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: Updated last ping time and network address for "+msg.NodeInfo.Hostname).Run()
 			haHostsDb[hostIndex].NodeInfo.Address = msg.NodeInfo.Address
+			if msg.NodeInfo.StartupTime > 0 {
+				haHostsDb[hostIndex].NodeInfo.StartupTime = msg.NodeInfo.StartupTime
+			}
 			haHostsDb[hostIndex].LastPing = time.Now().Unix()
 		}
 	}
