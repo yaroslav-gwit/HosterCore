@@ -177,6 +177,8 @@ func init() {
 
 	// Node exporter command section
 	rootCmd.AddCommand(nodeExporterCmd)
+	nodeExporterCmd.AddCommand(nodeExporterStartCmd)
+	nodeExporterCmd.AddCommand(nodeExporterStopCmd)
 	nodeExporterCmd.AddCommand(nodeExporterStatusCmd)
 
 	// Init command section

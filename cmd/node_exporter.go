@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"hoster/emojlog"
 	"log"
@@ -84,6 +85,14 @@ var (
 )
 
 func startNodeExporter() error {
+	nodeExporterPgrep := customNodeExporterServiceInfo()
+	if nodeExporterPgrep.NodeExporterCustomRunning {
+		return errors.New("node_exporter_custom is already running")
+	}
+	if !nodeExporterPgrep.NodeExporterOfficialRunning {
+		return errors.New("node_exporter service is not running, please make sure you start it before using our custom exporter")
+	}
+
 	execPath, err := os.Executable()
 	if err != nil {
 		return err
@@ -99,24 +108,13 @@ func startNodeExporter() error {
 }
 
 func stopNodeExporter() error {
-	timesKilled := 0
+	nodeExporterPgrep := customNodeExporterServiceInfo()
 
-	out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
-	if err == nil && len(string(out)) > 0 {
-		timesKilled += 1
-		_ = exec.Command("kill", "-SIGTERM", strings.TrimSpace(string(out))).Run()
-		emojlog.PrintLogMessage("HA_WATCHDOG service stopped using PID: "+strings.TrimSpace(string(out)), emojlog.Changed)
-	}
-
-	out, err = exec.Command("pgrep", "hoster_rest_api").CombinedOutput()
-	if err == nil && len(string(out)) > 0 {
-		timesKilled += 1
-		_ = exec.Command("kill", "-SIGTERM", strings.TrimSpace(string(out))).Run()
-		emojlog.PrintLogMessage("REST API service stopped using PID: "+strings.TrimSpace(string(out)), emojlog.Changed)
-	}
-
-	if timesKilled < 1 {
-		emojlog.PrintLogMessage("Sorry, the REST API service is not running", emojlog.Error)
+	if nodeExporterPgrep.NodeExporterCustomRunning {
+		_ = exec.Command("kill", "-SIGTERM", nodeExporterPgrep.NodeExporterCustomPid).Run()
+		emojlog.PrintLogMessage("node_exporter_custom was stopped using PID: "+nodeExporterPgrep.NodeExporterCustomPid, emojlog.Changed)
+	} else {
+		emojlog.PrintLogMessage("node_exporter_custom is not running"+nodeExporterPgrep.NodeExporterCustomPid, emojlog.Error)
 	}
 
 	return nil
@@ -128,13 +126,13 @@ func statusNodeExporter() error {
 	if nodeExporterPgrep.NodeExporterOfficialRunning {
 		fmt.Println(" 🟢 Node Exporter is running as " + nodeExporterPgrep.NodeExporterOfficialPid)
 	} else {
-		fmt.Println(" 🔴 Node Exporter is not running!")
+		fmt.Println(" 🔴 Node Exporter IS NOT running")
 	}
 
 	if nodeExporterPgrep.NodeExporterCustomRunning {
 		fmt.Println(" 🟢 Custom Node Exporter is running as " + nodeExporterPgrep.NodeExporterCustomPid)
 	} else {
-		fmt.Println(" 🔴 Custom Node Exporter is not running!")
+		fmt.Println(" 🔴 Custom Node Exporter IS NOT running")
 	}
 
 	return nil
