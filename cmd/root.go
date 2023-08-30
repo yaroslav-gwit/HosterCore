@@ -175,6 +175,10 @@ func init() {
 	apiCmd.AddCommand(apiStopCmd)
 	apiCmd.AddCommand(apiShowLogCmd)
 
+	// Node exporter command section
+	rootCmd.AddCommand(nodeExporterCmd)
+	nodeExporterCmd.AddCommand(nodeExporterStatusCmd)
+
 	// Init command section
 	rootCmd.AddCommand(initCmd)
 

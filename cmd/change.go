@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"hoster/emojlog"
 	"log"
 
@@ -44,6 +45,7 @@ var (
 	}
 )
 
+// Replaces the parent on a VM specified, if the newParent is passed as an empty string GetHostName() will be automatically used
 func ReplaceParent(vmName string, newParent string, ignoreLiveCheck bool) error {
 	if len(vmName) < 1 {
 		return errors.New("you must provide a VM name")
@@ -76,6 +78,8 @@ func ReplaceParent(vmName string, newParent string, ignoreLiveCheck bool) error 
 		return err
 	}
 
-	emojlog.PrintLogMessage("The VM parent has been changed to: "+newParent, emojlog.Changed)
+	logMessage := fmt.Sprintf("Parent host has been changed for %s to %s", vmName, newParent)
+	emojlog.PrintLogMessage(logMessage, emojlog.Changed)
+
 	return nil
 }
