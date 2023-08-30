@@ -102,7 +102,7 @@ func startNodeExporter() error {
 	}
 
 	execFile := path.Dir(execPath) + "/node_exporter_custom"
-	err = exec.Command("nohup", execFile, "&").Run()
+	err = exec.Command("nohup", execFile, "&").Start()
 	if err != nil {
 		return err
 	}
