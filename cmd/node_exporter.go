@@ -41,10 +41,13 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
+
 			err = startNodeExporter()
 			if err != nil {
+				emojlog.PrintLogMessage("node_exporter_custom service could not be started", emojlog.Error)
 				log.Fatal(err.Error())
 			}
+			emojlog.PrintLogMessage("node_exporter_custom service has been started", emojlog.Changed)
 		},
 	}
 )
@@ -99,7 +102,7 @@ func startNodeExporter() error {
 	}
 
 	execFile := path.Dir(execPath) + "/node_exporter_custom"
-	err = exec.Command("nohup", execFile, "&").Start()
+	err = exec.Command("nohup", execFile, "&").Run()
 	if err != nil {
 		return err
 	}

@@ -65,6 +65,16 @@ var (
 				}
 			}
 
+			// Start Node_Exporter_Custom
+			err = startNodeExporter()
+			if err != nil {
+				emojlog.PrintLogMessage("Could not start NodeExporterCustom service: "+err.Error(), emojlog.Error)
+				err = nil
+			} else {
+				emojlog.PrintLogMessage("NodeExporterCustom service has been started", emojlog.Changed)
+			}
+
+			// Remind user to mount the ZFS volumes
 			emojlog.PrintLogMessage("Please don't forget to mount any encrypted ZFS volumes", emojlog.Info)
 		},
 	}
