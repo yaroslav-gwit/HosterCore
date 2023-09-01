@@ -117,7 +117,7 @@ func stopNodeExporter() error {
 		_ = exec.Command("kill", "-SIGTERM", nodeExporterPgrep.NodeExporterCustomPid).Run()
 		emojlog.PrintLogMessage("node_exporter_custom was stopped using PID: "+nodeExporterPgrep.NodeExporterCustomPid, emojlog.Changed)
 	} else {
-		emojlog.PrintLogMessage("node_exporter_custom is not running"+nodeExporterPgrep.NodeExporterCustomPid, emojlog.Error)
+		emojlog.PrintLogMessage("node_exporter_custom is not running", emojlog.Error)
 	}
 
 	return nil

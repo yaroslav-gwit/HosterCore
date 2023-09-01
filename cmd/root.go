@@ -181,6 +181,12 @@ func init() {
 	nodeExporterCmd.AddCommand(nodeExporterStopCmd)
 	nodeExporterCmd.AddCommand(nodeExporterStatusCmd)
 
+	// Traefik proxy command section
+	rootCmd.AddCommand(proxyTraefikCmd)
+	proxyTraefikCmd.AddCommand(proxyTraefikStartCmd)
+	proxyTraefikCmd.AddCommand(proxyTraefikStopCmd)
+	proxyTraefikCmd.AddCommand(proxyTraefikStatusCmd)
+
 	// Init command section
 	rootCmd.AddCommand(initCmd)
 

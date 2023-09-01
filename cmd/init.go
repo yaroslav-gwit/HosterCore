@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"hoster/emojlog"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -49,7 +50,7 @@ var (
 
 			err = startDnsServer()
 			if err != nil {
-				emojlog.PrintLogMessage("Could not reload pf: "+err.Error(), emojlog.Error)
+				emojlog.PrintLogMessage("Could not start the internal DNS server: "+err.Error(), emojlog.Error)
 				err = nil
 			} else {
 				emojlog.PrintLogMessage("Started the internal DNS server", emojlog.Changed)
@@ -61,6 +62,15 @@ var (
 				err := startNebulaService()
 				if err != nil {
 					emojlog.PrintLogMessage("Could not start Nebula service: "+err.Error(), emojlog.Error)
+					err = nil
+				}
+			}
+
+			// Start Traefik on `init` if it's config file exists
+			if FileExists("/opt/traefik/traefik.yaml") {
+				err := startTraefik()
+				if err != nil {
+					emojlog.PrintLogMessage("Could not start Traefik reverse proxy service: "+err.Error(), emojlog.Error)
 					err = nil
 				}
 			}
@@ -307,4 +317,10 @@ func checkInitFile() error {
 	}
 
 	return nil
+}
+
+func FileExists(filePath string) bool {
+	_, error := os.Stat(filePath)
+	//return !os.IsNotExist(err)
+	return !errors.Is(error, os.ErrNotExist)
 }
