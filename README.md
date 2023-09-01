@@ -1,6 +1,4 @@
-# Hoster - virtualization made easy
-
-## General Information
+# Hoster Intro
 
 ![Hoster Core Logo](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-core-cropped.png)
 Introducing `Hoster` 🚀 - VM management framework that will make your life easier. Whether you're an experienced sysadmin or just starting out, `Hoster` has got you covered. With the firewall that affects every VM individually (without the need for VLANs), ZFS dataset level encryption (so your data is safe in co-location), and instant VM deployments (a new VM can be deployed in less than 1 second), `Hoster` is designed to help you get your work done quickly and efficiently. And that's not all - built-in and easy to use replication (based on ZFS send/receive) also gives Hoster the ability to offer very reliable, asynchronous VM replication between 2 or more hosts, ensuring data safety and high availability 🛡️</br>
