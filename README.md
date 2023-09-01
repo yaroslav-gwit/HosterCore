@@ -16,15 +16,25 @@ My entire perspective on virtualization completely changed when I stumbled upon 
 
 ## Leveraging Nebula for Scalable Hoster Networks
 
-Have you considered utilizing Nebula, a powerful VPN and networking overlay technology, to achieve seamless VM network routing across diverse locations such as cities, data centers, and even continents? Nebula presents an excellent solution for this purpose. It boasts numerous benefits, foremost among them being its simplicity and ease of deployment. In a matter of minutes, Nebula can be installed on Linux, macOS, or Windows machines with minimal configuration requirements. Upon installation, Nebula automatically discovers other nodes within the network, establishing secure, point-to-point connections effortlessly. Consequently, complex network topologies, routing protocols, and VPN configurations become a thing of the past as Nebula efficiently handles them on your behalf. It truly works like magic.
+Have you considered utilizing Nebula, a powerful VPN and networking overlay technology, to achieve seamless VM network routing across diverse locations such as cities, data centers, and even continents? Nebula presents an excellent solution for this purpose. It boasts numerous benefits, foremost among them being its simplicity and ease of deployment. Upon installation, Nebula automatically discovers other nodes within the network, establishing secure, point-to-point connections effortlessly. Consequently, complex network topologies, routing protocols, and VPN configurations become a thing of the past as Nebula efficiently handles them on your behalf. It truly works like magic.
 
-Another compelling feature of Nebula lies in its scalability. With the ability to handle thousands of nodes, Nebula proves to be an ideal choice for large-scale deployments. To further enhance this capability, I have developed an automated REST API server that streamlines the process of joining your Hoster nodes into a unified network. In just a matter of seconds, you can establish point-to-point connections wherever possible, create failover channels, and enable automatic routing. This ensures seamless integration and efficient management of your Hoster infrastructure on a grand scale.
+Another compelling feature of Nebula lies in its scalability. With the ability to handle thousands of nodes, Nebula proves to be an ideal choice for large-scale deployments. To further enhance this capability, I have developed a separate REST API server that streamlines the process of joining your `Hoster` nodes into a unified network. In just a matter of seconds, you can establish point-to-point connections wherever possible, create failover channels, and enable automatic internal VM networks routing.
 
-By leveraging Nebula's capabilities, you can achieve robust and scalable networking for your Hoster nodes, making it easier than ever to manage and control your infrastructure across diverse locations.
+By coupling Nebula's and PF's capabilities, you can achieve robust and scalable networking for your `Hoster` nodes, making it easier than ever to manage and control your infrastructure across diverse locations.
 
 ## Are there any plans to develop a WebUI?
 
-Yes, part of the project roadmap includes the development of a WebUI using VueJS. The WebUI will serve as a user-friendly interface to interact with the system and control multiple hoster nodes simultaneously. While currently not the highest priority due to time constraints, I am open to exploring this feature further with increased community engagement and potential investment. With sufficient interest and support, the development of the WebUI could be accelerated and completed within a few months.
+Yes, part of the project roadmap includes the development of a WebUI. The WebUI will serve as a user-friendly interface to interact with the system and control multiple hoster nodes simultaneously. While currently not the highest priority due to time constraints, I am open to exploring this feature further with increased community engagement and potential investment.
+
+Our payed customers already have access to an early version of the WebUI, that looks like this:
+![Hoster Core WebUI 1](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-web-ui-1.png)
+![Hoster Core WebUI 2](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-web-ui-2.png)
+![Hoster Core WebUI 3](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-web-ui-3.png)
+![Hoster Core WebUI 4](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-web-ui-4.png)
+![Hoster Core WebUI 5](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-web-ui-5.png)
+![Hoster Core WebUI 6](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-web-ui-6.png)
+
+The main idea behind our WebUI is to keep things simple. We are not aiming to be yet another XenSever/Proxmox feature clone: the WebUI will do basic things like managing and deploying new VMs, displaying monitoring information for the VMs and Hosts, managing VM snapshots, connecting to VNC, etc. Everything else in terms of configuration and `Hoster` management still happens on the CLI.
 
 #### VM Status (state) icons
 
@@ -43,24 +53,24 @@ Yes, part of the project roadmap includes the development of a WebUI using VueJS
 
 #### List of supported OSes
 
-|  OS                 | State            | Notes                                                                                |
-| :--                 | :--:             | :--                                                                                  |
-| Debian 11           | 🟢 Ready         | VM image is ready to be downloaded directly from our public image server             |
-| Debian 12           | 🟢 Ready         | VM image is ready to be downloaded directly from our public image server             |
-| AlmaLinux 8         | 🟢 Ready         | VM image is ready to be downloaded directly from our public image server             |
-| RockyLinux 8        | 🟢 Ready         | VM image is ready to be downloaded directly from our public image server             |
-| Ubuntu 20.04        | 🟢 Ready         | VM image is ready to be downloaded directly from our public image server             |
-| Ubuntu 22.04        | 🟢 Ready         | VM image is ready to be downloaded directly from our public image server             |
-| Windows 10          | 🟡 Compatible    | VM image will have to be built manually by the end user due to licensing issues      |
-| Windows 11          | 🟡 Compatible    | VM image will have to be built manually by the end user due to licensing issues      |
-| Windows Server 19   | 🟡 Compatible    | VM image will have to be built manually by the end user due to licensing issues      |
-| Windows Server 22   | 🟡 Compatible    | VM image will have to be built manually by the end user due to licensing issues      |
-| FreeBSD 13 ZFS      | 🔴 Not ready yet | VM image will be released on our public server at some point, but it's not ready yet |
-| FreeBSD 13 UFS      | 🔴 Not ready yet | VM image will be released on our public server at some point, but it's not ready yet |
-| Fedora (latest)     | 🔴 Not ready yet | VM image will be released on our public server at some point, but it's not ready yet |
-| OpenBSD             | 🔴 Not ready yet | VM image will be released on our public server at some point, but it's not ready yet |
-| OpenSUSE Leap       | 🔴 Not ready yet | VM image will be released on our public server at some point, but it's not ready yet |
-| OpenSUSE Tumbleweed | 🔴 Not ready yet | VM image will be released on our public server at some point, but it's not ready yet |
+|  OS                 | State             | Notes                                                                                |
+| :--                 | :--:              | :--                                                                                  |
+| Debian 11           | 🟢 Ready          | VM image is ready to be downloaded directly from our public image server             |
+| Debian 12           | 🟢 Ready          | VM image is ready to be downloaded directly from our public image server             |
+| AlmaLinux 8         | 🟢 Ready          | VM image is ready to be downloaded directly from our public image server             |
+| RockyLinux 8        | 🟢 Ready          | VM image is ready to be downloaded directly from our public image server             |
+| Ubuntu 20.04        | 🟢 Ready          | VM image is ready to be downloaded directly from our public image server             |
+| Ubuntu 22.04        | 🟢 Ready          | VM image is ready to be downloaded directly from our public image server             |
+| Windows 10          | 🟡 Compatible     | VM image will have to be built manually by the end user due to licensing issues      |
+| Windows 11          | 🔴 NOT Compatible | Waiting for the TMP module to be implemented within Bhyve                            |
+| Windows Server 19   | 🟡 Compatible     | VM image will have to be built manually by the end user due to licensing issues      |
+| Windows Server 22   | 🟡 Compatible     | VM image will have to be built manually by the end user due to licensing issues      |
+| FreeBSD 13 ZFS      | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
+| FreeBSD 13 UFS      | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
+| Fedora (latest)     | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
+| OpenBSD             | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
+| OpenSUSE Leap       | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
+| OpenSUSE Tumbleweed | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
 
 
 ## Start using Hoster
