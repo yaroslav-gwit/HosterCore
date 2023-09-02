@@ -9,7 +9,7 @@ Built using modern, rock solid and battle tested technologies like Go, FreeBSD, 
 
 ![Hoster Core Screenshot](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-core-main.png)
 <br>
-My entire perspective on virtualization completely changed when I stumbled upon FreeBSD and bhyve. The potential of combining FreeBSD, bhyve, pf, and ZFS became abundantly clear to me. However, as I explored existing solutions like `vmbhyve` and `CBSD`, I couldn't help but feel that they didn't quite match up to my expectations. It was this realization that inspired me to embark on a journey to create `Hoster` — a platform that seamlessly integrates bhyve, PF, and ZFS into a powerful virtualization solution. You can effortlessly deploy Hoster on any hardware, keeping RAM and CPU usage to a minimum. Give it a try and let me know your thoughts. Your input fuels the continuous development and improvement of Hoster.
+My entire perspective on virtualization completely changed when I stumbled upon FreeBSD and bhyve. The potential of combining FreeBSD, bhyve, pf, and ZFS became abundantly clear to me. However, as I explored existing solutions like `vmbhyve` and `CBSD`, I couldn't help but feel that they didn't quite match up to my expectations. It was this realization that inspired me to embark on a journey to create `Hoster` — a platform that seamlessly integrates bhyve, PF, and ZFS into a powerful virtualization solution. You can effortlessly deploy `Hoster` on any hardware, keeping RAM and CPU usage to a minimum. Give it a try and let me know your thoughts. Your input fuels our continuous project improvements.
 </br>
 
 ## Leveraging Nebula for Scalable Hoster Networks
@@ -24,7 +24,7 @@ By coupling Nebula's and PF's capabilities, you can achieve robust and scalable 
 
 Yes, part of the project roadmap includes the development of a WebUI. The WebUI will serve as a user-friendly interface to interact with the system and control multiple hoster nodes simultaneously. While currently not the highest priority due to time constraints, I am open to exploring this feature further with increased community engagement and potential investment.
 
-Our payed customers already have access to an early version of the WebUI, that looks like this:
+Our paying customers already have access to an early version of the WebUI, that looks like this:
 ![Hoster Core WebUI 1](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-web-ui-1.png)
 ![Hoster Core WebUI 2](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-web-ui-2.png)
 ![Hoster Core WebUI 3](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-web-ui-3.png)

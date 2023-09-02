@@ -470,13 +470,15 @@ ethernets:
   interface0:
     match:
       macaddress: "{{ .MacAddress }}"
-     
+
+    {{- if not (or (eq .OsType "freebsd13ufs") (eq .OsType "freebsd13zfs")) }} 
     set-name: eth0
+	{{- end }}
     addresses:
     - {{ .IpAddress }}/{{ .NakedSubnet }}
-     
+ 
     gateway4: {{ .Gateway }}
-     
+ 
     nameservers:
       search: [ {{ .ParentHost }}.internal.lan, ]
       addresses: [{{ .DnsServer }}, ]
