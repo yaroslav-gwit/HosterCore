@@ -139,7 +139,11 @@ func generateBhyveStartCommand(vmName string) string {
 	var diskImageLocation string
 	if len(vmConfigVar.Disks) > 1 {
 		for i, v := range vmConfigVar.Disks {
-			diskImageLocation = getVmFolder(vmName) + "/" + v.DiskImage
+			if v.DiskLocation == "internal" {
+				diskImageLocation = getVmFolder(vmName) + "/" + v.DiskImage
+			} else {
+				diskImageLocation = v.DiskImage
+			}
 			genericDiskText = ":0," + v.DiskType + ","
 			if i == 0 {
 				diskFinal = " -s " + strconv.Itoa(bhyvePci) + genericDiskText + diskImageLocation
@@ -149,7 +153,11 @@ func generateBhyveStartCommand(vmName string) string {
 			}
 		}
 	} else {
-		diskImageLocation = getVmFolder(vmName) + "/" + vmConfigVar.Disks[0].DiskImage
+		if vmConfigVar.Disks[0].DiskLocation == "internal" {
+			diskImageLocation = getVmFolder(vmName) + "/" + vmConfigVar.Disks[0].DiskImage
+		} else {
+			diskImageLocation = vmConfigVar.Disks[0].DiskImage
+		}
 		genericDiskText = ":0," + vmConfigVar.Disks[0].DiskType + ","
 		diskFinal = " -s " + strconv.Itoa(bhyvePci) + genericDiskText + diskImageLocation
 	}
