@@ -110,7 +110,7 @@ func generateBhyveStartCommand(vmName string) string {
 	}
 
 	// bhyveFinalCommand := "bhyve -HAw -s 0:0,hostbridge -s 31,lpc "
-	bhyveFinalCommand := "bhyve -HAu -s 0:0,hostbridge -s 31,lpc "
+	bhyveFinalCommand := "bhyve -HAuw -s 0:0,hostbridge -s 31,lpc "
 	bhyvePci1 := 2
 	bhyvePci2 := 0
 
