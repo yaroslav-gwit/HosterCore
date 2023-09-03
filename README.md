@@ -60,15 +60,15 @@ The main idea behind our WebUI is to keep things simple. We are not aiming to be
 | Ubuntu 20.04        | 🟢 Ready          | VM image is ready to be downloaded directly from our public image server             |
 | Ubuntu 22.04        | 🟢 Ready          | VM image is ready to be downloaded directly from our public image server             |
 | Windows 10          | 🟡 Compatible     | VM image will have to be built manually by the end user due to licensing issues      |
-| Windows 11          | 🔴 NOT Compatible | Waiting for the TMP module to be implemented within Bhyve                            |
 | Windows Server 19   | 🟡 Compatible     | VM image will have to be built manually by the end user due to licensing issues      |
 | Windows Server 22   | 🟡 Compatible     | VM image will have to be built manually by the end user due to licensing issues      |
 | FreeBSD 13 ZFS      | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
 | FreeBSD 13 UFS      | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
 | Fedora (latest)     | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
-| OpenBSD             | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
 | OpenSUSE Leap       | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
 | OpenSUSE Tumbleweed | 🔴 Not ready yet  | VM image will be released on our public server at some point, but it's not ready yet |
+| Windows 11          | 🚫 NOT Compatible | Waiting for the TMP module to be implemented within Bhyve                            |
+| OpenBSD             | 🚫 NOT Compatible | The OS is trying to execute an obscure CPU/Mem instruction and immediately gets terminated by Bhyve |
 
 
 ## Start using Hoster

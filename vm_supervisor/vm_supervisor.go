@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -14,10 +15,12 @@ import (
 )
 
 var logFileLocation string
+var vmName string
+
 func main() {
 	// Get env vars passed from "hoster vm start"
 	vmStartCommand := os.Getenv("VM_START")
-	vmName := os.Getenv("VM_NAME")
+	vmName = os.Getenv("VM_NAME")
 	logFileLocation = os.Getenv("LOG_FILE")
 
 	// Start the process
@@ -27,12 +30,12 @@ func main() {
 		hupCmd := exec.Command(parts[0], parts[1:]...)
 		stdout, err := hupCmd.StdoutPipe()
 		if err != nil {
-			logFileOutput(LOG_SUPERVISOR, "Failed to create stdout pipe: " + err.Error())
+			logFileOutput(LOG_SUPERVISOR, "Failed to create stdout pipe: "+err.Error())
 			os.Exit(101)
 		}
 		stderr, err := hupCmd.StderrPipe()
 		if err != nil {
-			logFileOutput(LOG_SUPERVISOR, "Failed to create stderr pipe: " + err.Error())
+			logFileOutput(LOG_SUPERVISOR, "Failed to create stderr pipe: "+err.Error())
 			os.Exit(102)
 		}
 
@@ -57,14 +60,14 @@ func main() {
 
 		processErr := <-done
 		if processErr != nil {
-			logFileOutput(LOG_SUPERVISOR, "VM child process ended with a non-zero exit code: " + processErr.Error())
+			logFileOutput(LOG_SUPERVISOR, "VM child process ended with a non-zero exit code: "+processErr.Error())
 		}
 
 		processExitStatus, correctReturnType := processErr.(*exec.ExitError)
 		if correctReturnType {
 			exitCode := processExitStatus.ProcessState.ExitCode()
 			if exitCode == 1 || exitCode == 2 {
-				logFileOutput(LOG_SUPERVISOR, "Bhyve received a shutdown signal: " + strconv.Itoa(exitCode) + ". Executing the shutdown sequence...")
+				logFileOutput(LOG_SUPERVISOR, "Bhyve received a shutdown signal: "+strconv.Itoa(exitCode)+". Executing the shutdown sequence...")
 				logFileOutput(LOG_SUPERVISOR, "Shutting down -> Performing network cleanup")
 				cmd.NetworkCleanup(vmName, true)
 				logFileOutput(LOG_SUPERVISOR, "Shutting down -> Performing Bhyve cleanup")
@@ -72,7 +75,7 @@ func main() {
 				logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. The VM has been shutdown.")
 				os.Exit(0)
 			} else {
-				logFileOutput(LOG_SUPERVISOR, "Bhyve returned a panic exit code: " + strconv.Itoa(exitCode))
+				logFileOutput(LOG_SUPERVISOR, "Bhyve returned a panic exit code: "+strconv.Itoa(exitCode))
 				logFileOutput(LOG_SUPERVISOR, "Shutting down all VM related processes and performing system clean up")
 				cmd.NetworkCleanup(vmName, true)
 				cmd.BhyvectlDestroy(vmName, true)
@@ -97,6 +100,7 @@ func main() {
 }
 
 func readAndLogOutput(reader *bufio.Reader, name string) {
+	reMatchProcessFailureLogLine1 := regexp.MustCompile(`read \|0: file already closed`)
 	for {
 		line, err := reader.ReadString('\n')
 		if err == io.EOF {
@@ -110,13 +114,20 @@ func readAndLogOutput(reader *bufio.Reader, name string) {
 		if line != "" {
 			logFileOutput(name, line)
 		}
+
+		if reMatchProcessFailureLogLine1.MatchString(line) && name == LOG_SYS_OUT {
+			cmd.NetworkCleanup(vmName, true)
+			cmd.BhyvectlDestroy(vmName, true)
+			logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. Observed a bhyve process failure.")
+			os.Exit(1001)
+		}
 	}
 }
 
 func startVmProcess(cmd *exec.Cmd, done chan error) {
 	err := cmd.Start()
 	if err != nil {
-		logFileOutput(LOG_SUPERVISOR, "Failed to start command: "+ err.Error())
+		logFileOutput(LOG_SUPERVISOR, "Failed to start command: "+err.Error())
 		os.Exit(100)
 	}
 	go func() {
@@ -127,14 +138,14 @@ func startVmProcess(cmd *exec.Cmd, done chan error) {
 func restartVmProcess(vmName string) {
 	execPath, err := os.Executable()
 	if err != nil {
-		logFileOutput(LOG_SUPERVISOR, "Could not find the executable path: "+ err.Error())
+		logFileOutput(LOG_SUPERVISOR, "Could not find the executable path: "+err.Error())
 		os.Exit(100)
 	}
 	execFile := path.Dir(execPath) + "/hoster"
 	out, err := exec.Command("nohup", execFile, "vm", "start", vmName).CombinedOutput()
 	if err != nil {
 		removeOutputReturns := strings.ReplaceAll(string(out), "\n", "_")
-		logFileOutput(LOG_SUPERVISOR, "Could not restart the VM: " + removeOutputReturns + "; " + err.Error())
+		logFileOutput(LOG_SUPERVISOR, "Could not restart the VM: "+removeOutputReturns+"; "+err.Error())
 		os.Exit(100)
 	}
 }
@@ -142,6 +153,7 @@ func restartVmProcess(vmName string) {
 const LOG_SUPERVISOR = "supervisor"
 const LOG_SYS_OUT = "sys_stdout"
 const LOG_SYS_ERR = "sys_stderr"
+
 func logFileOutput(msgType string, msgString string) {
 	// Create or open the log file for writing
 	timeNow := time.Now().Format("2006-01-02 15:04:05")
@@ -152,7 +164,7 @@ func logFileOutput(msgType string, msgString string) {
 	// log.SetOutput(logFile)
 	defer logFile.Close()
 	// Append the line to the file
-	_, err = logFile.WriteString(timeNow + " ["+msgType+"] " + msgString + "\n")
+	_, err = logFile.WriteString(timeNow + " [" + msgType + "] " + msgString + "\n")
 	if err != nil {
 		_ = exec.Command("logger", err.Error()).Run()
 	}
