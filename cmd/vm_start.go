@@ -109,7 +109,8 @@ func generateBhyveStartCommand(vmName string) string {
 		exec.Command(setTapDescription1, setTapDescription2, setTapDescription3, setTapDescription4).Run()
 	}
 
-	bhyveFinalCommand := "bhyve -HAw -s 0:0,hostbridge -s 31,lpc "
+	// bhyveFinalCommand := "bhyve -HAw -s 0:0,hostbridge -s 31,lpc "
+	bhyveFinalCommand := "bhyve -HAu -s 0:0,hostbridge -s 31,lpc "
 	bhyvePci1 := 2
 	bhyvePci2 := 0
 
