@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -50,6 +51,9 @@ var haConfig HaConfigJsonStruct
 
 var haChannelAdd = make(chan HosterHaNodeStruct, 100)
 var haChannelRemove = make(chan HosterHaNodeStruct, 100)
+
+// var hosterHaNodeStructLock sync.Mutex
+var haConfigLock sync.Mutex
 
 var haMode bool
 var debugMode bool
@@ -129,11 +133,14 @@ func trackCandidatesOnline() {
 
 	for {
 		candidatesRegistered = 0
+
+		haConfigLock.Lock()
 		for _, v := range haConfig.Candidates {
 			if v.Registered {
 				candidatesRegistered += 1
 			}
 		}
+		haConfigLock.Unlock()
 
 		if !clusterInitialized && candidatesRegistered >= 3 {
 			clusterInitialized = true
@@ -166,6 +173,7 @@ func trackManager() {
 			})
 
 			for _, host := range copyHaHostsDb {
+				haConfigLock.Lock()
 				for _, candidate := range haConfig.Candidates {
 					if host.NodeInfo.Hostname == candidate.Hostname {
 						if candidate.Registered {
@@ -174,6 +182,7 @@ func trackManager() {
 						break
 					}
 				}
+				haConfigLock.Unlock()
 			}
 
 			if filteredCandidates[0].NodeInfo.Hostname == myHostname {
@@ -206,6 +215,8 @@ func registerNode() {
 			time.Sleep(time.Second * 10)
 			continue
 		}
+
+		haConfigLock.Lock()
 		for i, v := range haConfig.Candidates {
 			if v.Registered {
 				continue
@@ -243,6 +254,8 @@ func registerNode() {
 			}
 			_ = res
 		}
+		haConfigLock.Unlock()
+
 		time.Sleep(time.Second * 10)
 	}
 }
@@ -260,13 +273,17 @@ func sendPing() {
 			time.Sleep(time.Second * 10)
 			continue
 		}
+
 		for i, v := range haConfig.Candidates {
 			if !v.Registered {
 				continue
 			}
+
 			go func(i int, v NodeInfoStruct) {
 				host := NodeInfoStruct{}
 				host.Hostname = cmd.GetHostName()
+
+				haConfigLock.Lock()
 				host.StartupTime = haConfig.StartupTime
 
 				jsonPayload, _ := json.Marshal(host)
@@ -291,8 +308,11 @@ func sendPing() {
 					}
 					haConfig.Candidates[i].Registered = true
 				}
+
+				haConfigLock.Unlock()
 			}(i, v)
 		}
+
 		time.Sleep(time.Second * 5)
 	}
 }
