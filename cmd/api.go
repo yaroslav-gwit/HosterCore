@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -81,11 +82,10 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			out, err := exec.Command("pgrep", "hoster_rest_api").CombinedOutput()
+
+			err = statusApiServer()
 			if err != nil {
-				log.Fatal(string(out), err)
-			} else {
-				fmt.Println("The process is running as PID: " + strings.TrimSpace(string(out)))
+				log.Fatal(err.Error())
 			}
 		},
 	}
@@ -132,7 +132,7 @@ func startApiServer(port int, user string, password string, haMode bool, haDebug
 	}
 
 	emojlog.PrintLogMessage("Started the REST API server on port: "+strconv.Itoa(port), emojlog.Info)
-	emojlog.PrintLogMessage("Using unencrypted/plain HTTP protocol", emojlog.Warning)
+	emojlog.PrintLogMessage("Using unencrypted/plain HTTP protocol (make sure to put it behind Traefik with SSL termination if the untrusted networks are involved, aka WAN)", emojlog.Warning)
 	emojlog.PrintLogMessage("HTTP Basic auth username: "+user, emojlog.Info)
 	emojlog.PrintLogMessage("HTTP Basic Auth password: "+password, emojlog.Info)
 
@@ -176,4 +176,57 @@ func showLogApiServer() error {
 	}
 
 	return nil
+}
+
+func statusApiServer() error {
+	apiProcessPgrep := apiServerServiceInfo()
+
+	if apiProcessPgrep.ApiServerRunning {
+		fmt.Println(" 🟢 API Server is running as PID " + apiProcessPgrep.ApiServerPid)
+	} else {
+		fmt.Println(" 🔴 API Server IS NOT running")
+	}
+
+	if apiProcessPgrep.HaWatchdogRunning {
+		fmt.Println(" 🟢 HA Watchdog service is running as PID " + apiProcessPgrep.HaWatchDogPid)
+		fmt.Println(" 🔶 BE CAREFUL! This system is running as a part of the HA. Changes applied here, may affect other cluster members.")
+	} else {
+		fmt.Println(" 🔴 HA Watchdog service IS NOT running")
+	}
+
+	return nil
+}
+
+type ApiProcessServiceInfo struct {
+	HaWatchdogRunning bool
+	HaWatchDogPid     string
+	ApiServerRunning  bool
+	ApiServerPid      string
+}
+
+func apiServerServiceInfo() (pgrepOutput ApiProcessServiceInfo) {
+	apiPgrepOut, _ := exec.Command("pgrep", "-lf", "hoster_rest_api").CombinedOutput()
+	watchDogPgrepOut, _ := exec.Command("pgrep", "-lf", "ha_watchdog").CombinedOutput()
+
+	reSplitSpace := regexp.MustCompile(`\s+`)
+	reMatchApiProcess := regexp.MustCompile(`hoster_rest_api`)
+	reMatchHaWatchdogProcess := regexp.MustCompile(`ha_watchdog`)
+
+	for _, v := range strings.Split(string(apiPgrepOut), "\n") {
+		if reMatchApiProcess.MatchString(v) {
+			pid := reSplitSpace.Split(v, -1)[0]
+			pgrepOutput.ApiServerPid = pid
+			pgrepOutput.ApiServerRunning = true
+		}
+	}
+
+	for _, v := range strings.Split(string(watchDogPgrepOut), "\n") {
+		if reMatchHaWatchdogProcess.MatchString(v) {
+			pid := reSplitSpace.Split(v, -1)[0]
+			pgrepOutput.HaWatchDogPid = pid
+			pgrepOutput.HaWatchdogRunning = true
+		}
+	}
+
+	return
 }
