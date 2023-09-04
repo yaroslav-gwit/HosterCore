@@ -66,6 +66,7 @@ func init() {
 
 	// VM cmd -> start
 	vmCmd.AddCommand(vmStartCmd)
+	vmStartCmd.Flags().BoolVarP(&restoreVmState, "restore-state", "", false, "Restore saved VM state (EXPERIMENTAL!)")
 
 	// VM cmd -> start all
 	vmCmd.AddCommand(vmStartAllCmd)

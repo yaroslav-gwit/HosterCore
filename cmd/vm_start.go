@@ -17,6 +17,8 @@ import (
 )
 
 var (
+	restoreVmState bool
+
 	vmStartCmd = &cobra.Command{
 		Use:   "start [vmName]",
 		Short: "Start a particular VM using it's name",
@@ -28,7 +30,7 @@ var (
 				log.Fatal(err.Error())
 			}
 
-			err = VmStart(args[0])
+			err = VmStart(args[0], restoreVmState)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -37,7 +39,7 @@ var (
 )
 
 // Starts the VM using BhyveCTL and vm_supervisor_service
-func VmStart(vmName string) error {
+func VmStart(vmName string, restoreVmState bool) error {
 	allVms := getAllVms()
 	if !slices.Contains(allVms, vmName) {
 		return errors.New("VM is not found on this system")
@@ -48,7 +50,7 @@ func VmStart(vmName string) error {
 	emojlog.PrintLogMessage("Starting the VM: "+vmName, emojlog.Info)
 
 	// Generate bhyve start command
-	bhyveCommand := generateBhyveStartCommand(vmName)
+	bhyveCommand := generateBhyveStartCommand(vmName, restoreVmState)
 	// Set env vars to send to "vm_supervisor"
 	os.Setenv("VM_START", bhyveCommand)
 	os.Setenv("VM_NAME", vmName)
@@ -77,7 +79,7 @@ func VmStart(vmName string) error {
 	return nil
 }
 
-func generateBhyveStartCommand(vmName string) string {
+func generateBhyveStartCommand(vmName string, restoreVmState bool) string {
 	vmConfigVar := vmConfig(vmName)
 
 	var availableTaps []string
@@ -183,6 +185,11 @@ func generateBhyveStartCommand(vmName string) string {
 		loaderCommand = " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",xhci,tablet -l com1,/dev/nmdm-" + vmName + "-1A -l bootrom,/usr/local/share/uefi-firmware/BHYVE_UEFI.fd -u " + vmName
 	} else {
 		log.Fatal("Please make sure your loader is set to 'bios' or 'uefi'")
+	}
+
+	if restoreVmState {
+		vmFolder := getVmFolder(vmName)
+		loaderCommand = loaderCommand + " -r " + vmFolder + "/vm_state"
 	}
 
 	bhyveFinalCommand = bhyveFinalCommand + loaderCommand

@@ -286,7 +286,7 @@ func vmConfig(vmName string) VmConfigStruct {
 }
 
 // Returns a folder containing VM files, using this format:
-// "/zroot/vm-encrypted"
+// "/zroot/vm-encrypted/vmName"
 func getVmFolder(vmName string) string {
 	hostConfig, err := GetHostConfig()
 	if err != nil {
