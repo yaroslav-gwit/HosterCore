@@ -40,7 +40,7 @@ type LiveJailStruct struct {
 func getRunningJails() (jails []LiveJailStruct, returnErr error) {
 	reSpaceSplit := regexp.MustCompile(`\s+`)
 
-	out, err := exec.Command("jls", "-h", "jid", "name", "path", "dying", "ip4.address", "ip6.address").CombinedOutput()
+	out, err := exec.Command("jls", "-h", "jid", "name", "path", "dying", "ip4.addr", "ip6.addr").CombinedOutput()
 	// jid name path dying ip4.addr ip6.addr
 	// [0] [1]     [2]       [3]       [4]     [5]
 	// 1 example /root/jail false 10.0.105.50 -
