@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"hoster/cmd"
 	"log"
 	"os"
@@ -24,6 +25,13 @@ const LOG_SEPARATOR = " || "
 var tagCustomError string
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: main(): "+errorValue).Run()
+		}
+	}()
+
 	user := "admin"
 	password := "123456"
 	port := 3000

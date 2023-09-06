@@ -11,6 +11,13 @@ import (
 )
 
 func handleHaRegistration(fiberContext *fiber.Ctx) error {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: handleHaRegistration(): "+errorValue).Run()
+		}
+	}()
+
 	tagCustomError = ""
 
 	hosterNode := new(NodeInfoStruct)
@@ -30,6 +37,13 @@ func handleHaRegistration(fiberContext *fiber.Ctx) error {
 }
 
 func handleHaPing(fiberContext *fiber.Ctx) error {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: handleHaPing(): "+errorValue).Run()
+		}
+	}()
+
 	tagCustomError = ""
 	hosterNode := new(NodeInfoStruct)
 	if err := fiberContext.BodyParser(hosterNode); err != nil {
@@ -111,5 +125,12 @@ func haVmsList() []HaVm {
 }
 
 func handleHaVmsList(fiberContext *fiber.Ctx) error {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "handleHaVmsList() Recovered from error: "+errorValue).Run()
+		}
+	}()
+
 	return fiberContext.JSON(haVmsList())
 }

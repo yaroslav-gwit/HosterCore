@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"hoster/cmd"
 	"log"
 	"os"
@@ -12,6 +13,13 @@ import (
 )
 
 func handleVmStart(fiberContext *fiber.Ctx) error {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "handleVmStart() Recovered from error: "+errorValue).Run()
+		}
+	}()
+
 	type vmName struct {
 		Name string `json:"name" xml:"name" form:"name"`
 	}
@@ -64,6 +72,13 @@ func handleVmStart(fiberContext *fiber.Ctx) error {
 }
 
 func handleVmChangeParent(fiberContext *fiber.Ctx) error {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "handleVmChangeParent() Recovered from error: "+errorValue).Run()
+		}
+	}()
+
 	type vmName struct {
 		Name string `json:"name" xml:"name" form:"name"`
 	}
@@ -93,6 +108,13 @@ func handleVmChangeParent(fiberContext *fiber.Ctx) error {
 }
 
 func handleVmCiReset(fiberContext *fiber.Ctx) error {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "handleVmCiReset() Recovered from error: "+errorValue).Run()
+		}
+	}()
+
 	type vmName struct {
 		Name string `json:"name" xml:"name" form:"name"`
 	}
