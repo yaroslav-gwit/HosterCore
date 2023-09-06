@@ -61,7 +61,7 @@ func getRunningJails() (jails []LiveJailStruct, returnErr error) {
 			continue
 		}
 
-		tempList := reSpaceSplit.Split(v, -1)
+		tempList := reSpaceSplit.Split(strings.TrimSpace(v), -1)
 		tempStruct := LiveJailStruct{}
 
 		jailId, err := strconv.Atoi(tempList[0])
