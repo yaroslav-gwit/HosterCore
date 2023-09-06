@@ -132,7 +132,7 @@ func startApiServer(port int, user string, password string, haMode bool, haDebug
 	}
 
 	emojlog.PrintLogMessage("Started the REST API server on port: "+strconv.Itoa(port), emojlog.Info)
-	emojlog.PrintLogMessage("Using unencrypted/plain HTTP protocol (make sure to put it behind Traefik with SSL termination if the untrusted networks are involved, aka WAN)", emojlog.Warning)
+	emojlog.PrintLogMessage("Using unencrypted/plain HTTP protocol (make sure to put it behind Traefik with SSL termination if the untrusted networks are involved)", emojlog.Warning)
 	emojlog.PrintLogMessage("HTTP Basic auth username: "+user, emojlog.Info)
 	emojlog.PrintLogMessage("HTTP Basic Auth password: "+password, emojlog.Info)
 
