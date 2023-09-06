@@ -1,0 +1,19 @@
+{
+    "cpu_limit_percent_overall": 70,
+    "ram_limit": "2G",
+
+    "startup_script": "/bin/sh /etc/rc",
+    "shutdown_script": "/bin/sh /etc/rc.shutdown",
+    "console_log": "/var/run/hoster/jails/jailName.log",
+
+    "config_file_append": "jail_custom_parameters.conf",
+    "start_after": "anotherJailName",
+    "startup_delay": 5,
+
+    "ip_address": "10.0.5.50",
+    "network": "internal",
+    "dns_servers": [
+        "1.1.1.1"
+    ],
+    "timezone": "Europe/London"
+}

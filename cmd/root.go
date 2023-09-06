@@ -47,6 +47,9 @@ func init() {
 	datasetCmd.AddCommand(datasetListCmd)
 	datasetListCmd.Flags().BoolVarP(&datasetListUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
 
+	// Jail command section
+	rootCmd.AddCommand(jailCmd)
+
 	// VM command section
 	rootCmd.AddCommand(vmCmd)
 
