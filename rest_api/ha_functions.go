@@ -140,7 +140,7 @@ func trackCandidatesOnline() {
 				candidatesRegistered += 1
 			}
 		}
-		haConfigLock.Unlock()
+		haConfigLock.RUnlock()
 
 		if !clusterInitialized && candidatesRegistered >= 3 {
 			clusterInitialized = true
@@ -182,7 +182,7 @@ func trackManager() {
 						break
 					}
 				}
-				haConfigLock.Unlock()
+				haConfigLock.RUnlock()
 			}
 
 			if filteredCandidates[0].NodeInfo.Hostname == myHostname {
