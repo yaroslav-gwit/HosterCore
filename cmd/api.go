@@ -212,13 +212,17 @@ func apiServerServiceInfo() (pgrepOutput ApiProcessServiceInfo) {
 	reMatchApiProcess := regexp.MustCompile(`hoster_rest_api`)
 	reMatchHaWatchdogProcess := regexp.MustCompile(`ha_watchdog`)
 
-	reSkipLogProcess := regexp.MustCompile(`hoster_rest_api.log`)
+	reMatchSkipLogProcess := regexp.MustCompile(`hoster_rest_api.log`)
 
 	for _, v := range strings.Split(string(apiPgrepOut), "\n") {
-		if reMatchApiProcess.MatchString(v) && !reSkipLogProcess.MatchString(v) {
-			pid := reSplitSpace.Split(v, -1)[0]
-			pgrepOutput.ApiServerPid = pid
-			pgrepOutput.ApiServerRunning = true
+		if reMatchApiProcess.MatchString(v) {
+			if reMatchSkipLogProcess.MatchString(v) {
+				continue
+			} else {
+				pid := reSplitSpace.Split(v, -1)[0]
+				pgrepOutput.ApiServerPid = pid
+				pgrepOutput.ApiServerRunning = true
+			}
 		}
 	}
 
