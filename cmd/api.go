@@ -212,7 +212,7 @@ func apiServerServiceInfo() (pgrepOutput ApiProcessServiceInfo) {
 	reMatchApiProcess := regexp.MustCompile(`hoster_rest_api`)
 	reMatchHaWatchdogProcess := regexp.MustCompile(`ha_watchdog`)
 
-	reMatchSkipLogProcess := regexp.MustCompile(`hoster_rest_api.log`)
+	reMatchSkipLogProcess := regexp.MustCompile(`.*hoster_rest_api.log`)
 
 	for _, v := range strings.Split(string(apiPgrepOut), "\n") {
 		if reMatchApiProcess.MatchString(v) {
