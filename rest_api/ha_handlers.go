@@ -33,7 +33,7 @@ func handleHaRegistration(fiberContext *fiber.Ctx) error {
 	hosterHaNode.LastPing = time.Now().Unix()
 
 	modifyHostsDb(ModifyHostsDbStruct{addOrUpdate: true, data: hosterHaNode})
-	// haChannelAdd <- hosterHaNode
+
 	return fiberContext.JSON(fiber.Map{"message": "done", "context": hosterHaNode})
 }
 

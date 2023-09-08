@@ -68,16 +68,19 @@ func modifyHostsDb(input ModifyHostsDbStruct) {
 		}
 	}()
 
+	hostsDbLock.Lock()
+
 	if input.addOrUpdate {
 		hostFound := false
 		hostIndex := 0
-		hostsDbLock.Lock()
+
 		for i, v := range haHostsDb {
 			if input.data.NodeInfo.Hostname == v.NodeInfo.Hostname {
 				hostFound = true
 				hostIndex = i
 			}
 		}
+
 		if !hostFound {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: registered a new node: "+input.data.NodeInfo.Hostname).Run()
 			haHostsDb = append(haHostsDb, input.data)
@@ -89,22 +92,20 @@ func modifyHostsDb(input ModifyHostsDbStruct) {
 			}
 			haHostsDb[hostIndex].LastPing = time.Now().Unix()
 		}
-		hostsDbLock.Unlock()
 	}
 
 	if input.remove {
-		hostsDbLock.Lock()
 		for i, v := range haHostsDb {
-			if input.data.NodeInfo.Hostname == v.NodeInfo.Hostname {
+			if input.data.NodeInfo.Hostname == v.NodeInfo.Hostname && len(v.NodeInfo.Hostname) > 0 {
 				haHostsDb[i] = haHostsDb[len(haHostsDb)-1]
 				haHostsDb[len(haHostsDb)-1] = HosterHaNodeStruct{}
 				haHostsDb = haHostsDb[0 : len(haHostsDb)-1]
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has been removed from the cluster: "+input.data.NodeInfo.Hostname).Run()
-				break
 			}
 		}
-		hostsDbLock.Unlock()
 	}
+
+	hostsDbLock.Unlock()
 }
 
 func readHostsDb() (db []HosterHaNodeStruct) {
@@ -391,7 +392,6 @@ func removeOfflineNodes() {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has gone offline: "+v.NodeInfo.Hostname).Run()
 				failoverHostVms(v)
 				modifyHostsDb(ModifyHostsDbStruct{data: v, remove: true})
-				// haChannelRemove <- haHostsDb[i]
 			}
 		}
 		time.Sleep(time.Second * 10)
