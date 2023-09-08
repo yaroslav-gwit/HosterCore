@@ -53,7 +53,7 @@ var haChannelAdd = make(chan HosterHaNodeStruct, 100)
 var haChannelRemove = make(chan HosterHaNodeStruct, 100)
 
 // var hosterHaNodeStructLock sync.Mutex
-var haConfigLock sync.Mutex
+var haConfigLock sync.RWMutex
 
 var haMode bool
 var debugMode bool
@@ -134,7 +134,7 @@ func trackCandidatesOnline() {
 	for {
 		candidatesRegistered = 0
 
-		haConfigLock.Lock()
+		haConfigLock.RLock()
 		for _, v := range haConfig.Candidates {
 			if v.Registered {
 				candidatesRegistered += 1
@@ -173,7 +173,7 @@ func trackManager() {
 			})
 
 			for _, host := range copyHaHostsDb {
-				haConfigLock.Lock()
+				haConfigLock.RLock()
 				for _, candidate := range haConfig.Candidates {
 					if host.NodeInfo.Hostname == candidate.Hostname {
 						if candidate.Registered {

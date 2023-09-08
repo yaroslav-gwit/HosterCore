@@ -60,6 +60,10 @@ func getRunningJails() (jails []LiveJailStruct, returnErr error) {
 		if i == 0 {
 			continue
 		}
+		// Skip empty lines
+		if len(v) < 1 {
+			continue
+		}
 
 		tempList := reSpaceSplit.Split(strings.TrimSpace(v), -1)
 		fmt.Println(tempList)

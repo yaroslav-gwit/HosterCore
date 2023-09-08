@@ -55,6 +55,7 @@ func main() {
 	}
 
 	app := fiber.New(fiber.Config{DisableStartupMessage: true, Prefork: false})
+	// app.Use(recover.New())
 	app.Use(requestid.New())
 
 	// Custom File Writer
