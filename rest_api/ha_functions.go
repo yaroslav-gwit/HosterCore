@@ -202,13 +202,11 @@ func trackCandidatesOnline() {
 	for {
 		candidatesRegistered = 0
 
-		// haConfigLock.RLock()
 		for _, v := range haConfig.Candidates {
 			if v.Registered {
 				candidatesRegistered += 1
 			}
 		}
-		// haConfigLock.RUnlock()
 
 		if !clusterInitialized && candidatesRegistered >= 3 {
 			clusterInitialized = true
@@ -219,7 +217,7 @@ func trackCandidatesOnline() {
 			os.Exit(0)
 		}
 
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 10)
 	}
 }
 

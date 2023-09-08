@@ -461,7 +461,10 @@ func main() {
 		hosterRestLabel = "HOSTER_HA_REST"
 		_ = exec.Command("logger", "-t", hosterRestLabel, "service start-up").Run()
 
-		exec.Command("nohup", "/opt/hoster-core/ha_watchdog", "&").Start()
+		// Execute ha_watchdog using nohup and disown it
+		haWatchdogCmd := exec.Command("nohup", "/opt/hoster-core/ha_watchdog", "&")
+		haWatchdogCmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+		err = haWatchdogCmd.Start()
 
 		go func() {
 			for {
