@@ -389,9 +389,11 @@ func removeOfflineNodes() {
 		hostsDbCopy := readHostsDb()
 		for _, v := range hostsDbCopy {
 			if time.Now().Unix() > v.LastPing+v.NodeInfo.FailOverTime {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has gone offline: "+v.NodeInfo.Hostname).Run()
-				failoverHostVms(v)
-				modifyHostsDb(ModifyHostsDbStruct{data: v, remove: true})
+				if len(v.NodeInfo.Hostname) > 0 {
+					failoverHostVms(v)
+					modifyHostsDb(ModifyHostsDbStruct{data: v, remove: true})
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has gone offline: "+v.NodeInfo.Hostname).Run()
+				}
 			}
 		}
 		time.Sleep(time.Second * 10)
