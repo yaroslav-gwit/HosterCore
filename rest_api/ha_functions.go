@@ -118,6 +118,7 @@ func readHostsDb() (db []HosterHaNodeStruct) {
 	hostsDbLock.RLock()
 	db = haHostsDb
 	hostsDbLock.RUnlock()
+
 	return
 }
 
@@ -384,7 +385,8 @@ func removeOfflineNodes() {
 	}()
 
 	for {
-		for _, v := range haHostsDb {
+		hostsDbCopy := readHostsDb()
+		for _, v := range hostsDbCopy {
 			if time.Now().Unix() > v.LastPing+v.NodeInfo.FailOverTime {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has gone offline: "+v.NodeInfo.Hostname).Run()
 				failoverHostVms(v)
@@ -472,6 +474,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: MOVING VM: "+v.VmName+" FROM offline parent: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
 			continue
 		}
+
 		for _, vv := range hostsDbCopy {
 			if vv.NodeInfo.Hostname == v.CurrentHost {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: MOVING VM: "+v.VmName+" FROM offline parent: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
