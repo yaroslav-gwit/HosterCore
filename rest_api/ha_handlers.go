@@ -32,7 +32,8 @@ func handleHaRegistration(fiberContext *fiber.Ctx) error {
 	hosterHaNode.NodeInfo.Address = fiberContext.IP()
 	hosterHaNode.LastPing = time.Now().Unix()
 
-	haChannelAdd <- hosterHaNode
+	modifyHostsDb(ModifyHostsDbStruct{addOrUpdate: true, data: hosterHaNode})
+	// haChannelAdd <- hosterHaNode
 	return fiberContext.JSON(fiber.Map{"message": "done", "context": hosterHaNode})
 }
 
@@ -57,7 +58,8 @@ func handleHaPing(fiberContext *fiber.Ctx) error {
 	hosterHaNode.NodeInfo.Address = fiberContext.IP()
 	hosterHaNode.LastPing = time.Now().Unix()
 
-	haChannelAdd <- hosterHaNode
+	modifyHostsDb(ModifyHostsDbStruct{addOrUpdate: true, data: hosterHaNode})
+	// haChannelAdd <- hosterHaNode
 	return fiberContext.JSON(fiber.Map{"message": "pong"})
 }
 

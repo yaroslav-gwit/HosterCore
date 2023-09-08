@@ -13,8 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-
-	// "sync"
+	"sync"
 	"time"
 )
 
@@ -50,11 +49,77 @@ type HaConfigJsonStruct struct {
 var haHostsDb []HosterHaNodeStruct
 var haConfig HaConfigJsonStruct
 
-var haChannelAdd = make(chan HosterHaNodeStruct, 100)
-var haChannelRemove = make(chan HosterHaNodeStruct, 100)
+// var haChannelAdd = make(chan HosterHaNodeStruct)
+// var haChannelRemove = make(chan HosterHaNodeStruct)
 
-// var hosterHaNodeStructLock sync.Mutex
-// var haConfigLock sync.RWMutex
+var hostsDbLock sync.RWMutex
+
+type ModifyHostsDbStruct struct {
+	addOrUpdate bool
+	remove      bool
+	data        HosterHaNodeStruct
+}
+
+func modifyHostsDb(input ModifyHostsDbStruct) {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "modifyHostsDb() Recovered from panic: "+errorValue).Run()
+		}
+	}()
+
+	if input.addOrUpdate {
+		hostFound := false
+		hostIndex := 0
+		hostsDbLock.Lock()
+		for i, v := range haHostsDb {
+			if input.data.NodeInfo.Hostname == v.NodeInfo.Hostname {
+				hostFound = true
+				hostIndex = i
+			}
+		}
+		if !hostFound {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: registered a new node: "+input.data.NodeInfo.Hostname).Run()
+			haHostsDb = append(haHostsDb, input.data)
+		} else {
+			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: Updated last ping time and network address for "+msg.NodeInfo.Hostname).Run()
+			haHostsDb[hostIndex].NodeInfo.Address = input.data.NodeInfo.Address
+			if input.data.NodeInfo.StartupTime > 0 {
+				haHostsDb[hostIndex].NodeInfo.StartupTime = input.data.NodeInfo.StartupTime
+			}
+			haHostsDb[hostIndex].LastPing = time.Now().Unix()
+		}
+		hostsDbLock.Unlock()
+	}
+
+	if input.remove {
+		hostsDbLock.Lock()
+		for i, v := range haHostsDb {
+			if input.data.NodeInfo.Hostname == v.NodeInfo.Hostname {
+				haHostsDb[i] = haHostsDb[len(haHostsDb)-1]
+				haHostsDb[len(haHostsDb)-1] = HosterHaNodeStruct{}
+				haHostsDb = haHostsDb[0 : len(haHostsDb)-1]
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has been removed from the cluster: "+input.data.NodeInfo.Hostname).Run()
+				break
+			}
+		}
+		hostsDbLock.Unlock()
+	}
+}
+
+func readHostsDb() (db []HosterHaNodeStruct) {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "readHostsDb() Recovered from panic: "+errorValue).Run()
+		}
+	}()
+
+	hostsDbLock.RLock()
+	db = haHostsDb
+	hostsDbLock.RUnlock()
+	return
+}
 
 var haMode bool
 var debugMode bool
@@ -96,8 +161,8 @@ func init() {
 		debugMode = true
 	}
 
-	go addHaNode(haChannelAdd)
-	go removeHaNode(haChannelRemove)
+	// go addHaNode(haChannelAdd)
+	// go removeHaNode(haChannelRemove)
 
 	file, _ := os.ReadFile("/opt/hoster-core/config_files/ha_config.json")
 	err = json.Unmarshal(file, &haConfig)
@@ -166,15 +231,14 @@ func trackManager() {
 
 	for {
 		if clusterInitialized {
-			var copyHaHostsDb = haHostsDb
+			var copyHostsDb = readHostsDb()
 			var filteredCandidates []HosterHaNodeStruct
 
-			sort.Slice(copyHaHostsDb, func(i int, j int) bool {
-				return copyHaHostsDb[i].NodeInfo.StartupTime < copyHaHostsDb[j].NodeInfo.StartupTime
+			sort.Slice(copyHostsDb, func(i int, j int) bool {
+				return copyHostsDb[i].NodeInfo.StartupTime < copyHostsDb[j].NodeInfo.StartupTime
 			})
 
-			for _, host := range copyHaHostsDb {
-				// haConfigLock.RLock()
+			for _, host := range copyHostsDb {
 				for _, candidate := range haConfig.Candidates {
 					if host.NodeInfo.Hostname == candidate.Hostname {
 						if candidate.Registered {
@@ -183,7 +247,6 @@ func trackManager() {
 						break
 					}
 				}
-				// haConfigLock.RUnlock()
 			}
 
 			if filteredCandidates[0].NodeInfo.Hostname == myHostname {
@@ -217,7 +280,6 @@ func registerNode() {
 			continue
 		}
 
-		// haConfigLock.Lock()
 		for i, v := range haConfig.Candidates {
 			if v.Registered {
 				continue
@@ -255,7 +317,6 @@ func registerNode() {
 			}
 			_ = res
 		}
-		// haConfigLock.Unlock()
 
 		time.Sleep(time.Second * 10)
 	}
@@ -283,8 +344,6 @@ func sendPing() {
 			go func(i int, v NodeInfoStruct) {
 				host := NodeInfoStruct{}
 				host.Hostname = cmd.GetHostName()
-
-				// haConfigLock.Lock()
 				host.StartupTime = haConfig.StartupTime
 
 				jsonPayload, _ := json.Marshal(host)
@@ -309,8 +368,6 @@ func sendPing() {
 					}
 					haConfig.Candidates[i].Registered = true
 				}
-
-				// haConfigLock.Unlock()
 			}(i, v)
 		}
 
@@ -327,11 +384,12 @@ func removeOfflineNodes() {
 	}()
 
 	for {
-		for i, v := range haHostsDb {
+		for _, v := range haHostsDb {
 			if time.Now().Unix() > v.LastPing+v.NodeInfo.FailOverTime {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has gone offline: "+v.NodeInfo.Hostname).Run()
 				failoverHostVms(v)
-				haChannelRemove <- haHostsDb[i]
+				modifyHostsDb(ModifyHostsDbStruct{data: v, remove: true})
+				// haChannelRemove <- haHostsDb[i]
 			}
 		}
 		time.Sleep(time.Second * 10)
@@ -352,7 +410,8 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 	}
 
 	haVms := []HaVm{}
-	for _, v := range haHostsDb {
+	hostsDbCopy := readHostsDb()
+	for _, v := range hostsDbCopy {
 		haVmsTemp := []HaVm{}
 
 		// Skip the failed node (passed via function parameters, and not offline-d yet)
@@ -413,7 +472,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: MOVING VM: "+v.VmName+" FROM offline parent: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
 			continue
 		}
-		for _, vv := range haHostsDb {
+		for _, vv := range hostsDbCopy {
 			if vv.NodeInfo.Hostname == v.CurrentHost {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: MOVING VM: "+v.VmName+" FROM offline parent: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
 
@@ -467,54 +526,53 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 	}
 }
 
-func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
-	defer func() {
-		if r := recover(); r != nil {
-			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "addHaNode() Recovered from panic: "+errorValue).Run()
-		}
-	}()
+// func addHaNode(haChannelAdd chan HosterHaNodeStruct) {
+// 	defer func() {
+// 		if r := recover(); r != nil {
+// 			errorValue := fmt.Sprintf("%s", r)
+// 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "addHaNode() Recovered from panic: "+errorValue).Run()
+// 		}
+// 	}()
 
-	for msg := range haChannelAdd {
-		hostFound := false
-		hostIndex := 0
-		for i, v := range haHostsDb {
-			if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
-				hostFound = true
-				hostIndex = i
-			}
-		}
-		if !hostFound {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: registered a new node: "+msg.NodeInfo.Hostname).Run()
-			haHostsDb = append(haHostsDb, msg)
-		} else {
-			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: Updated last ping time and network address for "+msg.NodeInfo.Hostname).Run()
-			haHostsDb[hostIndex].NodeInfo.Address = msg.NodeInfo.Address
-			if msg.NodeInfo.StartupTime > 0 {
-				haHostsDb[hostIndex].NodeInfo.StartupTime = msg.NodeInfo.StartupTime
-			}
-			haHostsDb[hostIndex].LastPing = time.Now().Unix()
-		}
-	}
-}
+// 	for msg := range haChannelAdd {
+// 		hostFound := false
+// 		hostIndex := 0
+// 		for i, v := range haHostsDb {
+// 			if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
+// 				hostFound = true
+// 				hostIndex = i
+// 			}
+// 		}
+// 		if !hostFound {
+// 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: registered a new node: "+msg.NodeInfo.Hostname).Run()
+// 			haHostsDb = append(haHostsDb, msg)
+// 		} else {
+// 			haHostsDb[hostIndex].NodeInfo.Address = msg.NodeInfo.Address
+// 			if msg.NodeInfo.StartupTime > 0 {
+// 				haHostsDb[hostIndex].NodeInfo.StartupTime = msg.NodeInfo.StartupTime
+// 			}
+// 			haHostsDb[hostIndex].LastPing = time.Now().Unix()
+// 		}
+// 	}
+// }
 
-func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
-	defer func() {
-		if r := recover(); r != nil {
-			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: removeHaNode(): "+errorValue).Run()
-		}
-	}()
+// func removeHaNode(haChannelRemove chan HosterHaNodeStruct) {
+// 	defer func() {
+// 		if r := recover(); r != nil {
+// 			errorValue := fmt.Sprintf("%s", r)
+// 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: removeHaNode(): "+errorValue).Run()
+// 		}
+// 	}()
 
-	for msg := range haChannelRemove {
-		for i, v := range haHostsDb {
-			if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
-				haHostsDb[i] = haHostsDb[len(haHostsDb)-1]
-				haHostsDb[len(haHostsDb)-1] = HosterHaNodeStruct{}
-				haHostsDb = haHostsDb[0 : len(haHostsDb)-1]
-				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has been removed from the cluster: "+msg.NodeInfo.Hostname).Run()
-				break
-			}
-		}
-	}
-}
+// 	for msg := range haChannelRemove {
+// 		for i, v := range haHostsDb {
+// 			if msg.NodeInfo.Hostname == v.NodeInfo.Hostname {
+// 				haHostsDb[i] = haHostsDb[len(haHostsDb)-1]
+// 				haHostsDb[len(haHostsDb)-1] = HosterHaNodeStruct{}
+// 				haHostsDb = haHostsDb[0 : len(haHostsDb)-1]
+// 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has been removed from the cluster: "+msg.NodeInfo.Hostname).Run()
+// 				break
+// 			}
+// 		}
+// 	}
+// }
