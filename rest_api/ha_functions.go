@@ -329,7 +329,7 @@ func sendPing() {
 			}(i, v)
 		}
 
-		time.Sleep(time.Second * 9)
+		time.Sleep(time.Second * 2)
 	}
 }
 
