@@ -355,7 +355,7 @@ func sendPing() {
 				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 				req.Header.Add("Content-Type", "application/json")
 				req.Header.Add("Authorization", "Basic "+authEncoded)
-				_, err := http.DefaultClient.Do(req)
+				resp, err := http.DefaultClient.Do(req)
 				if err != nil {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: failed to ping the candidate node: "+err.Error()).Run()
 					haConfig.Candidates[i].TimesFailed += 1
@@ -369,11 +369,9 @@ func sendPing() {
 					haConfig.Candidates[i].Registered = true
 				}
 
-				// Close the response body to release resources
+				// Close the request and response body to release resources
 				req.Body.Close()
-
-				// Explicitly exit the Go routine gracefully
-				return
+				resp.Body.Close()
 			}(i, v)
 		}
 
