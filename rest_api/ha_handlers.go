@@ -14,7 +14,7 @@ func handleHaRegistration(fiberContext *fiber.Ctx) error {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: handleHaRegistration(): "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: handleHaRegistration(): "+errorValue).Run()
 		}
 	}()
 
@@ -41,7 +41,7 @@ func handleHaPing(fiberContext *fiber.Ctx) error {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: handleHaPing(): "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: handleHaPing(): "+errorValue).Run()
 		}
 	}()
 
@@ -87,7 +87,7 @@ func haVmsList() []HaVm {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "haVmsList() Recovered from error: "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: haVmsList(): "+errorValue).Run()
 		}
 	}()
 
@@ -130,7 +130,7 @@ func handleHaVmsList(fiberContext *fiber.Ctx) error {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "handleHaVmsList() Recovered from error: "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: handleHaVmsList(): "+errorValue).Run()
 		}
 	}()
 

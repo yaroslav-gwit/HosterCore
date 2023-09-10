@@ -28,7 +28,7 @@ func main() {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: main(): "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: main(): "+errorValue).Run()
 		}
 	}()
 
@@ -455,7 +455,7 @@ func main() {
 		if debugMode {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: HA_API_SERVER started in DEBUG mode").Run()
 		} else {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "HA_API_SERVER started in PRODUCTION mode").Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: HA_API_SERVER started in PRODUCTION mode").Run()
 		}
 
 		hosterRestLabel = "HOSTER_HA_REST"
@@ -470,7 +470,7 @@ func main() {
 			for {
 				out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
 				if err != nil {
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "process is not running: HA_WATCHDOG").Run()
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: process is not running: HA_WATCHDOG").Run()
 					timesFailed += 1
 				} else {
 					_ = exec.Command("kill", "-SIGHUP", strings.TrimSpace(string(out))).Run()
@@ -496,15 +496,21 @@ func main() {
 	}
 
 	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGTERM)
+	// SIGTERM -> kill -s SIGTERM  ||  SIGINT -> CTRL+C
+	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		for sig := range signals {
-			if sig == syscall.SIGTERM {
-				_ = exec.Command("logger", "-t", hosterRestLabel, "received SIGTERM, exiting").Run()
+			if sig == syscall.SIGTERM || sig == syscall.SIGINT {
+				if sig == syscall.SIGTERM {
+					_ = exec.Command("logger", "-t", hosterRestLabel, "INFO: received SIGTERM, exiting").Run()
+				}
+				if sig == syscall.SIGINT {
+					_ = exec.Command("logger", "-t", hosterRestLabel, "INFO: received SIGINT (CTRL+C), exiting").Run()
+				}
 
 				err := app.Shutdown()
 				if err != nil {
-					_ = exec.Command("logger", "-t", hosterRestLabel, "ERROR while shutting the server down: "+err.Error()).Run()
+					_ = exec.Command("logger", "-t", hosterRestLabel, "ERROR: could not shutdown the server gracefully: "+err.Error()).Run()
 				}
 			}
 		}

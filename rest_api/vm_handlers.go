@@ -16,7 +16,7 @@ func handleVmStart(fiberContext *fiber.Ctx) error {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "handleVmStart() Recovered from error: "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: handleVmStart(): "+errorValue).Run()
 		}
 	}()
 
@@ -75,7 +75,7 @@ func handleVmChangeParent(fiberContext *fiber.Ctx) error {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "handleVmChangeParent() Recovered from error: "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: handleVmChangeParent(): "+errorValue).Run()
 		}
 	}()
 
@@ -111,7 +111,7 @@ func handleVmCiReset(fiberContext *fiber.Ctx) error {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "handleVmCiReset() Recovered from error: "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: handleVmCiReset(): "+errorValue).Run()
 		}
 	}()
 
