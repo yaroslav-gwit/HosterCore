@@ -358,11 +358,20 @@ func sendPing() {
 				host.Hostname = cmd.GetHostName()
 				host.StartupTime = haConfig.StartupTime
 
-				jsonPayload, _ := json.Marshal(host)
-				payload := strings.NewReader(string(jsonPayload))
+				jsonPayload, err := json.Marshal(host)
+				if err != nil {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERR: pingGoRoutineJSONPAYLOAD(): "+err.Error()).Run()
+					return
+				}
 
+				payload := strings.NewReader(string(jsonPayload))
 				url := v.Protocol + "://" + v.Address + ":" + v.Port + "/api/v1/ha/ping"
-				req, _ := http.NewRequest("POST", url, payload)
+				req, err := http.NewRequest("POST", url, payload)
+				if err != nil {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERR: pingGoRoutineREQ(): "+err.Error()).Run()
+					return
+				}
+
 				auth := v.User + ":" + v.Password
 				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 				req.Header.Add("Content-Type", "application/json")
