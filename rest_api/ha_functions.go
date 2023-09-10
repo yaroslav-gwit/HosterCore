@@ -163,9 +163,6 @@ func init() {
 		debugMode = true
 	}
 
-	// go addHaNode(haChannelAdd)
-	// go removeHaNode(haChannelRemove)
-
 	file, _ := os.ReadFile("/opt/hoster-core/config_files/ha_config.json")
 	err = json.Unmarshal(file, &haConfig)
 	if err != nil {
@@ -179,11 +176,19 @@ func init() {
 	_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: cluster failover time is: "+strconv.Itoa(int(haConfig.FailOverTime))+" seconds").Run()
 
 	haConfig.StartupTime = time.Now().UnixMilli()
+
+	// Candidates and workers
 	go registerNode()
 	go trackCandidatesOnline()
-	go trackManager()
 	go sendPing()
-	go removeOfflineNodes()
+
+	// Candidates only
+	for _, v := range haConfig.Candidates {
+		if v.Hostname == cmd.GetHostName() {
+			go trackManager()
+			go removeOfflineNodes()
+		}
+	}
 }
 
 var candidatesRegistered = 0
