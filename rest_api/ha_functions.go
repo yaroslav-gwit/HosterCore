@@ -200,7 +200,7 @@ func trackManager() {
 				}
 			}
 
-			time.Sleep(time.Second * 7)
+			time.Sleep(time.Second * 4)
 		}
 	}
 }
