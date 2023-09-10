@@ -368,6 +368,12 @@ func sendPing() {
 					}
 					haConfig.Candidates[i].Registered = true
 				}
+
+				// Close the response body to release resources
+				req.Body.Close()
+
+				// Explicitly exit the Go routine gracefully
+				return
 			}(i, v)
 		}
 

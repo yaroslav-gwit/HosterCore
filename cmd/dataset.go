@@ -47,6 +47,7 @@ var (
 
 type ZfsDatasetInfo struct {
 	Name           string
+	MountPoint     string
 	SpaceFree      int
 	SpaceFreeHuman string
 	SpaceUsed      int
@@ -129,36 +130,39 @@ func getZfsDatasetInfo() ([]ZfsDatasetInfo, error) {
 		return []ZfsDatasetInfo{}, err
 	}
 
-	// Standard command output:
-	// zroot/vm-encrypted      205033119744    769681932288    425984  /zroot/vm-encrypted
-	// zroot/vm-unencrypted    98304   769681932288    98304   /zroot/vm-unencrypted
-	//
 	out, err := exec.Command("zfs", "list", "-Hp").CombinedOutput()
+	// Example output:
+	//     	[0]     				[1]				[2]  		 [3] 			[4]
+	// zroot/vm-encrypted      205033119744    769681932288    425984  /zroot/vm-encrypted
+	// zroot/vm-unencrypted    98304           769681932288    98304   /zroot/vm-unencrypted
+
 	if err != nil {
-		return []ZfsDatasetInfo{}, errors.New("Output: " + string(out) + " Status code: " + err.Error())
+		return []ZfsDatasetInfo{}, errors.New("output: " + string(out) + " " + err.Error())
 	}
 
 	reSplitSpace := regexp.MustCompile(`\s+`)
 	for _, v := range strings.Split(string(out), "\n") {
-		temp := reSplitSpace.Split(v, -1)
+		cmdSplitLine := reSplitSpace.Split(v, -1)
 		for _, vv := range hostInfo.ActiveDatasets {
-			if vv == temp[0] {
+			if vv == cmdSplitLine[0] {
 				tempZfsDs := ZfsDatasetInfo{}
-				tempZfsDs.Name = temp[0]
-				tempZfsDs.SpaceUsed, _ = strconv.Atoi(temp[1])
+				tempZfsDs.Name = cmdSplitLine[0]
+				tempZfsDs.SpaceUsed, _ = strconv.Atoi(cmdSplitLine[1])
 				tempZfsDs.SpaceUsedHuman = ByteConversion(tempZfsDs.SpaceUsed)
-				tempZfsDs.SpaceFree, _ = strconv.Atoi(temp[2])
+				tempZfsDs.SpaceFree, _ = strconv.Atoi(cmdSplitLine[2])
 				tempZfsDs.SpaceFreeHuman = ByteConversion(tempZfsDs.SpaceFree)
+				tempZfsDs.MountPoint = cmdSplitLine[4]
 				zfsDatasetInfo = append(zfsDatasetInfo, tempZfsDs)
 			}
 		}
 	}
 
 	for i, v := range zfsDatasetInfo {
-		// Standard command output:
-		// zroot/vm-unencrypted    encryption      off     default
-		//
 		out, err := exec.Command("zfs", "get", "-H", "encryption", v.Name).CombinedOutput()
+		// Example output:
+		//      [0]                    [1]          [2]       [3]
+		// zroot/vm-unencrypted    encryption      off     default
+
 		if err != nil {
 			return []ZfsDatasetInfo{}, errors.New("Output: " + string(out) + " Status code: " + err.Error())
 		}
