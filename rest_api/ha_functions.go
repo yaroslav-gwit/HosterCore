@@ -219,6 +219,7 @@ func registerNode() {
 			continue
 		}
 
+		time.Sleep(time.Second * 10)
 		for i, v := range haConfig.Candidates {
 			if v.Registered {
 				continue
@@ -237,13 +238,20 @@ func registerNode() {
 
 			jsonPayload, _ := json.Marshal(host)
 			payload := strings.NewReader(string(jsonPayload))
-
 			url := v.Protocol + "://" + v.Address + ":" + v.Port + "/api/v1/ha/register"
-			req, _ := http.NewRequest("POST", url, payload)
+
+			req, err := http.NewRequest("POST", url, payload)
+			if err != nil {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: could not form the /register request: "+err.Error()).Run()
+				time.Sleep(time.Second * 10)
+				continue
+			}
+
 			auth := v.User + ":" + v.Password
 			authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 			req.Header.Add("Content-Type", "application/json")
 			req.Header.Add("Authorization", "Basic "+authEncoded)
+
 			res, err := http.DefaultClient.Do(req)
 			if err != nil {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: could not join the candidate: "+err.Error()).Run()
@@ -253,11 +261,10 @@ func registerNode() {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "SUCCESS: joined the candidate: "+v.Hostname).Run()
 				haConfig.Candidates[i].Registered = true
 				haConfig.Candidates[i].StartupTime = haConfig.StartupTime
+				req.Body.Close()
+				res.Body.Close()
 			}
-			_ = res
 		}
-
-		time.Sleep(time.Second * 10)
 	}
 }
 
