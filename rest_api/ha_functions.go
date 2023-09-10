@@ -331,7 +331,7 @@ func sendPing() {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: registerNode(): "+errorValue).Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: sendPing(): "+errorValue).Run()
 		}
 	}()
 
@@ -388,11 +388,10 @@ func sendPing() {
 						haConfig.Candidates[i].TimesFailed -= 1
 					}
 					haConfig.Candidates[i].Registered = true
+					// Close the request and response body to release resources
+					req.Body.Close()
+					resp.Body.Close()
 				}
-
-				// Close the request and response body to release resources
-				req.Body.Close()
-				resp.Body.Close()
 			}(i, v)
 		}
 
