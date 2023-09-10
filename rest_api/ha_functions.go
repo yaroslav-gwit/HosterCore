@@ -190,7 +190,7 @@ func trackManager() {
 
 			if filteredCandidates[0].NodeInfo.Hostname == myHostname {
 				if !iAmManager {
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: becoming new cluster manager").Run()
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: becoming a new cluster manager").Run()
 					iAmManager = true
 				}
 			} else {
@@ -275,6 +275,9 @@ func sendPing() {
 			continue
 		}
 
+		var wg sync.WaitGroup
+		wg.Add(len(haConfig.Candidates))
+
 		for i, v := range haConfig.Candidates {
 			if !v.Registered {
 				continue
@@ -282,10 +285,12 @@ func sendPing() {
 
 			go func(i int, v NodeInfoStruct) {
 				defer func() {
-					if r := recover(); r != nil {
+					r := recover()
+					if r != nil {
 						errorValue := fmt.Sprintf("%s", r)
-						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: pingGoRoutine349(): "+errorValue).Run()
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: sendPingMainGoRoutine(): "+errorValue).Run()
 					}
+					wg.Done()
 				}()
 
 				host := NodeInfoStruct{}
