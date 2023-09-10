@@ -347,6 +347,13 @@ func sendPing() {
 			}
 
 			go func(i int, v NodeInfoStruct) {
+				defer func() {
+					if r := recover(); r != nil {
+						errorValue := fmt.Sprintf("%s", r)
+						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "AVOIDED PANIC: pingGoRoutine349(): "+errorValue).Run()
+					}
+				}()
+
 				host := NodeInfoStruct{}
 				host.Hostname = cmd.GetHostName()
 				host.StartupTime = haConfig.StartupTime
