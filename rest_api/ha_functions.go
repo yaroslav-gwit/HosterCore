@@ -49,7 +49,7 @@ type HaConfigJsonStruct struct {
 var haHostsDb []HosterHaNodeStruct
 var haConfig HaConfigJsonStruct
 
-var hostsDbLock sync.RWMutex
+// var hostsDbLock sync.RWMutex
 
 type ModifyHostsDbStruct struct {
 	addOrUpdate bool
@@ -500,7 +500,7 @@ func modifyHostsDb(input ModifyHostsDbStruct) {
 		}
 	}()
 
-	hostsDbLock.Lock()
+	// hostsDbLock.Lock()
 
 	if input.addOrUpdate {
 		hostFound := false
@@ -537,7 +537,7 @@ func modifyHostsDb(input ModifyHostsDbStruct) {
 		}
 	}
 
-	hostsDbLock.Unlock()
+	// hostsDbLock.Unlock()
 }
 
 func readHostsDb() (db []HosterHaNodeStruct) {
@@ -548,9 +548,9 @@ func readHostsDb() (db []HosterHaNodeStruct) {
 		}
 	}()
 
-	hostsDbLock.RLock()
+	// hostsDbLock.RLock()
 	db = haHostsDb
-	hostsDbLock.RUnlock()
+	// hostsDbLock.RUnlock()
 
 	return
 }
