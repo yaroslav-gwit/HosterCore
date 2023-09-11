@@ -14,6 +14,8 @@ var (
 	endpointSshPortAll     int
 	sshKeyLocationAll      string
 	vmReplicateAllFilter   string
+	replicateAllSpeedLimit int
+	replicateAllScriptName string
 
 	vmReplicateAllCmd = &cobra.Command{
 		Use:   "replicate-all",
@@ -63,7 +65,7 @@ func replicateAllProdVms(replicationEndpoint string, endpointSshPort int, sshKey
 				emojlog.PrintLogMessage("VM from the filtered list was not found: "+v, emojlog.Warning)
 				continue
 			}
-			err := replicateVm(v, replicationEndpoint, endpointSshPort, sshKeyLocation)
+			err := replicateVm(v, replicationEndpoint, endpointSshPort, sshKeyLocation, replicateAllSpeedLimit, replicateAllScriptName)
 			if err != nil {
 				emojlog.PrintLogMessage("Replication failed for a VM: "+v+" || Exact error: "+err.Error(), emojlog.Error)
 			}
@@ -78,7 +80,7 @@ func replicateAllProdVms(replicationEndpoint string, endpointSshPort int, sshKey
 				continue
 			}
 			if strings.ToLower(vmConfigVar.LiveStatus) == "prod" || strings.ToLower(vmConfigVar.LiveStatus) == "production" {
-				err := replicateVm(v, replicationEndpoint, endpointSshPort, sshKeyLocation)
+				err := replicateVm(v, replicationEndpoint, endpointSshPort, sshKeyLocation, replicateAllSpeedLimit, replicateAllScriptName)
 				if err != nil {
 					emojlog.PrintLogMessage("Replication failed for a VM: "+v+" || Exact error: "+err.Error(), emojlog.Error)
 				}

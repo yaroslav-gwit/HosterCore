@@ -137,6 +137,8 @@ func init() {
 	vmReplicateAllCmd.Flags().StringVarP(&sshKeyLocationAll, "key", "k", "/root/.ssh/id_rsa", "Set the absolute location for the SSH key, for example: `'/home/user-name/id_rsa'`")
 	vmReplicateAllCmd.Flags().StringVarP(&replicationEndpointAll, "endpoint", "e", "", "Set the endpoint SSH address, for example: `192.168.118.3`")
 	vmReplicateAllCmd.Flags().IntVarP(&endpointSshPortAll, "port", "p", 22, "Set the endpoint SSH port, for example `2202`")
+	vmZfsReplicateCmd.Flags().IntVarP(&replicateAllSpeedLimit, "speed-limit", "", 50, "Set the replication speed limit in MB/s")
+	vmZfsReplicateCmd.Flags().StringVarP(&replicateAllScriptName, "script-name", "", "", "Set the replication script name (useful to run multiple jobs in parallel)")
 
 	// Snapshot cmd
 	rootCmd.AddCommand(snapshotCmd)

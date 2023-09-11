@@ -40,7 +40,7 @@ var (
 				log.Fatal("Please specify an endpoint!")
 			}
 			vmName := args[0]
-			err = replicateVm(vmName, replicationEndpoint, endpointSshPort, sshKeyLocation)
+			err = replicateVm(vmName, replicationEndpoint, endpointSshPort, sshKeyLocation, replicateSpeedLimit, replicateScriptName)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -48,7 +48,7 @@ var (
 	}
 )
 
-func replicateVm(vmName string, replicationEndpoint string, endpointSshPort int, sshKeyLocation string) error {
+func replicateVm(vmName string, replicationEndpoint string, endpointSshPort int, sshKeyLocation string, speedLimit int, scriptName string) error {
 	if !slices.Contains(getAllVms(), vmName) {
 		return errors.New("vm does not exist")
 	}
@@ -146,14 +146,14 @@ func replicateVm(vmName string, replicationEndpoint string, endpointSshPort int,
 	// fmt.Println(snapsToSend)
 
 	if len(remoteVmSnaps) < 1 {
-		err = sendInitialSnapshot(vmDataset, localVmSnaps[0], replicationEndpoint, endpointSshPort, sshKeyLocation, replicateScriptName, replicateSpeedLimit)
+		err = sendInitialSnapshot(vmDataset, localVmSnaps[0], replicationEndpoint, endpointSshPort, sshKeyLocation, scriptName, speedLimit)
 		if err != nil {
 			return err
 		}
 	} else {
 		for i, v := range localVmSnaps {
 			if slices.Contains(snapsToSend, v) {
-				err = sendIncrementalSnapshot(vmDataset, localVmSnaps[i-1], v, replicationEndpoint, endpointSshPort, sshKeyLocation, replicateScriptName, replicateSpeedLimit)
+				err = sendIncrementalSnapshot(vmDataset, localVmSnaps[i-1], v, replicationEndpoint, endpointSshPort, sshKeyLocation, scriptName, speedLimit)
 				if err != nil {
 					return err
 				}
