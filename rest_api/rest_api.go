@@ -459,7 +459,7 @@ func main() {
 		}
 
 		hosterRestLabel = "HOSTER_HA_REST"
-		_ = exec.Command("logger", "-t", hosterRestLabel, "service start-up").Run()
+		_ = exec.Command("logger", "-t", hosterRestLabel, "DEBUG: hoster_rest_api service start-up").Run()
 
 		// Execute ha_watchdog using nohup and disown it
 		haWatchdogCmd := exec.Command("nohup", "/opt/hoster-core/ha_watchdog", "&")
@@ -468,9 +468,11 @@ func main() {
 
 		go func() {
 			for {
+				time.Sleep(time.Second * 4)
+
 				out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
 				if err != nil {
-					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: process is not running: HA_WATCHDOG").Run()
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: ha_watchdog process is not running").Run()
 					timesFailed += 1
 				} else {
 					_ = exec.Command("kill", "-SIGHUP", strings.TrimSpace(string(out))).Run()
@@ -489,8 +491,6 @@ func main() {
 						_ = exec.Command("reboot").Run()
 					}
 				}
-
-				time.Sleep(time.Second * 4)
 			}
 		}()
 	}

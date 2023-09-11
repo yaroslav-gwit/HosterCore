@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "service start-up").Run()
+	_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "DEBUG: ha_watchdog service start-up").Run()
 
 	var debugMode bool
 	debugModeEnv := os.Getenv("REST_API_HA_DEBUG")
@@ -19,9 +19,9 @@ func main() {
 	}
 
 	if debugMode {
-		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: HA_WATCHDOG started in DEBUG mode").Run()
+		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: ha_watchdog started in DEBUG mode").Run()
 	} else {
-		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "HA_WATCHDOG started in PRODUCTION mode").Run()
+		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: ha_watchdog started in PRODUCTION mode").Run()
 	}
 
 	timesFailed := 0
@@ -36,7 +36,7 @@ func main() {
 				lastReachOut = time.Now().Unix()
 			}
 			if sig == syscall.SIGTERM {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "received SIGTERM, exiting").Run()
+				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received SIGTERM, exiting").Run()
 				os.Exit(0)
 			}
 		}
@@ -50,7 +50,7 @@ func main() {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "DEBUG: HOSTER_HA_REST process has failed, rebooting the system now").Run()
 				os.Exit(1)
 			} else {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "HOSTER_HA_REST process has failed, rebooting the system now").Run()
+				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "FATAL: HOSTER_HA_REST process has failed, rebooting the system now").Run()
 				cmd.LockAllVms()
 				_ = exec.Command("reboot").Run()
 			}
