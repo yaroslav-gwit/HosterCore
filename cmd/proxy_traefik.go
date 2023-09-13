@@ -123,9 +123,9 @@ func statusTraefik() error {
 	traefikPgrep := traefikServiceInfo()
 
 	if traefikPgrep.ProcessIsRunning {
-		fmt.Println(" 🟢 Traefik is running as " + traefikPgrep.ProcessPid)
-		fmt.Println("    to view live service logs execute: tail -f /opt/traefik/log_service.log")
-		fmt.Println("    to view live access logs execute:  tail -f /opt/traefik/log_access.log")
+		fmt.Println(" 🟢 Traefik is running as PID: " + traefikPgrep.ProcessPid)
+		fmt.Println("    to view the live service logs, execute: tail -f /opt/traefik/log_service.log")
+		fmt.Println("    to view the live access logs, execute:  tail -f /opt/traefik/log_access.log")
 	} else {
 		fmt.Println(" 🔴 Traefik IS NOT running")
 	}
