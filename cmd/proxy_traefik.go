@@ -139,7 +139,7 @@ type TraefikServiceInfoStruct struct {
 }
 
 func traefikServiceInfo() (pgrepOutput TraefikServiceInfoStruct) {
-	out, _ := exec.Command("pgrep", "-lf", "node_exporter").CombinedOutput()
+	out, _ := exec.Command("pgrep", "-lf", "traefik").CombinedOutput()
 
 	reSplitSpace := regexp.MustCompile(`\s+`)
 	reMatchTraefik := regexp.MustCompile(`.*/opt/traefik/traefik.*`)
