@@ -107,7 +107,7 @@ func init() {
 	if haConfig.FailOverTime < 1 {
 		haConfig.FailOverTime = 60
 	}
-	_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: cluster failover time is: "+strconv.Itoa(int(haConfig.FailOverTime))+" seconds").Run()
+	_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: node failover time is: "+strconv.Itoa(int(haConfig.FailOverTime))+" seconds").Run()
 
 	haConfig.StartupTime = time.Now().UnixMilli()
 

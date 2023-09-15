@@ -194,6 +194,10 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool) string {
 		loaderCommand = loaderCommand + " -u " + vmName
 	}
 
+	if len(vmConfigVar.UUID) > 0 {
+		loaderCommand = loaderCommand + " -U " + vmConfigVar.UUID
+	}
+
 	bhyveFinalCommand = bhyveFinalCommand + loaderCommand
 	emojlog.PrintLogMessage("Executing bhyve command: "+bhyveFinalCommand, emojlog.Debug)
 	return bhyveFinalCommand
