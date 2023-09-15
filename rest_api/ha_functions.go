@@ -364,7 +364,7 @@ func removeOfflineNodes() {
 				}
 			}
 		}
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second * 4)
 	}
 }
 
@@ -377,7 +377,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 	}()
 
 	if !iAmManager {
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second * 3)
 		return
 	}
 
