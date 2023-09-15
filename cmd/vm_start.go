@@ -187,15 +187,15 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool) string {
 		log.Fatal("Please make sure your loader is set to 'bios' or 'uefi'")
 	}
 
+	if len(vmConfigVar.UUID) > 0 {
+		loaderCommand = loaderCommand + " -U " + vmConfigVar.UUID
+	}
+
 	if restoreVmState {
 		vmFolder := getVmFolder(vmName)
 		loaderCommand = loaderCommand + " -r " + vmFolder + "/vm_state"
 	} else {
 		loaderCommand = loaderCommand + " -u " + vmName
-	}
-
-	if len(vmConfigVar.UUID) > 0 {
-		loaderCommand = loaderCommand + " -U " + vmConfigVar.UUID
 	}
 
 	bhyveFinalCommand = bhyveFinalCommand + loaderCommand
