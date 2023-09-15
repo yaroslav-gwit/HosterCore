@@ -99,23 +99,26 @@ func getRunningJails() ([]LiveJailStruct, error) {
 }
 
 type JailStruct struct {
-	Name string
-	Path string
+	Name    string
+	Path    string
+	Running bool
+	Backup  bool
 }
 
 type JailConfigFileStruct struct {
-	CPULimitPercentOverall int      `json:"cpu_limit_percent_overall"`
-	RAMLimit               string   `json:"ram_limit"`
-	StartupScript          string   `json:"startup_script"`
-	ShutdownScript         string   `json:"shutdown_script"`
-	ConsoleLog             string   `json:"console_log"`
-	ConfigFileAppend       string   `json:"config_file_append"`
-	StartAfter             string   `json:"start_after"`
-	StartupDelay           int      `json:"startup_delay"`
-	IPAddress              string   `json:"ip_address"`
-	Network                string   `json:"network"`
-	DNSServers             []string `json:"dns_servers"`
-	Timezone               string   `json:"timezone"`
+	CPULimitPercent  int      `json:"cpu_limit_percent"`
+	RAMLimit         string   `json:"ram_limit"`
+	StartupScript    string   `json:"startup_script"`
+	ShutdownScript   string   `json:"shutdown_script"`
+	ConsoleOutputLog string   `json:"console_output_log"`
+	ConfigFileAppend string   `json:"config_file_append"`
+	StartAfter       string   `json:"start_after,omitempty"`
+	StartupDelay     int      `json:"startup_delay"`
+	IPAddress        string   `json:"ip_address"`
+	Network          string   `json:"network"`
+	DNSServers       []string `json:"dns_servers"`
+	Timezone         string   `json:"timezone"`
+	Parent           string   `json:"parent"`
 }
 
 func getAllJails() ([]JailStruct, error) {

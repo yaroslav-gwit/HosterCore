@@ -447,6 +447,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 
 		for _, vv := range hostsDbCopy {
 			if vv.NodeInfo.Hostname == v.CurrentHost {
+				time.Sleep(1500 * time.Millisecond)
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: MOVING VM: "+v.VmName+" FROM offline parent: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
 
 				auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
@@ -466,6 +467,8 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: CIRESET FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
 						continue
 					}
+					req.Body.Close()
+					res.Body.Close()
 				} else if vv.NodeInfo.FailOverStrategy == "changeparent" || vv.NodeInfo.FailOverStrategy == "change-parent" {
 					url := vv.NodeInfo.Protocol + "://" + vv.NodeInfo.Address + ":" + vv.NodeInfo.Port + "/api/v1/vm/change-parent"
 					payload := strings.NewReader(`{ "name": "` + v.VmName + `" }`)
@@ -479,6 +482,8 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: CHANGE PARENT FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
 						continue
 					}
+					req.Body.Close()
+					res.Body.Close()
 				}
 
 				// Start VM on a new host

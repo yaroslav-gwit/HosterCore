@@ -453,9 +453,9 @@ func main() {
 	hosterRestLabel := "HOSTER_REST"
 	if haMode {
 		if debugMode {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: HA_API_SERVER started in DEBUG mode").Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: hoster_rest_api started in DEBUG mode").Run()
 		} else {
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: HA_API_SERVER started in PRODUCTION mode").Run()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: hoster_rest_api started in PRODUCTION mode").Run()
 		}
 
 		hosterRestLabel = "HOSTER_HA_REST"

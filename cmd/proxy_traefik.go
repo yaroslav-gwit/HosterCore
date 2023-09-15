@@ -16,8 +16,8 @@ import (
 var (
 	proxyTraefikCmd = &cobra.Command{
 		Use:   "traefik",
-		Short: "Minimalistic Traefik integration",
-		Long:  `Minimalistic Traefik integration.`,
+		Short: "Minimalistic Traefik process management integration",
+		Long:  `Minimalistic Traefik process management integration.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
