@@ -63,7 +63,7 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-			err = stopApiServer()
+			err = StopApiServer()
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -139,7 +139,7 @@ func startApiServer(port int, user string, password string, haMode bool, haDebug
 	return nil
 }
 
-func stopApiServer() error {
+func StopApiServer() error {
 	timesKilled := 0
 
 	out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
