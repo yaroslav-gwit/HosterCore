@@ -566,3 +566,46 @@ func readHostsDb() (db []HosterHaNodeStruct) {
 
 	return
 }
+
+func terminateOtherMembers() {
+	if haMode {
+		candidateFound := false
+		for _, v := range haConfig.Candidates {
+			if v.Hostname == myHostname {
+				candidateFound = true
+			}
+		}
+		if candidateFound {
+			for _, v := range readHostsDb() {
+				if v.NodeInfo.Hostname == myHostname {
+					continue
+				}
+
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: sending a shutdown signal to: "+v.NodeInfo.Hostname).Run()
+				url := v.NodeInfo.Protocol + "://" + v.NodeInfo.Address + ":" + v.NodeInfo.Port + "/api/v1/ha/terminate"
+
+				req, err := http.NewRequest("POST", url, nil)
+				if err != nil {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: could not form the /terminate request: "+err.Error()).Run()
+					time.Sleep(time.Second * 10)
+					continue
+				}
+
+				auth := v.NodeInfo.User + ":" + v.NodeInfo.Password
+				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
+				req.Header.Add("Content-Type", "application/json")
+				req.Header.Add("Authorization", "Basic "+authEncoded)
+
+				res, err := http.DefaultClient.Do(req)
+				if err != nil {
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: could not notify the member: "+v.NodeInfo.Hostname+". Error: "+err.Error()).Run()
+				} else {
+					req.Body.Close()
+					res.Body.Close()
+				}
+			}
+		} else {
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: not a candidate node, use one of the candidates to shutdown the whole cluster").Run()
+		}
+	}
+}
