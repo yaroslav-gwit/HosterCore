@@ -69,7 +69,7 @@ func handleHaTerminate(fiberContext *fiber.Ctx) error {
 
 	if service.HaWatchdogRunning {
 		_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received a remote terminating call, exiting").Run()
-		_ = exec.Command("kill", "-SIGKILL", service.HaWatchDogPid).Run()
+		_ = exec.Command("kill", "-SIGTERM", service.HaWatchDogPid).Run()
 	}
 
 	if service.ApiServerRunning {
