@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"time"
 
@@ -68,15 +69,12 @@ func handleHaTerminate(fiberContext *fiber.Ctx) error {
 
 	if service.HaWatchdogRunning {
 		_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received a remote terminating call, exiting").Run()
-		_ = exec.Command("kill", "-SIGTERM", service.HaWatchDogPid).Run()
+		_ = exec.Command("kill", "-SIGKILL", service.HaWatchDogPid).Run()
 	}
 
 	if service.ApiServerRunning {
 		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: received a remote terminating call, exiting").Run()
-		go func() {
-			time.Sleep(2 * time.Second)
-			_ = exec.Command("kill", "-SIGKILL", service.ApiServerPid).Run()
-		}()
+		os.Exit(0)
 	}
 
 	return fiberContext.JSON(fiber.Map{"message": "done"})

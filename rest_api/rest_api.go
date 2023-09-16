@@ -503,7 +503,6 @@ func main() {
 			if sig == syscall.SIGTERM || sig == syscall.SIGINT {
 				if haMode {
 					terminateOtherMembers()
-					time.Sleep(time.Second * 10)
 				}
 
 				if sig == syscall.SIGTERM {
