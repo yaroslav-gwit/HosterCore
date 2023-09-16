@@ -143,7 +143,7 @@ func StopApiServer() error {
 	services := ApiProcessServiceInfo()
 
 	if services.ApiServerRunning {
-		_ = exec.Command("kill", "-SIGTERM", services.HaWatchDogPid).Run()
+		_ = exec.Command("kill", "-SIGTERM", services.ApiServerPid).Run()
 		emojlog.PrintLogMessage("ha_watchdog service has been stopped using PID: "+services.ApiServerPid, emojlog.Changed)
 	}
 
@@ -205,10 +205,10 @@ func ApiProcessServiceInfo() (pgrepOutput ApiProcessServiceInfoStruct) {
 	watchDogPgrepOut, _ := exec.Command("pgrep", "-lf", "ha_watchdog").CombinedOutput()
 
 	reSplitSpace := regexp.MustCompile(`\s+`)
-	reMatchApiProcess := regexp.MustCompile(`hoster_rest_api`)
-	reMatchHaWatchdogProcess := regexp.MustCompile(`ha_watchdog`)
+	reMatchApiProcess := regexp.MustCompile(`.*hoster_rest_api.*`)
+	reMatchHaWatchdogProcess := regexp.MustCompile(`.*ha_watchdog.*`)
 
-	reMatchSkipLogProcess := regexp.MustCompile(`.*hoster_rest_api.log`)
+	reMatchSkipLogProcess := regexp.MustCompile(`.*hoster_rest_api\.log.*`)
 
 	for _, v := range strings.Split(string(apiPgrepOut), "\n") {
 		if reMatchApiProcess.MatchString(v) {

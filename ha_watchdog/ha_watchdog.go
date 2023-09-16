@@ -29,13 +29,13 @@ func main() {
 	lastReachOut := time.Now().Unix()
 
 	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGHUP, syscall.SIGTERM)
+	signal.Notify(signals, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		for sig := range signals {
 			if sig == syscall.SIGHUP {
 				lastReachOut = time.Now().Unix()
 			}
-			if sig == syscall.SIGTERM {
+			if sig == syscall.SIGTERM || sig == syscall.SIGINT {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received SIGTERM, exiting").Run()
 				os.Exit(0)
 			}
