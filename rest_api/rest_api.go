@@ -501,7 +501,10 @@ func main() {
 	go func() {
 		for sig := range signals {
 			if sig == syscall.SIGTERM || sig == syscall.SIGINT {
-				terminateOtherMembers()
+				if haMode {
+					terminateOtherMembers()
+					time.Sleep(time.Second * 10)
+				}
 
 				if sig == syscall.SIGTERM {
 					_ = exec.Command("logger", "-t", hosterRestLabel, "INFO: received SIGTERM, exiting").Run()
