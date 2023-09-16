@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os/exec"
-	"syscall"
 	"time"
 
 	"hoster/cmd"
@@ -65,26 +64,20 @@ func handleHaPing(fiberContext *fiber.Ctx) error {
 }
 
 func handleHaTerminate(fiberContext *fiber.Ctx) error {
-	go func() {
-		service := cmd.ApiServerServiceInfo()
-		nohup := "nohup"
+	service := cmd.ApiServerServiceInfo()
 
-		haWatchdogCmdArgs := []string{"/usr/local/bin/bash", "-c", "'sleep 1 && kill -SIGKILL " + service.HaWatchDogPid + "'", "&"}
-		if service.HaWatchdogRunning {
-			command := exec.Command(nohup, haWatchdogCmdArgs...)
-			command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-			_ = command.Run()
-			_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received a remote terminating call, exiting").Run()
-		}
+	if service.HaWatchdogRunning {
+		_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received a remote terminating call, exiting").Run()
+		_ = exec.Command("kill", "-SIGTERM", service.HaWatchDogPid).Run()
+	}
 
-		apiCmdArgs := []string{"/usr/local/bin/bash", "-c", "'sleep 1 && kill -SIGKILL " + service.ApiServerPid + "'", "&"}
-		if service.ApiServerRunning {
-			command := exec.Command(nohup, apiCmdArgs...)
-			command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-			_ = command.Run()
-			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: received a remote terminating call, exiting").Run()
-		}
-	}()
+	if service.ApiServerRunning {
+		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: received a remote terminating call, exiting").Run()
+		go func() {
+			time.Sleep(2 * time.Second)
+			_ = exec.Command("kill", "-SIGKILL", service.ApiServerPid).Run()
+		}()
+	}
 
 	return fiberContext.JSON(fiber.Map{"message": "done"})
 }
