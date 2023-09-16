@@ -64,11 +64,7 @@ func handleHaPing(fiberContext *fiber.Ctx) error {
 }
 
 func handleHaTerminate(fiberContext *fiber.Ctx) error {
-	go func() {
-		time.Sleep(2 * time.Second)
-		cmd.StopApiServer()
-	}()
-
+	cmd.StopApiServer()
 	return fiberContext.JSON(fiber.Map{"message": "done"})
 }
 
