@@ -140,23 +140,19 @@ func startApiServer(port int, user string, password string, haMode bool, haDebug
 }
 
 func StopApiServer() error {
-	timesKilled := 0
+	services := ApiProcessServiceInfo()
 
-	out, err := exec.Command("pgrep", "ha_watchdog").CombinedOutput()
-	if err == nil && len(string(out)) > 0 {
-		timesKilled += 1
-		_ = exec.Command("kill", "-SIGTERM", strings.TrimSpace(string(out))).Run()
-		emojlog.PrintLogMessage("HA_WATCHDOG service stopped using PID: "+strings.TrimSpace(string(out)), emojlog.Changed)
+	if services.ApiServerRunning {
+		_ = exec.Command("kill", "-SIGTERM", services.HaWatchDogPid).Run()
+		emojlog.PrintLogMessage("ha_watchdog service has been stopped using PID: "+services.ApiServerPid, emojlog.Changed)
 	}
 
-	out, err = exec.Command("pgrep", "hoster_rest_api").CombinedOutput()
-	if err == nil && len(string(out)) > 0 {
-		timesKilled += 1
-		_ = exec.Command("kill", "-SIGTERM", strings.TrimSpace(string(out))).Run()
-		emojlog.PrintLogMessage("REST API service stopped using PID: "+strings.TrimSpace(string(out)), emojlog.Changed)
+	if services.HaWatchdogRunning {
+		_ = exec.Command("kill", "-SIGTERM", services.HaWatchDogPid).Run()
+		emojlog.PrintLogMessage("hoster_rest_api service has been stopped using PID: "+services.HaWatchDogPid, emojlog.Changed)
 	}
 
-	if timesKilled < 1 {
+	if !services.ApiServerRunning {
 		emojlog.PrintLogMessage("Sorry, the REST API service is not running", emojlog.Error)
 	}
 
@@ -179,7 +175,7 @@ func showLogApiServer() error {
 }
 
 func statusApiServer() error {
-	apiProcessPgrep := ApiServerServiceInfo()
+	apiProcessPgrep := ApiProcessServiceInfo()
 
 	if apiProcessPgrep.ApiServerRunning {
 		fmt.Println(" 🟢 API Server is running as PID " + apiProcessPgrep.ApiServerPid)
@@ -197,14 +193,14 @@ func statusApiServer() error {
 	return nil
 }
 
-type ApiProcessServiceInfo struct {
+type ApiProcessServiceInfoStruct struct {
 	HaWatchdogRunning bool
 	HaWatchDogPid     string
 	ApiServerRunning  bool
 	ApiServerPid      string
 }
 
-func ApiServerServiceInfo() (pgrepOutput ApiProcessServiceInfo) {
+func ApiProcessServiceInfo() (pgrepOutput ApiProcessServiceInfoStruct) {
 	apiPgrepOut, _ := exec.Command("pgrep", "-lf", "hoster_rest_api").CombinedOutput()
 	watchDogPgrepOut, _ := exec.Command("pgrep", "-lf", "ha_watchdog").CombinedOutput()
 
