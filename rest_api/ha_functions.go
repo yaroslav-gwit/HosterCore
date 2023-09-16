@@ -576,10 +576,13 @@ func terminateOtherMembers() {
 	}
 
 	if candidateFound {
+		var wg sync.WaitGroup
 		for _, v := range readHostsDb() {
 			if v.NodeInfo.Hostname == myHostname {
 				continue
 			}
+
+			wg.Add(1)
 
 			go func(node HosterHaNodeStruct) {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: sending a shutdown signal to: "+node.NodeInfo.Hostname).Run()
@@ -594,16 +597,18 @@ func terminateOtherMembers() {
 				auth := node.NodeInfo.User + ":" + node.NodeInfo.Password
 				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 				req.Header.Add("Authorization", "Basic "+authEncoded)
-
 				res, err := http.DefaultClient.Do(req)
+
 				if err != nil {
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: could not notify the member: "+node.NodeInfo.Hostname+". Error: "+err.Error()).Run()
 				} else {
 					req.Body.Close()
 					res.Body.Close()
 				}
+				wg.Done()
 			}(v)
 		}
+		wg.Wait()
 	} else {
 		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: not a candidate node, use one of the candidates to shutdown the whole cluster").Run()
 	}
