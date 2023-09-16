@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os/exec"
+	"syscall"
 	"time"
 
 	"hoster/cmd"
@@ -64,7 +65,25 @@ func handleHaPing(fiberContext *fiber.Ctx) error {
 }
 
 func handleHaTerminate(fiberContext *fiber.Ctx) error {
-	cmd.StopApiServer()
+	go func() {
+		service := cmd.ApiServerServiceInfo()
+
+		nohup := "nohup"
+		apiCmdArgs := []string{"bash", "-c", "sleep 3 && kill -SIGKILL " + service.ApiServerPid, "&"}
+		if service.ApiServerRunning {
+			command := exec.Command(nohup, apiCmdArgs...)
+			command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+			command.Start()
+		}
+
+		haWatchdogCmdArgs := []string{"bash", "-c", "sleep 3 && kill -SIGKILL " + service.HaWatchDogPid, "&"}
+		if service.HaWatchdogRunning {
+			command := exec.Command(nohup, haWatchdogCmdArgs...)
+			command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+			command.Start()
+		}
+	}()
+
 	return fiberContext.JSON(fiber.Map{"message": "done"})
 }
 

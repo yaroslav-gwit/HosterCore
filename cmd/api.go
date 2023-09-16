@@ -179,7 +179,7 @@ func showLogApiServer() error {
 }
 
 func statusApiServer() error {
-	apiProcessPgrep := apiServerServiceInfo()
+	apiProcessPgrep := ApiServerServiceInfo()
 
 	if apiProcessPgrep.ApiServerRunning {
 		fmt.Println(" 🟢 API Server is running as PID " + apiProcessPgrep.ApiServerPid)
@@ -204,7 +204,7 @@ type ApiProcessServiceInfo struct {
 	ApiServerPid      string
 }
 
-func apiServerServiceInfo() (pgrepOutput ApiProcessServiceInfo) {
+func ApiServerServiceInfo() (pgrepOutput ApiProcessServiceInfo) {
 	apiPgrepOut, _ := exec.Command("pgrep", "-lf", "hoster_rest_api").CombinedOutput()
 	watchDogPgrepOut, _ := exec.Command("pgrep", "-lf", "ha_watchdog").CombinedOutput()
 
