@@ -75,6 +75,7 @@ func handleHaTerminate(fiberContext *fiber.Ctx) error {
 
 	// if service.ApiServerRunning {
 	go func() {
+		time.Sleep(1500 * time.Millisecond)
 		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: received a remote terminating call").Run()
 		os.Exit(0)
 	}()
