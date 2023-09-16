@@ -74,6 +74,7 @@ func handleHaTerminate(fiberContext *fiber.Ctx) error {
 			command := exec.Command(nohup, apiCmdArgs...)
 			command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 			command.Start()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: received a remote terminating call, exiting").Run()
 		}
 
 		haWatchdogCmdArgs := []string{"bash", "-c", "sleep 3 && kill -SIGKILL " + service.HaWatchDogPid, "&"}
@@ -81,6 +82,7 @@ func handleHaTerminate(fiberContext *fiber.Ctx) error {
 			command := exec.Command(nohup, haWatchdogCmdArgs...)
 			command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 			command.Start()
+			_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received a remote terminating call, exiting").Run()
 		}
 	}()
 
