@@ -503,13 +503,6 @@ func main() {
 	go func() {
 		for sig := range signals {
 			if sig == syscall.SIGTERM || sig == syscall.SIGINT {
-				if sig == syscall.SIGTERM {
-					_ = exec.Command("logger", "-t", hosterRestLabel, "INFO: received SIGTERM, exiting").Run()
-				}
-				if sig == syscall.SIGINT {
-					_ = exec.Command("logger", "-t", hosterRestLabel, "INFO: received SIGINT (CTRL+C), exiting").Run()
-				}
-
 				if haMode {
 					candidateFound := false
 					for _, v := range haConfig.Candidates {
@@ -549,6 +542,13 @@ func main() {
 					} else {
 						_ = exec.Command("logger", "-t", hosterRestLabel, "ERROR: not a candidate node, use one of the candidates to shutdown the whole cluster").Run()
 					}
+				}
+
+				if sig == syscall.SIGTERM {
+					_ = exec.Command("logger", "-t", hosterRestLabel, "INFO: received SIGTERM, exiting").Run()
+				}
+				if sig == syscall.SIGINT {
+					_ = exec.Command("logger", "-t", hosterRestLabel, "INFO: received SIGINT (CTRL+C), exiting").Run()
 				}
 
 				err := app.Shutdown()
