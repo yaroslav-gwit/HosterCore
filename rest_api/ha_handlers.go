@@ -65,17 +65,20 @@ func handleHaPing(fiberContext *fiber.Ctx) error {
 }
 
 func handleHaTerminate(fiberContext *fiber.Ctx) error {
-	service := cmd.ApiServerServiceInfo()
-
-	if service.HaWatchdogRunning {
-		_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received a remote terminating call, exiting").Run()
+	// if service.HaWatchdogRunning {
+	go func() {
+		service := cmd.ApiServerServiceInfo()
+		_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received a remote terminating call").Run()
 		_ = exec.Command("kill", "-SIGTERM", service.HaWatchDogPid).Run()
-	}
+	}()
+	// }
 
-	if service.ApiServerRunning {
-		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: received a remote terminating call, exiting").Run()
+	// if service.ApiServerRunning {
+	go func() {
+		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: received a remote terminating call").Run()
 		os.Exit(0)
-	}
+	}()
+	// }
 
 	return fiberContext.JSON(fiber.Map{"message": "done"})
 }
