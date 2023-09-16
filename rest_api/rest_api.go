@@ -519,6 +519,10 @@ func main() {
 					}
 					if candidateFound {
 						for _, v := range readHostsDb() {
+							if v.NodeInfo.Hostname == myHostname {
+								continue
+							}
+
 							_ = exec.Command("logger", "-t", hosterRestLabel, "INFO: sending a shutdown signal to: "+v.NodeInfo.Hostname).Run()
 							url := v.NodeInfo.Protocol + "://" + v.NodeInfo.Address + ":" + v.NodeInfo.Port + "/api/v1/ha/terminate"
 
