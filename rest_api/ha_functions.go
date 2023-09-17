@@ -87,26 +87,30 @@ func init() {
 	haModeEnv := os.Getenv("REST_API_HA_MODE")
 	if len(haModeEnv) > 0 {
 		haMode = true
-		haModeString := []byte("PRODUCTION")
-		_ = os.Remove("/var/run/hoster_rest_api.mode")
-		err := os.WriteFile("/var/run/hoster_rest_api.mode", haModeString, 0644)
-		if err != nil {
-			_ = exec.Command("logger", "-t", "HOSTER_REST", "ERROR: could not write the /var/run/hoster_rest_api.mode file").Run()
-		}
 	} else {
 		_ = exec.Command("logger", "-t", "HOSTER_REST", "INFO: STARING REST API SERVER IN REGULAR (NON-HA) MODE").Run()
-		haModeString := []byte("DEBUG")
-		_ = os.Remove("/var/run/hoster_rest_api.mode")
-		err := os.WriteFile("/var/run/hoster_rest_api.mode", haModeString, 0644)
-		if err != nil {
-			_ = exec.Command("logger", "-t", "HOSTER_REST", "ERROR: could not write the /var/run/hoster_rest_api.mode file").Run()
-		}
 		return
 	}
 
 	debugModeEnv := os.Getenv("REST_API_HA_DEBUG")
 	if len(debugModeEnv) > 0 {
 		debugMode = true
+	}
+
+	if debugMode {
+		haModeString := []byte("DEBUG")
+		_ = os.Remove("/var/run/hoster_rest_api.mode")
+		err := os.WriteFile("/var/run/hoster_rest_api.mode", haModeString, 0644)
+		if err != nil {
+			_ = exec.Command("logger", "-t", "HOSTER_REST", "ERROR: could not write the /var/run/hoster_rest_api.mode file").Run()
+		}
+	} else {
+		haModeString := []byte("PRODUCTION")
+		_ = os.Remove("/var/run/hoster_rest_api.mode")
+		err := os.WriteFile("/var/run/hoster_rest_api.mode", haModeString, 0644)
+		if err != nil {
+			_ = exec.Command("logger", "-t", "HOSTER_REST", "ERROR: could not write the /var/run/hoster_rest_api.mode file").Run()
+		}
 	}
 
 	file, _ := os.ReadFile("/opt/hoster-core/config_files/ha_config.json")
