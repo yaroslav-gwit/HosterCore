@@ -1,9 +1,9 @@
 package main
 
 import (
+	"HosterCore/cmd"
 	"encoding/json"
 	"fmt"
-	"hoster/cmd"
 	"log"
 	"os"
 	"os/exec"

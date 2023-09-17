@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"HosterCore/emojlog"
 	"errors"
-	"hoster/emojlog"
 	"log"
 	"os"
 	"os/exec"

@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"time"
 
-	"hoster/cmd"
+	"HosterCore/cmd"
 
 	"github.com/gofiber/fiber/v2"
 )

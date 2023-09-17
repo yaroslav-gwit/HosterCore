@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"HosterCore/emojlog"
 	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"hoster/emojlog"
 	"log"
 	"math/rand"
 	"net"

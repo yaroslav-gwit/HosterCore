@@ -1,10 +1,10 @@
 package main
 
 import (
+	"HosterCore/cmd"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"hoster/cmd"
 	"io"
 	"log"
 	"net/http"

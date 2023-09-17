@@ -1,8 +1,8 @@
 package main
 
 import (
+	"HosterCore/cmd"
 	"bufio"
-	"hoster/cmd"
 	"io"
 	"os"
 	"os/exec"

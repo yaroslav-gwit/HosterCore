@@ -1,7 +1,7 @@
 package main
 
 import (
-	"hoster/cmd"
+	"HosterCore/cmd"
 	"os"
 	"os/exec"
 	"os/signal"

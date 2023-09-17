@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"hoster/cmd"
+	"HosterCore/cmd"
 
 	"github.com/miekg/dns"
 )

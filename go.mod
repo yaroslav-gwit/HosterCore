@@ -1,4 +1,4 @@
-module hoster
+module HosterCore
 
 go 1.19
 

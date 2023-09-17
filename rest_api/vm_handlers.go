@@ -1,8 +1,8 @@
 package main
 
 import (
+	"HosterCore/cmd"
 	"fmt"
-	"hoster/cmd"
 	"log"
 	"os"
 	"os/exec"
