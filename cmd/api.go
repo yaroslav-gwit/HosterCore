@@ -176,6 +176,7 @@ func showLogApiServer() error {
 
 func statusApiServer() error {
 	apiProcessPgrep := ApiProcessServiceInfo()
+	debugMode, productionMode := getHaRunMode()
 
 	if apiProcessPgrep.ApiServerRunning {
 		fmt.Println(" 🟢 API Server is running as PID " + apiProcessPgrep.ApiServerPid)
@@ -185,6 +186,15 @@ func statusApiServer() error {
 
 	if apiProcessPgrep.HaWatchdogRunning {
 		fmt.Println(" 🟢 HA Watchdog service is running as PID " + apiProcessPgrep.HaWatchDogPid)
+		fmt.Println()
+
+		if debugMode {
+			fmt.Println(" 🛠️ HA is running in DEBUG mode")
+		}
+		if productionMode {
+			fmt.Println(" 🚀 HA is running in PRODUCTION mode")
+		}
+
 		fmt.Println(" 🔶 BE CAREFUL! This system is running as a part of the HA. Changes applied here, may affect other cluster members.")
 	} else {
 		fmt.Println(" 🔴 HA Watchdog service IS NOT running")
@@ -228,6 +238,27 @@ func ApiProcessServiceInfo() (pgrepOutput ApiProcessServiceInfoStruct) {
 			pgrepOutput.HaWatchDogPid = pid
 			pgrepOutput.HaWatchdogRunning = true
 		}
+	}
+
+	return
+}
+
+func getHaRunMode() (haRunInDebug bool, haRunInProduction bool) {
+	fileData, err := os.ReadFile("/var/run/hoster_rest_api.mode")
+	if err != nil {
+		return
+	}
+
+	reMatchProduction := regexp.MustCompile(`.*[Pp][Rr][Oo][Dd].*`)
+	if reMatchProduction.MatchString(string(fileData)) {
+		haRunInProduction = true
+		return
+	}
+
+	reMatchDebug := regexp.MustCompile(`.*[Dd][Ee][Bb][Uu][Gg].*`)
+	if reMatchDebug.MatchString(string(fileData)) {
+		haRunInDebug = true
+		return
 	}
 
 	return
