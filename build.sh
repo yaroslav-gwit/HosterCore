@@ -3,14 +3,14 @@ echo "=== Starting the build process ==="
 set -e
 
 GIT_INFO=$(git describe --tags); DATE_INFO=$(date '+%Y-%m-%d_%H-%M-%S')
-VERSION=${GIT_INFO}_COMPILED_ON_${DATE_INFO}; _=${VERSION}
+VERSION=${GIT_INFO}_COMPILED_ON_${DATE_INFO}  #; _=${VERSION}
 # Set the RELEASE=true, to build the release version
 if test -z "${RELEASE}"; then 
     echo "Building the DEV version of HosterCore..."
     echo ""
 
     echo "Building the hoster module..."
-    go build -a -ldflags="-X cmd.VERSION=$(VERSION)"
+    go build -a -ldflags="-X cmd.VERSION=${VERSION}"
 else 
     echo "Building the RELEASE version of HosterCore..."
     echo ""
