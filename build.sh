@@ -10,7 +10,8 @@ if test -z "${RELEASE}"; then
     echo ""
 
     echo "Building the hoster module..."
-    go build -a -ldflags="-X HosterCore/cmd.HosterVersion=${VERSION}" -o hoster
+    # go build -a -ldflags="-X HosterCore/cmd.HosterVersion=${VERSION}" -o hoster
+    go build -ldflags="-X HosterCore/cmd.HosterVersion=${VERSION}" -o hoster
 else 
     echo "Building the RELEASE version of HosterCore..."
     echo ""
