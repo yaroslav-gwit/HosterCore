@@ -8,14 +8,14 @@ bash build.sh
 echo ""
 
 echo "=== Starting the installation process ==="
-cp -v hoster /opt/hoster-core/
-cp -v vm_supervisor/vm_supervisor /opt/hoster-core/vm_supervisor_service
-cp -v self_update/self_update /opt/hoster-core/self_update_service
-cp -v dns_server/dns_server /opt/hoster-core/
-cp -v mbuffer/mbuffer /opt/hoster-core/
-cp -v node_exporter/node_exporter /opt/hoster-core/node_exporter_custom
-cp -v rest_api/rest_api /opt/hoster-core/hoster_rest_api
-cp -v ha_watchdog/ha_watchdog /opt/hoster-core/
+cp -v hoster /opt/hoster-core/ || echo "ERROR: hoster binary is in use"
+cp -v vm_supervisor/vm_supervisor /opt/hoster-core/vm_supervisor_service || echo "ERROR: vm_supervisor_service binary is in use"
+cp -v self_update/self_update /opt/hoster-core/self_update_service || echo "ERROR: self_update_service binary is in use"
+cp -v dns_server/dns_server /opt/hoster-core/ || echo "ERROR: dns_server binary is in use"
+cp -v mbuffer/mbuffer /opt/hoster-core/ || echo "ERROR: mbuffer binary is in use"
+cp -v node_exporter/node_exporter /opt/hoster-core/node_exporter_custom || echo "ERROR: node_exporter_custom binary is in use"
+cp -v rest_api/rest_api /opt/hoster-core/hoster_rest_api || echo "ERROR: hoster_rest_api binary is in use"
+cp -v ha_watchdog/ha_watchdog /opt/hoster-core/ || echo "ERROR: ha_watchdog binary is in use"
 echo "Copied over executable files"
 
 echo "=== Installation process done ==="
