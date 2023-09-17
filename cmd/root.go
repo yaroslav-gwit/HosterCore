@@ -241,12 +241,12 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 }
 
-var VERSION = "v0.2b-RELEASE"
+var HosterVersion = "v0.2b-RELEASE"
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version number of HosterCore",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(VERSION)
+		fmt.Println(HosterVersion)
 	},
 }
