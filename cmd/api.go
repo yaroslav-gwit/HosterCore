@@ -189,7 +189,7 @@ func statusApiServer() error {
 		fmt.Println()
 
 		if debugMode {
-			fmt.Println(" 🛠️ HA is running in DEBUG mode")
+			fmt.Println(" ️🤖 HA is running in DEBUG mode")
 		}
 		if productionMode {
 			fmt.Println(" 🚀 HA is running in PRODUCTION mode")
