@@ -3,6 +3,7 @@ package cmd
 import (
 	"HosterCore/emojlog"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -100,6 +101,21 @@ var (
 	}
 )
 
+var (
+	dnsStatusCmd = &cobra.Command{
+		Use:   "status",
+		Short: "Get DNS Server service status",
+		Long:  `Get DNS Server service status.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := checkInitFile()
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+			statusDnsServer()
+		},
+	}
+)
+
 func startDnsServer() error {
 	execPath, err := os.Executable()
 	if err != nil {
@@ -166,4 +182,40 @@ func showLogDns() error {
 		return err
 	}
 	return nil
+}
+
+type DnsServerServiceInfoStruct struct {
+	Pid     string
+	Running bool
+}
+
+func dnsServerServiceInfo() (pgrepOutput DnsServerServiceInfoStruct) {
+	pgrepCmdOut, _ := exec.Command("pgrep", "-lf", "dns_server").CombinedOutput()
+	reSplitSpace := regexp.MustCompile(`\s+`)
+	reMatchDnsProcess := regexp.MustCompile(`.*dns_server.*`)
+	reMatchSkipLogProcess := regexp.MustCompile(`.*tail*`)
+
+	for _, v := range strings.Split(string(pgrepCmdOut), "\n") {
+		if reMatchDnsProcess.MatchString(v) {
+			if reMatchSkipLogProcess.MatchString(v) {
+				continue
+			} else {
+				pid := reSplitSpace.Split(v, -1)[0]
+				pgrepOutput.Pid = pid
+				pgrepOutput.Running = true
+			}
+		}
+	}
+
+	return
+}
+
+func statusDnsServer() {
+	dnsProcessPgrep := dnsServerServiceInfo()
+
+	if dnsProcessPgrep.Running {
+		fmt.Println(" 🟢 DNS Server is running as PID " + dnsProcessPgrep.Pid)
+	} else {
+		fmt.Println(" 🔴 DNS Server IS NOT running")
+	}
 }

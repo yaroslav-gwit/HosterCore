@@ -236,6 +236,7 @@ func init() {
 	dnsCmd.AddCommand(dnsStopCmd)
 	dnsCmd.AddCommand(dnsReloadCmd)
 	dnsCmd.AddCommand(dnsShowLogCmd)
+	dnsCmd.AddCommand(dnsStatusCmd)
 
 	// Version command section
 	rootCmd.AddCommand(versionCmd)
