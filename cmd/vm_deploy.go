@@ -33,11 +33,13 @@ var (
 	vmDeployCpus           int
 	vmDeployRam            string
 	vmDeployStartWhenReady bool
+	vmDeployFromIso        bool
+	vmDeployIsoFilePath    string
 
 	vmDeployCmd = &cobra.Command{
 		Use:   "deploy",
-		Short: "Deploy the VM, using a pre-defined template",
-		Long:  `Deploy the VM, using a pre-defined template`,
+		Short: "Deploy a new VM",
+		Long:  `Deploy a new VM, using the pre-defined templates or ISO files`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
@@ -47,9 +49,17 @@ var (
 			if len(osTypeAlias) > 0 {
 				osType = osTypeAlias
 			}
-			err = deployVmMain(vmName, networkName, osType, zfsDataset, vmDeployCpus, vmDeployRam, vmDeployStartWhenReady)
-			if err != nil {
-				log.Fatal(err)
+
+			if vmDeployFromIso {
+				err = deployVmFromIso(vmName, networkName, osType, zfsDataset, vmDeployCpus, vmDeployRam, vmDeployStartWhenReady, vmDeployIsoFilePath)
+				if err != nil {
+					log.Fatal(err)
+				}
+			} else {
+				err = deployVmMain(vmName, networkName, osType, zfsDataset, vmDeployCpus, vmDeployRam, vmDeployStartWhenReady)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 		},
 	}
@@ -80,42 +90,10 @@ type ConfigOutputStruct struct {
 }
 
 func deployVmMain(vmName string, networkName string, osType string, dsParent string, cpus int, ram string, startWhenReady bool) error {
-	// Start VM name constraints check
-	vmNameMinLength := 5
-	vmNameMaxLength := 22
-	vmNameCantStartWith := "1234567890-_"
-	vmNameValidChars := "qwertyuiopasdfghjklzxcvbnm-QWERTYUIOPASDFGHJKLZXCVBNM_1234567890"
-	// Check if vmName uses valid characters
-	for _, v := range vmName {
-		valid := false
-		for _, vv := range vmNameValidChars {
-			if v == vv {
-				valid = true
-				break
-			}
-		}
-		if !valid {
-			return errors.New("vm name cannot contain '" + string(v) + "' character")
-		}
+	vmNameError := checkVmNameInput(vmName)
+	if vmNameError != nil {
+		return vmNameError
 	}
-	// Check if vmName starts with a valid character
-	for i, v := range vmName {
-		if i > 1 {
-			break
-		}
-		for _, vv := range vmNameCantStartWith {
-			if v == vv {
-				return errors.New("vm name cannot start with a number, an underscore or a hyphen")
-			}
-		}
-	}
-	// Check vmName length
-	if len(vmName) < vmNameMinLength {
-		return errors.New("vm name cannot contain less than " + strconv.Itoa(vmNameMinLength) + " characters")
-	} else if len(vmName) > vmNameMaxLength {
-		return errors.New("vm name cannot contain more than " + strconv.Itoa(vmNameMaxLength) + " characters")
-	}
-	// END VM name constraints check
 
 	// Initialize values
 	c := ConfigOutputStruct{}
@@ -428,6 +406,294 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	return nil
 }
 
+func deployVmFromIso(vmName string, networkName string, osType string, dsParent string, cpus int, ram string, startWhenReady bool, isoPath string) error {
+	if len(isoPath) < 1 {
+		return errors.New("please, specify which ISO file will be used for the installation")
+	}
+
+	if !FileExists(isoPath) {
+		return errors.New("the ISO file you've specified doesn't exist")
+	}
+
+	vmNameError := checkVmNameInput(vmName)
+	if vmNameError != nil {
+		return vmNameError
+	}
+
+	// Initialize values
+	c := ConfigOutputStruct{}
+	var err error
+
+	// Set CPU cores and RAM
+	c.Cpus = strconv.Itoa(cpus)
+	c.Ram = ram
+
+	// Generate and set the root and gwitsuper users password
+	c.RootPassword = generateRandomPassword(33, true, true)
+	c.GwitsuperPassword = generateRandomPassword(33, true, true)
+	// Generate and set CI instance ID
+	c.InstanceId = generateRandomPassword(5, false, true)
+
+	// Generate correct VM name
+	c.VmName, err = generateVmName(vmName)
+	if err != nil {
+		return errors.New("could not generate vm name: " + err.Error())
+	}
+
+	emojlog.PrintLogMessage("Deploying new VM: "+c.VmName, emojlog.Info)
+
+	// Generate and set random MAC address
+	c.MacAddress, err = generateRandomMacAddress()
+	if err != nil {
+		return errors.New("could not generate vm name: " + err.Error())
+	}
+
+	if len(deployIpAddress) > 1 {
+		c.IpAddress = deployIpAddress
+	} else {
+		// Generate and set random IP address (which is free in the pool of addresses)
+		c.IpAddress, err = generateNewIp(networkName)
+		if err != nil {
+			return errors.New("could not generate the IP: " + err.Error())
+		}
+	}
+
+	networkInfo, err := networkInfo()
+	if err != nil {
+		return errors.New("could not read the network config")
+	}
+	if len(networkName) < 1 {
+		c.NetworkName = networkInfo[0].Name
+		c.Subnet = networkInfo[0].Subnet
+		c.NakedSubnet = strings.Split(networkInfo[0].Subnet, "/")[1]
+		c.Gateway = networkInfo[0].Gateway
+		c.NetworkComment = networkInfo[0].Comment
+	} else {
+		for _, v := range networkInfo {
+			if networkName == v.Name {
+				c.NetworkName = v.Name
+				c.Subnet = v.Subnet
+				c.NakedSubnet = strings.Split(v.Subnet, "/")[1]
+				c.Gateway = v.Gateway
+				c.NetworkComment = v.Comment
+			}
+		}
+		if len(c.NetworkName) < 1 {
+			return errors.New("network name supplied doesn't exist")
+		}
+	}
+
+	if len(deployDnsServer) > 1 {
+		c.DnsServer = deployDnsServer
+	} else {
+		c.DnsServer = c.Gateway
+	}
+
+	c.LiveStatus = "testing"
+	c.OsType = "custom"
+	c.OsComment = "Custom OS"
+
+	c.ParentHost = GetHostName()
+	c.VncPort = generateRandomVncPort()
+	c.VncPassword = generateRandomPassword(8, true, true)
+	if err != nil {
+		return errors.New("could not generate vnc port: " + err.Error())
+	}
+
+	c.SshKeys, err = getSystemSshKeys()
+	if err != nil {
+		return errors.New("could not get ssh keys: " + err.Error())
+	}
+
+	// Generate template ciUserDataTemplate
+	tmpl, err := template.New("ciUserDataTemplate").Parse(ciUserDataTemplate)
+	if err != nil {
+		return errors.New("could not generate ciUserDataTemplate: " + err.Error())
+	}
+
+	var ciUserData strings.Builder
+	if err := tmpl.Execute(&ciUserData, c); err != nil {
+		return errors.New("could not generate ciUserDataTemplate: " + err.Error())
+	}
+
+	// Generate template ciNetworkConfigTemplate
+	tmpl, err = template.New("ciNetworkConfigTemplate").Parse(ciNetworkConfigTemplate)
+	if err != nil {
+		return errors.New("could not generate ciNetworkConfigTemplate: " + err.Error())
+	}
+
+	var ciNetworkConfig strings.Builder
+	if err := tmpl.Execute(&ciNetworkConfig, c); err != nil {
+		return errors.New("could not generate ciNetworkConfigTemplate: " + err.Error())
+	}
+
+	// Generate template ciMetaDataTemplate
+	tmpl, err = template.New("ciMetaDataTemplate").Parse(ciMetaDataTemplate)
+	if err != nil {
+		return errors.New("could not generate ciMetaDataTemplate: " + err.Error())
+	}
+
+	var ciMetaData strings.Builder
+	if err := tmpl.Execute(&ciMetaData, c); err != nil {
+		return errors.New("could not generate ciMetaDataTemplate: " + err.Error())
+	}
+
+	// Move this into a separate function with the proper error handling
+	zfsCreateOutput, zfsCreateErr := exec.Command("zfs", "create", dsParent+"/"+c.VmName).CombinedOutput()
+	if zfsCreateErr != nil {
+		return errors.New(strings.TrimSpace(string(zfsCreateOutput)) + zfsCreateErr.Error())
+	}
+	osDiskLocation := "/" + dsParent + "/" + c.VmName + "/disk0.img"
+	_ = exec.Command("touch", osDiskLocation).Run()
+	_ = exec.Command("truncate", "-s", "+10G", osDiskLocation).Run()
+	emojlog.PrintLogMessage("Created a new VM dataset: "+dsParent+"/"+c.VmName, emojlog.Debug)
+
+	// Write config files
+	emojlog.PrintLogMessage("Writing CloudInit config files", emojlog.Debug)
+	newVmFolder := "/" + dsParent + "/" + c.VmName
+	vmConfigFileLocation := newVmFolder + "/vm_config.json"
+	vmConfig := VmConfigStruct{}
+	networkConfig := VmNetworkStruct{}
+	diskConfig := VmDiskStruct{}
+	diskConfigList := []VmDiskStruct{}
+	vmConfig.CPUSockets = "1"
+	vmConfig.CPUCores = c.Cpus
+	vmConfig.Memory = c.Ram
+	vmConfig.Loader = "uefi"
+	vmConfig.LiveStatus = c.LiveStatus
+	vmConfig.OsType = c.OsType
+	vmConfig.OsComment = c.OsComment
+	vmConfig.Owner = "system"
+	vmConfig.ParentHost = c.ParentHost
+
+	networkConfig.NetworkAdaptorType = "virtio-net"
+	networkConfig.NetworkBridge = c.NetworkName
+	networkConfig.NetworkMac = c.MacAddress
+	networkConfig.IPAddress = c.IpAddress
+	networkConfig.Comment = c.NetworkComment
+	vmConfig.Networks = append(vmConfig.Networks, networkConfig)
+
+	// Add system disk
+	diskConfig.DiskType = "nvme"
+	diskConfig.DiskLocation = "internal"
+	diskConfig.DiskImage = "disk0.img"
+	diskConfig.Comment = "OS Disk"
+	diskConfigList = append(diskConfigList, diskConfig)
+	// Add CloudInit ISO
+	diskConfig.DiskType = "ahci-cd"
+	diskConfig.DiskLocation = "internal"
+	diskConfig.DiskImage = "seed.iso"
+	diskConfig.Comment = "CloudInit ISO"
+	diskConfigList = append(diskConfigList, diskConfig)
+	// Add the installation ISO
+	diskConfig.DiskType = "ahci-cd"
+	diskConfig.DiskLocation = "external"
+	diskConfig.DiskImage = isoPath
+	diskConfig.Comment = "Installation ISO"
+	diskConfigList = append(diskConfigList, diskConfig)
+	// Translate the temp diskConfig variable into the struct
+	vmConfig.Disks = append(vmConfig.Disks, diskConfigList...)
+
+	vmConfig.IncludeHostwideSSHKeys = true
+	vmConfig.VmSshKeys = c.SshKeys
+	vmConfig.VncPort = c.VncPort
+	vmConfig.VncPassword = c.VncPassword
+	vmConfig.Description = "-"
+
+	err = vmConfigFileWriter(vmConfig, vmConfigFileLocation)
+	if err != nil {
+		return err
+	}
+
+	// Create cloud init folder
+	if _, err := os.Stat(newVmFolder + "/cloud-init-files"); os.IsNotExist(err) {
+		err = os.Mkdir(newVmFolder+"/cloud-init-files", 0750)
+		if err != nil {
+			return err
+		}
+	}
+	// Open /cloud-init-files/user-data for writing
+	ciUserDataFileLocation, err := os.Create(newVmFolder + "/cloud-init-files/user-data")
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	defer ciUserDataFileLocation.Close()
+	// Create a new writer
+	writer := bufio.NewWriter(ciUserDataFileLocation)
+	// Write a string to the file
+	str := ciUserData.String()
+	_, err = writer.WriteString(str)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	// Flush the writer to ensure all data has been written to the file
+	err = writer.Flush()
+	if err != nil {
+		return errors.New(err.Error())
+	}
+
+	// Open /cloud-init-files/network-config for writing
+	ciNetworkFileLocation, err := os.Create(newVmFolder + "/cloud-init-files/network-config")
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	defer ciNetworkFileLocation.Close()
+	// Create a new writer
+	writer = bufio.NewWriter(ciNetworkFileLocation)
+	// Write a string to the file
+	str = ciNetworkConfig.String()
+	_, err = writer.WriteString(str)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	// Flush the writer to ensure all data has been written to the file
+	err = writer.Flush()
+	if err != nil {
+		return errors.New(err.Error())
+	}
+
+	// Open /cloud-init-files/meta-data for writing
+	ciMetaDataFileLocation, err := os.Create(newVmFolder + "/cloud-init-files/meta-data")
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	defer ciMetaDataFileLocation.Close()
+	// Create a new writer
+	writer = bufio.NewWriter(ciMetaDataFileLocation)
+	// Write a string to the file
+	str = ciMetaData.String()
+	_, err = writer.WriteString(str)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	// Flush the writer to ensure all data has been written to the file
+	err = writer.Flush()
+	if err != nil {
+		return errors.New(err.Error())
+	}
+
+	err = createCiIso(newVmFolder)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+
+	err = ReloadDnsServer()
+	if err != nil {
+		return err
+	}
+
+	// Start the VM when all of the above is complete
+	if startWhenReady {
+		time.Sleep(time.Second * 1)
+		err := VmStart(c.VmName, false)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 const ciUserDataTemplate = `#cloud-config
 
 users:
@@ -483,6 +749,52 @@ ethernets:
       search: [ {{ .ParentHost }}.internal.lan, ]
       addresses: [{{ .DnsServer }}, ]
 `
+
+func checkVmNameInput(vmName string) (vmNameError error) {
+	vmNameMinLength := 5
+	vmNameMaxLength := 22
+	vmNameCantStartWith := "1234567890-_"
+	vmNameValidChars := "qwertyuiopasdfghjklzxcvbnm-QWERTYUIOPASDFGHJKLZXCVBNM_1234567890"
+
+	// Check if vmName uses valid characters
+	for _, v := range vmName {
+		valid := false
+		for _, vv := range vmNameValidChars {
+			if v == vv {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			vmNameError = errors.New("vm name cannot contain '" + string(v) + "' character")
+			return
+		}
+	}
+
+	// Check if vmName starts with a valid character
+	for i, v := range vmName {
+		if i > 1 {
+			break
+		}
+		for _, vv := range vmNameCantStartWith {
+			if v == vv {
+				vmNameError = errors.New("vm name cannot start with a number, an underscore or a hyphen")
+				return
+			}
+		}
+	}
+
+	// Check vmName length
+	if len(vmName) < vmNameMinLength {
+		vmNameError = errors.New("vm name cannot contain less than " + strconv.Itoa(vmNameMinLength) + " characters")
+		return
+	} else if len(vmName) > vmNameMaxLength {
+		vmNameError = errors.New("vm name cannot contain more than " + strconv.Itoa(vmNameMaxLength) + " characters")
+		return
+	}
+
+	return
+}
 
 func generateNewIp(networkName string) (string, error) {
 	var existingIps []string

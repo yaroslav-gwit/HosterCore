@@ -115,6 +115,8 @@ func init() {
 	vmDeployCmd.Flags().BoolVarP(&vmDeployStartWhenReady, "start-now", "", false, "Whether to start the VM after it's deployed")
 	vmDeployCmd.Flags().StringVarP(&deployIpAddress, "ip-address", "", "", "Set the IP address for your new VM manually")
 	vmDeployCmd.Flags().StringVarP(&deployDnsServer, "dns-server", "", "", "Set a custom DNS server for your new VM")
+	vmDeployCmd.Flags().BoolVarP(&vmDeployFromIso, "from-iso", "", false, "Deploy this VM using an ISO file")
+	vmDeployCmd.Flags().StringVarP(&vmDeployIsoFilePath, "path-to-iso", "", "", "Path to the ISO file")
 
 	// VM cmd -> vm cireset
 	vmCmd.AddCommand(vmCiResetCmd)
