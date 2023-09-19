@@ -458,4 +458,5 @@ type VmConfigStruct struct {
 	VncPassword            string            `json:"vnc_password"`
 	Description            string            `json:"description"`
 	UUID                   string            `json:"uuid,omitempty"`
+	VGA                    string            `json:"vga,omitempty"`
 }

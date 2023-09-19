@@ -78,7 +78,7 @@ func ZfsSnapshotRollback(vmName string, snapshotName string, forceStop bool, for
 	emojlog.PrintLogMessage("VM has been rolled back to: "+snapshotName, emojlog.Changed)
 
 	if forceStart {
-		err := VmStart(vmName, false)
+		err := VmStart(vmName, false, false)
 		if err != nil {
 			return err
 		}

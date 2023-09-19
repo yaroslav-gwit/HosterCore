@@ -40,7 +40,7 @@ func vmStartAll(waitTime int) {
 		if iteration != 1 {
 			time.Sleep(time.Second * time.Duration(waitTime))
 		}
-		VmStart(vm, false)
+		VmStart(vm, false, false)
 	}
 }
 

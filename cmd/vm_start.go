@@ -17,7 +17,8 @@ import (
 )
 
 var (
-	restoreVmState bool
+	vmStartCmdRestoreVmState bool
+	vmStartCmdWaitForVnc     bool
 
 	vmStartCmd = &cobra.Command{
 		Use:   "start [vmName]",
@@ -30,7 +31,7 @@ var (
 				log.Fatal(err.Error())
 			}
 
-			err = VmStart(args[0], restoreVmState)
+			err = VmStart(args[0], vmStartCmdRestoreVmState, vmStartCmdWaitForVnc)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -39,7 +40,7 @@ var (
 )
 
 // Starts the VM using BhyveCTL and vm_supervisor_service
-func VmStart(vmName string, restoreVmState bool) error {
+func VmStart(vmName string, restoreVmState bool, waitForVnc bool) error {
 	allVms := getAllVms()
 	if !slices.Contains(allVms, vmName) {
 		return errors.New("VM is not found on this system")
@@ -50,7 +51,7 @@ func VmStart(vmName string, restoreVmState bool) error {
 	emojlog.PrintLogMessage("Starting the VM: "+vmName, emojlog.Info)
 
 	// Generate bhyve start command
-	bhyveCommand := generateBhyveStartCommand(vmName, restoreVmState)
+	bhyveCommand := generateBhyveStartCommand(vmName, restoreVmState, waitForVnc)
 	// Set env vars to send to "vm_supervisor"
 	os.Setenv("VM_START", bhyveCommand)
 	os.Setenv("VM_NAME", vmName)
@@ -79,7 +80,7 @@ func VmStart(vmName string, restoreVmState bool) error {
 	return nil
 }
 
-func generateBhyveStartCommand(vmName string, restoreVmState bool) string {
+func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bool) string {
 	vmConfigVar := vmConfig(vmName)
 
 	var availableTaps []string
@@ -172,8 +173,23 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool) string {
 	bhyveFinalCommand = bhyveFinalCommand + cpuAndRam
 	// fmt.Println(bhyveFinalCommand)
 
+	// VNC options
 	bhyvePci = bhyvePci + 1
 	vncCommand := " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",fbuf,tcp=0.0.0.0:" + vmConfigVar.VncPort + ",w=800,h=600,password=" + vmConfigVar.VncPassword
+	// Set the VGA mode if found in the config file
+	if len(vmConfigVar.VGA) > 0 {
+		if vmConfigVar.VGA == "io" || vmConfigVar.VGA == "on" || vmConfigVar.VGA == "off" {
+			_ = 0
+		} else {
+			emojlog.PrintLogMessage("vga config option may only be set to 'on', 'off', or 'io', expect VM boot failures", emojlog.Warning)
+		}
+		vncCommand = vncCommand + ",vga=" + vmConfigVar.VGA
+	}
+	// Wait for the VNC connection before booting the VM
+	if waitForVnc {
+		vncCommand = vncCommand + ",wait"
+	}
+	// EOF VNC options
 	bhyveFinalCommand = bhyveFinalCommand + vncCommand
 	// fmt.Println(bhyveFinalCommand)
 
@@ -184,7 +200,7 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool) string {
 	} else if vmConfigVar.Loader == "uefi" {
 		loaderCommand = " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",xhci,tablet -l com1,/dev/nmdm-" + vmName + "-1A -l bootrom,/usr/local/share/uefi-firmware/BHYVE_UEFI.fd"
 	} else {
-		log.Fatal("Please make sure your loader is set to 'bios' or 'uefi'")
+		emojlog.PrintLogMessage("make sure your loader is set to 'bios' or 'uefi', expect VM boot failures", emojlog.Warning)
 	}
 
 	if len(vmConfigVar.UUID) > 0 {
