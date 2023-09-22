@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"strings"
 	"text/template"
 
@@ -62,24 +61,17 @@ func jailStart(jailName string) error {
 		}
 	}
 
-	additionalConfigSplit := strings.Split(string(additionalConfig), "\n")
-	for _, v := range additionalConfigSplit {
-		if len(v) > 0 {
-			v = strings.TrimSpace(v)
-			jailConfigString = jailConfigString + "    " + v + "\n"
-		}
-	}
-
-	jailConfigStringSplit := strings.Split(jailConfigString, "\n")
-	reMatchCarriageReturn := regexp.MustCompile(`.*\n.*`)
-	for i, v := range jailConfigStringSplit {
-		if i == len(jailConfigStringSplit)-1 {
-			if reMatchCarriageReturn.MatchString(v) {
-				jailConfigString = jailConfigString + "}"
-			} else {
-				jailConfigString = jailConfigString + "\n}"
+	if len(additionalConfig) > 0 {
+		additionalConfigSplit := strings.Split(string(additionalConfig), "\n")
+		for _, v := range additionalConfigSplit {
+			if len(v) > 0 {
+				v = strings.TrimSpace(v)
+				jailConfigString = jailConfigString + "    " + v + "\n"
 			}
 		}
+		jailConfigString = jailConfigString + "}"
+	} else {
+		jailConfigString = jailConfigString + "\n}"
 	}
 
 	fmt.Println(jailConfigString)
