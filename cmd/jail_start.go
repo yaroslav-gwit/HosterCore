@@ -76,7 +76,15 @@ func jailStart(jailName string) error {
 		jailConfigString = jailConfigString + "\n}"
 	}
 
-	fmt.Println(jailConfigString)
+	_ = os.Remove(jailConfig.JailFolder + "jail_temp_runtime.conf")
+	err = os.WriteFile(jailConfig.JailFolder+"jail_temp_runtime.conf", []byte(jailConfigString), 0644)
+	if err != nil {
+		return err
+	}
+
+	// fmt.Println(jailConfigString)
+	_ = exec.Command("cat", jailConfig.JailFolder+"jail_temp_runtime.conf").Run()
+
 	return nil
 }
 
