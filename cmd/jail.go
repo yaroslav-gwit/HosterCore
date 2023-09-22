@@ -118,6 +118,7 @@ type JailConfigFileStruct struct {
 	JailName     string
 	JailHostname string
 	JailRootPath string
+	JailFolder   string
 	Netmask      string
 	Running      bool
 	Backup       bool

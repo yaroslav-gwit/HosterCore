@@ -51,6 +51,16 @@ func jailStart(jailName string) error {
 	}
 
 	var jailConfigString = jailConfigBuffer.String()
+
+	var additionalConfig []byte
+	if FileExists(jailConfig.JailFolder + jailConfig.ConfigFileAppend) {
+		additionalConfig, err = os.ReadFile(jailConfig.JailFolder + jailConfig.ConfigFileAppend)
+		if err != nil {
+			return err
+		}
+		jailConfigString = jailConfigString + string(additionalConfig)
+	}
+
 	jailConfigString = jailConfigString + "\n}"
 	fmt.Println(jailConfigString)
 
@@ -99,6 +109,7 @@ func getJailConfig(jailName string) (jailConfig JailConfigFileStruct, configErro
 	for _, v := range datasets {
 		if FileExists(v.MountPoint + "/" + jailName + "/jail_config.json") {
 			configFile = v.MountPoint + "/" + jailName + "/jail_config.json"
+			jailConfig.JailRootPath = v.MountPoint + "/" + jailName + "/root_folder"
 			jailConfig.JailRootPath = v.MountPoint + "/" + jailName + "/"
 		}
 	}
