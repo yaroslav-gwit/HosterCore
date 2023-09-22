@@ -98,50 +98,52 @@ func getRunningJails() ([]LiveJailStruct, error) {
 	return jails, nil
 }
 
-type JailStruct struct {
-	Name    string
-	Path    string
-	Running bool
-	Backup  bool
-}
-
 type JailConfigFileStruct struct {
 	CPULimitPercent  int      `json:"cpu_limit_percent"`
 	RAMLimit         string   `json:"ram_limit"`
+	Production       bool     `json:"production"`
 	StartupScript    string   `json:"startup_script"`
 	ShutdownScript   string   `json:"shutdown_script"`
 	ConsoleOutputLog string   `json:"console_output_log"`
 	ConfigFileAppend string   `json:"config_file_append"`
 	StartAfter       string   `json:"start_after,omitempty"`
-	StartupDelay     int      `json:"startup_delay"`
+	StartupDelay     int      `json:"startup_delay,omitempty"`
 	IPAddress        string   `json:"ip_address"`
 	Network          string   `json:"network"`
 	DNSServers       []string `json:"dns_servers"`
 	Timezone         string   `json:"timezone"`
 	Parent           string   `json:"parent"`
+
+	// Not a part of JSON config
+	JailName     string
+	JailRootPath string
+	Netmask      string
+	NetworkName  string
+	Running      bool
+	Backup       bool
 }
 
-func getAllJails() ([]JailStruct, error) {
-	jails := []JailStruct{}
+func getAllJails() ([]JailConfigFileStruct, error) {
+	jails := []JailConfigFileStruct{}
 
 	zfsDatasets, err := getZfsDatasetInfo()
 	if err != nil {
-		return []JailStruct{}, err
+		return []JailConfigFileStruct{}, err
 	}
 
 	for _, v := range zfsDatasets {
-		mtDirWalk, err := os.ReadDir(v.MountPoint)
+		mountPointDirWalk, err := os.ReadDir(v.MountPoint)
 		if err != nil {
-			return []JailStruct{}, err
+			return []JailConfigFileStruct{}, err
 		}
 
-		jail := JailStruct{}
-		for _, vv := range mtDirWalk {
-			if vv.IsDir() {
-				configFile := v.MountPoint + "/" + vv.Name() + "/jail_config.json"
+		jail := JailConfigFileStruct{}
+		for _, directory := range mountPointDirWalk {
+			if directory.IsDir() {
+				configFile := v.MountPoint + "/" + directory.Name() + "/jail_config.json"
 				if FileExists(configFile) {
-					jail.Name = vv.Name()
-					jail.Path = v.MountPoint + "/" + vv.Name() + "/"
+					jail.JailName = directory.Name()
+					jail.JailRootPath = v.MountPoint + "/" + directory.Name() + "/"
 					jails = append(jails, jail)
 				}
 			}

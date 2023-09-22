@@ -1,6 +1,7 @@
 {
     "cpu_limit_percent": 70,
     "ram_limit": "2G",
+    "production": true,
 
     "startup_script": "/bin/sh /etc/rc",
     "shutdown_script": "/bin/sh /etc/rc.shutdown",
