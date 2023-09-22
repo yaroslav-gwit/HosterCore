@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/spf13/cobra"
@@ -58,7 +59,12 @@ func jailStart(jailName string) error {
 		if err != nil {
 			return err
 		}
-		jailConfigString = jailConfigString + string(additionalConfig)
+	}
+
+	for _, v := range strings.Split(string(additionalConfig), "\n") {
+		if len(v) > 0 {
+			jailConfigString = jailConfigString + "    " + v
+		}
 	}
 
 	jailConfigString = jailConfigString + "\n}"
