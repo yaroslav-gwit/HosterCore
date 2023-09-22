@@ -71,7 +71,7 @@ func jailStart(jailName string) error {
 	}
 
 	jailConfigStringSplit := strings.Split(jailConfigString, "\n")
-	reMatchCarriageReturn := regexp.MustCompile(`\n`)
+	reMatchCarriageReturn := regexp.MustCompile(`.*\n.*`)
 	for i, v := range jailConfigStringSplit {
 		if i == len(jailConfigStringSplit)-1 {
 			if reMatchCarriageReturn.MatchString(v) {
