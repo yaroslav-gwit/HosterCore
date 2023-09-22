@@ -116,6 +116,7 @@ type JailConfigFileStruct struct {
 
 	// Not a part of JSON config
 	JailName     string
+	JailHostname string
 	JailRootPath string
 	Netmask      string
 	Running      bool
