@@ -82,9 +82,13 @@ func jailStart(jailName string) error {
 		return err
 	}
 
-	// fmt.Println(jailConfigString)
-	_ = exec.Command("cat", jailConfig.JailFolder+"jail_temp_runtime.conf").Run()
+	jailCommandOutput, err := exec.Command("jail", "-c", "-f", jailConfig.JailFolder+"jail_temp_runtime.conf").CombinedOutput()
+	if err != nil {
+		errorValue := "Output: " + strings.TrimSpace(string(jailCommandOutput)) + "; " + err.Error()
+		return errors.New(errorValue)
+	}
 
+	// fmt.Println(jailConfigString)
 	return nil
 }
 
