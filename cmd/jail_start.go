@@ -109,8 +109,8 @@ func getJailConfig(jailName string) (jailConfig JailConfigFileStruct, configErro
 	for _, v := range datasets {
 		if FileExists(v.MountPoint + "/" + jailName + "/jail_config.json") {
 			configFile = v.MountPoint + "/" + jailName + "/jail_config.json"
+			jailConfig.JailFolder = v.MountPoint + "/" + jailName + "/"
 			jailConfig.JailRootPath = v.MountPoint + "/" + jailName + "/root_folder"
-			jailConfig.JailRootPath = v.MountPoint + "/" + jailName + "/"
 		}
 	}
 
