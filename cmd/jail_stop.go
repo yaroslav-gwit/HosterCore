@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -37,11 +38,13 @@ func jailStop(jailName string, logActions bool) error {
 		return err
 	}
 
-	jailStopCommand := []string{"jexec", jailName, jailConfig.ShutdownScript}
+	jailStopCommand := []string{"jexec", jailName}
+	splitAtSpace := regexp.MustCompile(`\s+`)
+	jailStopCommand = append(jailStopCommand, splitAtSpace.Split(jailConfig.ShutdownScript, -1)...)
 	if logActions {
 		emojlog.PrintLogMessage("Stopping the Jail using the shutdown script: "+strings.Join(jailStopCommand, " "), emojlog.Debug)
 	}
-	jailStopOutput, err := exec.Command("jexec", jailName, jailConfig.ShutdownScript).CombinedOutput()
+	jailStopOutput, err := exec.Command(jailStopCommand[0], jailStopCommand[1:]...).CombinedOutput()
 	if err != nil {
 		errorValue := errors.New("FATAL: " + string(jailStopOutput) + "; " + err.Error())
 		return errorValue
