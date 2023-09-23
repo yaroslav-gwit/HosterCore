@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"HosterCore/emojlog"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -17,7 +18,7 @@ import (
 
 var (
 	jailStartCmd = &cobra.Command{
-		Use:   "start",
+		Use:   "start [jailName]",
 		Short: "Start a specific Jail",
 		Long:  `Start a specific Jail using it's name`,
 		Args:  cobra.ExactArgs(1),
@@ -28,7 +29,7 @@ var (
 			}
 			// cmd.Help()
 
-			err = jailStart(args[0])
+			err = jailStart(args[0], true)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -36,7 +37,7 @@ var (
 	}
 )
 
-func jailStart(jailName string) error {
+func jailStart(jailName string, logActions bool) error {
 	jailConfig, err := getJailConfig(jailName)
 	if err != nil {
 		return err
@@ -82,10 +83,19 @@ func jailStart(jailName string) error {
 		return err
 	}
 
-	jailCommandOutput, err := exec.Command("jail", "-c", "-f", jailConfig.JailFolder+"jail_temp_runtime.conf").CombinedOutput()
+	jailCreateCommand := []string{"jail", "-c", "-f", jailConfig.JailFolder + "jail_temp_runtime.conf"}
+	if logActions {
+		emojlog.PrintLogMessage("Starting the Jail using the startup script: "+strings.Join(jailCreateCommand, " "), emojlog.Debug)
+		emojlog.PrintLogMessage("Please give it a moment...", emojlog.Debug)
+	}
+	jailCreateOutput, err := exec.Command("jail", "-c", "-f", jailConfig.JailFolder+"jail_temp_runtime.conf").CombinedOutput()
 	if err != nil {
-		errorValue := "FATAL: " + strings.TrimSpace(string(jailCommandOutput)) + "; " + err.Error()
+		errorValue := "FATAL: " + strings.TrimSpace(string(jailCreateOutput)) + "; " + err.Error()
 		return errors.New(errorValue)
+	}
+
+	if logActions {
+		emojlog.PrintLogMessage("The Jail is up now "+jailName, emojlog.Changed)
 	}
 
 	// fmt.Println(jailConfigString)
@@ -165,7 +175,24 @@ func getJailConfig(jailName string) (jailConfig JailConfigFileStruct, configErro
 
 	jailConfig.JailName = jailName
 	jailConfig.JailHostname = jailName + "." + GetHostName() + ".internal.lan"
-	jailConfig.Netmask = "24"
+
+	networks, err := networkInfo()
+	if err != nil {
+		configError = unmarshalErr
+		return
+	}
+
+	networkFound := false
+	for _, v := range networks {
+		if v.Name == jailConfig.Network {
+			networkFound = true
+			jailConfig.Netmask = v.Subnet
+		}
+	}
+	if !networkFound {
+		configError = errors.New("network " + jailConfig.Network + " was not found")
+		return
+	}
 
 	commandOutput, err := exec.Command("sysctl", "-nq", "hw.ncpu").CombinedOutput()
 	if err != nil {

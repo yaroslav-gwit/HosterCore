@@ -50,6 +50,7 @@ func init() {
 	// Jail command section
 	rootCmd.AddCommand(jailCmd)
 	jailCmd.AddCommand(jailStartCmd)
+	jailCmd.AddCommand(jailStopCmd)
 
 	// VM command section
 	rootCmd.AddCommand(vmCmd)
