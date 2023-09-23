@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
@@ -186,7 +187,8 @@ func getJailConfig(jailName string) (jailConfig JailConfigFileStruct, configErro
 	for _, v := range networks {
 		if v.Name == jailConfig.Network {
 			networkFound = true
-			jailConfig.Netmask = v.Subnet
+			reSplitAtSlash := regexp.MustCompile(`\/`)
+			jailConfig.Netmask = reSplitAtSlash.Split(v.Subnet, -1)[1]
 		}
 	}
 	if !networkFound {
