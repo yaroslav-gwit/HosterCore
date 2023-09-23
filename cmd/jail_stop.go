@@ -38,11 +38,15 @@ func jailStop(jailName string, logActions bool) error {
 		return err
 	}
 
+	if logActions {
+		emojlog.PrintLogMessage("Stopping the Jail: "+jailName, emojlog.Info)
+	}
+
 	jailStopCommand := []string{"jexec", jailName}
 	splitAtSpace := regexp.MustCompile(`\s+`)
 	jailStopCommand = append(jailStopCommand, splitAtSpace.Split(jailConfig.ShutdownScript, -1)...)
 	if logActions {
-		emojlog.PrintLogMessage("Stopping the Jail using the shutdown script: "+strings.Join(jailStopCommand, " "), emojlog.Debug)
+		emojlog.PrintLogMessage("Executing the Jail shutdown script: "+strings.Join(jailStopCommand, " "), emojlog.Debug)
 	}
 	jailStopOutput, err := exec.Command(jailStopCommand[0], jailStopCommand[1:]...).CombinedOutput()
 	if err != nil {
@@ -68,6 +72,10 @@ func jailStop(jailName string, logActions bool) error {
 	if err != nil {
 		errorValue := errors.New("FATAL: " + string(ifconfigIpRemoveOutput) + "; " + err.Error())
 		return errorValue
+	}
+
+	if logActions {
+		emojlog.PrintLogMessage("The Jail has been stopped: "+jailName, emojlog.Changed)
 	}
 
 	return nil
