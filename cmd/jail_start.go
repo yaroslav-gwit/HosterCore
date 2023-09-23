@@ -78,6 +78,10 @@ func jailStart(jailName string, logActions bool) error {
 		jailConfigString = jailConfigString + "\n}"
 	}
 
+	if logActions {
+		emojlog.PrintLogMessage("Starting the Jail: "+jailName, emojlog.Info)
+	}
+
 	_ = os.Remove(jailConfig.JailFolder + "jail_temp_runtime.conf")
 	err = os.WriteFile(jailConfig.JailFolder+"jail_temp_runtime.conf", []byte(jailConfigString), 0644)
 	if err != nil {
@@ -86,7 +90,7 @@ func jailStart(jailName string, logActions bool) error {
 
 	jailCreateCommand := []string{"jail", "-c", "-f", jailConfig.JailFolder + "jail_temp_runtime.conf"}
 	if logActions {
-		emojlog.PrintLogMessage("Starting the Jail using the startup script: "+strings.Join(jailCreateCommand, " "), emojlog.Debug)
+		emojlog.PrintLogMessage("Executing the Jail startup script: "+strings.Join(jailCreateCommand, " "), emojlog.Debug)
 		emojlog.PrintLogMessage("Please give it a moment...", emojlog.Debug)
 	}
 	jailCreateOutput, err := exec.Command("jail", "-c", "-f", jailConfig.JailFolder+"jail_temp_runtime.conf").CombinedOutput()
@@ -96,7 +100,7 @@ func jailStart(jailName string, logActions bool) error {
 	}
 
 	if logActions {
-		emojlog.PrintLogMessage("The Jail is up now "+jailName, emojlog.Changed)
+		emojlog.PrintLogMessage("The Jail is up now: "+jailName, emojlog.Changed)
 	}
 
 	// fmt.Println(jailConfigString)
