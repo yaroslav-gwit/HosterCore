@@ -37,11 +37,11 @@ func jailStop(jailName string, logActions bool) error {
 		return err
 	}
 
-	jailStopCommand := []string{"jexec", jailName, "sh", jailConfig.ShutdownScript}
+	jailStopCommand := []string{"jexec", jailName, jailConfig.ShutdownScript}
 	if logActions {
 		emojlog.PrintLogMessage("Stopping the Jail using the shutdown script: "+strings.Join(jailStopCommand, " "), emojlog.Debug)
 	}
-	jailStopOutput, err := exec.Command("jexec", jailName, "sh", jailConfig.ShutdownScript).CombinedOutput()
+	jailStopOutput, err := exec.Command("jexec", jailName, jailConfig.ShutdownScript).CombinedOutput()
 	if err != nil {
 		errorValue := errors.New("FATAL: " + string(jailStopOutput) + "; " + err.Error())
 		return errorValue
