@@ -42,7 +42,7 @@ func getRunningJails() ([]LiveJailStruct, error) {
 
 	out, err := exec.Command("jls", "-h", "jid", "name", "path", "dying", "ip4.addr", "ip6.addr").CombinedOutput()
 	// Example output (in case we need to compare it if anything changes on the FreeBSD side in the future)
-	// jid name path dying ip4.addr ip6.addr
+	// jid  name   path        dying   ip4.addr   ip6.addr
 	// [0]  [1]     [2]         [3]       [4]      [5]
 	// 1  example /root/jail   false  10.0.105.50   -
 	// 2  twelve  /root/12_4   false  10.0.105.51   -
@@ -119,6 +119,7 @@ type JailConfigFileStruct struct {
 	Netmask      string
 	Running      bool
 	Backup       bool
+	CpuLimitReal int
 }
 
 func getAllJailsList() ([]string, error) {
@@ -145,4 +146,21 @@ func getAllJailsList() ([]string, error) {
 	}
 
 	return jails, nil
+}
+
+func checkJailOnline(jailConfig JailConfigFileStruct) (jailOnline bool, jailError error) {
+	liveJails, err := getRunningJails()
+	if err != nil {
+		jailError = err
+		return
+	}
+
+	for _, v := range liveJails {
+		if v.Path == jailConfig.JailRootPath {
+			jailOnline = true
+			return
+		}
+	}
+
+	return
 }

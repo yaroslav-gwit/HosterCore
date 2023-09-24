@@ -90,9 +90,24 @@ func generateJailsTable(unixStyleTable bool) error {
 
 		ID = ID + 1
 
+		jailStatus := ""
+		jailOnline, err := checkJailOnline(jailConfig)
+		if err != nil {
+			return nil
+		}
+
+		if jailOnline {
+			jailStatus = jailStatus + "🟢"
+		} else {
+			jailStatus = jailStatus + "🔴"
+		}
+		if jailConfig.Production {
+			jailStatus = jailStatus + "🔁"
+		}
+
 		t.AddRow(strconv.Itoa(ID),
 			v,
-			"Jail Status TBD",
+			jailStatus,
 			strconv.Itoa(jailConfig.CPULimitPercent),
 			jailConfig.RAMLimit,
 			jailConfig.IPAddress,
