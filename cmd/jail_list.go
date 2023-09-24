@@ -63,7 +63,7 @@ func generateJailsTable(unixStyleTable bool) error {
 		t.SetBorderBottom(false)
 	} else {
 		t.SetHeaders("Hoster Jails")
-		t.SetHeaderColSpans(0, 9)
+		t.SetHeaderColSpans(0, 10)
 
 		t.AddHeaders(
 			"#",
@@ -74,7 +74,7 @@ func generateJailsTable(unixStyleTable bool) error {
 			"Main IP Address",
 			"Release",
 			"Uptime",
-			"Space used",
+			"Space Used",
 			"Jail Description")
 
 		t.SetLineStyle(table.StyleBrightCyan)
@@ -83,9 +83,24 @@ func generateJailsTable(unixStyleTable bool) error {
 	}
 
 	for _, v := range jailsList {
+		jailConfig, err := getJailConfig(v, true)
+		if err != nil {
+			continue
+		}
+
 		ID = ID + 1
+
 		t.AddRow(strconv.Itoa(ID),
-			v)
+			v,
+			"Jail Status TBD",
+			strconv.Itoa(jailConfig.CPULimitPercent),
+			jailConfig.RAMLimit,
+			jailConfig.IPAddress,
+			"Release TBD",
+			"Uptime TBD",
+			"Space Used TBD",
+			jailConfig.Description,
+		)
 	}
 
 	t.Render()

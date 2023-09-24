@@ -109,6 +109,7 @@ type JailConfigFileStruct struct {
 	DNSServers       []string `json:"dns_servers"`
 	Timezone         string   `json:"timezone"`
 	Parent           string   `json:"parent"`
+	Description      string   `json:"description"`
 
 	// Not a part of JSON config
 	JailName     string

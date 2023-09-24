@@ -39,7 +39,7 @@ var (
 )
 
 func jailStart(jailName string, logActions bool) error {
-	jailConfig, err := getJailConfig(jailName)
+	jailConfig, err := getJailConfig(jailName, false)
 	if err != nil {
 		return err
 	}
@@ -145,10 +145,12 @@ func checkIfJailExists(jailName string) (jailExists bool) {
 	return
 }
 
-func getJailConfig(jailName string) (jailConfig JailConfigFileStruct, configError error) {
-	if !checkIfJailExists(jailName) {
-		configError = errors.New("jail doesn't exist")
-		return
+func getJailConfig(jailName string, ignoreJailExistsCheck bool) (jailConfig JailConfigFileStruct, configError error) {
+	if !ignoreJailExistsCheck {
+		if !checkIfJailExists(jailName) {
+			configError = errors.New("jail doesn't exist")
+			return
+		}
 	}
 
 	datasets, err := getZfsDatasetInfo()
@@ -213,6 +215,10 @@ func getJailConfig(jailName string) (jailConfig JailConfigFileStruct, configErro
 
 	realCpuLimit := jailConfig.CPULimitPercent * numberOfCpusInt
 	jailConfig.CPULimitPercent = realCpuLimit
+
+	if len(jailConfig.Description) < 1 {
+		jailConfig.Description = "0"
+	}
 
 	return
 }
