@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"errors"
 	"log"
 	"os"
+	"os/exec"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/aquasecurity/table"
 	"github.com/spf13/cobra"
@@ -81,7 +85,7 @@ func generateJailsTable(unixStyleTable bool) error {
 			"Main IP Address",
 			"Release",
 			"Uptime",
-			"Space Used",
+			"Storage Used",
 			"Jail Description")
 
 		t.SetLineStyle(table.StyleBrightCyan)
@@ -100,7 +104,8 @@ func generateJailsTable(unixStyleTable bool) error {
 		jailStatus := ""
 		jailOnline, err := checkJailOnline(jailConfig)
 		if err != nil {
-			return nil
+			continue
+			// return nil
 		}
 
 		if jailOnline {
@@ -108,19 +113,27 @@ func generateJailsTable(unixStyleTable bool) error {
 		} else {
 			jailStatus = jailStatus + "🔴"
 		}
+
+		jailDsInfo, err := jailZfsDatasetInfo(jailConfig.ZfsDatasetPath)
+		if err != nil {
+			continue
+			// return err
+		}
+		if jailDsInfo.Encrypted {
+			jailStatus = jailStatus + "🔒"
+		}
+
 		if jailConfig.Production {
 			jailStatus = jailStatus + "🔁"
 		}
 
 		jailRelease, err := getJailReleaseInfo(jailConfig)
 		if err != nil {
-			return err
+			continue
+			// return err
 		}
 
-		jailUptime, err := getJailUptime(v)
-		if err != nil {
-			return err
-		}
+		jailUptime := getJailUptime(v)
 
 		t.AddRow(strconv.Itoa(ID),
 			v,
@@ -130,11 +143,49 @@ func generateJailsTable(unixStyleTable bool) error {
 			jailConfig.IPAddress,
 			jailRelease,
 			jailUptime,
-			"Space Used TBD",
+			jailDsInfo.StorageUsedHuman,
 			jailConfig.Description,
 		)
 	}
 
 	t.Render()
 	return nil
+}
+
+type JailZfsDatasetStruct struct {
+	Encrypted        bool
+	StorageUsedHuman string
+	StorageUsedBytes int
+}
+
+func jailZfsDatasetInfo(zfsDatasetPath string) (zfsDsInfo JailZfsDatasetStruct, zfsDsError error) {
+	zfsListOutput, err := exec.Command("zfs", "list", "-Hp", "-o", "name,encryption,used", zfsDatasetPath).CombinedOutput()
+	//    [0]                               [1]          [2]
+	// zroot/vm-encrypted/wordpress-one	aes-256-gcm	1244692480
+	if err != nil {
+		errorValue := "FATAL: " + string(zfsListOutput) + "; " + err.Error()
+		zfsDsError = errors.New(errorValue)
+		return
+	}
+
+	reSpaceSplit := regexp.MustCompile(`\s+`)
+	for _, v := range strings.Split(string(zfsListOutput), "\n") {
+		tempSplitList := reSpaceSplit.Split(v, -1)
+
+		if tempSplitList[1] == "off" {
+			zfsDsInfo.Encrypted = false
+		} else {
+			zfsDsInfo.Encrypted = true
+		}
+
+		zfsDsInfo.StorageUsedBytes, err = strconv.Atoi(tempSplitList[2])
+		if err != nil {
+			zfsDsError = err
+			return
+		}
+
+		zfsDsInfo.StorageUsedHuman = ByteConversion(zfsDsInfo.StorageUsedBytes)
+	}
+
+	return
 }

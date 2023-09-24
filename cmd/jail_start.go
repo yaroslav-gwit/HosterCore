@@ -166,6 +166,7 @@ func getJailConfig(jailName string, ignoreJailExistsCheck bool) (jailConfig Jail
 		if FileExists(v.MountPoint + "/" + jailName + "/jail_config.json") {
 			configFile = v.MountPoint + "/" + jailName + "/jail_config.json"
 			jailConfig.JailFolder = v.MountPoint + "/" + jailName + "/"
+			jailConfig.ZfsDatasetPath = v.Name + "/" + jailName
 			jailConfig.JailRootPath = v.MountPoint + "/" + jailName + "/root_folder"
 		}
 	}

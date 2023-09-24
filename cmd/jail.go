@@ -113,14 +113,15 @@ type JailConfigFileStruct struct {
 	Description      string   `json:"description"`
 
 	// Not a part of JSON config
-	JailName     string
-	JailHostname string
-	JailRootPath string
-	JailFolder   string
-	Netmask      string
-	Running      bool
-	Backup       bool
-	CpuLimitReal int
+	JailName       string
+	JailHostname   string
+	JailRootPath   string
+	JailFolder     string
+	ZfsDatasetPath string
+	Netmask        string
+	Running        bool
+	Backup         bool
+	CpuLimitReal   int
 }
 
 func getAllJailsList() ([]string, error) {
@@ -197,10 +198,10 @@ func clearJailUptimeStateFile(jailName string) {
 	_ = os.Remove("/var/run/hoster_jail_state_" + jailName)
 }
 
-func getJailUptime(jailName string) (jailUptime string, jailError error) {
+func getJailUptime(jailName string) (jailUptime string) {
 	fileStat, err := os.Stat("/var/run/hoster_jail_state_" + jailName)
 	if err != nil {
-		jailUptime = convertUnixTimeToUptime(0)
+		jailUptime = "0s"
 		return
 	}
 
