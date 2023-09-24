@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -171,6 +172,8 @@ func jailZfsDatasetInfo(zfsDatasetPath string) (zfsDsInfo JailZfsDatasetStruct, 
 	reSpaceSplit := regexp.MustCompile(`\s+`)
 	for _, v := range strings.Split(string(zfsListOutput), "\n") {
 		tempSplitList := reSpaceSplit.Split(v, -1)
+		fmt.Println(tempSplitList)
+
 		if len(tempSplitList) < 1 {
 			continue
 		}
