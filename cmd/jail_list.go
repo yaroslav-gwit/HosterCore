@@ -117,6 +117,11 @@ func generateJailsTable(unixStyleTable bool) error {
 			return err
 		}
 
+		jailUptime, err := getJailUptime(v)
+		if err != nil {
+			return err
+		}
+
 		t.AddRow(strconv.Itoa(ID),
 			v,
 			jailStatus,
@@ -124,7 +129,7 @@ func generateJailsTable(unixStyleTable bool) error {
 			jailConfig.RAMLimit,
 			jailConfig.IPAddress,
 			jailRelease,
-			"Uptime TBD",
+			jailUptime,
 			"Space Used TBD",
 			jailConfig.Description,
 		)

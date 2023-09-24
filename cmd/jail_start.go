@@ -99,7 +99,9 @@ func jailStart(jailName string, logActions bool) error {
 		return errors.New(errorValue)
 	}
 
+	createJailUptimeStateFile(jailName)
 	if logActions {
+		emojlog.PrintLogMessage("Created a Jail uptime state file", emojlog.Changed)
 		emojlog.PrintLogMessage("The Jail is up now: "+jailName, emojlog.Changed)
 	}
 

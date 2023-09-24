@@ -74,7 +74,9 @@ func jailStop(jailName string, logActions bool) error {
 		return errorValue
 	}
 
+	clearJailUptimeStateFile(jailName)
 	if logActions {
+		emojlog.PrintLogMessage("Cleared Jail uptime state file", emojlog.Changed)
 		emojlog.PrintLogMessage("The Jail has been stopped: "+jailName, emojlog.Changed)
 	}
 
