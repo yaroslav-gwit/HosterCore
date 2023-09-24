@@ -40,9 +40,16 @@ func generateJailsTable(unixStyleTable bool) error {
 	var ID = 0
 	var t = table.New(os.Stdout)
 	t.SetAlignment(table.AlignRight, //ID
-		table.AlignLeft,  // Snapshot Name
-		table.AlignRight, // Snapshot Size Human
-		table.AlignRight) // Snapshot Size Bytes
+		table.AlignLeft,   // Jail Name
+		table.AlignCenter, // Jail Status
+		table.AlignCenter, // CPU Limit
+		table.AlignCenter, // RAM Limit
+		table.AlignLeft,   // Main IP Address
+		table.AlignLeft,   // Release
+		table.AlignLeft,   // Uptime
+		table.AlignLeft,   // Space Used
+		table.AlignLeft,   // Description
+	)
 
 	if unixStyleTable {
 		t.SetDividers(table.Dividers{
@@ -108,7 +115,7 @@ func generateJailsTable(unixStyleTable bool) error {
 		t.AddRow(strconv.Itoa(ID),
 			v,
 			jailStatus,
-			strconv.Itoa(jailConfig.CPULimitPercent),
+			strconv.Itoa(jailConfig.CPULimitPercent)+"%",
 			jailConfig.RAMLimit,
 			jailConfig.IPAddress,
 			"Release TBD",
