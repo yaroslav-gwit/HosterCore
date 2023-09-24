@@ -164,3 +164,25 @@ func checkJailOnline(jailConfig JailConfigFileStruct) (jailOnline bool, jailErro
 
 	return
 }
+
+func getJailReleaseInfo(jailConfig JailConfigFileStruct) (jailRelease string, jailError error) {
+	jailOsReleaseFile, err := os.ReadFile(jailConfig.JailRootPath + "/etc/os-release")
+	if err != nil {
+		jailError = err
+		return
+	}
+
+	reMatchVersion := regexp.MustCompile(`VERSION=`)
+	reMatchQuotes := regexp.MustCompile(`"`)
+
+	for _, v := range strings.Split(string(jailOsReleaseFile), "\n") {
+		if reMatchVersion.MatchString(v) {
+			v = reMatchVersion.ReplaceAllString(v, "")
+			v = reMatchQuotes.ReplaceAllString(v, "")
+			jailRelease = v
+			return
+		}
+	}
+
+	return
+}
