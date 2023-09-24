@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -23,10 +22,7 @@ var (
 			if err != nil {
 				log.Fatal(err.Error())
 			}
-
-			// cmd.Help()
-			fmt.Println(getRunningJails())
-			fmt.Println(getAllJails())
+			cmd.Help()
 		},
 	}
 )
@@ -124,28 +120,24 @@ type JailConfigFileStruct struct {
 	Backup       bool
 }
 
-func getAllJails() ([]JailConfigFileStruct, error) {
-	jails := []JailConfigFileStruct{}
-
+func getAllJailsList() ([]string, error) {
 	zfsDatasets, err := getZfsDatasetInfo()
 	if err != nil {
-		return []JailConfigFileStruct{}, err
+		return []string{}, err
 	}
 
+	jails := []string{}
 	for _, v := range zfsDatasets {
 		mountPointDirWalk, err := os.ReadDir(v.MountPoint)
 		if err != nil {
-			return []JailConfigFileStruct{}, err
+			return []string{}, err
 		}
 
-		jail := JailConfigFileStruct{}
 		for _, directory := range mountPointDirWalk {
 			if directory.IsDir() {
 				configFile := v.MountPoint + "/" + directory.Name() + "/jail_config.json"
 				if FileExists(configFile) {
-					jail.JailName = directory.Name()
-					jail.JailRootPath = v.MountPoint + "/" + directory.Name() + "/"
-					jails = append(jails, jail)
+					jails = append(jails, directory.Name())
 				}
 			}
 		}
