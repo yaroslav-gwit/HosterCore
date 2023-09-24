@@ -52,6 +52,7 @@ func init() {
 	jailCmd.AddCommand(jailListCmd)
 	jailCmd.AddCommand(jailStartCmd)
 	jailCmd.AddCommand(jailStopCmd)
+	jailCmd.Flags().BoolVarP(&jailListCmdUnixStyle, "unix", "u", false, "Show Unix style table (useful for scripting)")
 
 	// VM command section
 	rootCmd.AddCommand(vmCmd)
