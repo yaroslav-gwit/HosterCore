@@ -634,14 +634,15 @@ func terminateOtherMembers() {
 			auth := node.NodeInfo.User + ":" + node.NodeInfo.Password
 			authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 			req.Header.Add("Authorization", "Basic "+authEncoded)
-			res, err := http.DefaultClient.Do(req)
+			_, err = http.DefaultClient.Do(req)
 
 			if err != nil {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: could not notify the member: "+node.NodeInfo.Hostname+". Error: "+err.Error()).Run()
-			} else {
-				req.Body.Close()
-				res.Body.Close()
 			}
+			// else {
+			// 	req.Body.Close()
+			// 	res.Body.Close()
+			// }
 			wg.Done()
 		}(v)
 	}
