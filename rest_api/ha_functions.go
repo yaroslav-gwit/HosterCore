@@ -188,6 +188,10 @@ func trackManager() {
 	for {
 		if clusterInitialized {
 			var copyHostsDb = readHostsDb(&hostsDbLock)
+			if len(copyHostsDb) < 2 {
+				continue
+			}
+
 			var filteredCandidates []HosterHaNodeStruct
 
 			sort.Slice(copyHostsDb, func(i int, j int) bool {
