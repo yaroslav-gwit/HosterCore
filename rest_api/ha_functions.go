@@ -531,6 +531,7 @@ func modifyHostsDb(input ModifyHostsDbStruct, dbLock *sync.RWMutex) {
 			errorValue := fmt.Sprintf("%s", r)
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: modifyHostsDb(): "+errorValue).Run()
 		}
+		dbLock.Unlock()
 	}()
 
 	if input.addOrUpdate {
@@ -556,7 +557,7 @@ func modifyHostsDb(input ModifyHostsDbStruct, dbLock *sync.RWMutex) {
 			}
 			haHostsDb[hostIndex].LastPing = time.Now().Unix()
 		}
-		dbLock.Unlock()
+		return
 	}
 
 	if input.remove {
@@ -569,7 +570,7 @@ func modifyHostsDb(input ModifyHostsDbStruct, dbLock *sync.RWMutex) {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has been removed from the cluster: "+input.data.NodeInfo.Hostname).Run()
 			}
 		}
-		dbLock.Unlock()
+		return
 	}
 }
 
@@ -579,13 +580,12 @@ func readHostsDb(dbLock *sync.RWMutex) (db []HosterHaNodeStruct) {
 			errorValue := fmt.Sprintf("%s", r)
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: readHostsDb(): "+errorValue).Run()
 		}
+		dbLock.RUnlock()
 	}()
 
 	dbLock.RLock()
 	// db = haHostsDb
-	// copy(db, haHostsDb)
 	db = append(db, haHostsDb...)
-	dbLock.RUnlock()
 
 	return
 }
@@ -621,6 +621,7 @@ func terminateOtherMembers() {
 					errorValue := fmt.Sprintf("%s", r)
 					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: terminateOtherMembers()->GR: "+errorValue).Run()
 				}
+				wg.Done()
 			}()
 
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: sending a shutdown signal to: "+node.NodeInfo.Hostname).Run()
@@ -640,11 +641,6 @@ func terminateOtherMembers() {
 			if err != nil {
 				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: could not notify the member: "+node.NodeInfo.Hostname+". Error: "+err.Error()).Run()
 			}
-			// else {
-			// 	req.Body.Close()
-			// 	res.Body.Close()
-			// }
-			wg.Done()
 		}(v)
 	}
 	wg.Wait()
