@@ -582,7 +582,8 @@ func readHostsDb(dbLock *sync.RWMutex) (db []HosterHaNodeStruct) {
 
 	dbLock.RLock()
 	// db = haHostsDb
-	copy(db, haHostsDb)
+	// copy(db, haHostsDb)
+	db = append(db, haHostsDb...)
 	dbLock.RUnlock()
 
 	return
