@@ -18,10 +18,13 @@ HOSTER_WD="/opt/hoster-core/"
 #_ INSTALL THE REQUIRED PACKAGES _#
 pkg update
 pkg upgrade -y
-pkg install -y nano micro bash bmon iftop mc fusefs-sshfs pftop
-pkg install -y gnu-watch tmux fping qemu-tools fish git openssl
-pkg install -y htop curl wget gtar unzip cdrkit-genisoimage 
-pkg install -y bhyve-firmware bhyve-rc grub2-bhyve uefi-edk2-bhyve-csm edk2-bhyve
+pkg install -y vim bash pftop tmux qemu-tools git openssl curl
+pkg install -y bhyve-firmware uefi-edk2-bhyve-csm edk2-bhyve
+pkg install -y htop wget gtar unzip cdrkit-genisoimage go
+
+#_ OPTIONAL PACKAGES _#
+# (install for easier debugging)
+# pkg install -y nano micro bmon iftop mc fusefs-sshfs gnu-watch fping fish bhyve-rc grub2-bhyve
 
 if [[ -f /bin/bash ]]; then rm /bin/bash; fi
 ln "$(which bash)" /bin/bash
@@ -76,13 +79,14 @@ fi
 
 #_ BOOTLOADER OPTIMISATIONS _#
 BOOTLOADER_FILE="/boot/loader.conf"
-CMD_LINE='fusefs_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
-CMD_LINE='vm.kmem_size="330M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
-CMD_LINE='vm.kmem_size_max="330M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
+# CMD_LINE='fusefs_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
+CMD_LINE='vm.kmem_size="400M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
+CMD_LINE='vm.kmem_size_max="400M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
 CMD_LINE='vfs.zfs.arc_max="40M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
 CMD_LINE='vfs.zfs.vdev.cache.size="5M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
-CMD_LINE='virtio_blk_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
+# CMD_LINE='virtio_blk_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
 CMD_LINE='pf_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
+CMD_LINE='kern.racct.enable=1' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
 
 #_ PF CONFIG BLOCK IN rc.conf _#
 RC_CONF_FILE="/etc/rc.conf"
@@ -92,7 +96,7 @@ CMD_LINE='pflog_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) 
 CMD_LINE='pflog_logfile="/var/log/pflog"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
 CMD_LINE='pflog_flags=""' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
 CMD_LINE='gateway_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
-CMD_LINE='rtclocaltime="NO"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
+# CMD_LINE='rtclocaltime="NO"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
 
 
 #_ SET CORRECT PROFILE FILE _#
@@ -115,7 +119,7 @@ if [ -x /usr/bin/resizewin ] ; then /usr/bin/resizewin -z ; fi
 # Uncomment to display a random cookie on each login.
 # if [ -x /usr/bin/fortune ] ; then /usr/bin/fortune -s ; fi
 
-export EDITOR=micro
+export EDITOR=vim
 
 EOF
 
@@ -145,16 +149,12 @@ EOF
 cat << EOF | cat > ${HOSTER_WD}config_files/host_config.json
 {
     "public_vm_image_server": "https://images.yari.pw/",
-    "backup_servers": [],
     "active_datasets": [
         "zroot/vm-encrypted",
         "zroot/vm-unencrypted"
     ],
     "dns_servers": [
         "${UPSTREAM_DNS_SERVER}"
-    ],
-    "host_dns_acls": [
-        "${NETWORK_SUBNET}"
     ],
     "host_ssh_keys": [
         {

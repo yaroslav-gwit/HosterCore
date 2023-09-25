@@ -112,12 +112,12 @@ type JailConfigFileStruct struct {
 	Parent           string   `json:"parent"`
 	Description      string   `json:"description"`
 
-	// Not a part of JSON config
+	// Not a part of JSON config file
 	JailName       string
 	JailHostname   string
 	JailRootPath   string
 	JailFolder     string
-	ZfsDatasetPath string
+	ZfsDatasetPath string // zroot/vm-encrypted/jailDataset
 	Netmask        string
 	Running        bool
 	Backup         bool

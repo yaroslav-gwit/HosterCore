@@ -46,10 +46,11 @@ type HaConfigJsonStruct struct {
 	StartupTime      int64            `json:"startup_time"`
 }
 
-var haHostsDb []HosterHaNodeStruct
+// var haRegisteredHostsDb []HosterHaNodeStruct
+// var haPingHostsDb []HosterHaNodeStruct
 var haConfig HaConfigJsonStruct
-
-// var hostsDbLock sync.RWMutex
+var haHostsDb []HosterHaNodeStruct
+var hostsDbLock sync.RWMutex
 
 type ModifyHostsDbStruct struct {
 	addOrUpdate bool
@@ -186,7 +187,7 @@ func trackManager() {
 
 	for {
 		if clusterInitialized {
-			var copyHostsDb = readHostsDb()
+			var copyHostsDb = readHostsDb(&hostsDbLock)
 			var filteredCandidates []HosterHaNodeStruct
 
 			sort.Slice(copyHostsDb, func(i int, j int) bool {
@@ -370,7 +371,7 @@ func removeOfflineNodes() {
 	}()
 
 	for {
-		hostsDbCopy := readHostsDb()
+		hostsDbCopy := readHostsDb(&hostsDbLock)
 		for _, v := range hostsDbCopy {
 			if time.Now().Unix() > v.LastPing+v.NodeInfo.FailOverTime {
 				if len(v.NodeInfo.Hostname) > 0 {
@@ -398,7 +399,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 	}
 
 	haVms := []HaVm{}
-	hostsDbCopy := readHostsDb()
+	hostsDbCopy := readHostsDb(&hostsDbLock)
 	for _, v := range hostsDbCopy {
 		haVmsTemp := []HaVm{}
 
@@ -533,7 +534,6 @@ func modifyHostsDb(input ModifyHostsDbStruct) {
 	if input.addOrUpdate {
 		hostFound := false
 		hostIndex := 0
-
 		for i, v := range haHostsDb {
 			if input.data.NodeInfo.Hostname == v.NodeInfo.Hostname {
 				hostFound = true
@@ -568,7 +568,7 @@ func modifyHostsDb(input ModifyHostsDbStruct) {
 	// hostsDbLock.Unlock()
 }
 
-func readHostsDb() (db []HosterHaNodeStruct) {
+func readHostsDb(dbLock *sync.RWMutex) (db []HosterHaNodeStruct) {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
@@ -576,9 +576,9 @@ func readHostsDb() (db []HosterHaNodeStruct) {
 		}
 	}()
 
-	// hostsDbLock.RLock()
+	dbLock.RLock()
 	db = haHostsDb
-	// hostsDbLock.RUnlock()
+	dbLock.RUnlock()
 
 	return
 }
@@ -596,7 +596,7 @@ func terminateOtherMembers() {
 	}
 
 	var wg sync.WaitGroup
-	for _, v := range readHostsDb() {
+	for _, v := range readHostsDb(&hostsDbLock) {
 		if v.NodeInfo.Hostname == myHostname {
 			continue
 		}
