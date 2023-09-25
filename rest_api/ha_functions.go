@@ -577,13 +577,23 @@ func readHostsDb(dbLock *sync.RWMutex) (db []HosterHaNodeStruct) {
 	}()
 
 	dbLock.RLock()
-	db = haHostsDb
-	dbLock.RUnlock()
+	defer dbLock.RUnlock()
 
+	// db = haHostsDb
+	// dbLock.RUnlock()
+
+	copy(db, haHostsDb)
 	return
 }
 
 func terminateOtherMembers() {
+	defer func() {
+		if r := recover(); r != nil {
+			errorValue := fmt.Sprintf("%s", r)
+			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: terminateOtherMembers(): "+errorValue).Run()
+		}
+	}()
+
 	candidateFound := false
 	for _, v := range haConfig.Candidates {
 		if v.Hostname == myHostname {
@@ -602,6 +612,13 @@ func terminateOtherMembers() {
 		}
 		wg.Add(1)
 		go func(node HosterHaNodeStruct) {
+			defer func() {
+				if r := recover(); r != nil {
+					errorValue := fmt.Sprintf("%s", r)
+					_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: terminateOtherMembers()->GR: "+errorValue).Run()
+				}
+			}()
+
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: sending a shutdown signal to: "+node.NodeInfo.Hostname).Run()
 			url := node.NodeInfo.Protocol + "://" + node.NodeInfo.Address + ":" + node.NodeInfo.Port + "/api/v1/ha/terminate"
 
