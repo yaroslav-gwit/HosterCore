@@ -173,7 +173,8 @@ func ReloadDnsServer() error {
 }
 
 func showLogDns() error {
-	tailCmd := exec.Command("tail", "-35", "-f", "/var/run/dns_server")
+	tailCmd := exec.Command("tail", "-35", "-f", "/var/log/hoster_dns_server.log")
+	// tailCmd := exec.Command("tail", "-35", "-f", "/var/run/dns_server")
 	tailCmd.Stdin = os.Stdin
 	tailCmd.Stdout = os.Stdout
 	tailCmd.Stderr = os.Stderr

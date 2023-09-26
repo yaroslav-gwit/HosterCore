@@ -59,7 +59,8 @@ func main() {
 	app.Use(requestid.New())
 
 	// Custom File Writer
-	file, err := os.OpenFile("/var/run/hoster_rest_api.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	file, err := os.OpenFile("/var/log/hoster_rest_api.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// file, err := os.OpenFile("/var/run/hoster_rest_api.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}

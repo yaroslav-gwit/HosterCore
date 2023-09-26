@@ -22,7 +22,8 @@ var upstreamServers []string
 
 func init() {
 	logChannel = make(chan LogMessage)
-	go startLogging("/var/run/dns_server", logChannel)
+	go startLogging("/var/log/hoster_dns_server.log", logChannel)
+	// go startLogging("/var/run/dns_server", logChannel)
 }
 
 func main() {
@@ -235,7 +236,19 @@ func startLogging(logFileLocation string, logChannel chan LogMessage) {
 	if err != nil {
 		_ = exec.Command("logger", err.Error()).Run()
 	}
-	defer logFile.Close()
+
+	defer func() {
+		if r := recover(); r != nil {
+			logFile, err = os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
+			if err != nil {
+				_ = exec.Command("logger", err.Error()).Run()
+			}
+			errorValue := fmt.Sprintf("PANIC AVOIDED: %v", r)
+			_ = exec.Command("logger", errorValue).Run()
+		}
+
+		logFile.Close()
+	}()
 
 	for logMsg := range logChannel {
 		timeNow := time.Now().Format("2006-01-02_15-04-05")
