@@ -288,8 +288,13 @@ func createMissingConfigFiles(jailConfig JailConfigFileStruct) error {
 	if err != nil {
 		return err
 	}
-	t.Execute(file, jailResolvConf)
-	file.Close()
 
+	err = t.Execute(file, jailResolvConf)
+	if err != nil {
+		file.Close()
+		return err
+	}
+
+	file.Close()
 	return nil
 }
