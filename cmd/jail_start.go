@@ -273,28 +273,28 @@ func createMissingConfigFiles(jailConfig JailConfigFileStruct) error {
 	}
 
 	// resolv.conf
-	t, err := template.New("templateJailResolvConf").Parse(templateJailResolvConf)
+	templateResolvConf, err := template.New("templateJailResolvConf").Parse(templateJailResolvConf)
 	if err != nil {
 		return err
 	}
 
 	var jailResolvConf bytes.Buffer
-	err = t.Execute(&jailResolvConf, jailConfig)
+	err = templateResolvConf.Execute(&jailResolvConf, jailConfig)
 	if err != nil {
 		return err
 	}
 
-	file, err := os.Create(jailConfig.JailRootPath + "/etc/resolv.conf")
+	fileResolvConf, err := os.Create(jailConfig.JailRootPath + "/etc/resolv.conf")
 	if err != nil {
 		return err
 	}
 
-	err = t.Execute(file, jailResolvConf)
+	err = templateResolvConf.Execute(fileResolvConf, jailResolvConf)
 	if err != nil {
-		file.Close()
+		fileResolvConf.Close()
 		return err
 	}
 
-	file.Close()
+	fileResolvConf.Close()
 	return nil
 }
