@@ -82,6 +82,11 @@ func jailStart(jailName string, logActions bool) error {
 		emojlog.PrintLogMessage("Starting the Jail: "+jailName, emojlog.Info)
 	}
 
+	err = createMissingConfigFiles(jailConfig)
+	if err != nil {
+		return err
+	}
+
 	_ = os.Remove(jailConfig.JailFolder + "jail_temp_runtime.conf")
 	err = os.WriteFile(jailConfig.JailFolder+"jail_temp_runtime.conf", []byte(jailConfigString), 0644)
 	if err != nil {
@@ -103,11 +108,6 @@ func jailStart(jailName string, logActions bool) error {
 	if logActions {
 		emojlog.PrintLogMessage("Created a Jail uptime state file", emojlog.Changed)
 		emojlog.PrintLogMessage("The Jail is up now: "+jailName, emojlog.Changed)
-	}
-
-	err = createMissingConfigFiles(jailConfig)
-	if err != nil {
-		return err
 	}
 
 	return nil
