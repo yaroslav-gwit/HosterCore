@@ -115,7 +115,7 @@ type JailConfigFileStruct struct {
 	// Not a part of JSON config file
 	JailName       string
 	JailHostname   string
-	JailRootPath   string // /zroot/vm-encrypted/jailDataset/root_folder/
+	JailRootPath   string // /zroot/vm-encrypted/jailDataset/root_folder
 	JailFolder     string
 	ZfsDatasetPath string // zroot/vm-encrypted/jailDataset
 	Netmask        string

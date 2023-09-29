@@ -247,12 +247,12 @@ nameserver {{ .DnsServer }}
 `
 
 func createMissingConfigFiles(jailConfig JailConfigFileStruct) error {
-	if !FileExists(jailConfig.JailRootPath + "etc/fstab") {
-		_, _ = os.Create(jailConfig.JailRootPath + "etc/fstab")
+	if !FileExists(jailConfig.JailRootPath + "/etc/fstab") {
+		_, _ = os.Create(jailConfig.JailRootPath + "/etc/fstab")
 	}
 
 	// rc.conf
-	if !FileExists(jailConfig.JailRootPath + "etc/rc.conf") {
+	if !FileExists(jailConfig.JailRootPath + "/etc/rc.conf") {
 		t, err := template.New("templateJailRcConf").Parse(templateJailRcConf)
 		if err != nil {
 			return err
@@ -264,7 +264,7 @@ func createMissingConfigFiles(jailConfig JailConfigFileStruct) error {
 			return err
 		}
 
-		file, err := os.Create(jailConfig.JailRootPath + "etc/rc.conf")
+		file, err := os.Create(jailConfig.JailRootPath + "/etc/rc.conf")
 		if err != nil {
 			return err
 		}
@@ -284,7 +284,7 @@ func createMissingConfigFiles(jailConfig JailConfigFileStruct) error {
 		return err
 	}
 
-	file, err := os.Create(jailConfig.JailRootPath + "etc/resolv.conf")
+	file, err := os.Create(jailConfig.JailRootPath + "/etc/resolv.conf")
 	if err != nil {
 		return err
 	}
