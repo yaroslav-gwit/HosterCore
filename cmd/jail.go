@@ -96,26 +96,26 @@ func getRunningJails() ([]LiveJailStruct, error) {
 }
 
 type JailConfigFileStruct struct {
-	CPULimitPercent  int      `json:"cpu_limit_percent"`
-	RAMLimit         string   `json:"ram_limit"`
-	Production       bool     `json:"production"`
-	StartupScript    string   `json:"startup_script"`
-	ShutdownScript   string   `json:"shutdown_script"`
-	ConsoleOutputLog string   `json:"console_output_log"`
-	ConfigFileAppend string   `json:"config_file_append"`
-	StartAfter       string   `json:"start_after,omitempty"`
-	StartupDelay     int      `json:"startup_delay,omitempty"`
-	IPAddress        string   `json:"ip_address"`
-	Network          string   `json:"network"`
-	DNSServers       []string `json:"dns_servers"`
-	Timezone         string   `json:"timezone"`
-	Parent           string   `json:"parent"`
-	Description      string   `json:"description"`
+	CPULimitPercent  int    `json:"cpu_limit_percent"`
+	RAMLimit         string `json:"ram_limit"`
+	Production       bool   `json:"production"`
+	StartupScript    string `json:"startup_script"`
+	ShutdownScript   string `json:"shutdown_script"`
+	ConsoleOutputLog string `json:"console_output_log"`
+	ConfigFileAppend string `json:"config_file_append"`
+	StartAfter       string `json:"start_after,omitempty"`
+	StartupDelay     int    `json:"startup_delay,omitempty"`
+	IPAddress        string `json:"ip_address"`
+	Network          string `json:"network"`
+	DnsServer        string `json:"dns_server"`
+	Timezone         string `json:"timezone"`
+	Parent           string `json:"parent"`
+	Description      string `json:"description"`
 
 	// Not a part of JSON config file
 	JailName       string
 	JailHostname   string
-	JailRootPath   string
+	JailRootPath   string // /zroot/vm-encrypted/jailDataset/root_folder/
 	JailFolder     string
 	ZfsDatasetPath string // zroot/vm-encrypted/jailDataset
 	Netmask        string
