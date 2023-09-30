@@ -247,13 +247,12 @@ func doesDatasetExist(dataset string) (bool, error) {
 		return false, fmt.Errorf("could not run `zfs list`: %s; %s", strings.TrimSpace(string(out)), err.Error())
 	}
 
-	reSplitAtSpace := regexp.MustCompile(`\+s`)
+	reSplitAtSpace := regexp.MustCompile(`\s+`)
 	for _, v := range strings.Split(string(out), "\n") {
 		if len(v) < 1 {
 			continue
 		}
 		v = reSplitAtSpace.Split(v, -1)[0]
-		fmt.Println(v)
 		if dataset == v {
 			return true, nil
 		}
