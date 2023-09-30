@@ -60,7 +60,11 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 		dataset = datasets[0].Name
 	}
 
-	if !doesDatasetExist(dataset) {
+	dsExists, err := doesDatasetExist(dataset)
+	if err != nil {
+		return err
+	}
+	if !dsExists {
 		return fmt.Errorf("sorry, the dataset specified doesn't exist: %s", dataset)
 	}
 
@@ -218,7 +222,11 @@ func createNestedZfsDataset(parentDs string, nestedDs string) error {
 		return fmt.Errorf("parent ZFS dataset could not be found: %s", parentDs)
 	}
 
-	if doesDatasetExist(parentDs + "/" + nestedDs) {
+	dsExists, err := doesDatasetExist(parentDs + "/" + nestedDs)
+	if err != nil {
+		return err
+	}
+	if dsExists {
 		return fmt.Errorf("sorry, the dataset already exists: %s/%s", parentDs, nestedDs)
 	}
 
@@ -233,10 +241,10 @@ func createNestedZfsDataset(parentDs string, nestedDs string) error {
 // Checks if the ZFS dataset exists, and returns true or false.
 //
 // Takes in a full dataset path (ZFS path, not a mount path)
-func doesDatasetExist(dataset string) bool {
+func doesDatasetExist(dataset string) (bool, error) {
 	out, err := exec.Command("zfs", "list", "-Hp").CombinedOutput()
 	if err != nil {
-		return false
+		return false, fmt.Errorf("could not run `zfs list`: %s; %s", strings.TrimSpace(string(out)), err.Error())
 	}
 
 	reSplitAtSpace := regexp.MustCompile(`\+s`)
@@ -246,11 +254,11 @@ func doesDatasetExist(dataset string) bool {
 		}
 		v = reSplitAtSpace.Split(v, -1)[0]
 		if v == dataset {
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 func extractTxz(archivePath, rootFolder string) error {
