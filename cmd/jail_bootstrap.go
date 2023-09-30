@@ -61,7 +61,7 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 	}
 
 	if !doesDatasetExist(dataset) {
-		return fmt.Errorf("sorry, the dataset specified doesn't exist")
+		return fmt.Errorf("sorry, the dataset specified doesn't exist: %s", dataset)
 	}
 
 	// Check if the release exists block
