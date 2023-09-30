@@ -514,20 +514,21 @@ func getZrootInfo() zrootInfoStruct {
 	return zrootInfoVar
 }
 
-func GetHostName() string {
-	// GET SYSCTL "vm.stats.vm.v_free_count" AND RETURN THE VALUE
-	stdout, err := exec.Command("sysctl", "-nq", "kern.hostname").Output()
+func GetHostName() (hostname string) {
+	// Set default value, if the hostname was not configured
+	hostname = "EMPTY_HOSTNAME"
+
+	stdout, err := exec.Command("sysctl", "-nq", "kern.hostname").CombinedOutput()
 	if err != nil {
-		fmt.Println("Func GetHostName/hostName: There has been an error:", err)
-		os.Exit(1)
+		return
 	}
-	var hostNameList []string
-	for _, i := range strings.Split(string(stdout), "\n") {
-		if len(i) > 1 {
-			hostNameList = append(hostNameList, i)
-		}
+
+	filteredOutput := strings.TrimSpace(string(stdout))
+	if len(filteredOutput) > 0 {
+		hostname = filteredOutput
 	}
-	return hostNameList[0]
+
+	return
 }
 
 type CpuInfo struct {
