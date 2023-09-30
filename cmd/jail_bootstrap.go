@@ -2,19 +2,16 @@ package cmd
 
 import (
 	"HosterCore/emojlog"
-	"archive/tar"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
-	"github.com/ulikunitz/xz"
 )
 
 var (
@@ -189,16 +186,24 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 		return err
 	}
 
+	emojlog.PrintLogMessage(fmt.Sprintf("Extracting %s", baseFileLocation), emojlog.Debug)
 	err = extractTxz(baseFileLocation, jailTemplateRootPath)
 	if err != nil {
 		return err
 	}
+	emojlog.PrintLogMessage(fmt.Sprintf("%s has been extracted", baseFileLocation), emojlog.Changed)
+
 	if !excludeLib32 {
+		emojlog.PrintLogMessage(fmt.Sprintf("Extracting %s", lib32FileLocation), emojlog.Debug)
 		err = extractTxz(lib32FileLocation, jailTemplateRootPath)
 		if err != nil {
 			return err
 		}
+		emojlog.PrintLogMessage(fmt.Sprintf("%s has been extracted", lib32FileLocation), emojlog.Changed)
 	}
+
+	fmt.Println()
+	emojlog.PrintLogMessage(fmt.Sprintf("A new Jail template has been bootstrapped: %s", release), emojlog.Changed)
 
 	return nil
 }
@@ -262,65 +267,10 @@ func doesDatasetExist(dataset string) (bool, error) {
 }
 
 func extractTxz(archivePath, rootFolder string) error {
-	xzFile, err := os.Open(archivePath)
+	out, err := exec.Command("tar", "-xf", archivePath, "-C", rootFolder, "--unlink").CombinedOutput()
 	if err != nil {
-		return err
-	}
-	defer xzFile.Close()
-
-	stat, _ := xzFile.Stat()
-	bar := progressbar.DefaultBytes(stat.Size(), "Extracting")
-
-	xzReader, err := xz.NewReader(xzFile)
-	if err != nil {
-		return err
+		return fmt.Errorf("could not extract the archive %s: %s; %s", archivePath, strings.TrimSpace(string(out)), err.Error())
 	}
 
-	tarReader := tar.NewReader(xzReader)
-
-	for {
-		header, err := tarReader.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-
-		if !strings.HasPrefix(header.Name, "/") {
-			return fmt.Errorf("invalid archive path: %s", header.Name)
-		}
-		extractedFilePath := fmt.Sprintf("%s%s", rootFolder, header.Name)
-
-		// Extract and apply file permissions from the header
-		permissions := os.FileMode(header.Mode)
-		if header.Typeflag == tar.TypeDir {
-			// If it's a directory, use MkdirAll with the extracted permissions
-			if err := os.MkdirAll(extractedFilePath, permissions); err != nil {
-				return err
-			}
-		} else {
-			// If it's a regular file, create the parent directory with extracted permissions
-			// and create the file itself with the same permissions
-			parentDir := filepath.Dir(extractedFilePath)
-			if err := os.MkdirAll(parentDir, permissions); err != nil {
-				return err
-			}
-
-			extractedFile, err := os.Create(extractedFilePath)
-			if err != nil {
-				return err
-			}
-			defer extractedFile.Close()
-
-			if _, err := io.Copy(extractedFile, tarReader); err != nil {
-				return err
-			}
-		}
-
-		bar.Add(int(header.Size))
-	}
-
-	bar.Finish()
 	return nil
 }
