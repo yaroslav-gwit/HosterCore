@@ -186,7 +186,7 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 		return err
 	}
 
-	emojlog.PrintLogMessage(fmt.Sprintf("Extracting %s", baseFileLocation), emojlog.Debug)
+	emojlog.PrintLogMessage(fmt.Sprintf("Extracting %s to %s", baseFileLocation, jailTemplateRootPath), emojlog.Debug)
 	err = extractTxz(baseFileLocation, jailTemplateRootPath)
 	if err != nil {
 		return err
@@ -194,7 +194,7 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 	emojlog.PrintLogMessage(fmt.Sprintf("%s has been extracted", baseFileLocation), emojlog.Changed)
 
 	if !excludeLib32 {
-		emojlog.PrintLogMessage(fmt.Sprintf("Extracting %s", lib32FileLocation), emojlog.Debug)
+		emojlog.PrintLogMessage(fmt.Sprintf("Extracting %s to %s", lib32FileLocation, jailTemplateRootPath), emojlog.Debug)
 		err = extractTxz(lib32FileLocation, jailTemplateRootPath)
 		if err != nil {
 			return err
@@ -202,9 +202,7 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 		emojlog.PrintLogMessage(fmt.Sprintf("%s has been extracted", lib32FileLocation), emojlog.Changed)
 	}
 
-	fmt.Println()
-	emojlog.PrintLogMessage(fmt.Sprintf("A new Jail template has been bootstrapped: %s", release), emojlog.Changed)
-
+	emojlog.PrintLogMessage(fmt.Sprintf("A new Jail template has been bootstrapped (%s) at %s", release, jailTemplateFolder), emojlog.Info)
 	return nil
 }
 
