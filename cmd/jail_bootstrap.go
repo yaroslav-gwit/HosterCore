@@ -71,13 +71,14 @@ func downloadJailArchives(release string, dataset string, excludeLib32 bool) err
 
 	// Download base.txz
 	archiveName := "base.txz"
-	fsFileLocation := fmt.Sprintf("/tmp/%s", archiveName)
+	fsFileLocation := fmt.Sprintf("/tmp/%s/%s", release, archiveName)
 
-	res, err = http.Get(fmt.Sprintf("%s/base.txz", requestUrl))
+	res, err = http.Get(fmt.Sprintf("%s/%s", requestUrl, archiveName))
 	if err != nil {
 		return err
 	}
 
+	_ = os.Mkdir(fmt.Sprintf("/tmp/%s", release), 0600)
 	_ = os.Remove(fsFileLocation)
 	f, err := os.OpenFile(fsFileLocation, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
@@ -113,9 +114,9 @@ func downloadJailArchives(release string, dataset string, excludeLib32 bool) err
 		_ = 0
 	} else {
 		archiveName = "lib32.txz"
-		fsFileLocation = fmt.Sprintf("/tmp/%s", archiveName)
+		fsFileLocation := fmt.Sprintf("/tmp/%s/%s", release, archiveName)
 
-		res, err = http.Get(fmt.Sprintf("%s/base.txz", requestUrl))
+		res, err = http.Get(fmt.Sprintf("%s/%s", requestUrl, archiveName))
 		if err != nil {
 			return err
 		}
