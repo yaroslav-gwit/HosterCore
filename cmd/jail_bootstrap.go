@@ -253,7 +253,8 @@ func doesDatasetExist(dataset string) (bool, error) {
 			continue
 		}
 		v = reSplitAtSpace.Split(v, -1)[0]
-		if v == dataset {
+		fmt.Println(v)
+		if dataset == v {
 			return true, nil
 		}
 	}
