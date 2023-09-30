@@ -65,6 +65,11 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 		return fmt.Errorf("sorry, the dataset specified doesn't exist: %s", dataset)
 	}
 
+	err = createNestedZfsDataset(dataset, "jail-template-"+release)
+	if err != nil {
+		return err
+	}
+
 	// Check if the release exists block
 	requestUrl := fmt.Sprintf("https://download.freebsd.org/releases/amd64/%s", release)
 	res, err := http.Get(requestUrl)
@@ -171,11 +176,6 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 		}
 	}
 	// EOF Download lib32.txz
-
-	err = createNestedZfsDataset(dataset, "jail-template-"+release)
-	if err != nil {
-		return err
-	}
 
 	jailTemplateFolder := fmt.Sprintf("/%s/jail-template-%s", dataset, release)
 	jailTemplateRootPath := fmt.Sprintf("%s/root_folder", jailTemplateFolder)
