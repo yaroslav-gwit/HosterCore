@@ -3,6 +3,7 @@ package cmd
 import (
 	"HosterCore/emojlog"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -44,9 +45,20 @@ func downloadJailArchives(release string, dataset string, excludeLib32 bool) err
 		return err
 	}
 
-	fmt.Printf("Body: %v", res.Body)
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Body: %s", string(body))
 	fmt.Println()
-	fmt.Printf("Body: %v", res.Status)
+	fmt.Printf("Response code: %v", res.Status)
+	fmt.Println()
+
+	err = res.Body.Close()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
