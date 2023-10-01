@@ -60,6 +60,7 @@ func init() {
 	jailBootstrapCmd.Flags().BoolVarP(&jailBootstrapCmdExcludeLib32, "exclude-lib32", "", false, "Exclude Lib32 from this Jail Template")
 
 	jailCmd.AddCommand(jailDeployCmd)
+	jailDeployCmd.Flags().StringVarP(&jailDeployCmdJailName, "name", "n", "", "Jail name, test-jail-1 (2, 3 and so on) will be used by default")
 	jailDeployCmd.Flags().StringVarP(&jailDeployCmdOsRelease, "release", "r", "", "Pick a FreeBSD OS Release version (your own OS release will be used by default)")
 	jailDeployCmd.Flags().StringVarP(&jailDeployCmdDataset, "dataset", "d", "", "Specify a target dataset (first available DS in your config file will be used as a default)")
 
