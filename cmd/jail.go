@@ -170,10 +170,17 @@ func checkJailOnline(jailConfig JailConfigFileStruct) (jailOnline bool, jailErro
 }
 
 func getJailReleaseInfo(jailConfig JailConfigFileStruct) (jailRelease string, jailError error) {
-	jailOsReleaseFile, err := os.ReadFile(jailConfig.JailRootPath + "/etc/os-release")
-	if err != nil {
-		jailError = err
-		return
+	var jailOsReleaseFile []byte
+	var err error
+
+	if FileExists(jailConfig.JailRootPath + "/etc/os-release") {
+		jailOsReleaseFile, err = os.ReadFile(jailConfig.JailRootPath + "/etc/os-release")
+		if err != nil {
+			jailError = err
+			return
+		}
+	} else {
+		jailRelease = "os-release is missing"
 	}
 
 	reMatchVersion := regexp.MustCompile(`VERSION=`)
