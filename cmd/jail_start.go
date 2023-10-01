@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -26,13 +25,14 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
 			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
-			// cmd.Help()
 
 			err = jailStart(args[0], true)
 			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

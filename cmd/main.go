@@ -53,10 +53,15 @@ func init() {
 	jailCmd.AddCommand(jailStopCmd)
 	jailCmd.AddCommand(jailListCmd)
 	jailListCmd.Flags().BoolVarP(&jailListCmdUnixStyle, "unix", "u", false, "Show Unix style table (useful for scripting)")
+
 	jailCmd.AddCommand(jailBootstrapCmd)
-	jailBootstrapCmd.Flags().StringVarP(&jailBootstrapCmdOsRelease, "release", "r", "13.2-RELEASE", "Pick a FreeBSD OS Release Version")
+	jailBootstrapCmd.Flags().StringVarP(&jailBootstrapCmdOsRelease, "release", "r", "", "Pick a FreeBSD OS Release version (your own OS release will be used by default)")
 	jailBootstrapCmd.Flags().StringVarP(&jailBootstrapCmdDataset, "dataset", "d", "", "Specify a target dataset (first available DS in your config file will be used as a default)")
 	jailBootstrapCmd.Flags().BoolVarP(&jailBootstrapCmdExcludeLib32, "exclude-lib32", "", false, "Exclude Lib32 from this Jail Template")
+
+	jailCmd.AddCommand(jailDeployCmd)
+	jailDeployCmd.Flags().StringVarP(&jailDeployCmdOsRelease, "release", "r", "", "Pick a FreeBSD OS Release version (your own OS release will be used by default)")
+	jailDeployCmd.Flags().StringVarP(&jailDeployCmdDataset, "dataset", "d", "", "Specify a target dataset (first available DS in your config file will be used as a default)")
 
 	// VM command section
 	rootCmd.AddCommand(vmCmd)

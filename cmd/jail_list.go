@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"HosterCore/emojlog"
 	"errors"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -24,11 +24,14 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
 			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
+
 			err = generateJailsTable(jailListCmdUnixStyle)
 			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

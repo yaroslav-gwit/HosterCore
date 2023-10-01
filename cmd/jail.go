@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"HosterCore/emojlog"
 	"errors"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -21,8 +21,10 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
 			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
+
 			cmd.Help()
 		},
 	}
@@ -230,4 +232,15 @@ func convertUnixTimeToUptime(uptime int64) string {
 	result = result + strconv.Itoa(secondsModulus) + "s"
 
 	return result
+}
+
+func getFreeBsdRelease() (release string, releaseError error) {
+	out, err := exec.Command("uname", "-r").CombinedOutput()
+	if err != nil {
+		releaseError = err
+		return
+	}
+
+	release = strings.TrimSpace(string(out))
+	return
 }

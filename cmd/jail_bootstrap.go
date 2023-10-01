@@ -30,7 +30,7 @@ var (
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
 			}
-			// cmd.Help()
+
 			err = bootstrapJailArchives(jailBootstrapCmdOsRelease, jailBootstrapCmdDataset, jailBootstrapCmdExcludeLib32)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -68,6 +68,13 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 	err = createNestedZfsDataset(dataset, "jail-template-"+release)
 	if err != nil {
 		return err
+	}
+
+	if len(release) < 1 {
+		release, err = getFreeBsdRelease()
+		if err != nil {
+			return err
+		}
 	}
 
 	// Check if the release exists block
