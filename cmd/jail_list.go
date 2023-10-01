@@ -3,6 +3,7 @@ package cmd
 import (
 	"HosterCore/emojlog"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"regexp"
@@ -99,6 +100,7 @@ func generateJailsTable(unixStyleTable bool) error {
 	for _, v := range jailsList {
 		jailConfig, err := getJailConfig(v, true)
 		if err != nil {
+			fmt.Println("103 fail: " + err.Error())
 			continue
 		}
 
@@ -107,6 +109,7 @@ func generateJailsTable(unixStyleTable bool) error {
 		jailStatus := ""
 		jailOnline, err := checkJailOnline(jailConfig)
 		if err != nil {
+			fmt.Println("112 fail: " + err.Error())
 			continue
 			// return nil
 		}
@@ -119,6 +122,7 @@ func generateJailsTable(unixStyleTable bool) error {
 
 		jailDsInfo, err := jailZfsDatasetInfo(jailConfig.ZfsDatasetPath)
 		if err != nil {
+			fmt.Println("125 fail: " + err.Error())
 			continue
 			// return err
 		}
@@ -132,6 +136,7 @@ func generateJailsTable(unixStyleTable bool) error {
 
 		jailRelease, err := getJailReleaseInfo(jailConfig)
 		if err != nil {
+			fmt.Println("139 fail: " + err.Error())
 			continue
 			// return err
 		}

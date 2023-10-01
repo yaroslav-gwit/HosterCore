@@ -132,7 +132,7 @@ func deployNewJail(jailName string, dsParent string, release string) error {
 }
 
 func generateJailDeployConfig() (jailConfig JailConfigFileStruct, jailError error) {
-	jailConfig.CpuLimitReal = 50
+	jailConfig.CPULimitPercent = 50
 	jailConfig.RAMLimit = "1G"
 
 	networks, err := networkInfo()
