@@ -255,9 +255,13 @@ func getJailConfig(jailName string, ignoreJailExistsCheck bool) (jailConfig Jail
 const templateJailRcConf = `# Hoster generated RC.CONF
 clear_tmp_enable="YES"
 syslogd_flags="-ss"
-sendmail_enable="NONE"
+
+# DISABLE ANY SENDMAIL ACTIVITY TO CUT THE START-UP TIME
 sendmail_enable="NO"
+sendmail_submit_enable="NO"
+sendmail_outbound_enable="NO"
 sendmail_msp_queue_enable="NO"
+
 `
 
 const templateJailResolvConf = `# Hoster generated RESOLV.CONF
