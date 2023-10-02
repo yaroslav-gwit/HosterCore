@@ -78,7 +78,12 @@ func generateJailsTable(unixStyleTable bool) error {
 		t.SetBorderBottom(false)
 	} else {
 		t.SetHeaders("Hoster Jails")
-		t.SetHeaderColSpans(0, 10)
+
+		if len(jailsList) < 1 {
+			t.SetHeaderColSpans(0, 9)
+		} else {
+			t.SetHeaderColSpans(0, 10)
+		}
 
 		t.AddHeaders(
 			"#",
