@@ -104,9 +104,9 @@ func generateJailsTable(unixStyleTable bool) error {
 
 	// Return early if there are no Jails deployed
 	if len(jailsList) < 1 {
-		// t.SetColSpans(0, 9)
 		t.SetAlignment(table.AlignCenter)
 		t.AddRow("Sorry, but this system doesn't have any active Jails")
+		t.SetColSpans(0, 9)
 		t.Render()
 		return nil
 	}
