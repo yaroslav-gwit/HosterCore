@@ -121,7 +121,7 @@ type JailConfigFileStruct struct {
 	JailName       string
 	JailHostname   string
 	JailRootPath   string // /zroot/vm-encrypted/jailDataset/root_folder
-	JailFolder     string
+	JailFolder     string // /zroot/vm-encrypted/jailDataset/
 	ZfsDatasetPath string // zroot/vm-encrypted/jailDataset
 	Netmask        string
 	Running        bool

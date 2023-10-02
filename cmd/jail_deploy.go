@@ -50,7 +50,7 @@ const templateJailConfigJson = `{
     "ram_limit": "{{ .RAMLimit }}",
 
     "startup_script": "/bin/sh /etc/rc",
-    "shutdown_script": "/bin/sh /etc/rc.shutdown",
+    "shutdown_script": "/bin/sh /etc/rc.shutdown jail",
     "config_file_append": "jail_custom_parameters.conf",
 
     "ip_address": "{{ .IPAddress }}",
