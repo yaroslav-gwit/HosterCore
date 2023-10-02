@@ -39,7 +39,6 @@ var (
 )
 
 func generateJailsTable(unixStyleTable bool) error {
-	// fmt.Println(getRunningJails())
 	jailsList, err := getAllJailsList()
 	if err != nil {
 		return err
@@ -78,12 +77,7 @@ func generateJailsTable(unixStyleTable bool) error {
 		t.SetBorderBottom(false)
 	} else {
 		t.SetHeaders("Hoster Jails")
-
-		// if len(jailsList) < 1 {
-		// 	t.SetHeaderColSpans(0, 9)
-		// } else {
 		t.SetHeaderColSpans(0, 10)
-		// }
 
 		t.AddHeaders(
 			"#",
@@ -103,13 +97,12 @@ func generateJailsTable(unixStyleTable bool) error {
 	}
 
 	// Return early if there are no Jails deployed
-	if len(jailsList) < 1 {
-		// t.SetAlignment(table.AlignCenter)
-		t.AddRow("Sorry, but this system doesn't have any active Jails")
-		t.SetColSpans(0, 3)
-		t.Render()
-		return nil
-	}
+	// if len(jailsList) < 1 {
+	// 	t.AddRow("Sorry, but this system doesn't have any active Jails")
+	// 	t.SetColSpans(0, 3)
+	// 	t.Render()
+	// 	return nil
+	// }
 	// EOF Return early if there are no Jails deployed
 
 	for _, v := range jailsList {
