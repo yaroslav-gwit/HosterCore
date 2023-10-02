@@ -766,10 +766,11 @@ func checkVmNameInput(vmName string) (vmNameError error) {
 			}
 		}
 		if !valid {
-			vmNameError = errors.New("vm name cannot contain '" + string(v) + "' character")
+			vmNameError = errors.New("name cannot contain '" + string(v) + "' character")
 			return
 		}
 	}
+	// EOF Check if vmName uses valid characters
 
 	// Check if vmName starts with a valid character
 	for i, v := range vmName {
@@ -778,26 +779,30 @@ func checkVmNameInput(vmName string) (vmNameError error) {
 		}
 		for _, vv := range vmNameCantStartWith {
 			if v == vv {
-				vmNameError = errors.New("vm name cannot start with a number, an underscore or a hyphen")
+				vmNameError = errors.New("name cannot start with a number, an underscore or a hyphen")
 				return
 			}
 		}
 	}
+	// EOF Check if vmName starts with a valid character
 
 	// Check vmName length
 	if len(vmName) < vmNameMinLength {
-		vmNameError = errors.New("vm name cannot contain less than " + strconv.Itoa(vmNameMinLength) + " characters")
+		vmNameError = errors.New("name cannot contain less than " + strconv.Itoa(vmNameMinLength) + " characters")
 		return
 	} else if len(vmName) > vmNameMaxLength {
-		vmNameError = errors.New("vm name cannot contain more than " + strconv.Itoa(vmNameMaxLength) + " characters")
+		vmNameError = errors.New("name cannot contain more than " + strconv.Itoa(vmNameMaxLength) + " characters")
 		return
 	}
+	// EOF Check vmName length
 
 	return
 }
 
 func generateNewIp(networkName string) (string, error) {
 	var existingIps []string
+
+	// Add existing VM IPs
 	for _, v := range getAllVms() {
 		networkNameFound := false
 		tempConfig := vmConfig(v)
@@ -811,6 +816,21 @@ func generateNewIp(networkName string) (string, error) {
 			existingIps = append(existingIps, tempConfig.Networks[0].IPAddress)
 		}
 	}
+	// EOF Add existing VM IPs
+
+	// Add existing Jail IPs
+	jailList, err := getAllJailsList()
+	if err != nil {
+		return "", err
+	}
+	for _, v := range jailList {
+		jailsConfig, err := getJailConfig(v, true)
+		if err != nil {
+			return "", nil
+		}
+		existingIps = append(existingIps, jailsConfig.IPAddress)
+	}
+	// EOF Add existing Jail IPs
 
 	networks, err := networkInfo()
 	if err != nil {

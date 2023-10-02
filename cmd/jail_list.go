@@ -96,15 +96,6 @@ func generateJailsTable(unixStyleTable bool) error {
 		t.SetHeaderStyle(table.StyleBold)
 	}
 
-	// Return early if there are no Jails deployed
-	// if len(jailsList) < 1 {
-	// 	t.AddRow("Sorry, but this system doesn't have any active Jails")
-	// 	t.SetColSpans(0, 3)
-	// 	t.Render()
-	// 	return nil
-	// }
-	// EOF Return early if there are no Jails deployed
-
 	for _, v := range jailsList {
 		jailConfig, err := getJailConfig(v, true)
 		if err != nil {

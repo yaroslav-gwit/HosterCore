@@ -76,6 +76,11 @@ func deployNewJail(jailName string, dsParent string, release string) error {
 		return fmt.Errorf("jail name parameter cannot be empty")
 	}
 
+	err = checkVmNameInput(jailName)
+	if err != nil {
+		return err
+	}
+
 	if len(dsParent) < 1 {
 		datasets, err := getZfsDatasetInfo()
 		if err != nil {
