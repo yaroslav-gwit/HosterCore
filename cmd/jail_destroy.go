@@ -40,6 +40,14 @@ func executeJailDestroy(jailName string, consoleLogOutput bool) error {
 		return err
 	}
 
+	jailOnline, err := checkJailOnline(jailConfig)
+	if err != nil {
+		return err
+	}
+	if jailOnline {
+		return fmt.Errorf("the Jail \"%s\" is online! Cannot remove online Jails", jailName)
+	}
+
 	// Get the parent dataset
 	out, err := exec.Command("zfs", "get", "-H", "origin", jailConfig.ZfsDatasetPath).CombinedOutput()
 	// Correct value:
@@ -80,6 +88,10 @@ func executeJailDestroy(jailName string, consoleLogOutput bool) error {
 		}
 	}
 	// EOF Remove the parent dataset if it exists
+
+	if consoleLogOutput {
+		emojlog.PrintLogMessage(fmt.Sprintf("Jail has been removed: %s", jailName), emojlog.Info)
+	}
 
 	return nil
 }
