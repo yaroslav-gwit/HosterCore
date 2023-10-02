@@ -39,6 +39,9 @@ type LiveJailStruct struct {
 	Ip6address string
 }
 
+// Gets the list of actively running Jails using the underlying `jls` command.
+//
+// Only used to compare with the list of deployed Jails, to figure out if the Jail is running (live) or not.
 func getRunningJails() ([]LiveJailStruct, error) {
 	reSpaceSplit := regexp.MustCompile(`\s+`)
 	jails := []LiveJailStruct{}
@@ -169,6 +172,9 @@ func checkJailOnline(jailConfig JailConfigFileStruct) (jailOnline bool, jailErro
 	return
 }
 
+// Checks `/etc/os-release` inside of the jail, and parses out the FreeBSD release from it (eg 13.2-RELEASE).
+//
+// Returns "-", if the Jail was just deployed, because the `/etc/os-release` is missing.
 func getJailReleaseInfo(jailConfig JailConfigFileStruct) (jailRelease string, jailError error) {
 	var jailOsReleaseFile []byte
 	var err error
@@ -180,7 +186,7 @@ func getJailReleaseInfo(jailConfig JailConfigFileStruct) (jailRelease string, ja
 			return
 		}
 	} else {
-		jailRelease = "os-release is missing"
+		jailRelease = "-"
 	}
 
 	reMatchVersion := regexp.MustCompile(`VERSION=`)
