@@ -21,6 +21,7 @@ var rootCmd = &cobra.Command{
 		printZfsDatasetInfo()
 		printNetworkInfoTable()
 		vmListMain()
+		generateJailsTable(false)
 	},
 }
 
