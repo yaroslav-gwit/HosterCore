@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"HosterCore/emojlog"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -75,22 +74,22 @@ func jailStop(jailName string, logActions bool) error {
 		return err
 	}
 
-	emojlog.PrintLogMessage(fmt.Sprintf("Stopping a Jail: %s", jailName), emojlog.Debug)
+	emojlog.PrintLogMessage(fmt.Sprintf("Stopping a Jail: %s. Please give it a moment...", jailName), emojlog.Debug)
 	out, err := exec.Command("service", "jail", "onestop", jailName).CombinedOutput()
 	if err != nil {
 		errorValue := "FATAL: " + strings.TrimSpace(string(out)) + "; " + err.Error()
 		return fmt.Errorf("%s", errorValue)
 	}
 
-	ifconfigIpRemoveCommand := []string{"ifconfig", "vm-" + jailConfig.Network, jailConfig.IPAddress, "delete"}
-	if logActions {
-		emojlog.PrintLogMessage("Cleaning up the Jail IPs: "+strings.Join(ifconfigIpRemoveCommand, " "), emojlog.Debug)
-	}
-	ifconfigIpRemoveOutput, err := exec.Command("ifconfig", "vm-"+jailConfig.Network, jailConfig.IPAddress, "delete").CombinedOutput()
-	if err != nil {
-		errorValue := errors.New("FATAL: " + string(ifconfigIpRemoveOutput) + "; " + err.Error())
-		return errorValue
-	}
+	// ifconfigIpRemoveCommand := []string{"ifconfig", "vm-" + jailConfig.Network, jailConfig.IPAddress, "delete"}
+	// if logActions {
+	// 	emojlog.PrintLogMessage("Cleaning up the Jail IPs: "+strings.Join(ifconfigIpRemoveCommand, " "), emojlog.Debug)
+	// }
+	// ifconfigIpRemoveOutput, err := exec.Command("ifconfig", "vm-"+jailConfig.Network, jailConfig.IPAddress, "delete").CombinedOutput()
+	// if err != nil {
+	// 	errorValue := errors.New("FATAL: " + string(ifconfigIpRemoveOutput) + "; " + err.Error())
+	// 	return errorValue
+	// }
 
 	clearJailUptimeStateFile(jailName)
 	_ = os.Remove("/etc/jail.conf")

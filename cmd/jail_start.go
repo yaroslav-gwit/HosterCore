@@ -99,7 +99,7 @@ func jailStart(jailName string, logActions bool) error {
 		return err
 	}
 
-	emojlog.PrintLogMessage(fmt.Sprintf("Starting a jail %s. Please give it a moment...", jailName), emojlog.Debug)
+	emojlog.PrintLogMessage(fmt.Sprintf("Starting a Jail: %s. Please give it a moment...", jailName), emojlog.Debug)
 	out, err := exec.Command("service", "jail", "onestart", jailName).CombinedOutput()
 	if err != nil {
 		errorValue := "FATAL: " + strings.TrimSpace(string(out)) + "; " + err.Error()
