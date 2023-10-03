@@ -103,13 +103,9 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 		emojlog.PrintLogMessage("Executing: "+upBridgeInterface, emojlog.Debug)
 		exec.Command(parts[0], parts[1:]...).Run()
 
-		setTapDescription1 := "ifconfig"
-		setTapDescription2 := availableTap
-		setTapDescription3 := "description"
-		setTapDescription4 := "\"" + availableTap + " " + vmName + " interface -> " + v.NetworkBridge + "\""
-		setTapDescription := fmt.Sprint(setTapDescription1 + " " + setTapDescription2 + " " + setTapDescription3 + " " + setTapDescription4)
-		emojlog.PrintLogMessage("Executing: "+setTapDescription, emojlog.Debug)
-		exec.Command(setTapDescription1, setTapDescription2, setTapDescription3, setTapDescription4).Run()
+		tapDescription := "\"" + availableTap + " " + vmName + " interface -> " + v.NetworkBridge + "\""
+		emojlog.PrintLogMessage(fmt.Sprintf("Executing: ifconfig %s description %s", availableTap, tapDescription), emojlog.Debug)
+		exec.Command("ifconfig", availableTap, "description", tapDescription).Run()
 	}
 
 	// bhyveFinalCommand := "bhyve -HAw -s 0:0,hostbridge -s 31,lpc "

@@ -127,6 +127,9 @@ type JailConfigFileStruct struct {
 	Running        bool
 	Backup         bool
 	CpuLimitReal   int
+	VnetInterfaceA string
+	VnetInterfaceB string
+	DefaultRouter  string
 }
 
 func getAllJailsList() ([]string, error) {

@@ -127,9 +127,9 @@ func returnMissingModules() ([]string, error) {
 	reSplitSpace := regexp.MustCompile(`\s+`)
 
 	var loadedModules []string
-	kernelModuleList := []string{"vmm", "nmdm", "if_bridge", "if_vxlan", "pf", "pflog"}
+	kernelModuleList := []string{"vmm", "nmdm", "if_bridge", "if_vxlan", "if_epair", "if_tap", "if_tuntap", "pf", "pflog"}
 
-	// Add CPU temperature module
+	// Add CPU temperature module to the kernel module list
 	cpuInfo := getCpuInfo()
 	reMatchIntelCpu := regexp.MustCompile(`.*[Ii]ntel.*`)
 	if reMatchIntelCpu.MatchString(cpuInfo.Model) {
@@ -137,6 +137,7 @@ func returnMissingModules() ([]string, error) {
 	} else {
 		kernelModuleList = append(kernelModuleList, "amdtemp")
 	}
+	// EOF Add CPU temperature module to the kernel module list
 
 	for _, v := range strings.Split(string(stdout), "\n") {
 		if reMatchKo.MatchString(v) {
