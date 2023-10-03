@@ -37,10 +37,23 @@ func startAllJails(consoleLogOutput bool) error {
 	}
 
 	for i, v := range jailList {
+		jailConfig, err := getJailConfig(v, true)
+		if err != nil {
+			return err
+		}
+		jailOnline, err := checkJailOnline(jailConfig)
+		if err != nil {
+			return err
+		}
+		if jailOnline {
+			continue
+		}
+
 		if i != 0 {
 			time.Sleep(3 * time.Second)
 		}
-		err := jailStart(v, consoleLogOutput)
+
+		err = jailStart(v, consoleLogOutput)
 		if err != nil {
 			return err
 		}

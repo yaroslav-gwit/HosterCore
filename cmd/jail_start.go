@@ -231,9 +231,11 @@ func getJailConfig(jailName string, ignoreJailExistsCheck bool) (jailConfig Jail
 	}
 
 	networkFound := false
+	network := NetworkInfoSt{}
 	for _, v := range networks {
 		if v.Name == jailConfig.Network {
 			networkFound = true
+			network = v
 			reSplitAtSlash := regexp.MustCompile(`\/`)
 			jailConfig.Netmask = reSplitAtSlash.Split(v.Subnet, -1)[1]
 		}
@@ -256,7 +258,7 @@ func getJailConfig(jailName string, ignoreJailExistsCheck bool) (jailConfig Jail
 
 	realCpuLimit := jailConfig.CPULimitPercent * numberOfCpusInt
 	jailConfig.CpuLimitReal = realCpuLimit
-	jailConfig.DefaultRouter = networks[0].Gateway
+	jailConfig.DefaultRouter = network.Gateway
 
 	if len(jailConfig.Description) < 1 {
 		jailConfig.Description = "0"
