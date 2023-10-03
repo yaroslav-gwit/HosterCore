@@ -57,6 +57,9 @@ func init() {
 	// jail -> start-all
 	jailCmd.AddCommand(jailStartAllCmd)
 
+	// jail -> stop-all
+	jailCmd.AddCommand(jailStopAllCmd)
+
 	// jail -> stop
 	jailCmd.AddCommand(jailStopCmd)
 
