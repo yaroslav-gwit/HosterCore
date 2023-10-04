@@ -51,8 +51,6 @@ func startAllJails(consoleLogOutput bool) error {
 			continue
 		}
 
-		startId += 1
-
 		// Print out the output splitter
 		if startId == 0 {
 			_ = 0
@@ -68,6 +66,8 @@ func startAllJails(consoleLogOutput bool) error {
 		if err != nil {
 			return err
 		}
+
+		startId += 1
 	}
 
 	return nil

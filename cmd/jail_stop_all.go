@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/emojlog"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -36,6 +37,7 @@ func stopAllJails(consoleLogOutput bool) error {
 		return err
 	}
 
+	startId := 0
 	for _, v := range jailList {
 		jailConfig, err := getJailConfig(v, true)
 		if err != nil {
@@ -49,10 +51,19 @@ func stopAllJails(consoleLogOutput bool) error {
 			continue
 		}
 
+		// Print out the output splitter
+		if startId == 0 {
+			_ = 0
+		} else {
+			fmt.Println("  ───────────")
+		}
+
 		err = jailStop(v, consoleLogOutput)
 		if err != nil {
 			return err
 		}
+
+		startId += 1
 	}
 
 	return nil
