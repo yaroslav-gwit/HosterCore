@@ -251,6 +251,7 @@ jailNameLoop:
 
 		if foundJail {
 			jailId += 1
+			tempJailName = jailName + strconv.Itoa(jailId)
 			continue jailNameLoop
 		} else {
 			jailName = tempJailName
