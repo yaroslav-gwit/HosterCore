@@ -48,6 +48,14 @@ var (
 func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) error {
 	// FreeBSD Mirror to get the archives from
 	// https://download.freebsd.org/releases/amd64/
+	var err error
+
+	if len(release) < 1 {
+		release, err = getMajorFreeBsdRelease()
+		if err != nil {
+			return err
+		}
+	}
 
 	if len(dataset) < 1 {
 		datasets, err := getZfsDatasetInfo()
@@ -68,13 +76,6 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 	err = createNestedZfsDataset(dataset, "jail-template-"+release)
 	if err != nil {
 		return err
-	}
-
-	if len(release) < 1 {
-		release, err = getMajorFreeBsdRelease()
-		if err != nil {
-			return err
-		}
 	}
 
 	// Check if the release exists block
