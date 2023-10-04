@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"facette.io/natsort"
 	"github.com/spf13/cobra"
 )
 
@@ -155,6 +156,7 @@ func getAllJailsList() ([]string, error) {
 		}
 	}
 
+	natsort.Sort(jails)
 	return jails, nil
 }
 
