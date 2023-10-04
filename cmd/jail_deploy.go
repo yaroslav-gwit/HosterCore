@@ -239,10 +239,11 @@ func generateJailTestName() (jailName string, jailError error) {
 	jailId := 1
 	jailName = "test-jail-"
 	tempJailName := jailName + strconv.Itoa(jailId)
-	foundJail := false
 
 jailNameLoop:
 	for {
+		foundJail := false
+
 		for _, v := range existingFolders {
 			if v == tempJailName {
 				foundJail = true
