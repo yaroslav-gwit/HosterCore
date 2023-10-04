@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/emojlog"
+	"fmt"
 	"os"
 	"time"
 
@@ -36,7 +37,8 @@ func startAllJails(consoleLogOutput bool) error {
 		return err
 	}
 
-	for i, v := range jailList {
+	startId := 0
+	for _, v := range jailList {
 		jailConfig, err := getJailConfig(v, true)
 		if err != nil {
 			return err
@@ -49,7 +51,16 @@ func startAllJails(consoleLogOutput bool) error {
 			continue
 		}
 
-		if i != 0 {
+		startId += 1
+
+		// Print out the output splitter
+		if startId == 0 {
+			_ = 0
+		} else {
+			fmt.Println("  ───────────")
+		}
+
+		if startId != 0 {
 			time.Sleep(3 * time.Second)
 		}
 
