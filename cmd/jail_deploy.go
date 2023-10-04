@@ -15,11 +15,11 @@ var (
 	jailDeployCmdOsRelease string
 	jailDeployCmdDataset   string
 	jailDeployCmdJailName  string
-	// jailDeployCmdCpuLimit    int
-	// jailDeployCmdRamLimit    string
-	// jailDeployCmdIpAddress   string
-	// jailDeployCmdNetwork     string
-	// jailDeployCmdDnsServer   string
+	jailDeployCmdCpuLimit  int
+	jailDeployCmdRamLimit  string
+	jailDeployCmdIpAddress string
+	jailDeployCmdNetwork   string
+	jailDeployCmdDnsServer string
 	// jailDeployCmdTimezone    string
 	// jailDeployCmdProduction  string
 	// jailDeployCmdDescription string
@@ -36,7 +36,7 @@ var (
 				os.Exit(1)
 			}
 
-			err = deployNewJail(jailDeployCmdJailName, jailDeployCmdDataset, jailDeployCmdOsRelease)
+			err = deployNewJail(jailDeployCmdJailName, jailDeployCmdDataset, jailDeployCmdOsRelease, jailDeployCmdCpuLimit, jailDeployCmdRamLimit, jailDeployCmdIpAddress, jailDeployCmdNetwork, jailDeployCmdDnsServer)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
@@ -69,7 +69,7 @@ allow.raw_sockets = "1";
 allow.sysvipc = "1";
 `
 
-func deployNewJail(jailName string, dsParent string, release string) error {
+func deployNewJail(jailName string, dsParent string, release string, cpuLimit int, ramLimit string, ipAddress string, network string, dnsServer string) error {
 	var err error
 
 	if len(jailName) < 1 {
@@ -96,7 +96,7 @@ func deployNewJail(jailName string, dsParent string, release string) error {
 		}
 	}
 
-	jailConfig, err := generateJailDeployConfig()
+	jailConfig, err := generateJailDeployConfig(cpuLimit, ramLimit, ipAddress, network, dnsServer)
 	if err != nil {
 		return err
 	}
@@ -136,24 +136,51 @@ func deployNewJail(jailName string, dsParent string, release string) error {
 	return nil
 }
 
-func generateJailDeployConfig() (jailConfig JailConfigFileStruct, jailError error) {
-	jailConfig.CPULimitPercent = 50
-	jailConfig.RAMLimit = "1G"
+func generateJailDeployConfig(cpuLimit int, ramLimit string, ipAddress string, network string, dnsServer string) (jailConfig JailConfigFileStruct, jailError error) {
+	jailConfig.CPULimitPercent = cpuLimit
+	jailConfig.RAMLimit = ramLimit
 
 	networks, err := networkInfo()
 	if err != nil {
 		jailError = err
 		return
 	}
-	jailConfig.Network = networks[0].Name
 
-	jailConfig.IPAddress, err = generateNewIp(networks[0].Name)
-	if err != nil {
-		jailError = err
-		return
+	networkFound := false
+	networkIndex := 0
+	if len(network) < 1 {
+		jailConfig.Network = networks[0].Name
+		jailConfig.DnsServer = networks[0].Gateway
+	} else {
+		for i, v := range networks {
+			if v.Name == network {
+				networkFound = true
+				networkIndex = i
+			}
+		}
+		if networkFound {
+			jailConfig.Network = network
+			jailConfig.DnsServer = networks[networkIndex].Gateway
+		} else {
+			jailError = fmt.Errorf("network %s could not be found", network)
+			return
+		}
 	}
 
-	jailConfig.DnsServer = networks[0].Gateway
+	if len(ipAddress) < 1 {
+		jailConfig.IPAddress, err = generateNewIp(jailConfig.Network)
+		if err != nil {
+			jailError = err
+			return
+		}
+	} else {
+		jailConfig.IPAddress = ipAddress
+	}
+
+	if len(dnsServer) > 0 {
+		jailConfig.DnsServer = dnsServer
+	}
+
 	jailConfig.Timezone = "Europe/London"
 	jailConfig.Parent = GetHostName()
 	jailConfig.Production = true

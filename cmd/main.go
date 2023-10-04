@@ -78,6 +78,11 @@ func init() {
 	jailDeployCmd.Flags().StringVarP(&jailDeployCmdJailName, "name", "n", "", "Jail name, test-jail-1 (2, 3 and so on) will be used by default")
 	jailDeployCmd.Flags().StringVarP(&jailDeployCmdOsRelease, "release", "r", "", "Pick a FreeBSD OS Release version (your own OS release will be used by default)")
 	jailDeployCmd.Flags().StringVarP(&jailDeployCmdDataset, "dataset", "d", "", "Specify a target dataset (first available DS in your config file will be used as a default)")
+	jailDeployCmd.Flags().IntVarP(&jailDeployCmdCpuLimit, "cpu-limit-percent", "", 50, "CPU percentage execution limit")
+	jailDeployCmd.Flags().StringVarP(&jailDeployCmdRamLimit, "ram-limit", "", "2G", "RAM limit")
+	jailDeployCmd.Flags().StringVarP(&jailDeployCmdIpAddress, "ip", "", "", "IP address")
+	jailDeployCmd.Flags().StringVarP(&jailDeployCmdNetwork, "network", "", "", "Network, eg: internal, external, etc")
+	jailDeployCmd.Flags().StringVarP(&jailDeployCmdDnsServer, "dns-sever", "", "", "Specify a custom DNS server, eg: 1.1.1.1, etc")
 
 	// jail -> destroy
 	jailCmd.AddCommand(jailDestroyCmd)
