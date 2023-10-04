@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -73,7 +74,11 @@ func deployNewJail(jailName string, dsParent string, release string, cpuLimit in
 	var err error
 
 	if len(jailName) < 1 {
-		return fmt.Errorf("jail name parameter cannot be empty")
+		jailName, err = generateJailTestName()
+		if err != nil {
+			return err
+		}
+		// return fmt.Errorf("jail name parameter cannot be empty")
 	}
 
 	err = checkVmNameInput(jailName)
@@ -210,4 +215,48 @@ func executeJailZfsClone(jailName string, dsParent string, release string) error
 	}
 
 	return nil
+}
+
+func generateJailTestName() (jailName string, jailError error) {
+	datasets, err := getZfsDatasetInfo()
+	if err != nil {
+		jailError = err
+		return
+	}
+
+	var existingFolders []string
+	for _, v := range datasets {
+		entries, err := os.ReadDir(v.MountPoint + "/")
+		if err != nil {
+			jailError = err
+			return
+		}
+		for _, vv := range entries {
+			existingFolders = append(existingFolders, vv.Name())
+		}
+	}
+
+	jailId := 1
+	jailName = "test-jail-"
+	tempJailName := jailName + strconv.Itoa(jailId)
+	foundJail := false
+
+jailNameLoop:
+	for {
+		for _, v := range existingFolders {
+			if tempJailName == v {
+				foundJail = true
+			}
+		}
+
+		if foundJail {
+			jailId += 1
+			continue jailNameLoop
+		} else {
+			jailName = tempJailName
+			break jailNameLoop
+		}
+	}
+
+	return
 }
