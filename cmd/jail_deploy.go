@@ -90,7 +90,7 @@ func deployNewJail(jailName string, dsParent string, release string) error {
 	}
 
 	if len(release) < 1 {
-		release, err = getFreeBsdRelease()
+		release, err = getMajorFreeBsdRelease()
 		if err != nil {
 			return err
 		}

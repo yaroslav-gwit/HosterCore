@@ -71,7 +71,7 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 	}
 
 	if len(release) < 1 {
-		release, err = getFreeBsdRelease()
+		release, err = getMajorFreeBsdRelease()
 		if err != nil {
 			return err
 		}

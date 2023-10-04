@@ -250,7 +250,7 @@ func convertUnixTimeToUptime(uptime int64) string {
 	return result
 }
 
-func getFreeBsdRelease() (release string, releaseError error) {
+func getMajorFreeBsdRelease() (release string, releaseError error) {
 	out, err := exec.Command("uname", "-r").CombinedOutput()
 	if err != nil {
 		releaseError = err
@@ -258,5 +258,11 @@ func getFreeBsdRelease() (release string, releaseError error) {
 	}
 
 	release = strings.TrimSpace(string(out))
+
+	// Strip minor patch version
+	reStripMinor := regexp.MustCompile(`-p.*`)
+	release = reStripMinor.ReplaceAllString(release, "")
+	// EOF Strip minor patch version
+
 	return
 }
