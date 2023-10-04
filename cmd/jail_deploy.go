@@ -244,8 +244,11 @@ func generateJailTestName() (jailName string, jailError error) {
 jailNameLoop:
 	for {
 		for _, v := range existingFolders {
-			if tempJailName == v {
+			if v == tempJailName {
 				foundJail = true
+				break
+			} else {
+				continue
 			}
 		}
 
