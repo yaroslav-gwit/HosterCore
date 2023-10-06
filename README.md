@@ -15,8 +15,8 @@ My entire perspective on virtualization completely changed when I stumbled upon 
 ## Leveraging modern SD-WAN and VPN technologies for scalable `Hoster` networks
 `Hoster` supports a variety of overlay network technologies like ZeroTier, Nebula, WireGuard, IPSec, OpenVPN, etc.
 Essentially `Hoster` supports anything FreeBSD supports.
-We haven't implemented any tight coupling in terms of networking, both VMs and Jails are connected to the outside world using bridge adapters.
-So as long as your VPN/SD-WAN supports a `bridge` mode you'll be fine.
+We haven't implemented any tight coupling in terms of networking.
+Both, VMs and Jails, are connected to the outside world using the bridge adapters, so as long as your VPN/SD-WAN supports a `bridge` mode you'll be fine.
 
 Check our documentation for the specific instructions on the tech stack of your own choice.
 
