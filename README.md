@@ -18,7 +18,7 @@ Essentially `Hoster` supports anything FreeBSD supports.
 We haven't implemented any tight coupling in terms of networking.
 Both, VMs and Jails, are connected to the outside world using the bridge adapters, so as long as your VPN/SD-WAN supports a `bridge` mode you'll be fine.
 
-Check our documentation for the specific instructions on the tech stack of your own choice.
+Check our documentation for the specific instructions on the tech stack you are interested in.
 
 ## Are there any plans to develop a WebUI?
 
