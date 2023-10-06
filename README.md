@@ -12,17 +12,14 @@ Built using modern, rock solid and battle tested technologies like Go, FreeBSD, 
 My entire perspective on virtualization completely changed when I stumbled upon FreeBSD and bhyve. The potential of combining FreeBSD, bhyve, pf, and ZFS became abundantly clear to me. However, as I explored existing solutions like `vm-bhyve` and `CBSD`, I couldn't help but feel that they didn't quite match up to my expectations. It was this realization that inspired me to embark on a journey to create `Hoster` — a platform that seamlessly integrates bhyve, PF, and ZFS into a powerful virtualization solution. You can effortlessly deploy `Hoster` on any hardware, keeping RAM and CPU usage to a minimum. Give it a try and let me know your thoughts. Your input fuels our continuous project improvements.
 </br>
 
-## Leveraging Nebula for Scalable Hoster Networks
-
-Have you considered utilizing Nebula, a powerful VPN and networking overlay technology, to achieve seamless VM network routing across diverse locations such as cities, data centers, and even continents? Nebula presents an excellent solution for this purpose. It boasts numerous benefits, foremost among them being its simplicity and ease of deployment. Upon installation, Nebula automatically discovers other nodes within the network, establishing secure, point-to-point connections effortlessly. Consequently, complex network topologies, routing protocols, and VPN configurations become a thing of the past as Nebula efficiently handles them on your behalf. It truly works like magic.
-
-Another compelling feature of Nebula lies in its scalability. With the ability to handle thousands of nodes, Nebula proves to be an ideal choice for large-scale deployments. To further enhance this capability, I have developed a separate REST API server that streamlines the process of joining your `Hoster` nodes into a unified network. In just a matter of seconds, you can establish point-to-point connections wherever possible, create failover channels, and enable automatic internal VM networks routing.
-
-By coupling Nebula's and PF's capabilities, you can achieve robust and scalable networking for your `Hoster` nodes, making it easier than ever to manage and control your infrastructure across diverse locations.
+## Leveraging modern SD-WAN and VPN technologies for scalable `Hoster` networks
+`Hoster` supports a variety of overlay network technologies like ZeroTier, Nebula, WireGuard, IPSec, OpenVPN, etc. Essentially anything FreeBSD supports `Hoster` has the ability to work with it.
+Check our documentation for the specific instructions on the tech stack of your own choice.
 
 ## Are there any plans to develop a WebUI?
 
-Yes, part of the project roadmap includes the development of a WebUI. The WebUI will serve as a user-friendly interface to interact with the system and control multiple hoster nodes simultaneously. While currently not the highest priority due to time constraints, I am open to exploring this feature further with increased community engagement and potential investment.
+Yes, part of the project roadmap includes the development of a WebUI. The WebUI will serve as a user-friendly interface to interact with the system and control multiple hoster nodes simultaneously.
+While currently not the highest priority due to time constraints, I am open to exploring this feature further with increased community engagement and potential investment.
 
 Our paying customers already have access to an early version of the WebUI, that looks like this:
 ![Hoster Core WebUI 1](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-web-ui-1.png)
