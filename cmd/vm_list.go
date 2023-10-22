@@ -166,7 +166,7 @@ func vmTableOutput() {
 					return
 				}
 				lastSnap = strings.Split(lastSnap, "@")[1]
-				vmConfigVar.Description = "💾⏩ " + vmConfigVar.ParentHost + " - " + lastSnap
+				vmConfigVar.Description = "💾⏩ " + vmConfigVar.ParentHost + "->" + lastSnap
 				wg.Done()
 			}()
 		}
