@@ -134,21 +134,46 @@ func vmTableOutput() {
 		var vmOsDiskFullSize string
 		var vmOsDiskFree string
 		var vmUptimeVar string
+
+		vmConfigVar = vmConfig(vmName)
+		ID = ID + 1
+		vmLive = vmLiveCheckString(vmName)
+
 		wg.Add(4)
 		go func() { defer wg.Done(); vmOsDiskFullSize = getOsDiskFullSize(vmName) }()
 		go func() { defer wg.Done(); vmOsDiskFree = getOsDiskUsed(vmName) }()
 		go func() { defer wg.Done(); vmEncrypted = encryptionCheckString(vmName) }()
 		go func() { defer wg.Done(); vmUptimeVar = getVmUptimeNew(vmName, true) }()
+
+		wg.Add(1)
+		go func() {
+			if vmConfigVar.ParentHost != thisHostName {
+				vmLive = "💾"
+				vmSnaps, err := GetSnapshotInfo(vmName, true)
+				if err != nil {
+					vmConfigVar.Description = "💾⏩ " + vmConfigVar.ParentHost
+					wg.Done()
+					return
+				}
+				lastSnap := ""
+				if len(vmSnaps) == 1 {
+					lastSnap = vmSnaps[0].Name
+				} else if len(vmSnaps) > 1 {
+					lastSnap = vmSnaps[len(vmSnaps)-1].Name
+				} else {
+					vmConfigVar.Description = "💾⏩ " + vmConfigVar.ParentHost
+					wg.Done()
+					return
+				}
+				lastSnap = strings.Split(lastSnap, "@")[1]
+				vmConfigVar.Description = "💾⏩ " + vmConfigVar.ParentHost + " - " + lastSnap
+				wg.Done()
+			}
+		}()
+
 		wg.Wait()
 
-		vmConfigVar = vmConfig(vmName)
-		ID = ID + 1
-		vmLive = vmLiveCheckString(vmName)
-		if vmConfigVar.ParentHost != thisHostName {
-			vmLive = "💾"
-			vmConfigVar.Description = "💾⏩ " + vmConfigVar.ParentHost
-		}
-		if vmConfigVar.LiveStatus == "production" {
+		if VmIsInProduction(vmConfigVar.LiveStatus) {
 			vmProduction = "🔁"
 		} else {
 			vmProduction = ""
