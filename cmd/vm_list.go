@@ -145,9 +145,9 @@ func vmTableOutput() {
 		go func() { defer wg.Done(); vmEncrypted = encryptionCheckString(vmName) }()
 		go func() { defer wg.Done(); vmUptimeVar = getVmUptimeNew(vmName, true) }()
 
-		wg.Add(1)
-		go func() {
-			if vmConfigVar.ParentHost != thisHostName {
+		if vmConfigVar.ParentHost != thisHostName {
+			wg.Add(1)
+			go func() {
 				vmLive = "💾"
 				vmSnaps, err := GetSnapshotInfo(vmName, true)
 				if err != nil {
@@ -168,8 +168,8 @@ func vmTableOutput() {
 				lastSnap = strings.Split(lastSnap, "@")[1]
 				vmConfigVar.Description = "💾⏩ " + vmConfigVar.ParentHost + " - " + lastSnap
 				wg.Done()
-			}
-		}()
+			}()
+		}
 
 		wg.Wait()
 
