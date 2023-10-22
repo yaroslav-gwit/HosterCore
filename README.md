@@ -35,7 +35,7 @@ Our paying customers already have access to an early version of the WebUI, that 
 
 The main idea behind our WebUI is to keep things simple. We are not aiming to be yet another XenSever/Proxmox feature clone: the WebUI will do basic things like managing and deploying new VMs, displaying monitoring information for the VMs and Hosts, managing VM snapshots, connecting to VNC, etc. Everything else in terms of configuration and `Hoster` management still happens on the CLI.
 
-#### VM Status (state) icons
+## Cheatsheet - VM Status (state) icons
 
 | Icon  | Meaning                                    |
 | :--:  | :--                                        |

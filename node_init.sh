@@ -119,6 +119,7 @@ if [ -x /usr/bin/resizewin ] ; then /usr/bin/resizewin -z ; fi
 # Uncomment to display a random cookie on each login.
 # if [ -x /usr/bin/fortune ] ; then /usr/bin/fortune -s ; fi
 
+[ -z "$PS1" ] && true || echo "Hoster version: $(/opt/hoster-core/hoster version)"
 export EDITOR=vim
 
 EOF
@@ -207,6 +208,26 @@ pass in quick on { ${PUBLIC_INTERFACE} } proto tcp to port 22 keep state #ALLOW_
 # pass in proto tcp to port 443 keep state                                                                                                              # HTTPS_NGINX_PROXY
 EOF
 
+## SSH Banner
+cat << 'EOF' | cat > /etc/motd.template
+  ▄         ▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄ 
+ ▐░▌       ▐░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌
+ ▐░▌       ▐░▌▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀▀▀  ▀▀▀▀█░█▀▀▀▀ ▐░█▀▀▀▀▀▀▀▀▀ ▐░█▀▀▀▀▀▀▀█░▌
+ ▐░▌       ▐░▌▐░▌       ▐░▌▐░▌               ▐░▌     ▐░▌          ▐░▌       ▐░▌
+ ▐░█▄▄▄▄▄▄▄█░▌▐░▌       ▐░▌▐░█▄▄▄▄▄▄▄▄▄      ▐░▌     ▐░█▄▄▄▄▄▄▄▄▄ ▐░█▄▄▄▄▄▄▄█░▌
+ ▐░░░░░░░░░░░▌▐░▌       ▐░▌▐░░░░░░░░░░░▌     ▐░▌     ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌
+ ▐░█▀▀▀▀▀▀▀█░▌▐░▌       ▐░▌ ▀▀▀▀▀▀▀▀▀█░▌     ▐░▌     ▐░█▀▀▀▀▀▀▀▀▀ ▐░█▀▀▀▀█░█▀▀ 
+ ▐░▌       ▐░▌▐░▌       ▐░▌          ▐░▌     ▐░▌     ▐░▌          ▐░▌     ▐░▌  
+ ▐░▌       ▐░▌▐░█▄▄▄▄▄▄▄█░▌ ▄▄▄▄▄▄▄▄▄█░▌     ▐░▌     ▐░█▄▄▄▄▄▄▄▄▄ ▐░▌      ▐░▌ 
+ ▐░▌       ▐░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌     ▐░▌     ▐░░░░░░░░░░░▌▐░▌       ▐░▌
+  ▀         ▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀       ▀       ▀▀▀▀▀▀▀▀▀▀▀  ▀         ▀ 
+      ┬  ┬┬┬─┐┌┬┐┬ ┬┌─┐┬  ┬┌─┐┌─┐┌┬┐┬┌─┐┌┐┌  ┌┬┐┌─┐┌┬┐┌─┐  ┌─┐┌─┐┌─┐┬ ┬  
+      └┐┌┘│├┬┘ │ │ │├─┤│  │┌─┘├─┤ │ ││ ││││  │││├─┤ ││├┤   ├┤ ├─┤└─┐└┬┘  
+       └┘ ┴┴└─ ┴ └─┘┴ ┴┴─┘┴└─┘┴ ┴ ┴ ┴└─┘┘└┘  ┴ ┴┴ ┴─┴┘└─┘  └─┘┴ ┴└─┘ ┴   
+
+
+EOF
+## EOF SSH Banner
 
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.2b/hoster -O ${HOSTER_WD}hoster -q --show-progress
 chmod +x ${HOSTER_WD}hoster
