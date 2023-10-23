@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/spf13/cobra"
 )
@@ -126,7 +127,10 @@ func startApiServer(port int, user string, password string, haMode bool, haDebug
 	}
 
 	execFile := path.Dir(execPath) + "/hoster_rest_api"
-	err = exec.Command("nohup", execFile, "&").Start()
+	// err = exec.Command("nohup", execFile, "&").Start()
+	cmd := exec.Command(execFile)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	err = cmd.Start()
 	if err != nil {
 		return err
 	}
