@@ -134,7 +134,7 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 	bhyveFinalCommand = bhyveFinalCommand + networkFinal
 	// fmt.Println(bhyveFinalCommand)
 
-	bhyvePci := bhyvePci1
+	bhyvePci := bhyvePci1 + 1
 	var diskFinal string
 	var genericDiskText string
 	var diskImageLocation string
