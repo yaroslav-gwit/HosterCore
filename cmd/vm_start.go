@@ -121,7 +121,8 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 			if i == 0 {
 				networkFinal = "-s " + strconv.Itoa(bhyvePci1) + ":" + strconv.Itoa(bhyvePci2) + networkAdaptorType + availableTaps[i] + ",mac=" + v.NetworkMac
 			} else {
-				bhyvePci2 = bhyvePci2 + 1
+				// bhyvePci2 = bhyvePci2 + 1
+				bhyvePci1 += 1
 				networkFinal = networkFinal + " -s " + strconv.Itoa(bhyvePci1) + ":" + strconv.Itoa(bhyvePci2) + networkAdaptorType + availableTaps[i] + ",mac=" + v.NetworkMac
 			}
 		}
@@ -133,7 +134,7 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 	bhyveFinalCommand = bhyveFinalCommand + networkFinal
 	// fmt.Println(bhyveFinalCommand)
 
-	bhyvePci := 3
+	bhyvePci := bhyvePci1
 	var diskFinal string
 	var genericDiskText string
 	var diskImageLocation string
@@ -171,6 +172,7 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 
 	// VNC options
 	bhyvePci = bhyvePci + 1
+	bhyvePci2 = 0
 	vncCommand := " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",fbuf,tcp=0.0.0.0:" + vmConfigVar.VncPort + ",w=800,h=600,password=" + vmConfigVar.VncPassword
 	// Set the VGA mode if found in the config file
 	if len(vmConfigVar.VGA) > 0 {
@@ -190,6 +192,7 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 	// fmt.Println(bhyveFinalCommand)
 
 	bhyvePci = bhyvePci + 1
+	bhyvePci2 = 0
 	var loaderCommand string
 	if vmConfigVar.Loader == "bios" {
 		loaderCommand = " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",xhci,tablet -l com1,/dev/nmdm-" + vmName + "-1A -l bootrom,/usr/local/share/uefi-firmware/BHYVE_UEFI_CSM.fd"

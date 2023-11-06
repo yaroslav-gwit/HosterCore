@@ -171,12 +171,12 @@ func replicateVm(vmName string, replicationEndpoint string, endpointSshPort int,
 	return nil
 }
 
-const SshConnectionTimeout = "timeout"
-const SshConnectionLoginFailure = "login failure"
-const SshConnectionCantResolve = "cant resolve"
-const SshConnectionSuccess = "success"
-
 func checkSshConnection(replicationEndpoint string, endpointSshPort int, sshKeyLocation string) (string, error) {
+	const SshConnectionTimeout = "timeout"
+	const SshConnectionLoginFailure = "login failure"
+	const SshConnectionCantResolve = "cant resolve"
+	const SshConnectionSuccess = "success"
+
 	sshPort := strconv.Itoa(endpointSshPort)
 	stdout, stderr := exec.Command("ssh", "-v", "-oConnectTimeout=2", "-oConnectionAttempts=2", "-oBatchMode=yes", "-i", sshKeyLocation, "-p"+sshPort, replicationEndpoint, "echo", "success").CombinedOutput()
 	reMatchTimeout := regexp.MustCompile(`.*Operation timed out.*`)
