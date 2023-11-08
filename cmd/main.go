@@ -115,7 +115,7 @@ func init() {
 
 	// VM cmd -> stop
 	vmCmd.AddCommand(vmStopCmd)
-	vmStopCmd.Flags().BoolVarP(&forceStop, "force", "f", false, "Use -SIGKILL signal to forcefully kill the VM process")
+	vmStopCmd.Flags().BoolVarP(&vmStopCmdForceStop, "force", "f", false, "Use -SIGKILL signal to forcefully kill the VM process")
 
 	// VM cmd -> stop all
 	vmCmd.AddCommand(vmStopAllCmd)
