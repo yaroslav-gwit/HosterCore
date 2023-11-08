@@ -484,4 +484,5 @@ type VmConfigStruct struct {
 	Description            string            `json:"description"`
 	UUID                   string            `json:"uuid,omitempty"`
 	VGA                    string            `json:"vga,omitempty"`
+	Passthru               []string          `json:"passthru,omitempty"`
 }

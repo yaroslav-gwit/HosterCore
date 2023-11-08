@@ -191,6 +191,17 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 	bhyveFinalCommand = bhyveFinalCommand + vncCommand
 	// fmt.Println(bhyveFinalCommand)
 
+	// Passthru section
+	bhyvePci = bhyvePci + 1
+	bhyvePci2 = 0
+	if len(vmConfigVar.Passthru) > 0 {
+		bhyveFinalCommand = bhyveFinalCommand + " -S "
+		for _, v := range vmConfigVar.Passthru {
+			bhyveFinalCommand = bhyveFinalCommand + " -s " + strconv.Itoa(bhyvePci) + ",passthru," + v
+		}
+	}
+	// EOF Passthru section
+
 	bhyvePci = bhyvePci + 1
 	bhyvePci2 = 0
 	var loaderCommand string

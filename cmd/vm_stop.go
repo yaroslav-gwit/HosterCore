@@ -83,12 +83,12 @@ func SendShutdownSignalToVm(vmName string, forceKill bool, logOutput bool) error
 	if forceKill {
 		_ = exec.Command("kill", "-SIGKILL", vmPid).Run()
 		if logOutput {
-			emojlog.PrintLogMessage("Forceful SIGKILL signal has been sent to: "+vmName+" with PID: "+vmPid, emojlog.Changed)
+			emojlog.PrintLogMessage("Forceful SIGKILL signal has been sent to: "+vmName+"; PID: "+vmPid, emojlog.Changed)
 		}
 	} else {
 		_ = exec.Command("kill", "-SIGTERM", vmPid).Run()
 		if logOutput {
-			emojlog.PrintLogMessage("Graceful SIGTERM signal has been sent to: "+vmName+" with PID: "+vmPid, emojlog.Changed)
+			emojlog.PrintLogMessage("Graceful SIGTERM signal has been sent to: "+vmName+"; PID: "+vmPid, emojlog.Changed)
 		}
 	}
 
