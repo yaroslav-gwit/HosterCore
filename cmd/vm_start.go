@@ -192,9 +192,10 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 	// fmt.Println(bhyveFinalCommand)
 
 	// Passthru section
-	bhyvePci = bhyvePci + 1
-	bhyvePci2 = 0
 	if len(vmConfigVar.Passthru) > 0 {
+		// PCI slot added for each card iteration, no need to add one before the loop
+		// bhyvePci = bhyvePci + 1
+		bhyvePci2 = 0
 		bhyveFinalCommand = bhyveFinalCommand + " -S "
 		for _, v := range vmConfigVar.Passthru {
 			bhyvePci = bhyvePci + 1
