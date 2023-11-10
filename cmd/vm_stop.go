@@ -81,10 +81,16 @@ func SendShutdownSignalToVm(vmName string, forceKill bool, logOutput bool) error
 	}
 
 	if forceKill {
-		_ = exec.Command("kill", "-SIGKILL", vmPid).Run()
-		if logOutput {
+		err = exec.Command("kill", "-SIGKILL", vmPid).Run()
+		if logOutput && err == nil {
 			emojlog.PrintLogMessage("Forceful SIGKILL signal has been sent to: "+vmName+"; PID: "+vmPid, emojlog.Changed)
 		}
+
+		// Clean-up some leftover artifacts
+		_ = exec.Command("bhyvectl", "--destroy", "--vm="+vmName).Run()
+		vmSupervisorCleanup(vmName, false)
+		NetworkCleanup(vmName, false)
+		BhyvectlDestroy(vmName, false)
 	} else {
 		_ = exec.Command("kill", "-SIGTERM", vmPid).Run()
 		if logOutput {
@@ -145,50 +151,58 @@ func StopBhyveProcess(vmName string, quiet bool, kill bool) {
 	}
 }
 
-// func vmSupervisorCleanup(vmName string) {
-// 	emojlog.PrintLogMessage("Performing vm_supervisor cleanup", emojlog.Debug)
-// 	reMatchVm, _ := regexp.Compile(`for\s` + vmName + `\s&`)
-// 	processId := ""
+func vmSupervisorCleanup(vmName string, logOutput bool) {
+	if logOutput {
+		emojlog.PrintLogMessage("Performing vm_supervisor cleanup", emojlog.Debug)
+	}
+	reMatchVm, _ := regexp.Compile(`for\s` + vmName + `\s&`)
+	processId := ""
 
-// 	iteration := 0
-// 	for {
-// 		time.Sleep(time.Second * 2)
-// 		processId = ""
-// 		cmd := exec.Command("pgrep", "-lf", vmName)
-// 		stdout, stderr := cmd.Output()
-// 		if stderr != nil {
-// 			if cmd.ProcessState.ExitCode() == 1 {
-// 				_ = 0
-// 			} else {
-// 				emojlog.PrintLogMessage("pgrep exited with an error: "+stderr.Error(), emojlog.Error)
-// 			}
-// 		}
+	iteration := 0
+	for {
+		time.Sleep(time.Second * 2)
+		processId = ""
+		cmd := exec.Command("pgrep", "-lf", vmName)
+		stdout, stderr := cmd.Output()
+		if stderr != nil {
+			if cmd.ProcessState.ExitCode() == 1 {
+				_ = 0
+			} else if logOutput {
+				emojlog.PrintLogMessage("pgrep exited with an error: "+stderr.Error(), emojlog.Error)
+			}
+		}
 
-// 		for _, v := range strings.Split(string(stdout), "\n") {
-// 			v = strings.TrimSpace(v)
-// 			if reMatchVm.MatchString(v) {
-// 				processId = strings.Split(v, " ")[0]
-// 			}
-// 		}
+		for _, v := range strings.Split(string(stdout), "\n") {
+			v = strings.TrimSpace(v)
+			if reMatchVm.MatchString(v) {
+				processId = strings.Split(v, " ")[0]
+			}
+		}
 
-// 		if len(processId) < 1 {
-// 			emojlog.PrintLogMessage("VM process is dead", emojlog.Debug)
-// 			break
-// 		}
+		if len(processId) < 1 {
+			if logOutput {
+				emojlog.PrintLogMessage("VM process is dead", emojlog.Debug)
+			}
+			break
+		}
 
-// 		iteration = iteration + 1
-// 		if iteration > 3 {
-// 			cmd := exec.Command("kill", "-SIGKILL", processId)
-// 			stderr := cmd.Run()
-// 			if stderr != nil {
-// 				emojlog.PrintLogMessage("kill was not successful: "+stderr.Error(), emojlog.Error)
+		iteration = iteration + 1
+		if iteration > 3 {
+			cmd := exec.Command("kill", "-SIGKILL", processId)
+			stderr := cmd.Run()
 
-// 			}
-// 			emojlog.PrintLogMessage("Forcefully killing the vm_supervisor, due to operation timeout: "+processId, emojlog.Debug)
-// 		}
-// 	}
-// 	emojlog.PrintLogMessage("Done cleaning up after vm supervisor", emojlog.Changed)
-// }
+			if logOutput {
+				if stderr != nil {
+					emojlog.PrintLogMessage("kill was not successful: "+stderr.Error(), emojlog.Error)
+				}
+				emojlog.PrintLogMessage("Forcefully killing the vm_supervisor, due to operation timeout: "+processId, emojlog.Debug)
+			}
+		}
+	}
+	if logOutput {
+		emojlog.PrintLogMessage("Done cleaning up after vm supervisor", emojlog.Changed)
+	}
+}
 
 func NetworkCleanup(vmName string, quiet bool) {
 	if !quiet {
