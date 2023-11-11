@@ -116,10 +116,12 @@ func init() {
 	// VM cmd -> stop
 	vmCmd.AddCommand(vmStopCmd)
 	vmStopCmd.Flags().BoolVarP(&vmStopCmdForceStop, "force", "f", false, "Use -SIGKILL signal to forcefully kill the VM process")
+	vmStopCmd.Flags().BoolVarP(&vmStopCmdCleanUp, "cleanup", "c", false, "Kill VM Supervisor as well as the VM itself (rarely needed)")
 
 	// VM cmd -> stop all
 	vmCmd.AddCommand(vmStopAllCmd)
 	vmStopAllCmd.Flags().BoolVarP(&forceStopAll, "force", "f", false, "Use -SIGKILL signal to forcefully kill all of the VMs processes")
+	vmStopCmd.Flags().BoolVarP(&vmStopAllCmdCleanUp, "cleanup", "c", false, "Kill VM Supervisor as well as the VM itself (rarely needed)")
 
 	// VM cmd -> show log
 	vmCmd.AddCommand(vmShowLogCmd)

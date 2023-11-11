@@ -267,7 +267,7 @@ func main() {
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
-		err := cmd.VmStop(vm.Name, false)
+		err := cmd.VmStop(vm.Name, false, false)
 		if err != nil {
 			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusBadRequest)
@@ -286,7 +286,7 @@ func main() {
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
-		err := cmd.VmStop(vm.Name, true)
+		err := cmd.VmStop(vm.Name, true, false)
 		if err != nil {
 			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusBadRequest)
@@ -298,13 +298,13 @@ func main() {
 	})
 
 	app.Post("/vm/stop-all", func(fiberContext *fiber.Ctx) error {
-		go cmd.VmStopAll(false)
+		go cmd.VmStopAll(false, false)
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.JSON(fiber.Map{"message": "process started"})
 	})
 
 	app.Post("/vm/stop-all-force", func(fiberContext *fiber.Ctx) error {
-		go cmd.VmStopAll(true)
+		go cmd.VmStopAll(true, false)
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.JSON(fiber.Map{"message": "process started"})
 	})

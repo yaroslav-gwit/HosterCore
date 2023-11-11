@@ -20,7 +20,7 @@ pkg update
 pkg upgrade -y
 pkg install -y vim bash pftop tmux qemu-tools git openssl curl
 pkg install -y bhyve-firmware uefi-edk2-bhyve-csm edk2-bhyve
-pkg install -y htop wget gtar unzip cdrkit-genisoimage go
+pkg install -y htop wget gtar unzip cdrkit-genisoimage go beadm
 
 #_ OPTIONAL PACKAGES _#
 # (install for easier debugging)
@@ -29,78 +29,68 @@ pkg install -y htop wget gtar unzip cdrkit-genisoimage go
 if [[ -f /bin/bash ]]; then rm /bin/bash; fi
 ln "$(which bash)" /bin/bash
 
-
 #_ SET ENCRYPTED ZFS PASSWORD _#
-if [ -z "${DEF_ZFS_ENCRYPTION_PASSWORD}" ]; then 
+if [ -z "${DEF_ZFS_ENCRYPTION_PASSWORD}" ]; then
     ZFS_RANDOM_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
-else 
+else
     ZFS_RANDOM_PASSWORD=${DEF_ZFS_ENCRYPTION_PASSWORD}
 fi
 
-
 #_ GENERATE SSH KEYS _#
-if [[ ! -f /root/.ssh/id_rsa ]]
-then
+if [[ ! -f /root/.ssh/id_rsa ]]; then
     ssh-keygen -b 4096 -t rsa -f /root/.ssh/id_rsa -q -N ""
 else
     echo " 🔷 DEBUG: SSH key was found, no need to generate a new one"
 fi
 
-if [[ ! -f /root/.ssh/config ]]
-then
+if [[ ! -f /root/.ssh/config ]]; then
     touch /root/.ssh/config && chmod 600 /root/.ssh/config
 fi
 
 HOST_SSH_KEY=$(cat /root/.ssh/id_rsa.pub)
 
-
 #_ REGISTER IF REQUIRED DATASETS EXIST _#
 ENCRYPTED_DS=$(zfs list | grep -c "zroot/vm-encrypted")
 UNENCRYPTED_DS=$(zfs list | grep -c "zroot/vm-unencrypted")
 
-
 #_ CREATE ZFS DATASETS IF THEY DON'T EXIST _#
-if [[ ${ENCRYPTED_DS} -lt 1 ]]
-then
+if [[ ${ENCRYPTED_DS} -lt 1 ]]; then
     zpool set autoexpand=on zroot
     zpool set autoreplace=on zroot
     zfs set primarycache=metadata zroot
     echo -e "${ZFS_RANDOM_PASSWORD}" | zfs create -o encryption=on -o keyformat=passphrase zroot/vm-encrypted
 fi
 
-if [[ ${UNENCRYPTED_DS} -lt 1 ]]
-then
+if [[ ${UNENCRYPTED_DS} -lt 1 ]]; then
     zpool set autoexpand=on zroot
     zpool set autoreplace=on zroot
     zfs set primarycache=metadata zroot
     zfs create zroot/vm-unencrypted
 fi
 
-
 #_ BOOTLOADER OPTIMISATIONS _#
 BOOTLOADER_FILE="/boot/loader.conf"
 # CMD_LINE='fusefs_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
-CMD_LINE='vm.kmem_size="400M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
-CMD_LINE='vm.kmem_size_max="400M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
-CMD_LINE='vfs.zfs.arc_max="40M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
-CMD_LINE='vfs.zfs.vdev.cache.size="5M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
+CMD_LINE='vm.kmem_size="400M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
+CMD_LINE='vm.kmem_size_max="400M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
+CMD_LINE='vfs.zfs.arc_max="40M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
+CMD_LINE='vfs.zfs.vdev.cache.size="5M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 # CMD_LINE='virtio_blk_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
-CMD_LINE='pf_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
-CMD_LINE='kern.racct.enable=1' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
+CMD_LINE='pf_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
+CMD_LINE='kern.racct.enable=1' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 
 #_ PF CONFIG BLOCK IN rc.conf _#
 RC_CONF_FILE="/etc/rc.conf"
-CMD_LINE='pf_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
-CMD_LINE='pf_rules="/etc/pf.conf"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
-CMD_LINE='pflog_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
-CMD_LINE='pflog_logfile="/var/log/pflog"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
-CMD_LINE='pflog_flags=""' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
-CMD_LINE='gateway_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
+CMD_LINE='pf_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
+CMD_LINE='pf_rules="/etc/pf.conf"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
+CMD_LINE='pflog_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
+CMD_LINE='pflog_logfile="/var/log/pflog"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
+CMD_LINE='pflog_flags=""' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
+CMD_LINE='gateway_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
 # CMD_LINE='rtclocaltime="NO"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
 
-
 #_ SET CORRECT PROFILE FILE _#
-cat << 'EOF' | cat > /root/.profile
+cat <<'EOF' | cat >/root/.profile
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:~/bin:/opt/hoster-core
 export PATH
 HOME=/root
@@ -125,13 +115,13 @@ export EDITOR=vim
 EOF
 
 # Add vmls as alias to root's bashrc
-echo 'alias vmls="hoster vm list"' >> /root/.bashrc
+echo 'alias vmls="hoster vm list"' >>/root/.bashrc
 
 #_ GENERATE MINIMAL REQUIRED CONFIG FILES _#
 mkdir -p ${HOSTER_WD}config_files/
 
 ### NETWORK CONFIG ###
-cat << EOF | cat > ${HOSTER_WD}config_files/network_config.json
+cat <<EOF | cat >${HOSTER_WD}config_files/network_config.json
 [
     {
         "network_name": "${NETWORK_NAME}",
@@ -147,7 +137,7 @@ cat << EOF | cat > ${HOSTER_WD}config_files/network_config.json
 EOF
 
 ### HOST CONFIG ###
-cat << EOF | cat > ${HOSTER_WD}config_files/host_config.json
+cat <<EOF | cat >${HOSTER_WD}config_files/host_config.json
 {
     "public_vm_image_server": "https://images.yari.pw/",
     "active_datasets": [
@@ -166,9 +156,8 @@ cat << EOF | cat > ${HOSTER_WD}config_files/host_config.json
 }
 EOF
 
-
 #_ COPY OVER PF CONFIG _#
-cat << EOF | cat > /etc/pf.conf
+cat <<EOF | cat >/etc/pf.conf
 table <private-ranges> { 10.0.0.0/8 100.64.0.0/10 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.0.0.0/24 192.0.0.0/29 192.0.2.0/24 192.88.99.0/24 192.168.0.0/16 198.18.0.0/15 198.51.100.0/24 203.0.113.0/24 240.0.0.0/4 255.255.255.255/32 }
 
 set skip on lo0
@@ -209,7 +198,7 @@ pass in quick on { ${PUBLIC_INTERFACE} } proto tcp to port 22 keep state #ALLOW_
 EOF
 
 ## SSH Banner
-cat << 'EOF' | cat > /etc/motd.template
+cat <<'EOF' | cat >/etc/motd.template
   ▄         ▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄ 
  ▐░▌       ▐░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌
  ▐░▌       ▐░▌▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀▀▀  ▀▀▀▀█░█▀▀▀▀ ▐░█▀▀▀▀▀▀▀▀▀ ▐░█▀▀▀▀▀▀▀█░▌
@@ -239,7 +228,7 @@ wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.2b/self_up
 chmod +x ${HOSTER_WD}self_update_service
 
 #_ LET USER KNOW THE STATE OF DEPLOYMENT _#
-cat << EOF | cat
+cat <<EOF | cat
 
 ╭────────────────────────────────────────────────────────────────────────────╮
 │                                                                            │

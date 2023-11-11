@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	forceStopAll bool
-	vmStopAllCmd = &cobra.Command{
+	forceStopAll        bool
+	vmStopAllCmdCleanUp bool
+	vmStopAllCmd        = &cobra.Command{
 		Use:   "stop-all",
 		Short: "Stop all VMs deployed on this system",
 		Long:  `Stop all VMs deployed on this system`,
@@ -19,17 +20,21 @@ var (
 				log.Fatal(err.Error())
 			}
 
-			VmStopAll(forceStopAll)
+			VmStopAll(forceStopAll, vmStopAllCmdCleanUp)
 		},
 	}
 )
 
-func VmStopAll(forceStopAll bool) {
-	sleepTime := 3
+func VmStopAll(forceStopAll bool, cleanup bool) {
+	sleepTime := 500
 	for i, vm := range getAllVms() {
 		if i != 0 {
-			time.Sleep(time.Second * time.Duration(sleepTime))
+			time.Sleep(time.Millisecond * time.Duration(sleepTime))
 		}
-		VmStop(vm, false)
+		if forceStopAll {
+			VmStop(vm, true, vmStopAllCmdCleanUp)
+		} else {
+			VmStop(vm, false, false)
+		}
 	}
 }

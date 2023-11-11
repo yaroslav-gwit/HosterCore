@@ -48,7 +48,7 @@ func ZfsSnapshotRollback(vmName string, snapshotName string, forceStop bool, for
 	}
 
 	if forceStop {
-		err := VmStop(vmName, forceStop)
+		err := VmStop(vmName, forceStop, true)
 		if err != nil {
 			return err
 		}

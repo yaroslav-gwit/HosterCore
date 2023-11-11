@@ -14,6 +14,7 @@ import (
 
 var (
 	vmStopCmdForceStop bool
+	vmStopCmdCleanUp   bool
 	vmStopCmd          = &cobra.Command{
 		Use:   "stop [vmName]",
 		Short: "Stop a particular VM using it's name",
@@ -25,7 +26,7 @@ var (
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 			}
 
-			err = VmStop(args[0], vmStopCmdForceStop)
+			err = VmStop(args[0], vmStopCmdForceStop, vmStopCmdCleanUp)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 			}
@@ -33,7 +34,7 @@ var (
 	}
 )
 
-func VmStop(vmName string, forceKill bool) error {
+func VmStop(vmName string, forceKill bool, forceCleanup bool) error {
 	allVms := getAllVms()
 	if !slices.Contains(allVms, vmName) {
 		return errors.New("VM is not found on this system")
@@ -41,7 +42,7 @@ func VmStop(vmName string, forceKill bool) error {
 		return errors.New("VM is already stopped")
 	}
 
-	err := SendShutdownSignalToVm(vmName, forceKill, true)
+	err := SendShutdownSignalToVm(vmName, forceKill, true, forceCleanup)
 	if err != nil {
 		return err
 	}
@@ -56,7 +57,7 @@ func VmStop(vmName string, forceKill bool) error {
 	return nil
 }
 
-func SendShutdownSignalToVm(vmName string, forceKill bool, logOutput bool) error {
+func SendShutdownSignalToVm(vmName string, forceKill bool, logOutput bool, cleanup bool) error {
 	if logOutput {
 		emojlog.PrintLogMessage("Stopping the VM: "+vmName, emojlog.Debug)
 	}
@@ -82,15 +83,17 @@ func SendShutdownSignalToVm(vmName string, forceKill bool, logOutput bool) error
 
 	if forceKill {
 		err = exec.Command("kill", "-SIGKILL", vmPid).Run()
-		if logOutput && err == nil {
+		if logOutput && err == nil && len(vmPid) > 0 {
 			emojlog.PrintLogMessage("Forceful SIGKILL signal has been sent to: "+vmName+"; PID: "+vmPid, emojlog.Changed)
 		}
 
 		// Clean-up some leftover artifacts
-		_ = exec.Command("bhyvectl", "--destroy", "--vm="+vmName).Run()
-		vmSupervisorCleanup(vmName, false)
-		NetworkCleanup(vmName, false)
-		BhyvectlDestroy(vmName, false)
+		if cleanup {
+			_ = exec.Command("bhyvectl", "--destroy", "--vm="+vmName).Run()
+			vmSupervisorCleanup(vmName, false)
+			NetworkCleanup(vmName, false)
+			BhyvectlDestroy(vmName, false)
+		}
 	} else {
 		_ = exec.Command("kill", "-SIGTERM", vmPid).Run()
 		if logOutput {
