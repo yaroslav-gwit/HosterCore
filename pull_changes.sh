@@ -9,7 +9,7 @@ NC='\033[0m'
 
 ERROR_TEXT="${LIGHT_RED}ERROR:${NC}"
 
-echo "${LIGHT_GREEN}=== Pulling changes from Git ===${NC}"
+echo -e "${LIGHT_GREEN}=== Pulling changes from Git ===${NC}"
 git stash
 git pull || echo -e "${ERROR_TEXT} could not pull from the Git repo"
-echo "${LIGHT_GREEN}=== Done pulling changes from Git ===${NC}"
+echo -e "${LIGHT_GREEN}=== Done pulling changes from Git ===${NC}"
