@@ -85,12 +85,12 @@ func init() {
 	// 	password = passwordEnv
 	// }
 
-	execBinaryPath, err := os.Executable()
+	execPath, err := os.Executable()
 	if err != nil {
 		os.Exit(1)
 	}
-	execPath := filepath.Dir(execBinaryPath)
-	restApiConfigFile, err := os.ReadFile(execPath + "/config_files/restapi_config.json")
+	execDir := filepath.Dir(execPath)
+	restApiConfigFile, err := os.ReadFile(execDir + "/config_files/restapi_config.json")
 	if err != nil {
 		os.Exit(1)
 	}

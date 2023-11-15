@@ -141,13 +141,13 @@ func startApiServer() error {
 	// 	os.Setenv("REST_API_HA_DEBUG", "true")
 	// }
 
-	execBinaryPath, err := os.Executable()
+	execPath, err := os.Executable()
 	if err != nil {
 		return err
 	}
-	execPath := filepath.Dir(execBinaryPath)
+	execDir := filepath.Dir(execPath)
 
-	file, err := os.ReadFile(execPath + "/config_files/restapi_config.json")
+	file, err := os.ReadFile(execDir + "/config_files/restapi_config.json")
 	if err != nil {
 		return errors.New("could not open restapi_config.json: " + err.Error())
 	}
