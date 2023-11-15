@@ -4,11 +4,11 @@
 export BUILD_ALL=yes
 if [[ -n $1 && $1 != all ]]; then BUILD_ALL=no; fi
 
-# RED='\033[0;31m'
-LIGHT_RED='\033[1;31m'
-# GREEN='\033[0;32m'
-LIGHT_GREEN='\033[1;32m'
-NC='\033[0m'
+# RED='\e[0;31m'
+LIGHT_RED='\e[1;31m'
+# GREEN='\e[0;32m'
+LIGHT_GREEN='\e[1;32m'
+NC='\e[0m'
 
 ERROR_TEXT="${LIGHT_RED}ERROR:${NC}"
 
