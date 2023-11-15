@@ -23,6 +23,7 @@ import (
 const LOG_SEPARATOR = " || "
 
 var tagCustomError string
+var restApiConfig cmd.RestApiConfig
 
 func main() {
 	defer func() {
@@ -32,39 +33,27 @@ func main() {
 		}
 	}()
 
-	user := "admin"
-	password := "123456"
-	port := 3000
+	// user := "admin"
+	// password := "123456"
+	// port := 3000
 
-	portEnv := os.Getenv("REST_API_PORT")
-	userEnv := os.Getenv("REST_API_USER")
-	passwordEnv := os.Getenv("REST_API_PASSWORD")
+	// portEnv := os.Getenv("REST_API_PORT")
+	// userEnv := os.Getenv("REST_API_USER")
+	// passwordEnv := os.Getenv("REST_API_PASSWORD")
 
 	var err error
-	if len(portEnv) > 0 {
-		port, err = strconv.Atoi(portEnv)
-		if err != nil {
-			log.Fatal("please make sure port is an integer!")
-		}
-	}
-	if len(userEnv) > 0 {
-		user = userEnv
-	}
-	if len(passwordEnv) > 0 {
-		password = passwordEnv
-	}
 
 	app := fiber.New(fiber.Config{DisableStartupMessage: true, Prefork: false})
 	// app.Use(recover.New())
 	app.Use(requestid.New())
 
 	// Custom File Writer
-	file, err := os.OpenFile("/var/log/hoster_rest_api.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	logFile, err := os.OpenFile("/var/log/hoster_rest_api.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	// file, err := os.OpenFile("/var/run/hoster_rest_api.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
-	defer file.Close()
+	defer logFile.Close()
 
 	tagCustomError = ""
 	app.Use(logger.New(logger.Config{
@@ -88,14 +77,15 @@ func main() {
 			},
 		},
 		Format: "${custom_tag_time}" + LOG_SEPARATOR + "${ip}:${port}" + LOG_SEPARATOR + "${status}" + LOG_SEPARATOR + "${method}" + LOG_SEPARATOR + "${path}" + LOG_SEPARATOR + "${latency}" + LOG_SEPARATOR + "bytesSent: ${bytesSent}${custom_tag_err}\n",
-		Output: file,
+		Output: logFile,
 	}))
 
+	authMap := make(map[string]string)
+	for _, auth := range restApiConfig.HTTPAuth {
+		authMap[auth.User] = auth.Password
+	}
 	app.Use(basicauth.New(basicauth.Config{
-		Users: map[string]string{
-			user: password,
-		},
-	}))
+		Users: authMap}))
 
 	app.Get("/host/info", func(fiberContext *fiber.Ctx) error {
 		tagCustomError = ""
@@ -439,7 +429,7 @@ func main() {
 	v1.Post("/vm/change-parent", handleVmChangeParent)
 	v1.Post("/vm/cireset", handleVmCiReset)
 
-	if haMode {
+	if restApiConfig.HaMode {
 		ha := v1.Group("/ha")
 		ha.Post("/register", handleHaRegistration)
 		ha.Get("/all-members", handleHaShareAllMembers)
@@ -452,8 +442,8 @@ func main() {
 	timesFailed := 0
 	timesFailedMax := 3
 	hosterRestLabel := "HOSTER_REST"
-	if haMode {
-		if debugMode {
+	if restApiConfig.HaMode {
+		if restApiConfig.HaDebug {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: hoster_rest_api started in DEBUG mode").Run()
 		} else {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: hoster_rest_api started in PRODUCTION mode").Run()
@@ -481,7 +471,7 @@ func main() {
 				}
 
 				if timesFailed >= timesFailedMax {
-					if debugMode {
+					if restApiConfig.HaDebug {
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: process will exit due to HA_WATCHDOG failure").Run()
 						_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: the host system shall reboot soon").Run()
 						os.Exit(1)
@@ -502,7 +492,7 @@ func main() {
 	go func() {
 		for sig := range signals {
 			if sig == syscall.SIGTERM || sig == syscall.SIGINT {
-				if haMode {
+				if restApiConfig.HaMode {
 					terminateOtherMembers()
 				}
 
@@ -521,7 +511,7 @@ func main() {
 		}
 	}()
 
-	err = app.Listen("0.0.0.0:" + strconv.Itoa(port))
+	err = app.Listen(restApiConfig.Bind + ":" + strconv.Itoa(restApiConfig.Port))
 	if err != nil {
 		log.Fatalf("Error starting server: %s\n", err)
 	}
