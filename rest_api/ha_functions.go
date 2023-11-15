@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -84,10 +85,11 @@ func init() {
 	// 	password = passwordEnv
 	// }
 
-	execPath, err := os.Executable()
+	execBinaryPath, err := os.Executable()
 	if err != nil {
 		os.Exit(1)
 	}
+	execPath := filepath.Dir(execBinaryPath)
 	restApiConfigFile, err := os.ReadFile(execPath + "/config_files/restapi_config.json")
 	if err != nil {
 		os.Exit(1)

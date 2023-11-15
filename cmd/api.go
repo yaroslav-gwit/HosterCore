@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -140,10 +141,11 @@ func startApiServer() error {
 	// 	os.Setenv("REST_API_HA_DEBUG", "true")
 	// }
 
-	execPath, err := os.Executable()
+	execBinaryPath, err := os.Executable()
 	if err != nil {
 		return err
 	}
+	execPath := filepath.Dir(execBinaryPath)
 
 	file, err := os.ReadFile(execPath + "/config_files/restapi_config.json")
 	if err != nil {
