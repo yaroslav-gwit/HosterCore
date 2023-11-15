@@ -269,6 +269,7 @@ func registerNode() {
 					host.Port = strconv.Itoa(restApiConfig.Port)
 					host.Protocol = restApiConfig.Protocol
 					configFound = true
+					break
 				}
 			}
 			if !configFound {
