@@ -3,3 +3,5 @@ ha_watchdog/ha_watchdoga
 .DS_Store
 # Ignore vscode settings
 .vscode
+# Ignore log files
+*.log
