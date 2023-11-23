@@ -198,14 +198,17 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 	// fmt.Println(bhyveFinalCommand)
 
 	// Passthru section
+	passthruString := ""
 	if len(vmConfigVar.Passthru) > 0 {
 		// PCI slot added for each card iteration, no need to add one before the loop
-		// bhyvePci = bhyvePci + 1
-		bhyvePci2 = 0
-		for _, v := range vmConfigVar.Passthru {
-			bhyvePci = bhyvePci + 1
-			bhyveFinalCommand = bhyveFinalCommand + " -s " + strconv.Itoa(bhyvePci) + ",passthru," + v
-		}
+		bhyvePci = bhyvePci + 1
+		// bhyvePci2 = 0
+		// for _, v := range vmConfigVar.Passthru {
+		// 	bhyvePci = bhyvePci + 1
+		// 	bhyveFinalCommand = bhyveFinalCommand + " -s " + strconv.Itoa(bhyvePci) + ",passthru," + v
+		// }
+		passthruString, bhyvePci = passthruPciSplitter(bhyvePci, vmConfigVar.Passthru)
+		bhyveFinalCommand = bhyveFinalCommand + " " + passthruString
 	}
 	// EOF Passthru section
 
@@ -281,4 +284,53 @@ func findAvailableTapInterface() string {
 			return "tap" + strconv.Itoa(nextFreeTap)
 		}
 	}
+}
+
+// Takes in a list of PCI devices like so: [ "4/0/0", "43/0/1", "43/0/12" ]
+//
+// And returns the correct mappings for the Bhyve passthru, like so:
+// -s 6:0,passthru,4/0/0 -s 7:1,passthru,43/0/1 -s 7:12,passthru,43/0/12
+func passthruPciSplitter(startWithId int, devices []string) (pciDevs string, latestPciId int) {
+	group := ""
+	iter := 0
+	skipThisIterationList := []int{}
+
+	for i, v := range devices {
+		if len(strings.Split(v, "/")) < 3 {
+			emojlog.PrintLogMessage("This PCI device would not be added to passthru: "+v+", because it uses the incorrect format", emojlog.Error)
+			continue
+		}
+		if slices.Contains(skipThisIterationList, i) {
+			continue
+		}
+
+		group = strings.Split(v, "/")[0]
+		iter = i
+
+		pciDevs = pciDevs + " -s " + strconv.Itoa(startWithId) + ":" + strings.Split(v, "/")[2] + ",passthru," + v
+		for ii, vv := range devices {
+			if ii == iter {
+				continue
+			}
+			if slices.Contains(skipThisIterationList, ii) {
+				continue
+			}
+			if len(strings.Split(vv, "/")) < 3 {
+				emojlog.PrintLogMessage("This PCI device would not be added to passthru: "+vv+", because it uses the incorrect format", emojlog.Error)
+				continue
+			}
+
+			if strings.Split(vv, "/")[0] == group {
+				skipThisIterationList = append(skipThisIterationList, ii)
+				pciDevs = pciDevs + " -s " + strconv.Itoa(startWithId) + ":" + strings.Split(vv, "/")[2] + ",passthru," + vv
+			}
+		}
+		startWithId += 1
+	}
+
+	pciDevs = strings.TrimSpace(pciDevs)
+	if iter > 0 {
+		latestPciId = startWithId - 1
+	}
+	return
 }

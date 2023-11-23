@@ -418,13 +418,10 @@ func getOsDiskFullSize(vmName string) string {
 }
 
 func getOsDiskUsed(vmName string) string {
-	var filePath = getVmFolder(vmName) + "/disk0.img"
 	var osDiskDu string
-	var osDiskDuArg1 = "du"
-	var osDiskDuArg2 = "-h"
-	var osDiskDuArg3 = filePath
+	var filePath = getVmFolder(vmName) + "/disk0.img"
 
-	var cmd = exec.Command(osDiskDuArg1, osDiskDuArg2, osDiskDuArg3)
+	var cmd = exec.Command("du", "-h", filePath)
 	var stdout, err = cmd.Output()
 	if err != nil {
 		fmt.Println("Func getOsDiskFullSize: There has been an error:", err)
@@ -439,8 +436,8 @@ func getOsDiskUsed(vmName string) string {
 			osDiskDuList = append(osDiskDuList, i)
 		}
 	}
-	osDiskDu = osDiskDuList[0]
-	osDiskDu = strings.TrimSpace(osDiskDu)
+
+	osDiskDu = strings.TrimSpace(osDiskDuList[0])
 	return osDiskDu
 }
 
