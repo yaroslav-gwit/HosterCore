@@ -485,4 +485,5 @@ type VmConfigStruct struct {
 	UUID                   string            `json:"uuid,omitempty"`
 	VGA                    string            `json:"vga,omitempty"`
 	Passthru               []string          `json:"passthru,omitempty"`
+	DisableXHCI            bool              `json:"disable_xhci,omitempty"`
 }

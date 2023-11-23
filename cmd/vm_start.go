@@ -209,16 +209,26 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 	}
 	// EOF Passthru section
 
+	// XHCI and LOADER section
 	bhyvePci = bhyvePci + 1
 	bhyvePci2 = 0
+
+	var xhciCommand string
+	if vmConfigVar.DisableXHCI {
+		xhciCommand = ""
+	} else {
+		xhciCommand = " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",xhci,tablet"
+	}
+
 	var loaderCommand string
 	if vmConfigVar.Loader == "bios" {
-		loaderCommand = " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",xhci,tablet -l com1,/dev/nmdm-" + vmName + "-1A -l bootrom,/usr/local/share/uefi-firmware/BHYVE_UEFI_CSM.fd"
+		loaderCommand = xhciCommand + " -l com1,/dev/nmdm-" + vmName + "-1A -l bootrom,/usr/local/share/uefi-firmware/BHYVE_UEFI_CSM.fd"
 	} else if vmConfigVar.Loader == "uefi" {
-		loaderCommand = " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",xhci,tablet -l com1,/dev/nmdm-" + vmName + "-1A -l bootrom,/usr/local/share/uefi-firmware/BHYVE_UEFI.fd"
+		loaderCommand = xhciCommand + " -l com1,/dev/nmdm-" + vmName + "-1A -l bootrom,/usr/local/share/uefi-firmware/BHYVE_UEFI.fd"
 	} else {
 		emojlog.PrintLogMessage("make sure your loader is set to 'bios' or 'uefi', expect VM boot failures", emojlog.Warning)
 	}
+	// EOF XHCI and LOADER section
 
 	if len(vmConfigVar.UUID) > 0 {
 		loaderCommand = loaderCommand + " -U " + vmConfigVar.UUID
