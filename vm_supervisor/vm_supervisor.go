@@ -115,7 +115,7 @@ func readAndLogOutput(reader *bufio.Reader, name string) {
 			logFileOutput(name, line)
 		}
 
-		if reMatchProcessFailureLogLine1.MatchString(line) && name == LOG_SYS_OUT {
+		if reMatchProcessFailureLogLine1.MatchString(strings.TrimSpace(line)) {
 			cmd.NetworkCleanup(vmName, true)
 			cmd.BhyvectlDestroy(vmName, true)
 			logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. Observed a bhyve process failure.")
