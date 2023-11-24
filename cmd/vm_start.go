@@ -319,8 +319,12 @@ func passthruPciSplitter(startWithId int, devices []string) (pciDevs string, lat
 		group = strings.Split(v, "/")[0]
 		iter = i
 
-		vNoPrefix := strings.TrimPrefix(v, "-")
-		pciDevs = pciDevs + " -s " + strconv.Itoa(startWithId) + ":" + strings.Split(v, "/")[2] + ",passthru," + vNoPrefix
+		if strings.HasPrefix(v, "-") {
+			vNoPrefix := strings.TrimPrefix(v, "-")
+			pciDevs = pciDevs + " -s " + strconv.Itoa(startWithId) + ":0,passthru," + vNoPrefix
+		} else {
+			pciDevs = pciDevs + " -s " + strconv.Itoa(startWithId) + ":" + strings.Split(v, "/")[2] + ",passthru," + v
+		}
 		for ii, vv := range devices {
 			if ii == iter || strings.HasPrefix(vv, "-") || strings.HasPrefix(v, "-") {
 				continue
