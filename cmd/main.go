@@ -211,6 +211,10 @@ func init() {
 	snapshotRollbackCmd.Flags().BoolVarP(&snapshotRollbackForceStop, "force-stop", "", false, "Automatically stop the VM using --force flag")
 	snapshotRollbackCmd.Flags().BoolVarP(&snapshotRollbackForceStart, "force-start", "", false, "Automatically start the VM after roll-back operation")
 
+	// Passthru command section
+	rootCmd.AddCommand(passthruCmd)
+	passthruCmd.AddCommand(passthruListCmd)
+
 	// API command section
 	rootCmd.AddCommand(apiCmd)
 	apiCmd.AddCommand(apiStartCmd)
