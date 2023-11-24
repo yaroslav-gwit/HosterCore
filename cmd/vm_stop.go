@@ -91,8 +91,8 @@ func SendShutdownSignalToVm(vmName string, forceKill bool, logOutput bool, clean
 		if cleanup {
 			_ = exec.Command("bhyvectl", "--destroy", "--vm="+vmName).Run()
 			vmSupervisorCleanup(vmName, false)
+			// BhyvectlDestroy(vmName, false)
 			NetworkCleanup(vmName, false)
-			BhyvectlDestroy(vmName, false)
 		}
 	} else {
 		_ = exec.Command("kill", "-SIGTERM", vmPid).Run()

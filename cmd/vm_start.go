@@ -19,6 +19,7 @@ import (
 var (
 	vmStartCmdRestoreVmState bool
 	vmStartCmdWaitForVnc     bool
+	vmStartCmdDebug          bool
 
 	vmStartCmd = &cobra.Command{
 		Use:   "start [vmName]",
@@ -28,10 +29,11 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			err := checkInitFile()
 			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 
-			err = VmStart(args[0], vmStartCmdRestoreVmState, vmStartCmdWaitForVnc)
+			err = VmStart(args[0], vmStartCmdRestoreVmState, vmStartCmdWaitForVnc, vmStartCmdDebug)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -40,7 +42,7 @@ var (
 )
 
 // Starts the VM using BhyveCTL and vm_supervisor_service
-func VmStart(vmName string, restoreVmState bool, waitForVnc bool) error {
+func VmStart(vmName string, restoreVmState bool, waitForVnc bool, startDebug bool) error {
 	allVms := getAllVms()
 	if !slices.Contains(allVms, vmName) {
 		return errors.New("VM is not found on this system")
@@ -51,7 +53,7 @@ func VmStart(vmName string, restoreVmState bool, waitForVnc bool) error {
 	emojlog.PrintLogMessage("Starting the VM: "+vmName, emojlog.Info)
 
 	// Generate bhyve start command
-	bhyveCommand := generateBhyveStartCommand(vmName, restoreVmState, waitForVnc)
+	bhyveCommand := generateBhyveStartCommand(vmName, restoreVmState, waitForVnc, startDebug)
 	// Set env vars to send to "vm_supervisor"
 	os.Setenv("VM_START", bhyveCommand)
 	os.Setenv("VM_NAME", vmName)
@@ -63,24 +65,26 @@ func VmStart(vmName string, restoreVmState bool, waitForVnc bool) error {
 	}
 
 	// Start VM supervisor process
-	execFile := path.Dir(execPath) + "/vm_supervisor_service"
-	cmd := exec.Command("nohup", execFile, "for", vmName, "&")
-	err = cmd.Start()
-	if err != nil {
-		log.Fatal(err)
-	}
-	go func() {
-		err := cmd.Wait()
+	if !startDebug {
+		execFile := path.Dir(execPath) + "/vm_supervisor_service"
+		cmd := exec.Command("nohup", execFile, "for", vmName, "&")
+		err = cmd.Start()
 		if err != nil {
-			log.Println(err)
+			log.Fatal(err)
 		}
-	}()
+		go func() {
+			err := cmd.Wait()
+			if err != nil {
+				log.Println(err)
+			}
+		}()
+	}
 
 	emojlog.PrintLogMessage("VM started: "+vmName, emojlog.Changed)
 	return nil
 }
 
-func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bool) string {
+func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bool, debugStart bool) string {
 	vmConfigVar := vmConfig(vmName)
 
 	var availableTaps []string
@@ -91,21 +95,29 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 		createTapInterface := "ifconfig " + availableTap + " create"
 		parts := strings.Fields(createTapInterface)
 		emojlog.PrintLogMessage("Executing: "+createTapInterface, emojlog.Debug)
-		exec.Command(parts[0], parts[1:]...).Run()
+		if !debugStart {
+			exec.Command(parts[0], parts[1:]...).Run()
+		}
 
 		bridgeTapInterface := "ifconfig vm-" + v.NetworkBridge + " addm " + availableTap
 		parts = strings.Fields(bridgeTapInterface)
 		emojlog.PrintLogMessage("Executing: "+bridgeTapInterface, emojlog.Debug)
-		exec.Command(parts[0], parts[1:]...).Run()
+		if !debugStart {
+			exec.Command(parts[0], parts[1:]...).Run()
+		}
 
 		upBridgeInterface := "ifconfig vm-" + v.NetworkBridge + " up"
 		parts = strings.Fields(upBridgeInterface)
 		emojlog.PrintLogMessage("Executing: "+upBridgeInterface, emojlog.Debug)
-		exec.Command(parts[0], parts[1:]...).Run()
+		if !debugStart {
+			exec.Command(parts[0], parts[1:]...).Run()
+		}
 
 		tapDescription := "\"" + availableTap + " " + vmName + " interface -> " + v.NetworkBridge + "\""
 		emojlog.PrintLogMessage(fmt.Sprintf("Executing: ifconfig %s description %s", availableTap, tapDescription), emojlog.Debug)
-		exec.Command("ifconfig", availableTap, "description", tapDescription).Run()
+		if !debugStart {
+			exec.Command("ifconfig", availableTap, "description", tapDescription).Run()
+		}
 	}
 
 	// bhyveFinalCommand := "bhyve -HAw -s 0:0,hostbridge -s 31,lpc "
@@ -307,9 +319,10 @@ func passthruPciSplitter(startWithId int, devices []string) (pciDevs string, lat
 		group = strings.Split(v, "/")[0]
 		iter = i
 
-		pciDevs = pciDevs + " -s " + strconv.Itoa(startWithId) + ":" + strings.Split(v, "/")[2] + ",passthru," + v
+		vNoPrefix := strings.TrimPrefix(v, "-")
+		pciDevs = pciDevs + " -s " + strconv.Itoa(startWithId) + ":" + strings.Split(v, "/")[2] + ",passthru," + vNoPrefix
 		for ii, vv := range devices {
-			if ii == iter {
+			if ii == iter || strings.HasPrefix(vv, "-") || strings.HasPrefix(v, "-") {
 				continue
 			}
 			if slices.Contains(skipThisIterationList, ii) {

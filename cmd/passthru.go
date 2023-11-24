@@ -189,7 +189,7 @@ func usedPptDevices() (usedPptDevices []UsedPptDevice) {
 		config := vmConfig(vm)
 		for _, pptDev := range config.Passthru {
 			usedPptDev := UsedPptDevice{}
-			usedPptDev.Dev = pptDev
+			usedPptDev.Dev = strings.TrimPrefix(pptDev, "-")
 			usedPptDev.VmName = vm
 			usedPptDevices = append(usedPptDevices, usedPptDev)
 		}

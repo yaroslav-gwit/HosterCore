@@ -108,6 +108,7 @@ func init() {
 	vmCmd.AddCommand(vmStartCmd)
 	vmStartCmd.Flags().BoolVarP(&vmStartCmdWaitForVnc, "wait-for-vnc", "", false, "Use this flag to wait for a VNC connection before booting the VM")
 	vmStartCmd.Flags().BoolVarP(&vmStartCmdRestoreVmState, "restore-state", "", false, "Restore saved VM state (EXPERIMENTAL!)")
+	vmStartCmd.Flags().BoolVarP(&vmStartCmdDebug, "debug-run", "", false, "Only console-print the start commands, but don't execute them")
 
 	// VM cmd -> start all
 	vmCmd.AddCommand(vmStartAllCmd)
