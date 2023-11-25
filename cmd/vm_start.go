@@ -191,7 +191,8 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 	// VNC options
 	bhyvePci = bhyvePci + 1
 	bhyvePci2 = 0
-	vncCommand := " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",fbuf,tcp=0.0.0.0:" + vmConfigVar.VncPort + ",w=800,h=600,password=" + vmConfigVar.VncPassword
+	vncResolution := setScreenResolution(vmConfigVar.VncResolution)
+	vncCommand := " -s " + strconv.Itoa(bhyvePci) + ":" + strconv.Itoa(bhyvePci2) + ",fbuf,tcp=0.0.0.0:" + vmConfigVar.VncPort + "," + vncResolution + ",password=" + vmConfigVar.VncPassword
 	// Set the VGA mode if found in the config file
 	if len(vmConfigVar.VGA) > 0 {
 		if vmConfigVar.VGA == "io" || vmConfigVar.VGA == "on" || vmConfigVar.VGA == "off" {
@@ -352,5 +353,33 @@ func passthruPciSplitter(startWithId int, devices []string) (pciDevs string, lat
 	if iter > 0 {
 		latestPciId = startWithId - 1
 	}
+	return
+}
+
+func setScreenResolution(input int) (screenRes string) {
+	// default case
+	screenRes = "w=800,h=600"
+
+	// case switch
+	if input == 1 {
+		screenRes = "w=640,h=480"
+	} else if input == 2 {
+		screenRes = "w=800,h=600"
+	} else if input == 3 {
+		screenRes = "w=1024,h=768"
+	} else if input == 4 {
+		screenRes = "w=1280,h=720"
+	} else if input == 5 {
+		screenRes = "w=1280,h=1024"
+	} else if input == 6 {
+		screenRes = "w=1600,h=900"
+	} else if input == 7 {
+		screenRes = "w=1600,h=1200"
+	} else if input == 8 {
+		screenRes = "w=1920,h=1080"
+	} else if input == 9 {
+		screenRes = "w=1920,h=1200"
+	}
+
 	return
 }

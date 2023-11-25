@@ -483,4 +483,5 @@ type VmConfigStruct struct {
 	VGA                    string            `json:"vga,omitempty"`
 	Passthru               []string          `json:"passthru,omitempty"`
 	DisableXHCI            bool              `json:"disable_xhci,omitempty"`
+	VncResolution          int               `json:"vnc_resolution,omitempty"`
 }
