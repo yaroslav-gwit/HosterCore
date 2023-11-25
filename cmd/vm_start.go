@@ -303,7 +303,8 @@ func findAvailableTapInterface() string {
 // And returns the correct mappings for the Bhyve passthru, like so:
 // -s 6:0,passthru,4/0/0 -s 7:1,passthru,43/0/1 -s 7:12,passthru,43/0/12
 func passthruPciSplitter(startWithId int, devices []string) (pciDevs string, latestPciId int) {
-	group := ""
+	group0 := ""
+	group1 := ""
 	iter := 0
 	skipThisIterationList := []int{}
 
@@ -316,7 +317,8 @@ func passthruPciSplitter(startWithId int, devices []string) (pciDevs string, lat
 			continue
 		}
 
-		group = strings.Split(v, "/")[0]
+		group0 = strings.Split(v, "/")[0]
+		group1 = strings.Split(v, "/")[1]
 		iter = i
 
 		if strings.HasPrefix(v, "-") {
@@ -337,7 +339,8 @@ func passthruPciSplitter(startWithId int, devices []string) (pciDevs string, lat
 				continue
 			}
 
-			if strings.Split(vv, "/")[0] == group {
+			vvSpit := strings.Split(vv, "/")
+			if strings.TrimSpace(vvSpit[0]) == group0 && strings.TrimSpace(vvSpit[1]) == group1 {
 				skipThisIterationList = append(skipThisIterationList, ii)
 				pciDevs = pciDevs + " -s " + strconv.Itoa(startWithId) + ":" + strings.Split(vv, "/")[2] + ",passthru," + vv
 			}
