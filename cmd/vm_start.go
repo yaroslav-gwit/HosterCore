@@ -184,7 +184,13 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 	bhyveFinalCommand = bhyveFinalCommand + diskFinal
 	// fmt.Println(bhyveFinalCommand)
 
-	cpuAndRam := " -c sockets=" + vmConfigVar.CPUSockets + ",cores=" + vmConfigVar.CPUCores + " -m " + vmConfigVar.Memory
+	var cpuAndRam string
+	if vmConfigVar.CPUThreads > 0 {
+		cpuThreads := strconv.Itoa(vmConfigVar.CPUThreads)
+		cpuAndRam = " -c sockets=" + vmConfigVar.CPUSockets + ",cores=" + vmConfigVar.CPUCores + ",threads=" + cpuThreads + " -m " + vmConfigVar.Memory
+	} else {
+		cpuAndRam = " -c sockets=" + vmConfigVar.CPUSockets + ",cores=" + vmConfigVar.CPUCores + " -m " + vmConfigVar.Memory
+	}
 	bhyveFinalCommand = bhyveFinalCommand + cpuAndRam
 	// fmt.Println(bhyveFinalCommand)
 

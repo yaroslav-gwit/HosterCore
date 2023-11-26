@@ -465,6 +465,7 @@ type VmSshKey struct {
 type VmConfigStruct struct {
 	CPUSockets             string            `json:"cpu_sockets"`
 	CPUCores               string            `json:"cpu_cores"`
+	CPUThreads             int               `json:"cpu_threads,omitempty"`
 	Memory                 string            `json:"memory"`
 	Loader                 string            `json:"loader"`
 	LiveStatus             string            `json:"live_status"`
