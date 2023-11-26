@@ -218,13 +218,13 @@ cat <<'EOF' | cat >/etc/motd.template
 EOF
 ## EOF SSH Banner
 
-wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.2b/hoster -O ${HOSTER_WD}hoster -q --show-progress
+wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/hoster -O ${HOSTER_WD}hoster -q --show-progress
 chmod +x ${HOSTER_WD}hoster
 
-wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.2b/vm_supervisor_service -O ${HOSTER_WD}vm_supervisor_service -q --show-progress
+wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/vm_supervisor_service -O ${HOSTER_WD}vm_supervisor_service -q --show-progress
 chmod +x ${HOSTER_WD}vm_supervisor_service
 
-wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.2b/self_update_service -O ${HOSTER_WD}self_update_service -q --show-progress
+wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/self_update_service -O ${HOSTER_WD}self_update_service -q --show-progress
 chmod +x ${HOSTER_WD}self_update_service
 
 #_ LET USER KNOW THE STATE OF DEPLOYMENT _#
