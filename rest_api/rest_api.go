@@ -453,6 +453,9 @@ func main() {
 		_ = exec.Command("logger", "-t", hosterRestLabel, "DEBUG: hoster_rest_api service start-up").Run()
 
 		// Execute ha_watchdog using nohup and disown it
+		if restApiConfig.HaDebug {
+			os.Setenv("REST_API_HA_DEBUG", "true")
+		}
 		haWatchdogCmd := exec.Command("nohup", "/opt/hoster-core/ha_watchdog", "&")
 		haWatchdogCmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 		err = haWatchdogCmd.Start()
