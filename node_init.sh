@@ -227,6 +227,21 @@ chmod +x ${HOSTER_WD}vm_supervisor_service
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/self_update_service -O ${HOSTER_WD}self_update_service -q --show-progress
 chmod +x ${HOSTER_WD}self_update_service
 
+wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/node_exporter_custom -O ${HOSTER_WD}node_exporter_custom -q --show-progress
+chmod +x ${HOSTER_WD}node_exporter_custom
+
+wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/mbuffer -O ${HOSTER_WD}mbuffer -q --show-progress
+chmod +x ${HOSTER_WD}mbuffer
+
+wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/hoster_rest_api -O ${HOSTER_WD}hoster_rest_api -q --show-progress
+chmod +x ${HOSTER_WD}hoster_rest_api
+
+wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/ha_watchdog -O ${HOSTER_WD}ha_watchdog -q --show-progress
+chmod +x ${HOSTER_WD}ha_watchdog
+
+wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/dns_server -O ${HOSTER_WD}dns_server -q --show-progress
+chmod +x ${HOSTER_WD}dns_server
+
 #_ LET USER KNOW THE STATE OF DEPLOYMENT _#
 cat <<EOF | cat
 
