@@ -52,6 +52,11 @@ func executeVmClone(existingVmName string, newVmName string) error {
 		return errors.New(strings.TrimSpace(string(outClone)) + "; " + err.Error())
 	}
 
+	err = ReloadDnsServer()
+	if err != nil {
+		return err
+	}
+
 	// Report the status back to user
 	emojlog.PrintLogMessage("Your VM has been cloned successfully", emojlog.Info)
 	emojlog.PrintLogMessage("You might want to run `hoster vm cireset "+newVmName+"` to use it as an independent machine", emojlog.Info)
