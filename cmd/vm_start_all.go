@@ -32,7 +32,7 @@ func vmStartAll(waitTime int) {
 
 		vmConfigVar := vmConfig(vm)
 		if IsVmInProduction(vmConfigVar.LiveStatus) {
-			if vmConfigVar.ParentHost != GetHostName() {
+			if vmConfigVar.ParentHost == GetHostName() {
 				offlineVms = append(offlineVms, vm)
 			}
 		}
