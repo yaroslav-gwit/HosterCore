@@ -26,7 +26,7 @@ func vmStartAll(waitTime int) {
 	offlineVms := []string{}
 
 	for _, vm := range allVms {
-		if !VmLiveCheck(vm) {
+		if VmLiveCheck(vm) {
 			continue
 		}
 
