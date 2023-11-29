@@ -119,7 +119,7 @@ func haVmsList() []HaVm {
 		}
 
 		vmConfig := cmd.VmConfig(vm)
-		if !cmd.VmIsInProduction(vmConfig.LiveStatus) {
+		if !cmd.IsVmInProduction(vmConfig.LiveStatus) {
 			continue
 		}
 

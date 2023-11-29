@@ -173,7 +173,7 @@ func vmTableOutput() {
 
 		wg.Wait()
 
-		if VmIsInProduction(vmConfigVar.LiveStatus) {
+		if IsVmInProduction(vmConfigVar.LiveStatus) {
 			vmProduction = "🔁"
 		} else {
 			vmProduction = ""
@@ -274,6 +274,7 @@ func encryptionCheckString(vmName string) string {
 	}
 }
 
+// Returns TRUE if the VM is Live
 func VmLiveCheck(vmName string) bool {
 	var _, err = os.Stat("/dev/vmm/" + vmName)
 	if !os.IsNotExist(err) {

@@ -35,7 +35,8 @@ var (
 
 			err = VmStart(args[0], vmStartCmdRestoreVmState, vmStartCmdWaitForVnc, vmStartCmdDebug)
 			if err != nil {
-				log.Fatal(err)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

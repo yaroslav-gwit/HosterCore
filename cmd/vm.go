@@ -52,7 +52,7 @@ func LockAllVms() {
 
 	for _, vm := range allVms {
 		vmConfig := VmConfig(vm)
-		if VmIsInProduction(vmConfig.LiveStatus) && vmConfig.ParentHost == GetHostName() {
+		if IsVmInProduction(vmConfig.LiveStatus) && vmConfig.ParentHost == GetHostName() {
 			ReplaceParent(vm, haLockedString, true)
 		}
 	}
@@ -64,7 +64,7 @@ func UnlockAllVms() {
 
 	for _, vm := range allVms {
 		vmConfig := VmConfig(vm)
-		if VmIsInProduction(vmConfig.LiveStatus) && reHaLockedString.MatchString(vmConfig.ParentHost) {
+		if IsVmInProduction(vmConfig.LiveStatus) && reHaLockedString.MatchString(vmConfig.ParentHost) {
 			ReplaceParent(vm, GetHostName(), true)
 		}
 	}
