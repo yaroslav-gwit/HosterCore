@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -15,11 +14,7 @@ var (
 		Short: "Stop all VMs deployed on this system",
 		Long:  `Stop all VMs deployed on this system`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
+			checkInitFile()
 			VmStopAll(forceStopAll, vmStopAllCmdCleanUp)
 		},
 	}

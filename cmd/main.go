@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -13,10 +12,7 @@ var rootCmd = &cobra.Command{
 	Short: "HosterCore is a highly opinionated Bhyve automation platform written in Go",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		err := checkInitFile()
-		if err != nil {
-			log.Fatal(err.Error())
-		}
+		checkInitFile()
 		hostMain()
 		printZfsDatasetInfo()
 		printNetworkInfoTable()

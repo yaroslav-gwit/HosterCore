@@ -25,10 +25,7 @@ var (
 		Short: "Host related operations",
 		Long:  `Host related operations.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			hostMain()
 		},
 	}

@@ -4,7 +4,6 @@ import (
 	"HosterCore/emojlog"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -20,10 +19,7 @@ var (
 		Short: "Hoster integrated DNS Server",
 		Long:  `Hoster integrated DNS Server`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -35,13 +31,11 @@ var (
 		Short: "Initialize Hoster integrated DNS Server",
 		Long:  `Initialize Hoster integrated DNS Server`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := startDnsServer()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = startDnsServer()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -53,13 +47,11 @@ var (
 		Short: "Stop Hoster integrated DNS Server",
 		Long:  `Stop Hoster integrated DNS Server`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := stopDnsServer()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = stopDnsServer()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -71,13 +63,11 @@ var (
 		Short: "Reload Hoster integrated DNS Server",
 		Long:  `Reload Hoster integrated DNS Server`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := ReloadDnsServer()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = ReloadDnsServer()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -89,13 +79,11 @@ var (
 		Short: "Show latest log records for the integrated DNS Server",
 		Long:  `Show latest log records for the integrated DNS Server`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := showLogDns()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = showLogDns()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -107,10 +95,7 @@ var (
 		Short: "Get DNS Server service status",
 		Long:  `Get DNS Server service status.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			statusDnsServer()
 		},
 	}

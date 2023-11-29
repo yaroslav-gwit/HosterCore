@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"HosterCore/emojlog"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -16,12 +14,7 @@ var (
 		Short: "Start all VMs deployed on this system",
 		Long:  `Start all VMs deployed on this system`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-
+			checkInitFile()
 			vmStartAll(waitTime)
 		},
 	}

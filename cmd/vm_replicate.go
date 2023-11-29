@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -31,18 +30,15 @@ var (
 		Long:  `Use ZFS replication to send this VM to another host`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
 			if len(replicationEndpoint) < 1 {
-				log.Fatal("Please specify an endpoint!")
+				emojlog.PrintLogMessage("Please, specify an endpoint", emojlog.Error)
+				os.Exit(1)
 			}
 			vmName := args[0]
-			err = replicateVm(vmName, replicationEndpoint, endpointSshPort, sshKeyLocation, replicateSpeedLimit, replicateScriptName)
+			err := replicateVm(vmName, replicationEndpoint, endpointSshPort, sshKeyLocation, replicateSpeedLimit, replicateScriptName)
 			if err != nil {
-				log.Fatal(err)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

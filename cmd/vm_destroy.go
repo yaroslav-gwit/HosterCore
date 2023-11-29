@@ -17,23 +17,13 @@ var (
 		Long:  `Destroy the VM and it's parent snapshot (uses zfs destroy)`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 
-			err = VmDestroy(args[0])
+			err := VmDestroy(args[0])
 			if err != nil {
 				log.Fatal("VmDestroy() error: " + err.Error())
 			}
-			// err = generateNewDnsConfig()
-			// if err != nil {
-			// 	log.Fatal("generateNewDnsConfig() error: " + err.Error())
-			// }
-			// err = reloadDnsService()
-			// if err != nil {
-			// 	log.Fatal("reloadDnsService() error: " + err.Error())
-			// }
+
 			err = ReloadDnsServer()
 			if err != nil {
 				log.Fatal("Could not reload the DNS server: " + err.Error())

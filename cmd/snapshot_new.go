@@ -3,7 +3,6 @@ package cmd
 import (
 	"HosterCore/emojlog"
 	"errors"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -24,14 +23,11 @@ var (
 		Long:  `Create a new VM snapshot (using ZFS snapshot).`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := VmZfsSnapshot(args[0], snapshotNewType, snapshotNewSnapsToKeep)
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = VmZfsSnapshot(args[0], snapshotNewType, snapshotNewSnapsToKeep)
-			if err != nil {
-				log.Fatal(err)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

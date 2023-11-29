@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -24,10 +23,7 @@ var (
 		Short: "API Server Menu",
 		Long:  `API Server Menu.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -45,13 +41,8 @@ var (
 		Short: "Start an API server",
 		Long:  `Start an API server on port 3000 (default).`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-			// err = startApiServer(apiStartPort, apiStartUser, apiStartPassword, apiHaMode, apiHaDebug)
-			err = startApiServer()
+			checkInitFile()
+			err := startApiServer()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
@@ -66,13 +57,11 @@ var (
 		Short: "Stop the API server",
 		Long:  `Stop the API server.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := StopApiServer()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = StopApiServer()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -85,14 +74,11 @@ var (
 		Long:  `Display status of the API server.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := statusApiServer()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = statusApiServer()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -104,13 +90,12 @@ var (
 		Short: "Show log for the API server",
 		Long:  `Show log for the API server.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+
+			err := showLogApiServer()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = showLogApiServer()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

@@ -3,7 +3,6 @@ package cmd
 import (
 	"HosterCore/emojlog"
 	"fmt"
-	"log"
 	"regexp"
 	"time"
 
@@ -16,11 +15,7 @@ var (
 		Short: "VM related operations",
 		Long:  `VM related operations: VM deploy, VM stop, VM start, VM destroy, etc`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -33,11 +28,7 @@ var (
 		Long:  `Unlock all HA locked VMs.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
+			checkInitFile()
 			UnlockAllVms()
 			emojlog.PrintLogMessage("All VMs have now been unlocked", emojlog.Debug)
 		},

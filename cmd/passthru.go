@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"HosterCore/emojlog"
 	"log"
 	"os"
 	"os/exec"
@@ -19,12 +18,7 @@ var (
 		Long:  `Bhyve passthru related commands.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -37,12 +31,7 @@ var (
 		Long:  `List the passthru-ready devices.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-
+			checkInitFile()
 			printPptDevicesTable()
 		},
 	}

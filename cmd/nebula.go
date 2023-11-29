@@ -25,10 +25,7 @@ var (
 		Short: "Nebula network service manager",
 		Long:  `Nebula network service manager`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -54,13 +51,11 @@ var (
 		Short: "Use `tail -f` to display Nebula's live log",
 		Long:  `Use "tail -f" to display Nebula's live log`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := tailNebulaLogFile()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = tailNebulaLogFile()
-			if err != nil {
-				log.Fatal(err)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -76,24 +71,24 @@ var (
 		Short: "Start, stop, or reload Nebula process",
 		Long:  `Start, stop, or reload Nebula process`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			if nebulaServiceReload {
 				err := reloadNebulaService()
 				if err != nil {
-					log.Fatal(err)
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
 				}
 			} else if nebulaServiceStart {
 				err := startNebulaService()
 				if err != nil {
-					log.Fatal(err)
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
 				}
 			} else if nebulaServiceStop {
 				err := stopNebulaService()
 				if err != nil {
-					log.Fatal(err)
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
 				}
 			} else {
 				cmd.Help()
@@ -111,23 +106,23 @@ var (
 		Short: "Download the latest changes from Nebula Control Plane API server",
 		Long:  `Download the latest changes from Nebula Control Plane API server`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			if nebulaUpdateConfig {
 				err := downloadNebulaConfig()
 				if err != nil {
-					log.Fatal(err)
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
 				}
 				err = downloadNebulaCerts()
 				if err != nil {
-					log.Fatal(err)
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
 				}
 			} else if nebulaUpdateBinary {
 				err := downloadNebulaBin()
 				if err != nil {
-					log.Fatal(err)
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
 				}
 			} else {
 				cmd.Help()

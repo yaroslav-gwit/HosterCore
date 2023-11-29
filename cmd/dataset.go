@@ -19,10 +19,7 @@ var (
 		Short: "ZFS Dataset related operations",
 		Long:  `ZFS Dataset related operations.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -36,10 +33,7 @@ var (
 		Short: "List all Hoster related ZFS datasets",
 		Long:  `List all Hoster related ZFS datasets.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			printZfsDatasetInfo()
 		},
 	}
