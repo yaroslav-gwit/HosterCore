@@ -27,19 +27,18 @@ func vmStartAll(waitTime int) {
 
 	for _, vm := range allVms {
 		if !VmLiveCheck(vm) {
-			offlineVms = append(offlineVms, vm)
+			continue
+		}
+
+		vmConfigVar := vmConfig(vm)
+		if IsVmInProduction(vmConfigVar.LiveStatus) {
+			if vmConfigVar.ParentHost != GetHostName() {
+				offlineVms = append(offlineVms, vm)
+			}
 		}
 	}
 
 	for i, v := range offlineVms {
-		vmConfigVar := vmConfig(v)
-		if vmConfigVar.ParentHost != GetHostName() {
-			continue
-		}
-		if !IsVmInProduction(vmConfigVar.LiveStatus) {
-			continue
-		}
-
 		// Print out the output splitter
 		if i == 0 {
 			_ = 0
