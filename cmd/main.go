@@ -89,6 +89,9 @@ func init() {
 	// VM cmd -> unlock-all
 	vmCmd.AddCommand(vmUnlockAllCmd)
 
+	// VM cmd -> clone
+	vmCmd.AddCommand(vmCloneCmd)
+
 	// VM cmd -> list
 	vmCmd.AddCommand(vmListCmd)
 	vmListCmd.Flags().BoolVarP(&jsonOutputVm, "json", "j", false, "Output as JSON (useful for automation)")
