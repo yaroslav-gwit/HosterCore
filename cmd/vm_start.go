@@ -186,9 +186,9 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 		for _, v := range vmConfigVar.Shares {
 			bhyvePci = bhyvePci + 1
 			if v.ReadOnly {
-				share9Pcommand = share9Pcommand + " -s " + strconv.Itoa(bhyvePci) + ",virtio-9p,sharename=" + v.ShareName + ",ro"
+				share9Pcommand = share9Pcommand + " -s " + strconv.Itoa(bhyvePci) + ",virtio-9p," + v.ShareName + "=" + v.ShareLocation + ",ro"
 			} else {
-				share9Pcommand = share9Pcommand + " -s " + strconv.Itoa(bhyvePci) + ",virtio-9p,sharename=" + v.ShareName
+				share9Pcommand = share9Pcommand + " -s " + strconv.Itoa(bhyvePci) + ",virtio-9p," + v.ShareName + "=" + v.ShareLocation
 			}
 		}
 		bhyveFinalCommand = bhyveFinalCommand + share9Pcommand

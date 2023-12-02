@@ -460,8 +460,9 @@ type VmSshKey struct {
 }
 
 type Virtio9P struct {
-	ShareName string `json:"share_name"`
-	ReadOnly  bool   `json:"read_only"`
+	ShareName     string `json:"share_name"`
+	ShareLocation string `json:"share_location"`
+	ReadOnly      bool   `json:"read_only"`
 }
 
 type VmConfigStruct struct {
