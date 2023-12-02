@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
@@ -43,7 +44,7 @@ func VmStart(vmName string, restoreVmState bool, waitForVnc bool, startDebug boo
 	if !slices.Contains(allVms, vmName) {
 		return errors.New("VM is not found on this system")
 	} else if VmLiveCheck(vmName) {
-		return errors.New("VM is already up-and-running")
+		return errors.New("VM is already running")
 	}
 
 	emojlog.PrintLogMessage("Starting the VM: "+vmName, emojlog.Info)
@@ -57,23 +58,33 @@ func VmStart(vmName string, restoreVmState bool, waitForVnc bool, startDebug boo
 	// Get location of the "hoster" executable, as "vm_supervisor" executable is in the same directory
 	execPath, err := os.Executable()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Start VM supervisor process
+	// if !startDebug {
+	// 	execFile := path.Dir(execPath) + "/vm_supervisor_service"
+	// 	cmd := exec.Command("nohup", execFile, "for", vmName, "&")
+	// 	err = cmd.Start()
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	go func() {
+	// 		err := cmd.Wait()
+	// 		if err != nil {
+	// 			log.Println(err)
+	// 		}
+	// 	}()
+	// }
+
 	if !startDebug {
 		execFile := path.Dir(execPath) + "/vm_supervisor_service"
-		cmd := exec.Command("nohup", execFile, "for", vmName, "&")
-		err = cmd.Start()
+		command := exec.Command(execFile, "for", vmName)
+		command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+		err = command.Start()
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
-		go func() {
-			err := cmd.Wait()
-			if err != nil {
-				log.Println(err)
-			}
-		}()
 	}
 
 	emojlog.PrintLogMessage("VM started: "+vmName, emojlog.Changed)

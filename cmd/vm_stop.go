@@ -154,7 +154,9 @@ func vmSupervisorCleanup(vmName string, logOutput bool) {
 	if logOutput {
 		emojlog.PrintLogMessage("Performing vm_supervisor cleanup", emojlog.Debug)
 	}
-	reMatchVm, _ := regexp.Compile(`for\s` + vmName + `\s&`)
+
+	// reMatchVm, _ := regexp.Compile(`for\s+` + vmName + `\s&`)
+	reMatchVm, _ := regexp.Compile(`for\s+` + vmName + `$`)
 	processId := ""
 
 	iteration := 0
