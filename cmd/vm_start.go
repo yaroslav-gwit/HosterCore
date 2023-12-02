@@ -180,6 +180,21 @@ func generateBhyveStartCommand(vmName string, restoreVmState bool, waitForVnc bo
 	bhyveFinalCommand = bhyveFinalCommand + diskFinal
 	// fmt.Println(bhyveFinalCommand)
 
+	// VirtIO 9P
+	if len(vmConfigVar.Shares) > 0 {
+		share9Pcommand := ""
+		for _, v := range vmConfigVar.Shares {
+			bhyvePci = bhyvePci + 1
+			if v.ReadOnly {
+				share9Pcommand = share9Pcommand + " -s " + strconv.Itoa(bhyvePci) + ",virtio-9p,sharename=" + v.ShareName + ",ro"
+			} else {
+				share9Pcommand = share9Pcommand + " -s " + strconv.Itoa(bhyvePci) + ",virtio-9p,sharename=" + v.ShareName
+			}
+		}
+		bhyveFinalCommand = bhyveFinalCommand + share9Pcommand
+	}
+	// EOF VirtIO 9P
+
 	var cpuAndRam string
 	if vmConfigVar.CPUThreads > 0 {
 		cpuThreads := strconv.Itoa(vmConfigVar.CPUThreads)

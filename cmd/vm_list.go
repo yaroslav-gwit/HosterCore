@@ -459,6 +459,11 @@ type VmSshKey struct {
 	Comment  string `json:"comment"`
 }
 
+type Virtio9P struct {
+	ShareName string `json:"share_name"`
+	ReadOnly  bool   `json:"read_only"`
+}
+
 type VmConfigStruct struct {
 	CPUSockets             string            `json:"cpu_sockets"`
 	CPUCores               string            `json:"cpu_cores"`
@@ -482,4 +487,5 @@ type VmConfigStruct struct {
 	Passthru               []string          `json:"passthru,omitempty"`
 	DisableXHCI            bool              `json:"disable_xhci,omitempty"`
 	VncResolution          int               `json:"vnc_resolution,omitempty"`
+	Shares                 []Virtio9P        `json:"9p_shares,omitempty"`
 }
