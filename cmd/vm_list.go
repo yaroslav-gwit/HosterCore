@@ -26,11 +26,7 @@ var (
 		Short: "VM list",
 		Long:  `VM list in the form of tables, json, or json pretty`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
+			checkInitFile()
 			vmListMain()
 		},
 	}
@@ -173,7 +169,7 @@ func vmTableOutput() {
 
 		wg.Wait()
 
-		if VmIsInProduction(vmConfigVar.LiveStatus) {
+		if IsVmInProduction(vmConfigVar.LiveStatus) {
 			vmProduction = "🔁"
 		} else {
 			vmProduction = ""
@@ -274,6 +270,7 @@ func encryptionCheckString(vmName string) string {
 	}
 }
 
+// Returns TRUE if the VM is Live
 func VmLiveCheck(vmName string) bool {
 	var _, err = os.Stat("/dev/vmm/" + vmName)
 	if !os.IsNotExist(err) {
@@ -418,13 +415,10 @@ func getOsDiskFullSize(vmName string) string {
 }
 
 func getOsDiskUsed(vmName string) string {
-	var filePath = getVmFolder(vmName) + "/disk0.img"
 	var osDiskDu string
-	var osDiskDuArg1 = "du"
-	var osDiskDuArg2 = "-h"
-	var osDiskDuArg3 = filePath
+	var filePath = getVmFolder(vmName) + "/disk0.img"
 
-	var cmd = exec.Command(osDiskDuArg1, osDiskDuArg2, osDiskDuArg3)
+	var cmd = exec.Command("du", "-h", filePath)
 	var stdout, err = cmd.Output()
 	if err != nil {
 		fmt.Println("Func getOsDiskFullSize: There has been an error:", err)
@@ -439,8 +433,8 @@ func getOsDiskUsed(vmName string) string {
 			osDiskDuList = append(osDiskDuList, i)
 		}
 	}
-	osDiskDu = osDiskDuList[0]
-	osDiskDu = strings.TrimSpace(osDiskDu)
+
+	osDiskDu = strings.TrimSpace(osDiskDuList[0])
 	return osDiskDu
 }
 
@@ -468,6 +462,7 @@ type VmSshKey struct {
 type VmConfigStruct struct {
 	CPUSockets             string            `json:"cpu_sockets"`
 	CPUCores               string            `json:"cpu_cores"`
+	CPUThreads             int               `json:"cpu_threads,omitempty"`
 	Memory                 string            `json:"memory"`
 	Loader                 string            `json:"loader"`
 	LiveStatus             string            `json:"live_status"`
@@ -484,4 +479,7 @@ type VmConfigStruct struct {
 	Description            string            `json:"description"`
 	UUID                   string            `json:"uuid,omitempty"`
 	VGA                    string            `json:"vga,omitempty"`
+	Passthru               []string          `json:"passthru,omitempty"`
+	DisableXHCI            bool              `json:"disable_xhci,omitempty"`
+	VncResolution          int               `json:"vnc_resolution,omitempty"`
 }

@@ -4,7 +4,6 @@ import (
 	"HosterCore/emojlog"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -20,10 +19,7 @@ var (
 		Long:  `Minimalistic Traefik process management integration.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -36,12 +32,8 @@ var (
 		Long:  `Start Traefik reverse proxy service.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = startTraefik()
+			checkInitFile()
+			err := startTraefik()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
@@ -58,14 +50,11 @@ var (
 		Long:  `Stop Traefik reverse proxy service.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := stopTraefik()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = stopTraefik()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -78,14 +67,11 @@ var (
 		Long:  `Traefik reverse proxy service status.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := statusTraefik()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = statusTraefik()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

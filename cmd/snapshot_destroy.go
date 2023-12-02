@@ -3,7 +3,7 @@ package cmd
 import (
 	"HosterCore/emojlog"
 	"errors"
-	"log"
+	"os"
 	"os/exec"
 
 	"github.com/spf13/cobra"
@@ -16,14 +16,11 @@ var (
 		Long:  `Destroy one of the VM's snapshots.`,
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := ZfsSnapshotDestroy(args[0], args[1])
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = ZfsSnapshotDestroy(args[0], args[1])
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

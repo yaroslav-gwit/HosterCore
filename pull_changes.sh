@@ -1,7 +1,15 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 set -e
 
-echo "=== Pulling changes from Git ==="
+# RED='\033[0;31m'
+LIGHT_RED='\033[1;31m'
+# GREEN='\033[0;32m'
+LIGHT_GREEN='\033[1;32m'
+NC='\033[0m'
+
+ERROR_TEXT="${LIGHT_RED}ERROR:${NC}"
+
+echo -e "${LIGHT_GREEN}=== Pulling changes from Git ===${NC}"
 git stash
-git pull
-echo "=== Done pulling changes from Git ==="
+git pull || echo -e "${ERROR_TEXT} could not pull from the Git repo"
+echo -e "${LIGHT_GREEN}=== Done pulling changes from Git ===${NC}"

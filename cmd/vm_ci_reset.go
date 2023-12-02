@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"HosterCore/emojlog"
 	"bufio"
 	"errors"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -26,14 +26,11 @@ var (
 		Long:  `Reset VM's passwords, ssh keys, and network config (useful after VM migration)`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := CiReset(args[0], newVmName)
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = CiReset(args[0], newVmName)
-			if err != nil {
-				log.Fatal("Fatal error:", err)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

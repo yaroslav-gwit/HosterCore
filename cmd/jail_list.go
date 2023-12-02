@@ -23,13 +23,9 @@ var (
 		Long:  `List all available Jails in a single table.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
+			checkInitFile()
 
-			err = generateJailsTable(jailListCmdUnixStyle)
+			err := generateJailsTable(jailListCmdUnixStyle)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)

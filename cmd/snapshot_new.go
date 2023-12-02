@@ -3,7 +3,6 @@ package cmd
 import (
 	"HosterCore/emojlog"
 	"errors"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -24,14 +23,11 @@ var (
 		Long:  `Create a new VM snapshot (using ZFS snapshot).`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := VmZfsSnapshot(args[0], snapshotNewType, snapshotNewSnapsToKeep)
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = VmZfsSnapshot(args[0], snapshotNewType, snapshotNewSnapsToKeep)
-			if err != nil {
-				log.Fatal(err)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -104,12 +100,10 @@ func VmZfsSnapshot(vmName string, snapshotType string, snapshotsToKeep int) erro
 
 // Runs `zfs list` command to return an active VM dataset.
 // Useful for taking snapshots, cloning and destroying the VMs.
+//
+// Returns a dataset in this format: zroot/vm-encrypted/vmName
 func getVmDataset(vmName string) (string, error) {
-	zfsListCmd1 := "zfs"
-	zfsListCmd2 := "list"
-	zfsListCmd3 := "-H"
-
-	cmd := exec.Command(zfsListCmd1, zfsListCmd2, zfsListCmd3)
+	cmd := exec.Command("zfs", "list", "-H")
 	stdout, stderr := cmd.Output()
 	if stderr != nil {
 		return "", errors.New("zfs list exited with an error: " + stderr.Error())
@@ -160,12 +154,9 @@ func getVmSnapshots(vmDataset string) ([]string, error) {
 
 // Make a new VM snapshot and set a date for it
 func takeNewSnapshot(vmDataset string, snapshotType string) error {
-	zfsSnapCmd1 := "zfs"
-	zfsSnapCmd2 := "snapshot"
-
 	now := time.Now()
 	timeNow := now.Format("2006-01-02_15-04-05")
-	cmd := exec.Command(zfsSnapCmd1, zfsSnapCmd2, vmDataset+"@"+snapshotType+"_"+timeNow)
+	cmd := exec.Command("zfs", "snapshot", vmDataset+"@"+snapshotType+"_"+timeNow)
 	err := cmd.Run()
 	if err != nil {
 		return errors.New("zfs snapshot exited with an error: " + err.Error())

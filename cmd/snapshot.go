@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/spf13/cobra"
 )
 
@@ -12,11 +10,7 @@ var (
 		Short: "Snapshot related commands",
 		Long:  `Snapshot related commands.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
+			checkInitFile()
 			cmd.Help()
 		},
 	}

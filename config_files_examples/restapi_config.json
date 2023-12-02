@@ -1,0 +1,18 @@
+{
+    "bind": "0.0.0.0",
+    "port": 3000,
+    "protocol": "http",
+    "ha_mode": false,
+    "ha_debug": true,
+    "http_auth": [
+        {
+            "user": "admin",
+            "password": "xnLVFNC8oEQ9Tq2BtV8RErpo8RAq8FgqXu"
+        },
+        {
+            "user": "ha_user",
+            "password": "NC8oEQ9Tq2BtV8RErpo8RAq8FgqXuxnLVF",
+            "ha_user": true
+        }
+     ]
+}

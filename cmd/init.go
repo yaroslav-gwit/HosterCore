@@ -309,15 +309,15 @@ func createInitFile() error {
 	return nil
 }
 
-func checkInitFile() error {
+func checkInitFile() {
 	_, stderr := exec.Command("ls", "/var/run/hoster_init").CombinedOutput()
 	if stderr != nil {
 		// Add documentation for this error output in the online docs at some point
 		emojlog.PrintLogMessage("Please, execute `hoster init` to start using this utility", emojlog.Error)
-		return errors.New("hoster process state file is missing")
+		os.Exit(1)
+		// return errors.New("hoster process state file is missing")
 	}
-
-	return nil
+	// return nil
 }
 
 func FileExists(filePath string) bool {

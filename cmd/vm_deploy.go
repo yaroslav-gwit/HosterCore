@@ -42,14 +42,13 @@ var (
 		Long:  `Deploy a new VM, using the pre-defined templates or ISO files`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
+
 			if len(osTypeAlias) > 0 {
 				osType = osTypeAlias
 			}
 
+			var err error
 			if vmDeployFromIso {
 				err = deployVmFromIso(vmName, networkName, osType, zfsDataset, vmDeployCpus, vmDeployRam, vmDeployStartWhenReady, vmDeployIsoFilePath)
 				if err != nil {
@@ -397,7 +396,7 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	// Start the VM when all of the above is complete
 	if startWhenReady {
 		time.Sleep(time.Second * 1)
-		err := VmStart(c.VmName, false, false)
+		err := VmStart(c.VmName, false, false, false)
 		if err != nil {
 			return err
 		}
@@ -685,7 +684,7 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	// Start the VM when all of the above is complete
 	if startWhenReady {
 		time.Sleep(time.Second * 1)
-		err := VmStart(c.VmName, false, true)
+		err := VmStart(c.VmName, false, true, true)
 		if err != nil {
 			return err
 		}

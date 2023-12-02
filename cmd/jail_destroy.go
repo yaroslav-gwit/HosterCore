@@ -18,13 +18,9 @@ var (
 		Long:  `Destroy any existing Jail.`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
+			checkInitFile()
 
-			err = executeJailDestroy(args[0], true)
+			err := executeJailDestroy(args[0], true)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)

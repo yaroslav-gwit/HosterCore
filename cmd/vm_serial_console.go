@@ -19,12 +19,8 @@ var (
 		Long:  `Connect to VM's serial console (useful for connectivity troubleshooting)`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = connectToSerialConsole(args[0])
+			checkInitFile()
+			err := connectToSerialConsole(args[0])
 			if err != nil {
 				log.Fatal(err)
 			}

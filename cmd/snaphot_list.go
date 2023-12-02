@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"HosterCore/emojlog"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -23,13 +23,11 @@ var (
 		Long:  `List VM specific snapshot information including snapshot name, size and time taken`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := generateSnapshotTable(args[0])
 			if err != nil {
-				log.Fatal(err)
-			}
-			err = generateSnapshotTable(args[0])
-			if err != nil {
-				log.Fatal(err)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

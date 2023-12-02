@@ -4,7 +4,7 @@ import (
 	"HosterCore/emojlog"
 	"errors"
 	"fmt"
-	"log"
+	"os"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
@@ -16,10 +16,7 @@ var (
 		Short: "Change some of the settings",
 		Long:  `Change some of the settings`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -33,13 +30,11 @@ var (
 		Short: "Change VM parent",
 		Long:  `Change VM parent, in order to start this VM on a new host`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := ReplaceParent(changeParentVmName, changeParentNewParent, false)
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = ReplaceParent(changeParentVmName, changeParentNewParent, false)
-			if err != nil {
-				log.Fatal("could not set a new parent: " + err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
