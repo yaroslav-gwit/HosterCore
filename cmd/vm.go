@@ -3,7 +3,6 @@ package cmd
 import (
 	"HosterCore/emojlog"
 	"fmt"
-	"log"
 	"regexp"
 	"time"
 
@@ -16,11 +15,7 @@ var (
 		Short: "VM related operations",
 		Long:  `VM related operations: VM deploy, VM stop, VM start, VM destroy, etc`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -33,11 +28,7 @@ var (
 		Long:  `Unlock all HA locked VMs.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
+			checkInitFile()
 			UnlockAllVms()
 			emojlog.PrintLogMessage("All VMs have now been unlocked", emojlog.Debug)
 		},
@@ -52,7 +43,7 @@ func LockAllVms() {
 
 	for _, vm := range allVms {
 		vmConfig := VmConfig(vm)
-		if VmIsInProduction(vmConfig.LiveStatus) && vmConfig.ParentHost == GetHostName() {
+		if IsVmInProduction(vmConfig.LiveStatus) && vmConfig.ParentHost == GetHostName() {
 			ReplaceParent(vm, haLockedString, true)
 		}
 	}
@@ -64,7 +55,7 @@ func UnlockAllVms() {
 
 	for _, vm := range allVms {
 		vmConfig := VmConfig(vm)
-		if VmIsInProduction(vmConfig.LiveStatus) && reHaLockedString.MatchString(vmConfig.ParentHost) {
+		if IsVmInProduction(vmConfig.LiveStatus) && reHaLockedString.MatchString(vmConfig.ParentHost) {
 			ReplaceParent(vm, GetHostName(), true)
 		}
 	}

@@ -31,13 +31,9 @@ var (
 		Long:  `Deploy a new Jail.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
+			checkInitFile()
 
-			err = deployNewJail(jailDeployCmdJailName, jailDeployCmdDataset, jailDeployCmdOsRelease, jailDeployCmdCpuLimit, jailDeployCmdRamLimit, jailDeployCmdIpAddress, jailDeployCmdNetwork, jailDeployCmdDnsServer)
+			err := deployNewJail(jailDeployCmdJailName, jailDeployCmdDataset, jailDeployCmdOsRelease, jailDeployCmdCpuLimit, jailDeployCmdRamLimit, jailDeployCmdIpAddress, jailDeployCmdNetwork, jailDeployCmdDnsServer)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)

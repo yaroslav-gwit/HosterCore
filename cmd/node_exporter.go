@@ -21,10 +21,7 @@ var (
 		Long:  `Custom Node Exporter Service Control.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -37,12 +34,8 @@ var (
 		Long:  `Start our custom Node Exporter.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = startNodeExporter()
+			checkInitFile()
+			err := startNodeExporter()
 			if err != nil {
 				emojlog.PrintLogMessage("node_exporter_custom service could not be started", emojlog.Error)
 				log.Fatal(err.Error())
@@ -59,13 +52,11 @@ var (
 		Long:  `Stop our custom Node Exporter.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := stopNodeExporter()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = stopNodeExporter()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -78,10 +69,7 @@ var (
 		Long:  `Check whether the Node Exporter is running.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			statusNodeExporter()
 		},
 	}

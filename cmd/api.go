@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"HosterCore/emojlog"
+	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -21,34 +23,29 @@ var (
 		Short: "API Server Menu",
 		Long:  `API Server Menu.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			cmd.Help()
 		},
 	}
 )
 
 var (
-	apiStartPort     int
-	apiStartUser     string
-	apiStartPassword string
-	apiHaMode        bool
-	apiHaDebug       bool
+	// apiStartPort     int
+	// apiStartUser     string
+	// apiStartPassword string
+	// apiHaMode        bool
+	// apiHaDebug       bool
 
 	apiStartCmd = &cobra.Command{
 		Use:   "start",
 		Short: "Start an API server",
 		Long:  `Start an API server on port 3000 (default).`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := startApiServer()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = startApiServer(apiStartPort, apiStartUser, apiStartPassword, apiHaMode, apiHaDebug)
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -60,13 +57,11 @@ var (
 		Short: "Stop the API server",
 		Long:  `Stop the API server.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := StopApiServer()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = StopApiServer()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -79,14 +74,11 @@ var (
 		Long:  `Display status of the API server.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := statusApiServer()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = statusApiServer()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -98,32 +90,57 @@ var (
 		Short: "Show log for the API server",
 		Long:  `Show log for the API server.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+
+			err := showLogApiServer()
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = showLogApiServer()
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
 )
 
-func startApiServer(port int, user string, password string, haMode bool, haDebug bool) error {
-	os.Setenv("REST_API_PORT", strconv.Itoa(port))
-	os.Setenv("REST_API_USER", user)
-	os.Setenv("REST_API_PASSWORD", password)
-	if haMode {
-		os.Setenv("REST_API_HA_MODE", "true")
-	}
-	if haDebug {
-		os.Setenv("REST_API_HA_DEBUG", "true")
-	}
+type RestApiConfig struct {
+	Bind     string `json:"bind"`
+	Port     int    `json:"port"`
+	Protocol string `json:"protocol"`
+	HaMode   bool   `json:"ha_mode"`
+	HaDebug  bool   `json:"ha_debug,omitempty"`
+	HTTPAuth []struct {
+		User     string `json:"user"`
+		Password string `json:"password"`
+		HaUser   bool   `json:"ha_user"`
+	} `json:"http_auth"`
+}
+
+// func startApiServer(port int, user string, password string, haMode bool, haDebug bool) error {
+func startApiServer() error {
+	// os.Setenv("REST_API_PORT", strconv.Itoa(port))
+	// os.Setenv("REST_API_USER", user)
+	// os.Setenv("REST_API_PASSWORD", password)
+	// if haMode {
+	// 	os.Setenv("REST_API_HA_MODE", "true")
+	// }
+	// if haDebug {
+	// 	os.Setenv("REST_API_HA_DEBUG", "true")
+	// }
 
 	execPath, err := os.Executable()
 	if err != nil {
 		return err
+	}
+	execDir := filepath.Dir(execPath)
+
+	file, err := os.ReadFile(execDir + "/config_files/restapi_config.json")
+	if err != nil {
+		return errors.New("could not open restapi_config.json: " + err.Error())
+	}
+
+	restApiConfig := RestApiConfig{}
+	err = json.Unmarshal(file, &restApiConfig)
+	if err != nil {
+		return errors.New("could not parse restapi_config.json: " + err.Error())
 	}
 
 	execFile := path.Dir(execPath) + "/hoster_rest_api"
@@ -135,10 +152,11 @@ func startApiServer(port int, user string, password string, haMode bool, haDebug
 		return err
 	}
 
-	emojlog.PrintLogMessage("Started the REST API server on port: "+strconv.Itoa(port), emojlog.Info)
-	emojlog.PrintLogMessage("Using unencrypted/plain HTTP protocol (make sure to put it behind Traefik with SSL termination if the untrusted networks are involved)", emojlog.Warning)
-	emojlog.PrintLogMessage("HTTP Basic auth username: "+user, emojlog.Info)
-	emojlog.PrintLogMessage("HTTP Basic Auth password: "+password, emojlog.Info)
+	emojlog.PrintLogMessage("Started the REST API server on port: "+strconv.Itoa(restApiConfig.Port), emojlog.Info)
+	emojlog.PrintLogMessage("Check user credentials at "+execPath+"/config_files/restapi_config.json", emojlog.Info)
+	if restApiConfig.Protocol != "https" {
+		emojlog.PrintLogMessage("Using unencrypted/plain HTTP protocol (make sure to put it behind Traefik with SSL termination if the untrusted networks are involved)", emojlog.Warning)
+	}
 
 	return nil
 }

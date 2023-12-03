@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -14,11 +14,7 @@ var (
 		Short: "Start all VMs deployed on this system",
 		Long:  `Start all VMs deployed on this system`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
+			checkInitFile()
 			vmStartAll(waitTime)
 		},
 	}
@@ -27,25 +23,41 @@ var (
 // Starts all production VMs, applying a wait time (in seconds) between issuing each `vm start` command
 func vmStartAll(waitTime int) {
 	allVms := getAllVms()
-	iteration := 0
+	offlineVms := []string{}
+
 	for _, vm := range allVms {
+		if VmLiveCheck(vm) {
+			continue
+		}
+
 		vmConfigVar := vmConfig(vm)
-		if vmConfigVar.ParentHost != GetHostName() {
-			continue
+		if IsVmInProduction(vmConfigVar.LiveStatus) {
+			if vmConfigVar.ParentHost == GetHostName() {
+				offlineVms = append(offlineVms, vm)
+			}
 		}
-		if !VmIsInProduction(vmConfigVar.LiveStatus) {
-			continue
+	}
+
+	for i, v := range offlineVms {
+		// Print out the output splitter
+		if i == 0 {
+			_ = 0
+		} else {
+			fmt.Println("  ───────────")
 		}
-		iteration = iteration + 1
-		if iteration != 1 {
+
+		// Apply the sleep
+		if i != 0 {
 			time.Sleep(time.Second * time.Duration(waitTime))
 		}
-		VmStart(vm, false, false)
+
+		// Start the VM
+		VmStart(v, false, false, false)
 	}
 }
 
 // Check if VM is in production using vmConfig.LiveStatus as input
-func VmIsInProduction(s string) bool {
+func IsVmInProduction(s string) bool {
 	if s == "production" || s == "prod" {
 		return true
 	}

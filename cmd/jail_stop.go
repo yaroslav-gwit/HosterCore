@@ -17,13 +17,8 @@ var (
 		Long:  `Stop a specific Jail using it's name`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-
-			err = jailStop(args[0], true)
+			checkInitFile()
+			err := jailStop(args[0], true)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)

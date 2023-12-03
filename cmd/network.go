@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 
@@ -16,10 +15,7 @@ var (
 		Short: "Network related operations",
 		Long:  `Network related operations.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -33,10 +29,7 @@ var (
 		Short: "List all Hoster related networks",
 		Long:  `List all Hoster related networks in a table format.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			printNetworkInfoTable()
 		},
 	}

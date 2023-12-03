@@ -3,7 +3,6 @@ package cmd
 import (
 	"HosterCore/emojlog"
 	"errors"
-	"log"
 	"os"
 	"os/exec"
 
@@ -17,10 +16,7 @@ var (
 		Long:  `CloudInit ISO related operations.`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+			checkInitFile()
 			cmd.Help()
 		},
 	}
@@ -33,13 +29,12 @@ var (
 		Long:  `Mount CloudInit ISO.`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+
+			err := mountCiIso(args[0])
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = mountCiIso(args[0])
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -52,13 +47,11 @@ var (
 		Long:  `Unmount CloudInit ISO.`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := unmountCiIso(args[0])
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-			err = unmountCiIso(args[0])
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"HosterCore/emojlog"
 	"errors"
 	"os"
 	"os/exec"
@@ -20,12 +19,7 @@ var (
 		Short: "Jail related operations",
 		Long:  `Jail related operations: deploy, stop, start, destroy, etc`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-
+			checkInitFile()
 			cmd.Help()
 		},
 	}

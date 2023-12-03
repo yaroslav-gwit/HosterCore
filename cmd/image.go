@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -26,9 +25,11 @@ var (
 		Short: "Image and template (.raw) related operations",
 		Long:  `Image and template (.raw) related operations`,
 		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
 			err := listAvailableImages()
 			if err != nil {
-				log.Fatal("Could not list available images: " + err.Error())
+				emojlog.PrintLogMessage("Could not list the available images: "+err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -43,18 +44,16 @@ var (
 		Long:  `Download an image from the public or private repo`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := imageDownload(args[0])
 			if err != nil {
-				log.Fatal(err)
-			}
-
-			err = imageDownload(args[0])
-			if err != nil {
-				log.Fatal(err)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 			err = imageUnzip(imageDataset, args[0])
 			if err != nil {
-				log.Fatal(err)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

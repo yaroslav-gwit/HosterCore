@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"log"
+	"HosterCore/emojlog"
 	"os"
 	"strconv"
 
@@ -18,13 +18,11 @@ var (
 		Long:  `List all ZFS snapshots that are a part of Hoster VMs`,
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := generateSnapshotAllTable()
 			if err != nil {
-				log.Fatal(err)
-			}
-			err = generateSnapshotAllTable()
-			if err != nil {
-				log.Fatal(err)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}

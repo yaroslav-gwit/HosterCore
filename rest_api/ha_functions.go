@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -58,47 +58,59 @@ type ModifyHostsDbStruct struct {
 	data        HosterHaNodeStruct
 }
 
-var haMode bool
-var debugMode bool
+// var haMode bool
+// var debugMode bool
 
-var user = "admin"
-var password = "123456"
-var port = 3000
-var protocol = "http"
+// var user = "admin"
+// var password = "123456"
+// var port = 3000
+// var protocol = "http"
 
 func init() {
-	portEnv := os.Getenv("REST_API_PORT")
-	userEnv := os.Getenv("REST_API_USER")
-	passwordEnv := os.Getenv("REST_API_PASSWORD")
+	// portEnv := os.Getenv("REST_API_PORT")
+	// userEnv := os.Getenv("REST_API_USER")
+	// passwordEnv := os.Getenv("REST_API_PASSWORD")
 
 	var err error
-	if len(portEnv) > 0 {
-		port, err = strconv.Atoi(portEnv)
-		if err != nil {
-			log.Fatal("please make sure port is an integer!")
-		}
+	// if len(portEnv) > 0 {
+	// 	port, err = strconv.Atoi(portEnv)
+	// 	if err != nil {
+	// 		log.Fatal("please make sure port is an integer!")
+	// 	}
+	// }
+	// if len(userEnv) > 0 {
+	// 	user = userEnv
+	// }
+	// if len(passwordEnv) > 0 {
+	// 	password = passwordEnv
+	// }
+
+	execPath, err := os.Executable()
+	if err != nil {
+		os.Exit(1)
 	}
-	if len(userEnv) > 0 {
-		user = userEnv
+	execDir := filepath.Dir(execPath)
+	restApiConfigFile, err := os.ReadFile(execDir + "/config_files/restapi_config.json")
+	if err != nil {
+		os.Exit(1)
 	}
-	if len(passwordEnv) > 0 {
-		password = passwordEnv
+	err = json.Unmarshal(restApiConfigFile, &restApiConfig)
+	if err != nil {
+		os.Exit(1)
 	}
 
-	haModeEnv := os.Getenv("REST_API_HA_MODE")
-	if len(haModeEnv) > 0 {
-		haMode = true
-	} else {
+	// haModeEnv := os.Getenv("REST_API_HA_MODE")
+	if !restApiConfig.HaMode {
 		_ = exec.Command("logger", "-t", "HOSTER_REST", "INFO: STARING REST API SERVER IN REGULAR (NON-HA) MODE").Run()
 		return
 	}
 
-	debugModeEnv := os.Getenv("REST_API_HA_DEBUG")
-	if len(debugModeEnv) > 0 {
-		debugMode = true
-	}
+	// debugModeEnv := os.Getenv("REST_API_HA_DEBUG")
+	// if len(debugModeEnv) > 0 {
+	// 	debugMode = true
+	// }
 
-	if debugMode {
+	if restApiConfig.HaDebug {
 		haModeString := []byte("DEBUG")
 		_ = os.Remove("/var/run/hoster_rest_api.mode")
 		err := os.WriteFile("/var/run/hoster_rest_api.mode", haModeString, 0644)
@@ -248,10 +260,23 @@ func registerNode() {
 			host := NodeInfoStruct{}
 			host.Hostname = cmd.GetHostName()
 			host.FailOverStrategy = haConfig.FailOverStrategy
-			host.User = user
-			host.Password = password
-			host.Port = strconv.Itoa(port)
-			host.Protocol = protocol
+
+			configFound := false
+			for _, vv := range restApiConfig.HTTPAuth {
+				if vv.HaUser {
+					host.User = vv.User
+					host.Password = vv.Password
+					host.Port = strconv.Itoa(restApiConfig.Port)
+					host.Protocol = restApiConfig.Protocol
+					configFound = true
+					break
+				}
+			}
+			if !configFound {
+				_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC: registerNode(): could not configure the API server correctly").Run()
+				os.Exit(1)
+			}
+
 			host.FailOverStrategy = haConfig.FailOverStrategy
 			host.FailOverTime = haConfig.FailOverTime
 			host.StartupTime = haConfig.StartupTime
@@ -461,7 +486,7 @@ func failoverHostVms(haNode HosterHaNodeStruct) {
 	}
 
 	for _, v := range uniqueHaVms {
-		if debugMode {
+		if restApiConfig.HaDebug {
 			_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: MOVING VM: "+v.VmName+" FROM offline parent: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
 			continue
 		}

@@ -34,12 +34,8 @@ var (
 		Long:  `Expand the VM drive. Can only be done offline due to data loss possibility.`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = DiskExpandOffline(args[0], diskImage, expansionSize)
+			checkInitFile()
+			err := DiskExpandOffline(args[0], diskImage, expansionSize)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -56,12 +52,8 @@ var (
 		Long:  `Add a new disk image to this VM dataset. Can only be done offline due to the fact that bhyve can't hot-reload settings.`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
-			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = diskAddOffline(args[0], vmDiskAddSize)
+			checkInitFile()
+			err := diskAddOffline(args[0], vmDiskAddSize)
 			if err != nil {
 				log.Fatal(err)
 			}

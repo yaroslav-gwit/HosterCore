@@ -3,7 +3,7 @@ package cmd
 import (
 	"HosterCore/emojlog"
 	"errors"
-	"log"
+	"os"
 	"os/exec"
 
 	"github.com/spf13/cobra"
@@ -19,14 +19,11 @@ var (
 		Long:  `Rollback the VM to one of it's previous states.`,
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			err := checkInitFile()
+			checkInitFile()
+			err := ZfsSnapshotRollback(args[0], args[1], snapshotRollbackForceStop, snapshotRollbackForceStart)
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			err = ZfsSnapshotRollback(args[0], args[1], snapshotRollbackForceStop, snapshotRollbackForceStart)
-			if err != nil {
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
 			}
 		},
 	}
@@ -48,7 +45,7 @@ func ZfsSnapshotRollback(vmName string, snapshotName string, forceStop bool, for
 	}
 
 	if forceStop {
-		err := VmStop(vmName, forceStop)
+		err := VmStop(vmName, forceStop, true)
 		if err != nil {
 			return err
 		}
@@ -78,7 +75,7 @@ func ZfsSnapshotRollback(vmName string, snapshotName string, forceStop bool, for
 	emojlog.PrintLogMessage("VM has been rolled back to: "+snapshotName, emojlog.Changed)
 
 	if forceStart {
-		err := VmStart(vmName, false, false)
+		err := VmStart(vmName, false, false, false)
 		if err != nil {
 			return err
 		}

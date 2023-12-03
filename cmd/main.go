@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -13,10 +12,7 @@ var rootCmd = &cobra.Command{
 	Short: "HosterCore is a highly opinionated Bhyve automation platform written in Go",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		err := checkInitFile()
-		if err != nil {
-			log.Fatal(err.Error())
-		}
+		checkInitFile()
 		hostMain()
 		printZfsDatasetInfo()
 		printNetworkInfoTable()
@@ -93,6 +89,9 @@ func init() {
 	// VM cmd -> unlock-all
 	vmCmd.AddCommand(vmUnlockAllCmd)
 
+	// VM cmd -> clone
+	vmCmd.AddCommand(vmCloneCmd)
+
 	// VM cmd -> list
 	vmCmd.AddCommand(vmListCmd)
 	vmListCmd.Flags().BoolVarP(&jsonOutputVm, "json", "j", false, "Output as JSON (useful for automation)")
@@ -108,6 +107,7 @@ func init() {
 	vmCmd.AddCommand(vmStartCmd)
 	vmStartCmd.Flags().BoolVarP(&vmStartCmdWaitForVnc, "wait-for-vnc", "", false, "Use this flag to wait for a VNC connection before booting the VM")
 	vmStartCmd.Flags().BoolVarP(&vmStartCmdRestoreVmState, "restore-state", "", false, "Restore saved VM state (EXPERIMENTAL!)")
+	vmStartCmd.Flags().BoolVarP(&vmStartCmdDebug, "debug-run", "", false, "Only console-print the start commands, but don't execute them")
 
 	// VM cmd -> start all
 	vmCmd.AddCommand(vmStartAllCmd)
@@ -116,10 +116,12 @@ func init() {
 	// VM cmd -> stop
 	vmCmd.AddCommand(vmStopCmd)
 	vmStopCmd.Flags().BoolVarP(&vmStopCmdForceStop, "force", "f", false, "Use -SIGKILL signal to forcefully kill the VM process")
+	vmStopCmd.Flags().BoolVarP(&vmStopCmdCleanUp, "cleanup", "c", false, "Kill VM Supervisor as well as the VM itself (rarely needed)")
 
 	// VM cmd -> stop all
 	vmCmd.AddCommand(vmStopAllCmd)
 	vmStopAllCmd.Flags().BoolVarP(&forceStopAll, "force", "f", false, "Use -SIGKILL signal to forcefully kill all of the VMs processes")
+	vmStopAllCmd.Flags().BoolVarP(&vmStopAllCmdCleanUp, "cleanup", "c", false, "Kill VM Supervisor as well as the VM itself (rarely needed)")
 
 	// VM cmd -> show log
 	vmCmd.AddCommand(vmShowLogCmd)
@@ -209,14 +211,18 @@ func init() {
 	snapshotRollbackCmd.Flags().BoolVarP(&snapshotRollbackForceStop, "force-stop", "", false, "Automatically stop the VM using --force flag")
 	snapshotRollbackCmd.Flags().BoolVarP(&snapshotRollbackForceStart, "force-start", "", false, "Automatically start the VM after roll-back operation")
 
+	// Passthru command section
+	rootCmd.AddCommand(passthruCmd)
+	passthruCmd.AddCommand(passthruListCmd)
+
 	// API command section
 	rootCmd.AddCommand(apiCmd)
 	apiCmd.AddCommand(apiStartCmd)
-	apiStartCmd.Flags().IntVarP(&apiStartPort, "port", "p", 3000, "Specify the port to listen on")
-	apiStartCmd.Flags().StringVarP(&apiStartUser, "user", "u", "admin", "Username for API authentication")
-	apiStartCmd.Flags().StringVarP(&apiStartPassword, "password", "", "123456", "Password for API authentication")
-	apiStartCmd.Flags().BoolVarP(&apiHaMode, "ha-mode", "", false, "Activate HA clustering mode")
-	apiStartCmd.Flags().BoolVarP(&apiHaDebug, "ha-debug", "", false, "Activate HA Debug mode, that only logs all actions, but doesn't execute anything")
+	// apiStartCmd.Flags().IntVarP(&apiStartPort, "port", "p", 3000, "Specify the port to listen on")
+	// apiStartCmd.Flags().StringVarP(&apiStartUser, "user", "u", "admin", "Username for API authentication")
+	// apiStartCmd.Flags().StringVarP(&apiStartPassword, "password", "", "123456", "Password for API authentication")
+	// apiStartCmd.Flags().BoolVarP(&apiHaMode, "ha-mode", "", false, "Activate HA clustering mode")
+	// apiStartCmd.Flags().BoolVarP(&apiHaDebug, "ha-debug", "", false, "Activate HA Debug mode, that only logs all actions, but doesn't execute anything")
 	apiCmd.AddCommand(apiStatusCmd)
 	apiCmd.AddCommand(apiStopCmd)
 	apiCmd.AddCommand(apiShowLogCmd)
@@ -282,7 +288,7 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 }
 
-var HosterVersion = "v0.2b-RELEASE"
+var HosterVersion = "v0.3-RELEASE"
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
