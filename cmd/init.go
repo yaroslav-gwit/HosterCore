@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/emojlog"
+	"HosterCore/osfreebsd"
 	"errors"
 	"os"
 	"os/exec"
@@ -104,7 +105,6 @@ func loadMissingModules() error {
 	if err != nil {
 		return err
 	}
-
 	for _, v := range moduleList {
 		stdout, stderr := exec.Command("kldload", v).CombinedOutput()
 		if stderr != nil {
@@ -112,7 +112,6 @@ func loadMissingModules() error {
 		}
 		emojlog.PrintLogMessage("Loaded kernel module: "+v, emojlog.Changed)
 	}
-
 	return nil
 }
 
@@ -122,7 +121,6 @@ func returnMissingModules() ([]string, error) {
 	if stderr != nil {
 		return []string{}, errors.New("error running kldstat: " + string(stdout) + " " + stderr.Error())
 	}
-
 	reMatchKo := regexp.MustCompile(`\.ko`)
 	reSplitSpace := regexp.MustCompile(`\s+`)
 
@@ -130,7 +128,12 @@ func returnMissingModules() ([]string, error) {
 	kernelModuleList := []string{"vmm", "nmdm", "if_bridge", "if_vxlan", "if_epair", "if_tap", "if_tuntap", "pf", "pflog"}
 
 	// Add CPU temperature module to the kernel module list
-	cpuInfo := getCpuInfo()
+	// cpuInfo := getCpuInfo()
+	cpuInfo, err := osfreebsd.GetCpuInfo()
+	if err != nil {
+		return []string{}, err
+	}
+
 	reMatchIntelCpu := regexp.MustCompile(`.*[Ii]ntel.*`)
 	if reMatchIntelCpu.MatchString(cpuInfo.Model) {
 		kernelModuleList = append(kernelModuleList, "coretemp")
