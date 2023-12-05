@@ -29,6 +29,7 @@ require (
 	github.com/creack/pty v1.1.15 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/gcla/gowid v1.4.0
+	github.com/gdamore/tcell v1.4.0
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
