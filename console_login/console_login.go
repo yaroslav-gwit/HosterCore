@@ -1,13 +1,13 @@
 package main
 
 import (
-	edit "HosterCore/widgets"
+	dialog "HosterCore/widgets/dialog"
+	edit "HosterCore/widgets/edit"
 	"fmt"
 	"os"
 
 	"github.com/gcla/gowid"
 	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/dialog"
 	"github.com/gcla/gowid/widgets/divider"
 	"github.com/gcla/gowid/widgets/framed"
 	"github.com/gcla/gowid/widgets/hpadding"

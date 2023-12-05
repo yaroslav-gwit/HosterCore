@@ -362,9 +362,9 @@ func MakeText(w IWidget) text.IWidget {
 	tw := text.New(txt)
 	tw.SetLinesFromTop(w.LinesFromTop(), nil)
 
-	cu := &text.SimpleCursor{-1}
+	cu := &text.SimpleCursor{Pos: -1}
 	cu.SetCursorPos(w.CursorPos()+utf8.RuneCountInString(w.Caption()), nil)
-	twc := &text.WidgetWithCursor{tw, cu}
+	twc := &text.WidgetWithCursor{Widget: tw, SimpleCursor: cu}
 
 	return twc
 }
