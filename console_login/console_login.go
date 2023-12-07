@@ -161,7 +161,14 @@ func ShowLoginDialog(holder *styled.Widget, app *gowid.App) {
 	flow := gowid.RenderFlow{}
 	msg := text.New("Enter PIN to login: ")
 	title := hpadding.New(msg, gowid.HAlignMiddle{}, gowid.RenderFixed{})
-	edit := styled.New(framed.NewUnicode(edit.New(edit.Options{Mask: edit.MakeMask('*'), Numeric: edit.MakeNumeric(true, MaxPINLength)})), gowid.MakePaletteRef("edit"))
+	edit := styled.New(
+		framed.NewUnicode(
+			edit.New(
+				edit.Options{
+					Mask:    edit.MakeMask('*'),
+					Numeric: edit.MakeNumeric(true, MaxPINLength),
+				})),
+		gowid.MakePaletteRef("edit"))
 	login_dialog = dialog.New(
 		framed.NewSpace(vpadding.New(
 			pile.New([]gowid.IContainerWidget{
@@ -174,6 +181,7 @@ func ShowLoginDialog(holder *styled.Widget, app *gowid.App) {
 			Buttons:       []dialog.Button{login_button},
 			NoEscapeClose: true,
 			FocusOnWidget: true,
+			AutoFocusOn:   true,
 			Modal:         true,
 		},
 	)

@@ -29,6 +29,8 @@ type IWidget interface {
 	gowid.IWidget
 	gowid.ISettableComposite // Not ICompositeWidget - no SubWidgetSize
 	GetNoFunction() gowid.IWidgetChangedCallback
+	AutoFocus() bool
+	ClickOnFocusedButton(app gowid.IApp) gowid.IWidgetChangedCallback
 	EscapeCloses() bool
 	IsOpen() bool
 	SetOpen(open bool, app gowid.IApp)
@@ -87,6 +89,7 @@ type Options struct {
 	BackgroundStyle gowid.ICellStyler
 	BorderStyle     gowid.ICellStyler
 	FocusOnWidget   bool
+	AutoFocusOn     bool
 	NoFrame         bool
 	Modal           bool
 	TabToButtons    bool
@@ -281,6 +284,22 @@ func (w *Widget) SwitchFocus(app gowid.IApp) {
 	}
 }
 
+func (w *Widget) AutoFocus() bool {
+	return w.Options.AutoFocusOn
+}
+
+func (w *Widget) ClickOnFocusedButton(app gowid.IApp) gowid.IWidgetChangedCallback {
+	w.FocusOnButtons(app)
+
+	buttons := w.Options.Buttons
+	if len(buttons) > 0 {
+		return w.Options.Buttons[0].Action
+	}
+
+	return gowid.WidgetCallback{Name: "no",
+		WidgetChangedFunction: func(app gowid.IApp, widget gowid.IWidget) {}}
+}
+
 func (w *Widget) IsSwitchFocus() bool {
 	return w.Options.TabToButtons
 }
@@ -381,7 +400,7 @@ func (w *Widget) FocusOnContent(app gowid.IApp) {
 	w.content.SetFocus(app, 0)
 }
 
-//''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+////////////////////////////////////////////////////////////////////////
 
 func Close(w IWidget, app gowid.IApp) {
 	w.SavedContainer().SetSubWidget(w.SavedSubWidget(), app)
@@ -423,6 +442,11 @@ func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Se
 	if w.IsOpen() {
 		if evk, ok := ev.(*tcell.EventKey); ok {
 			switch {
+			case evk.Key() == tcell.KeyEnter:
+				if w.AutoFocus() {
+					w.ClickOnFocusedButton(app).Changed(app, w)
+					res = true
+				}
 			case evk.Key() == tcell.KeyCtrlC || evk.Key() == tcell.KeyEsc:
 				if w.EscapeCloses() {
 					w.GetNoFunction().Changed(app, w)
