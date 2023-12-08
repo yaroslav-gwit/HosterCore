@@ -1,3 +1,7 @@
+// Copyright 2023s The Hoster Authors. All rights reserved.
+// Use of this source code is governed by a Apache License 2.0
+// license that can be found in the LICENSE fil
+
 package main
 
 import (
@@ -248,7 +252,7 @@ func main() {
 		"edit": gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("dark blue")),
 	}
 
-	main_widget = LoginWidget()
+	main_widget = MainWidget()
 	app, err := gowid.NewApp(gowid.AppArgs{
 		View:    main_widget,
 		Palette: &styles,
