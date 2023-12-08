@@ -22,12 +22,12 @@ require (
 )
 
 require (
-	github.com/VividCortex/ewma v1.1.1 // indirect
+	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/andybalholm/brotli v1.0.6 // indirect
 	github.com/cheggaaa/pb v1.0.29 // indirect
-	github.com/cheggaaa/pb/v3 v3.1.0 // indirect
-	github.com/creack/pty v1.1.15 // indirect
-	github.com/fatih/color v1.10.0 // indirect
+	github.com/cheggaaa/pb/v3 v3.1.4 // indirect
+	github.com/creack/pty v1.1.21 // indirect
+	github.com/fatih/color v1.16.0 // indirect
 	github.com/gcla/gowid v1.4.0
 	github.com/gdamore/tcell v1.4.0
 	github.com/google/uuid v1.4.0 // indirect
