@@ -495,15 +495,16 @@ func main() {
 	go func() {
 		for sig := range signals {
 			if sig == syscall.SIGTERM || sig == syscall.SIGINT {
-				if restApiConfig.HaMode {
-					terminateOtherMembers()
-				}
-
 				if sig == syscall.SIGTERM {
 					_ = exec.Command("logger", "-t", hosterRestLabel, "INFO: received SIGTERM, exiting").Start()
 				}
+
 				if sig == syscall.SIGINT {
-					_ = exec.Command("logger", "-t", hosterRestLabel, "INFO: received SIGINT (CTRL+C), exiting").Start()
+					_ = exec.Command("logger", "-t", hosterRestLabel, "INFO: received SIGINT (CTRL+C // graceful HA stop), exiting").Start()
+
+					if restApiConfig.HaMode {
+						terminateOtherMembers()
+					}
 				}
 
 				err := app.Shutdown()

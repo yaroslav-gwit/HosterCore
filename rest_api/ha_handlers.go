@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"time"
 
 	"HosterCore/cmd"
@@ -68,7 +69,7 @@ func handleHaTerminate(fiberContext *fiber.Ctx) error {
 	go func() {
 		service := cmd.ApiProcessServiceInfo()
 		_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received a remote terminating call").Run()
-		_ = exec.Command("kill", "-SIGTERM", service.HaWatchDogPid).Run()
+		_ = exec.Command("kill", "-SIGTERM", strconv.Itoa(service.HaWatchDogPid)).Run()
 	}()
 
 	go func() {
