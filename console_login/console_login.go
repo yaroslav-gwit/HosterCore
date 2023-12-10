@@ -26,18 +26,26 @@ import (
 const MaxPINLength = 6
 
 // variables
-var main_widget *styled.Widget
-var login_dialog *dialog.Widget
+var (
+	main_widget  *styled.Widget
+	login_dialog *dialog.Widget
+)
+
+// strings
+var (
+	welcome_string = "Welcome to Hoster"
+	wait_string    = "Please wait..."
+)
 
 //======================================================================
 // Header
 
-func GetHeaderText() *text.Widget {
-	header_text := text.New("Welcome to Hoster", text.Options{Align: gowid.HAlignMiddle{}})
+func getHeaderText() *text.Widget {
+	header_text := text.New(welcome_string, text.Options{Align: gowid.HAlignMiddle{}})
 	return header_text
 }
 
-func GetSessionInfoText() *text.Widget {
+func getSessionInfoText() *text.Widget {
 	info_text := text.NewFromContentExt(
 		text.NewContent([]text.ContentSegment{
 			text.StringContent("Logged in as"),
@@ -54,7 +62,7 @@ func GetSessionInfoText() *text.Widget {
 	return info_text
 }
 
-func GetHeaderView() *styled.Widget {
+func getHeaderView() *styled.Widget {
 	flow := gowid.RenderFlow{}
 
 	header_view := styled.New(
@@ -63,8 +71,8 @@ func GetHeaderView() *styled.Widget {
 				framed.NewUnicode(
 					vpadding.New(
 						pile.New([]gowid.IContainerWidget{
-							&gowid.ContainerWidget{IWidget: GetHeaderText(), D: flow},
-							&gowid.ContainerWidget{IWidget: GetSessionInfoText(), D: flow},
+							&gowid.ContainerWidget{IWidget: getHeaderText(), D: flow},
+							&gowid.ContainerWidget{IWidget: getSessionInfoText(), D: flow},
 						}),
 						gowid.VAlignMiddle{},
 						flow),
@@ -80,7 +88,7 @@ func GetHeaderView() *styled.Widget {
 
 // ======================================================================
 // Info section
-func CreateInfoView(name string) *framed.Widget {
+func createInfoView(name string) *framed.Widget {
 	if len(name) == 0 {
 		name = "-/-"
 	}
@@ -100,18 +108,18 @@ func CreateInfoView(name string) *framed.Widget {
 	return info_view
 }
 
-func GetInfoSectionView() *framed.Widget {
+func getInfoSectionView() *framed.Widget {
 	weight_1 := gowid.RenderWithWeight{W: 1}
 
 	infoSectionView := framed.NewSpace(
 		styled.New(
 			framed.NewUnicode(
 				columns.New([]gowid.IContainerWidget{
-					&gowid.ContainerWidget{IWidget: CreateInfoView("Press \"F\" to toggle a firewall"), D: weight_1},
-					&gowid.ContainerWidget{IWidget: CreateInfoView("Up/Down to select a VM"), D: weight_1},
-					&gowid.ContainerWidget{IWidget: CreateInfoView("\"S\" to start or stop a VM"), D: weight_1},
-					&gowid.ContainerWidget{IWidget: CreateInfoView("\"I\" to display more info"), D: weight_1},
-					&gowid.ContainerWidget{IWidget: CreateInfoView("\"R\" to enter a command mode"), D: weight_1},
+					&gowid.ContainerWidget{IWidget: createInfoView("Press \"F\" to toggle a firewall"), D: weight_1},
+					&gowid.ContainerWidget{IWidget: createInfoView("Up/Down to select a VM"), D: weight_1},
+					&gowid.ContainerWidget{IWidget: createInfoView("\"S\" to start or stop a VM"), D: weight_1},
+					&gowid.ContainerWidget{IWidget: createInfoView("\"I\" to display more info"), D: weight_1},
+					&gowid.ContainerWidget{IWidget: createInfoView("\"R\" to enter a command mode"), D: weight_1},
 				}),
 			),
 			gowid.MakePaletteRef("body"),
@@ -124,12 +132,12 @@ func GetInfoSectionView() *framed.Widget {
 // ======================================================================
 // Home widget
 
-func HomeWidget() *styled.Widget {
+func homeWidget() *styled.Widget {
 	weight_1 := gowid.RenderWithWeight{W: 1}
 
 	widget := styled.New(pile.New([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{IWidget: GetHeaderView(), D: weight_1},
-		&gowid.ContainerWidget{IWidget: GetInfoSectionView(), D: weight_1},
+		&gowid.ContainerWidget{IWidget: getHeaderView(), D: weight_1},
+		&gowid.ContainerWidget{IWidget: getInfoSectionView(), D: weight_1},
 	}),
 		gowid.MakePaletteRef("background"),
 	)
@@ -140,11 +148,33 @@ func HomeWidget() *styled.Widget {
 // ======================================================================
 // Login widget
 
-func LoginWidget() *styled.Widget {
+func getWaitText() *text.Widget {
+	wait_message := text.NewFromContentExt(
+		text.NewContent([]text.ContentSegment{
+			text.StringContent(wait_string),
+		}),
+		text.Options{
+			Align: gowid.HAlignMiddle{},
+		},
+	)
+	return wait_message
+}
+
+func loginWidget() *styled.Widget {
 	flow := gowid.RenderFlow{}
+	weight_1 := gowid.RenderWithWeight{W: 1}
+
+	wait_widget := vpadding.New(
+		pile.New([]gowid.IContainerWidget{
+			&gowid.ContainerWidget{IWidget: getWaitText(), D: flow},
+		}),
+		gowid.VAlignMiddle{},
+		flow)
+
 	widget := styled.New(framed.NewUnicode(pile.New([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{IWidget: GetHeaderText(), D: flow},
+		&gowid.ContainerWidget{IWidget: getHeaderText(), D: flow},
 		&gowid.ContainerWidget{IWidget: divider.NewUnicode(), D: flow},
+		&gowid.ContainerWidget{IWidget: wait_widget, D: weight_1},
 	})),
 		gowid.MakePaletteRef("background"),
 	)
@@ -152,14 +182,14 @@ func LoginWidget() *styled.Widget {
 	return widget
 }
 
-func ShowLoginDialog(holder *styled.Widget, app *gowid.App) {
+func showLoginDialog(holder *styled.Widget, app *gowid.App) {
 	if holder == nil || app == nil {
 		return
 	}
 
 	login_button := dialog.Button{
 		Msg:    "Login",
-		Action: gowid.MakeWidgetCallback("login", gowid.WidgetChangedFunction(PINVerification)),
+		Action: gowid.MakeWidgetCallback("login", gowid.WidgetChangedFunction(pinVerification)),
 	}
 
 	flow := gowid.RenderFlow{}
@@ -195,7 +225,7 @@ func ShowLoginDialog(holder *styled.Widget, app *gowid.App) {
 // ======================================================================
 // Warning widget
 
-func WarningWidget() *styled.Widget {
+func warningWidget() *styled.Widget {
 	warning_message := text.NewFromContentExt(
 		text.NewContent([]text.ContentSegment{
 			text.StyledContent("Too many login attempts wait 100 s to unlock", gowid.MakePaletteRef("warning_text")),
@@ -223,21 +253,21 @@ func WarningWidget() *styled.Widget {
 // ======================================================================
 // Main widget
 
-func MainWidget() *styled.Widget {
-	widget := LoginWidget()
+func mainWidget() *styled.Widget {
+	widget := loginWidget()
 
 	return widget
 }
 
 //======================================================================
 
-func PINVerification(app gowid.IApp, widget gowid.IWidget) {
-	ShowHomeWidget(app, widget)
+func pinVerification(app gowid.IApp, widget gowid.IWidget) {
+	showHomeWidget(app, widget)
 }
 
-func ShowHomeWidget(app gowid.IApp, widget gowid.IWidget) {
+func showHomeWidget(app gowid.IApp, widget gowid.IWidget) {
 	login_dialog.Close(app)
-	main_widget.SetSubWidget(HomeWidget(), app)
+	main_widget.SetSubWidget(homeWidget(), app)
 }
 
 //======================================================================
@@ -252,7 +282,7 @@ func main() {
 		"edit": gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("dark blue")),
 	}
 
-	main_widget = MainWidget()
+	main_widget = mainWidget()
 	app, err := gowid.NewApp(gowid.AppArgs{
 		View:    main_widget,
 		Palette: &styles,
@@ -263,7 +293,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ShowLoginDialog(main_widget, app)
+	showLoginDialog(main_widget, app)
 
 	app.SimpleMainLoop()
 }
