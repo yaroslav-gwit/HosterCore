@@ -5,6 +5,8 @@
 package main
 
 import (
+	"HosterCore/utils/encryption"
+	"HosterCore/utils/host"
 	dialog "HosterCore/widgets/dialog"
 	edit "HosterCore/widgets/edit"
 	"fmt"
@@ -23,21 +25,33 @@ import (
 
 // ======================================================================
 // Constants
-const MaxPINLength = 6
+const (
+	maxPINLength       = 6
+	maximumPINAttempts = 3
+)
 
+// ======================================================================
 // variables
+// widgets
 var (
 	main_widget  *styled.Widget
 	login_dialog *dialog.Widget
+	pin_edit     *edit.Widget
+)
+
+var (
+	pinAttempts = 1
 )
 
 // strings
 var (
 	welcome_string = "Welcome to Hoster"
 	wait_string    = "Please wait..."
+	warning_string = "You've entered an incorrect PIN too many times.\n\n Try again in 100s."
+	incorrect_pin  = "Incorrect PIN entered"
 )
 
-//======================================================================
+// ======================================================================
 // Header
 
 func getHeaderText() *text.Widget {
@@ -182,8 +196,8 @@ func loginWidget() *styled.Widget {
 	return widget
 }
 
-func showLoginDialog(holder *styled.Widget, app *gowid.App) {
-	if holder == nil || app == nil {
+func createLoginDialog(holder *styled.Widget) {
+	if holder == nil {
 		return
 	}
 
@@ -195,13 +209,13 @@ func showLoginDialog(holder *styled.Widget, app *gowid.App) {
 	flow := gowid.RenderFlow{}
 	msg := text.New("Enter PIN to login: ")
 	title := hpadding.New(msg, gowid.HAlignMiddle{}, gowid.RenderFixed{})
+	pin_edit = edit.New(
+		edit.Options{
+			Mask:    edit.MakeMask('*'),
+			Numeric: edit.MakeNumeric(true, maxPINLength),
+		})
 	edit := styled.New(
-		framed.NewUnicode(
-			edit.New(
-				edit.Options{
-					Mask:    edit.MakeMask('*'),
-					Numeric: edit.MakeNumeric(true, MaxPINLength),
-				})),
+		framed.NewUnicode(pin_edit),
 		gowid.MakePaletteRef("edit"))
 	login_dialog = dialog.New(
 		framed.NewSpace(vpadding.New(
@@ -219,35 +233,140 @@ func showLoginDialog(holder *styled.Widget, app *gowid.App) {
 			Modal:         true,
 		},
 	)
+}
+
+func createLoginDialogWithError(holder *styled.Widget) {
+	if holder == nil {
+		return
+	}
+
+	login_button := dialog.Button{
+		Msg:    "Login",
+		Action: gowid.MakeWidgetCallback("login", gowid.WidgetChangedFunction(pinVerification)),
+	}
+
+	flow := gowid.RenderFlow{}
+	msg := text.New("Enter PIN to login: ")
+	title := hpadding.New(msg, gowid.HAlignMiddle{}, gowid.RenderFixed{})
+	pin_edit = edit.New(
+		edit.Options{
+			Mask:    edit.MakeMask('*'),
+			Numeric: edit.MakeNumeric(true, maxPINLength),
+		})
+	edit := styled.New(
+		framed.NewUnicode(pin_edit),
+		gowid.MakePaletteRef("edit"))
+	spacer := divider.NewBlank()
+	warning_message :=
+		text.NewFromContentExt(
+			text.NewContent([]text.ContentSegment{
+				text.StyledContent(incorrect_pin, gowid.MakePaletteRef("warning_text")),
+			}),
+			text.Options{
+				Align: gowid.HAlignMiddle{},
+			},
+		)
+	login_dialog = dialog.New(
+		framed.NewSpace(vpadding.New(
+			pile.New([]gowid.IContainerWidget{
+				&gowid.ContainerWidget{IWidget: title, D: flow},
+				&gowid.ContainerWidget{IWidget: edit, D: flow},
+				&gowid.ContainerWidget{IWidget: spacer, D: flow},
+				&gowid.ContainerWidget{IWidget: warning_message, D: flow},
+			}),
+			gowid.VAlignMiddle{},
+			flow)),
+		dialog.Options{
+			Buttons:       []dialog.Button{login_button},
+			NoEscapeClose: true,
+			FocusOnWidget: true,
+			AutoFocusOn:   true,
+			Modal:         true,
+		},
+	)
+}
+
+func showLoginDialog(holder *styled.Widget) {
+	if holder == nil {
+		return
+	}
+
+	app := &gowid.App{}
+
+	createLoginDialog(holder)
 	login_dialog.Open(holder, gowid.RenderWithRatio{R: 0.2}, app)
+}
+
+func showLoginDialogWithError(holder *styled.Widget) {
+	if holder == nil {
+		return
+	}
+
+	app := &gowid.App{}
+
+	createLoginDialogWithError(holder)
+	login_dialog.Open(holder, gowid.RenderWithRatio{R: 0.2}, app)
+}
+
+func closeLoginDialog() {
+	app := &gowid.App{}
+
+	login_dialog.Close(app)
 }
 
 // ======================================================================
 // Warning widget
 
 func warningWidget() *styled.Widget {
-	warning_message := text.NewFromContentExt(
-		text.NewContent([]text.ContentSegment{
-			text.StyledContent("Too many login attempts wait 100 s to unlock", gowid.MakePaletteRef("warning_text")),
-		}),
-		text.Options{
-			Align: gowid.HAlignMiddle{},
-		},
+	warning_message := styled.New(
+		text.NewFromContentExt(
+			text.NewContent([]text.ContentSegment{
+				text.StyledContent(warning_string, gowid.MakePaletteRef("warning_background")),
+			}),
+			text.Options{
+				Align: gowid.HAlignMiddle{},
+			},
+		),
+		gowid.MakePaletteRef("warning_background"),
 	)
 
 	flow := gowid.RenderFlow{}
 
-	widget := styled.New(
+	div := divider.NewBlank()
+	outside := styled.New(div, gowid.MakePaletteRef("warning_background"))
+	inside := styled.New(div, gowid.MakePaletteRef("warning_background"))
+
+	warning_widget := styled.New(
 		vpadding.New(
 			pile.New([]gowid.IContainerWidget{
+				&gowid.ContainerWidget{IWidget: outside, D: flow},
+				&gowid.ContainerWidget{IWidget: inside, D: flow},
 				&gowid.ContainerWidget{IWidget: warning_message, D: flow},
+				&gowid.ContainerWidget{IWidget: inside, D: flow},
+				&gowid.ContainerWidget{IWidget: outside, D: flow},
 			}),
 			gowid.VAlignMiddle{},
 			flow),
-		gowid.MakePaletteRef("warning_background"),
+		gowid.MakePaletteRef("background"),
+	)
+
+	weight_1 := gowid.RenderWithWeight{W: 1}
+
+	widget := styled.New(framed.NewUnicode(pile.New([]gowid.IContainerWidget{
+		&gowid.ContainerWidget{IWidget: getHeaderText(), D: flow},
+		&gowid.ContainerWidget{IWidget: divider.NewUnicode(), D: flow},
+		&gowid.ContainerWidget{IWidget: warning_widget, D: weight_1},
+	})),
+		gowid.MakePaletteRef("background"),
 	)
 
 	return widget
+}
+
+func showWarningWidget() {
+	app := &gowid.App{}
+
+	main_widget.SetSubWidget(warningWidget(), app)
 }
 
 // ======================================================================
@@ -262,11 +381,43 @@ func mainWidget() *styled.Widget {
 //======================================================================
 
 func pinVerification(app gowid.IApp, widget gowid.IWidget) {
-	showHomeWidget(app, widget)
+	// Read PIN from edit
+	if pin_edit == nil {
+		return
+	}
+
+	pin := pin_edit.Text()
+
+	closeLoginDialog()
+
+	// Check the number of pin attempts
+	if pinAttempts >= maximumPINAttempts {
+		showWarningWidget()
+		return
+	}
+
+	// Load host config
+	hostConfig, err := host.GetHostConfig()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// check password hash
+	pin_hash := hostConfig.ConsolePanelPin
+	match := encryption.CheckPasswordHash(pin, pin_hash)
+
+	if match {
+		pinAttempts = 1
+		showHomeWidget()
+	} else {
+		pinAttempts++
+		showLoginDialogWithError(main_widget)
+	}
 }
 
-func showHomeWidget(app gowid.IApp, widget gowid.IWidget) {
-	login_dialog.Close(app)
+func showHomeWidget() {
+	app := &gowid.App{}
+
 	main_widget.SetSubWidget(homeWidget(), app)
 }
 
@@ -274,12 +425,12 @@ func showHomeWidget(app gowid.IApp, widget gowid.IWidget) {
 
 func main() {
 	styles := gowid.Palette{
-		"body":       gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("black"), gowid.NewUrwidColor("light gray"), gowid.StyleBold),
-		"background": gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("blue")),
-		// "text_info":          gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.ColorNone),
-		"warning_background": gowid.MakePaletteEntry(gowid.ColorNone, gowid.NewUrwidColor("dark red")),
-		// "warning_text":       gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.ColorNone),
-		"edit": gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("dark blue")),
+		"body":               gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("black"), gowid.NewUrwidColor("light gray"), gowid.StyleBold),
+		"background":         gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("blue")),
+		"warning_background": gowid.MakeStyledPaletteEntry(gowid.ColorNone, gowid.NewUrwidColor("dark red"), gowid.StyleBold),
+		"warning_text":       gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("dark red"), gowid.ColorNone, gowid.StyleBold),
+		"edit":               gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("dark blue")),
+		"banner":             gowid.MakePaletteEntry(gowid.ColorWhite, gowid.MakeRGBColor("#60d")),
 	}
 
 	main_widget = mainWidget()
@@ -293,7 +444,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	showLoginDialog(main_widget, app)
+	// createLoginDialog(main_widget, app)
+	showLoginDialog(main_widget)
 
 	app.SimpleMainLoop()
 }

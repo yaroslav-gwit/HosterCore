@@ -8,21 +8,14 @@ import (
 	"HosterCore/models/host"
 	"encoding/json"
 	"os"
-	"path"
 )
 
-const ConfigPath = "/config_files/host_config.json"
+const ConfigPath = "/opt/hoster-core/config_files/host_config.json"
 
 func GetHostConfig() (host.Config, error) {
 	hostConfig := host.Config{}
 
-	execPath, err := os.Executable()
-	if err != nil {
-		return host.Config{}, err
-	}
-
-	hostConfigFile := path.Dir(execPath) + ConfigPath
-	data, err := os.ReadFile(hostConfigFile)
+	data, err := os.ReadFile(ConfigPath)
 	if err != nil {
 		return host.Config{}, err
 	}
