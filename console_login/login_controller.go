@@ -58,7 +58,7 @@ func (c *LoginController) CreateLoginDialog(holder *styled.Widget) {
 	pin_edit = edit.New(
 		edit.Options{
 			Mask:    edit.MakeMask('*'),
-			Numeric: edit.MakeNumeric(true, maxPINLength),
+			Numeric: edit.MakeNumeric(true, c.GetMaxPINLength()),
 		})
 	edit := styled.New(
 		framed.NewUnicode(pin_edit),
@@ -97,7 +97,7 @@ func (c *LoginController) CreateLoginDialogWithError(holder *styled.Widget) {
 	pin_edit = edit.New(
 		edit.Options{
 			Mask:    edit.MakeMask('*'),
-			Numeric: edit.MakeNumeric(true, maxPINLength),
+			Numeric: edit.MakeNumeric(true, c.GetMaxPINLength()),
 		})
 	edit := styled.New(
 		framed.NewUnicode(pin_edit),
@@ -178,7 +178,7 @@ func (c *LoginController) PinVerification(_ gowid.IApp, widget gowid.IWidget) {
 	}
 
 	// check password hash
-	pin_hash := hostConfig.ConsolePanelPin
+	pin_hash := hostConfig.ConsolePanel.PIN
 	match := encryption.CheckPasswordHash(pin, pin_hash)
 
 	if match {
@@ -190,7 +190,7 @@ func (c *LoginController) PinVerification(_ gowid.IApp, widget gowid.IWidget) {
 	}
 
 	// Check the number of pin attempts
-	if pinAttempts > maximumPINAttempts {
+	if pinAttempts > c.GetMaximumPINAttempts() {
 		showWarningWidget(app)
 		pinAttempts = 1
 	}
@@ -202,4 +202,24 @@ func (c *LoginController) GetPinFromDialog() string {
 	}
 
 	return pin_edit.Text()
+}
+
+func (c *LoginController) GetMaximumPINAttempts() int {
+	maximumPINAttempts := host_config.ConsolePanel.MaximumPINAttempts
+
+	if maximumPINAttempts == 0 {
+		return maximumPINAttemptsDefault
+	}
+
+	return maximumPINAttempts
+}
+
+func (c *LoginController) GetMaxPINLength() int {
+	maxPINLength := host_config.ConsolePanel.MaxPINLength
+
+	if maxPINLength == 0 {
+		return maxPINLengthDefault
+	}
+
+	return maxPINLength
 }

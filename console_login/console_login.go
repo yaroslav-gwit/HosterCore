@@ -5,6 +5,8 @@
 package main
 
 import (
+	hostconfig "HosterCore/models/host_config"
+	"HosterCore/utils/host"
 	"fmt"
 	"os"
 
@@ -16,15 +18,16 @@ import (
 // ======================================================================
 // Constants
 const (
-	maxPINLength       = 6
-	maximumPINAttempts = 3
-	pinTimeout         = 1800 // 30 m
+	maxPINLengthDefault       = 6
+	maximumPINAttemptsDefault = 3
+	lockTimeoutDefault        = 1800 // 30 m
 )
 
 // ======================================================================
 // variables
 
 var (
+	host_config      hostconfig.Config
 	app              *gowid.App
 	main_widget      *styled.Widget
 	login_controller *LoginController
@@ -75,6 +78,11 @@ func main() {
 		"warning_text":       gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("dark red"), gowid.ColorNone, gowid.StyleBold),
 		"edit":               gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("dark blue")),
 		"banner":             gowid.MakePaletteEntry(gowid.ColorWhite, gowid.MakeRGBColor("#60d")),
+	}
+
+	host_config, err = host.GetHostConfig()
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	login_controller = NewLoginController()

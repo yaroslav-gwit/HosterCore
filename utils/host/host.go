@@ -5,24 +5,24 @@
 package host
 
 import (
-	"HosterCore/models/host"
+	hostconfig "HosterCore/models/host_config"
 	"encoding/json"
 	"os"
 )
 
 const ConfigPath = "/opt/hoster-core/config_files/host_config.json"
 
-func GetHostConfig() (host.Config, error) {
-	hostConfig := host.Config{}
+func GetHostConfig() (hostconfig.Config, error) {
+	hostConfig := hostconfig.Config{}
 
 	data, err := os.ReadFile(ConfigPath)
 	if err != nil {
-		return host.Config{}, err
+		return hostconfig.Config{}, err
 	}
 
 	err = json.Unmarshal(data, &hostConfig)
 	if err != nil {
-		return host.Config{}, err
+		return hostconfig.Config{}, err
 	}
 
 	return hostConfig, nil

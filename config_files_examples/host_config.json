@@ -21,5 +21,11 @@
             "key_value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDsOnhH5R/Incbxjtb/c4Z3t3hlDo3aHt02miE5R1i09s78zljYFHCAmJ6/fKDTPmt+irNPDTaCTShZTen/U1B5E/aljFzl4ZJxL9Z4MV0YXfbq7IMGs2ln/DWV+pVdgmuhCP4cZsFOeuX7T6JPk4IgAEGQrGl+J/+xzlU9PeU0DMgUFl1sljOEtvKnnjH/cs4s/gvQGOBFiggB4Gl2UPBYaT88dRrv5VJJ5G/WKq+Ngk3qwA0ilx/9L3Z9Cio1ROHrHw32Hxa6BgBz4fwZWRM7oeqtc2jIYP0upbAsthcU6nG8WAq1i/fKmJe7p89b6afIoqPA8ZxmHjVOQJ92K9a+1wrR7z2elZ/F+aosOQ0kda66cmYvSWyc2CylySobxJsHNrx7Jn+kEHzRd7zFOgOitS2QbwvleHpfd+EeDIHc09xmcJfS6AtPg3cuku5EMS+EHOD9TgshqgzNxVRARMAo8LPepsoCnUw7+l2rt/ff07Zs3Ka8jJ+3DRTkqARHQS8= yaroslav@lenovo-yoga-052155",
             "comment": "Asus Laptop"
         }
-    ]
+    ],
+    "console_panel": {
+        "pin" : "pin hash",
+        "max_pin_length" : 6,
+        "maximum_pin_attempts" : 3,
+        "lock_timeout" : 1800
+    }
 }

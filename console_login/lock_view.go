@@ -22,7 +22,12 @@ type LockView struct {
 }
 
 func NewLockView(controller *LockController) *LockView {
-	text := text.New(MakeWarningTring(pinTimeout), text.Options{
+	lockTimeout := lockTimeoutDefault
+	if controller != nil {
+		lockTimeout = controller.GetLockTimeout()
+	}
+
+	text := text.New(MakeWarningTring(lockTimeout), text.Options{
 		Align: gowid.HAlignMiddle{},
 	})
 
@@ -31,7 +36,7 @@ func NewLockView(controller *LockController) *LockView {
 	res := &LockView{
 		Widget:     view,
 		controller: controller,
-		timeout:    pinTimeout,
+		timeout:    lockTimeout,
 		text:       text,
 	}
 

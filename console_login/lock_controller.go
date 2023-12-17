@@ -11,12 +11,13 @@ import (
 )
 
 type LockController struct {
-	view   *LockView
-	ticker *time.Ticker
+	view        *LockView
+	ticker      *time.Ticker
+	lockTimeout int
 }
 
 func NewLockController() *LockController {
-	res := &LockController{nil, nil}
+	res := &LockController{nil, nil, lockTimeoutDefault}
 	view := NewLockView(res)
 	res.view = view
 
@@ -24,7 +25,7 @@ func NewLockController() *LockController {
 }
 
 func (c *LockController) ResetLock(app gowid.IApp) {
-	c.view.timeout = pinTimeout
+	c.view.timeout = c.lockTimeout
 	c.view.UpdateLock(app)
 }
 
@@ -42,4 +43,12 @@ func (c *LockController) AnimateLock(app gowid.IApp) {
 
 func (g *LockController) StopAnimation() {
 	g.ticker.Stop()
+}
+
+func (c *LockController) GetLockTimeout() int {
+	lockTimeout := host_config.ConsolePanel.LockTimeout
+	if lockTimeout == 0 {
+		return lockTimeoutDefault
+	}
+	return lockTimeout
 }
