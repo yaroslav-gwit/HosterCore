@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 )
 
 var jobs = []string{}
@@ -41,8 +42,11 @@ func echoServer(c net.Conn) {
 	if err != nil {
 		log.Printf("Error [%v]", err)
 	} else {
-		log.Printf("Client has sent a message [%s]", buffer[:bytes])
+		message := strings.TrimSuffix(string(buffer[0:bytes]), "\n")
+		log.Printf("Client has sent a message [%s]", message)
 	}
 
-	c.Close()
+	if strings.TrimSpace(string(buffer[0:bytes])) == "exit" || strings.TrimSpace(string(buffer[0:bytes])) == "end" {
+		c.Close()
+	}
 }
