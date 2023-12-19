@@ -29,20 +29,21 @@ func main() {
 			log.Fatal("accept error:", err)
 		}
 
-		buffer := make([]byte, 1024)
-		bytes, err := conn.Read(buffer)
-		if err != nil {
-			log.Printf("Error [%v]", err)
-		} else {
-			log.Printf("Client sent a message [%v]", buffer[:bytes])
-		}
-
-		// go echoServer(conn)
+		go echoServer(conn)
 	}
 }
 
 func echoServer(c net.Conn) {
 	log.Printf("Client connected [%s]", c.RemoteAddr().Network())
 	io.Copy(c, c)
+
+	buffer := make([]byte, 1024)
+	bytes, err := c.Read(buffer)
+	if err != nil {
+		log.Printf("Error [%v]", err)
+	} else {
+		log.Printf("Client has sent a message [%s]", buffer[:bytes])
+	}
+
 	c.Close()
 }
