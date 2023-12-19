@@ -5,51 +5,60 @@ import (
 	"net"
 	"os"
 	"strings"
+	"sync"
 )
 
-var jobs = []string{}
+var jobs string
 var sockAddr = "/tmp/echo.sock"
 
 func main() {
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go socketServer(&wg)
+
+	wg.Wait()
+}
+
+func socketServer(wg *sync.WaitGroup) {
 	if err := os.RemoveAll(sockAddr); err != nil {
 		log.Fatal(err)
 	}
 
-	l, err := net.Listen("unix", sockAddr)
+	newSocket, err := net.Listen("unix", sockAddr)
 	if err != nil {
 		log.Fatal("listen error:", err)
 	}
-	defer l.Close()
+
+	defer wg.Done()
+	defer newSocket.Close()
 
 	for {
-		// Accept new connections, dispatching them to echoServer
-		// in a goroutine.
-		conn, err := l.Accept()
+		conn, err := newSocket.Accept()
 		if err != nil {
 			log.Fatal("accept error:", err)
 		}
 
-		go echoServer(conn)
+		go socketReceive(conn)
 	}
 }
 
-func echoServer(c net.Conn) {
+func socketReceive(c net.Conn) {
 	log.Printf("Client connected [%s]", c.RemoteAddr().Network())
-	// io.Copy(c, c)
 
 	buffer := make([]byte, 0)
-	tmpBuffer := make([]byte, 1024)
+	dynamicBuffer := make([]byte, 1024)
 
 	for {
-		bytes, err := c.Read(tmpBuffer)
+		bytes, err := c.Read(dynamicBuffer)
 		if err != nil {
 			log.Printf("Error [%s]", err)
 			break
 		}
 
-		buffer = append(buffer, tmpBuffer[0:bytes]...)
+		buffer = append(buffer, dynamicBuffer[0:bytes]...)
 
-		if bytes < len(tmpBuffer) {
+		if bytes < len(dynamicBuffer) {
 			break
 		}
 	}
@@ -57,7 +66,5 @@ func echoServer(c net.Conn) {
 	message := strings.TrimSuffix(string(buffer), "\n")
 	log.Printf("Client has sent a message [%s]", message)
 
-	// if strings.TrimSpace(string(buffer[0:bytes])) == "exit" || strings.TrimSpace(string(buffer[0:bytes])) == "end" {
 	c.Close()
-	// }
 }
