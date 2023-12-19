@@ -190,28 +190,28 @@ func executeJobs(m *sync.RWMutex) error {
 	defer m.Unlock()
 
 	for i, v := range jobs {
-		if v.JobDone {
-			if v.JobType == JOB_TYPE_REPLICATION && !v.JobDoneLogged {
+		if v.JobDone && !v.JobDoneLogged {
+			if v.JobType == JOB_TYPE_REPLICATION {
 				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", "INFO", "Replication done for: "+v.Replication.VmName)
-				jobs[i].JobDoneLogged = true
 			}
-			if v.JobType == JOB_TYPE_SNAPSHOT && !v.JobFailedLogged {
+			if v.JobType == JOB_TYPE_SNAPSHOT {
 				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", "INFO", "Snapshot done for: "+v.Snapshot.VmName)
-				jobs[i].JobFailedLogged = true
 			}
 
+			jobs[i].JobDoneLogged = true
 			jobs[i].JobInProgress = false
 			continue
 		}
 
-		if v.JobFailed {
+		if v.JobFailed && !v.JobFailedLogged {
 			if v.JobType == JOB_TYPE_REPLICATION {
 				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", "INFO", "Replication failed for: "+v.Replication.VmName)
 			}
-			if v.JobType == JOB_TYPE_SNAPSHOT {
+			if v.JobType == JOB_TYPE_SNAPSHOT && !v.JobFailedLogged {
 				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", "INFO", "Snapshot failed for: "+v.Snapshot.VmName)
 			}
 
+			jobs[i].JobFailedLogged = true
 			jobs[i].JobInProgress = false
 			continue
 		}

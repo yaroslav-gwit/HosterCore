@@ -47,7 +47,6 @@ func init() {
 	// Host Scheduler
 	rootCmd.AddCommand(schedulerCmd)
 	schedulerCmd.AddCommand(schedulerReplicateCmd)
-	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateVmName, "name", "n", "", "VM or Jail name")
 	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateEndpoint, "endpoint", "e", "", "SSH endpoint to send the replicated data to")
 	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateKey, "key", "k", "", "SSH key location")
 	schedulerReplicateCmd.Flags().IntVarP(&schedulerReplicateSpeedLimit, "speed-limit", "s", 50, "Replication speed limit")

@@ -22,25 +22,25 @@ var (
 )
 
 var (
-	schedulerReplicateVmName     string
 	schedulerReplicateEndpoint   string
 	schedulerReplicateKey        string
 	schedulerReplicateSpeedLimit int
 
 	schedulerReplicateCmd = &cobra.Command{
-		Use:   "replicate",
+		Use:   "replicate [VM or Jail name]",
 		Short: "Use the Scheduling Service to start the VM replication",
 		Long:  `Use the Scheduling Service to start the VM replication in the background mode.`,
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			err := addReplicationJob(schedulerReplicateVmName, schedulerReplicateEndpoint, schedulerReplicateKey, schedulerReplicateSpeedLimit)
+			err := addReplicationJob(args[0], schedulerReplicateEndpoint, schedulerReplicateKey, schedulerReplicateSpeedLimit)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
 			}
 
-			emojlog.PrintLogMessage("A new background replication job has been added for "+schedulerReplicateVmName, emojlog.Changed)
+			emojlog.PrintLogMessage("A new background replication job has been added for "+args[0], emojlog.Changed)
 		},
 	}
 )
@@ -54,6 +54,7 @@ var (
 		Use:   "snapshot",
 		Short: "Use the Scheduling Service to snapshot the VM",
 		Long:  `Use the Scheduling Service to snapshot the VM in the background mode.`,
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 			cmd.Help()
