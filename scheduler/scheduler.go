@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net"
 	"os"
@@ -35,7 +34,7 @@ func main() {
 
 func echoServer(c net.Conn) {
 	log.Printf("Client connected [%s]", c.RemoteAddr().Network())
-	io.Copy(c, c)
+	// io.Copy(c, c)
 
 	buffer := make([]byte, 1024)
 	bytes, err := c.Read(buffer)
