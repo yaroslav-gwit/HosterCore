@@ -72,4 +72,10 @@ cd ha_watchdog/
 go build
 printf "${GREEN}Done${NC}\n"
 
+printf "Building the ${GREEN}scheduler${NC} module ... "
+cd ..
+cd scheduler/
+go build
+printf "${GREEN}Done${NC}\n"
+
 echo -e "${LIGHT_GREEN}=== Build process done ===${NC}"

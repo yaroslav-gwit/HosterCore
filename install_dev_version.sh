@@ -60,4 +60,9 @@ if [[ $1 == 8 || ${BUILD_ALL} == yes ]]; then
     cp -v ha_watchdog/ha_watchdog /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} ha_watchdog binary is in use"
 fi
 
+# 9
+if [[ $1 == 9 || ${BUILD_ALL} == yes ]]; then
+    cp -v scheduler/scheduler /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} scheduler binary is in use"
+fi
+
 echo -e "${LIGHT_GREEN}=== Installation process done ===${NC}"
