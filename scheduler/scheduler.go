@@ -34,7 +34,7 @@ const (
 	JOB_TYPE_REPLICATION = "replication"
 	JOB_TYPE_SNAPSHOT    = "snapshot"
 
-	SLEEP_REMOVE_DONE_JOBS = 15 // used as seconds in the removeDoneJobs loop
+	SLEEP_REMOVE_DONE_JOBS = 17 // used as seconds in the removeDoneJobs loop
 	SLEEP_EXECUTE_JOBS     = 10 // used as seconds in the executeJobs loop
 )
 
@@ -162,7 +162,7 @@ func getJobs(m *sync.RWMutex) ([]Job, error) {
 	return jobsCopy, nil
 }
 
-// Runs every 15 seconds and removes the old/completed jobs
+// Runs every 17 seconds and removes the old/completed jobs
 func removeDoneJobs(m *sync.RWMutex) error {
 	m.Lock()
 	defer m.Unlock()
@@ -237,17 +237,20 @@ func executeJobs(m *sync.RWMutex) error {
 			break
 		}
 
-		jobs[i].JobInProgress = true
-		if v.JobType == JOB_TYPE_REPLICATION {
-			// replicate
-			go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Starting the replication for: "+v.Replication.VmName)
-			break
-		}
+		if !v.JobDone {
+			jobs[i].JobInProgress = true
 
-		if v.JobType == JOB_TYPE_SNAPSHOT {
-			// snapshot
-			go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Taking a snapshot for: "+v.Snapshot.VmName)
-			break
+			if v.JobType == JOB_TYPE_REPLICATION {
+				// replicate
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Starting the replication for: "+v.Replication.VmName)
+				break
+			}
+
+			if v.JobType == JOB_TYPE_SNAPSHOT {
+				// snapshot
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Taking a snapshot for: "+v.Snapshot.VmName)
+				break
+			}
 		}
 	}
 
