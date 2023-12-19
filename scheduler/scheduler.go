@@ -39,14 +39,16 @@ const (
 )
 
 type Job struct {
-	JobDone       bool           `json:"job_done"`
-	JobNext       bool           `json:"job_next"`
-	JobInProgress bool           `json:"job_in_progress"`
-	JobFailed     bool           `json:"job_failed"`
-	JobError      string         `json:"job_error"`
-	JobType       string         `json:"job_type"`
-	Replication   ReplicationJob `json:"replication"`
-	Snapshot      SnapshotJob    `json:"snapshot"`
+	JobDone         bool           `json:"job_done"`
+	JobDoneLogged   bool           `json:"job_done_logged"`
+	JobNext         bool           `json:"job_next"`
+	JobInProgress   bool           `json:"job_in_progress"`
+	JobFailed       bool           `json:"job_failed"`
+	JobFailedLogged bool           `json:"job_failed_logged"`
+	JobError        string         `json:"job_error"`
+	JobType         string         `json:"job_type"`
+	Replication     ReplicationJob `json:"replication"`
+	Snapshot        SnapshotJob    `json:"snapshot"`
 }
 
 var (
@@ -189,11 +191,13 @@ func executeJobs(m *sync.RWMutex) error {
 
 	for i, v := range jobs {
 		if v.JobDone {
-			if v.JobType == JOB_TYPE_REPLICATION {
+			if v.JobType == JOB_TYPE_REPLICATION && !v.JobDoneLogged {
 				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", "INFO", "Replication done for: "+v.Replication.VmName)
+				jobs[i].JobDoneLogged = true
 			}
-			if v.JobType == JOB_TYPE_SNAPSHOT {
+			if v.JobType == JOB_TYPE_SNAPSHOT && !v.JobFailedLogged {
 				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", "INFO", "Snapshot done for: "+v.Snapshot.VmName)
+				jobs[i].JobFailedLogged = true
 			}
 
 			jobs[i].JobInProgress = false
