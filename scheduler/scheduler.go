@@ -29,7 +29,14 @@ func main() {
 			log.Fatal("accept error:", err)
 		}
 
-		go echoServer(conn)
+		message, err := io.ReadAll(conn)
+		if err != nil {
+			log.Printf("Error [%v]", err)
+		} else {
+			log.Printf("Client sent a message [%v]", string(message))
+		}
+
+		// go echoServer(conn)
 	}
 }
 
