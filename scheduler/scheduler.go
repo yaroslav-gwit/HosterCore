@@ -172,7 +172,7 @@ func removeDoneJobs(m *sync.RWMutex) error {
 	}
 
 	for i, v := range jobs {
-		if v.JobDone {
+		if v.JobDone && v.JobDoneLogged {
 			copy(jobs[i:], jobs[i+1:])
 			jobs[len(jobs)-1] = Job{}
 			jobs = jobs[0 : len(jobs)-1]
