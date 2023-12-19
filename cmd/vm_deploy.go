@@ -818,12 +818,12 @@ func generateNewIp(networkName string) (string, error) {
 	// EOF Add existing VM IPs
 
 	// Add existing Jail IPs
-	jailList, err := getAllJailsList()
+	jailList, err := GetAllJailsList()
 	if err != nil {
 		return "", err
 	}
 	for _, v := range jailList {
-		jailsConfig, err := getJailConfig(v, true)
+		jailsConfig, err := GetJailConfig(v, true)
 		if err != nil {
 			return "", nil
 		}

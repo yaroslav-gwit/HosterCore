@@ -31,7 +31,7 @@ var (
 
 // Destroys any existing Jail dataset. Returns an error, if there was an issue running `zfs destroy`, or if the dataset doesn't exist
 func executeJailDestroy(jailName string, consoleLogOutput bool) error {
-	jailConfig, err := getJailConfig(jailName, false)
+	jailConfig, err := GetJailConfig(jailName, false)
 	if err != nil {
 		return err
 	}

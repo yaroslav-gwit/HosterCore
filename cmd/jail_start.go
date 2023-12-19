@@ -34,7 +34,7 @@ var (
 )
 
 func jailStart(jailName string, logActions bool) error {
-	jailConfig, err := getJailConfig(jailName, false)
+	jailConfig, err := GetJailConfig(jailName, false)
 	if err != nil {
 		return err
 	}
@@ -186,7 +186,7 @@ func checkIfJailExists(jailName string) (jailExists bool) {
 	return
 }
 
-func getJailConfig(jailName string, ignoreJailExistsCheck bool) (jailConfig JailConfigFileStruct, configError error) {
+func GetJailConfig(jailName string, ignoreJailExistsCheck bool) (jailConfig JailConfigFileStruct, configError error) {
 	if !ignoreJailExistsCheck {
 		if !checkIfJailExists(jailName) {
 			configError = errors.New("jail doesn't exist")

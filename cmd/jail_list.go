@@ -35,7 +35,7 @@ var (
 )
 
 func generateJailsTable(unixStyleTable bool) error {
-	jailsList, err := getAllJailsList()
+	jailsList, err := GetAllJailsList()
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func generateJailsTable(unixStyleTable bool) error {
 	}
 
 	for _, v := range jailsList {
-		jailConfig, err := getJailConfig(v, true)
+		jailConfig, err := GetJailConfig(v, true)
 		if err != nil {
 			fmt.Println("103 fail: " + err.Error())
 			continue

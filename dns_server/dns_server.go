@@ -17,6 +17,7 @@ import (
 
 // Global state vars
 var vmInfoList []VmInfoStruct
+var jailInfoList []JailInfoStruct
 var logChannel chan LogMessage
 var upstreamServers []string
 
@@ -42,6 +43,7 @@ func main() {
 			if sig == syscall.SIGHUP {
 				logFileOutput(LOG_SUPERVISOR, "Received a reload signal: SIGHUP", logChannel)
 				vmInfoList = getVmsInfo()
+				jailInfoList = getJailsInfo()
 				loadUpstreamDnsServers()
 			}
 			if sig == syscall.SIGKILL {
@@ -54,6 +56,8 @@ func main() {
 	loadUpstreamDnsServers()
 
 	vmInfoList = getVmsInfo()
+	jailInfoList = getJailsInfo()
+
 	server := dns.Server{Addr: ":53", Net: "udp"}
 	server.Handler = dns.HandlerFunc(handleDNSRequest)
 
@@ -89,11 +93,15 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 	var logLine string
 	for _, q := range r.Question {
 		clientIP := w.RemoteAddr().String()
-		requestIsVmName := false
-		requestIsPublic := false
-		vmListIndex := 0
 
+		requestIsVmName := false
+		requestIsJailName := false
+		vmListIndex := 0
+		jailListIndex := 0
+
+		requestIsPublic := false
 		dnsNameSplit := strings.Split(q.Name, ".")
+
 		for i, v := range vmInfoList {
 			dnsName := dnsNameSplit[0]
 			if dnsName == v.vmName {
@@ -102,6 +110,17 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			} else if dnsName == strings.ToLower(v.vmName) {
 				requestIsVmName = true
 				vmListIndex = i
+			}
+		}
+
+		for i, v := range jailInfoList {
+			dnsName := dnsNameSplit[0]
+			if dnsName == v.JailName {
+				requestIsJailName = true
+				jailListIndex = i
+			} else if dnsName == strings.ToLower(v.JailName) {
+				requestIsJailName = true
+				jailListIndex = i
 			}
 		}
 
@@ -128,7 +147,16 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 				continue
 			}
 			m.Answer = append(m.Answer, rr)
-			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  local DB"
+			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  local DB VM"
+			go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
+		} else if requestIsJailName {
+			rr, err := dns.NewRR(q.Name + " IN A " + jailInfoList[jailListIndex].JailAddress)
+			if err != nil {
+				fmt.Println("Failed to create A record:", err)
+				continue
+			}
+			m.Answer = append(m.Answer, rr)
+			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  local DB Jail"
 			go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
 		} else {
 			response, server, err := queryExternalDNS(q)
@@ -137,7 +165,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 				continue
 			}
 			m.Answer = append(m.Answer, response.Answer...)
-			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  " + server + " (req is not public, nor the VM)"
+			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  " + server + " did not match any filters, calling an external server"
 			go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
 		}
 	}
@@ -215,6 +243,29 @@ func getVmsInfo() []VmInfoStruct {
 		vmInfoVar = append(vmInfoVar, tempInfo)
 	}
 	return vmInfoVar
+}
+
+type JailInfoStruct struct {
+	JailName    string
+	JailAddress string
+}
+
+func getJailsInfo() []JailInfoStruct {
+	jailInfoVar := []JailInfoStruct{}
+
+	jailList, err := cmd.GetAllJailsList()
+	if err != nil {
+		return []JailInfoStruct{}
+	}
+	for _, v := range jailList {
+		jailsConfig, err := cmd.GetJailConfig(v, true)
+		if err != nil {
+			return []JailInfoStruct{}
+		}
+		jailInfoVar = append(jailInfoVar, JailInfoStruct{JailName: v, JailAddress: jailsConfig.IPAddress})
+	}
+
+	return jailInfoVar
 }
 
 const (
