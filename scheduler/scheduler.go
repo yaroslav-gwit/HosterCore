@@ -35,7 +35,7 @@ const (
 	JOB_TYPE_SNAPSHOT    = "snapshot"
 
 	SLEEP_REMOVE_DONE_JOBS = 17 // used as seconds in the removeDoneJobs loop
-	SLEEP_EXECUTE_JOBS     = 10 // used as seconds in the executeJobs loop
+	SLEEP_EXECUTE_JOBS     = 6  // used as seconds in the executeJobs loop
 )
 
 type Job struct {
@@ -191,7 +191,7 @@ func removeDoneJobs(m *sync.RWMutex) error {
 	return nil
 }
 
-// Runs every 10 seconds and executes a first available job
+// Runs every 6 seconds and executes a first available job
 func executeJobs(m *sync.RWMutex) error {
 	m.Lock()
 	defer m.Unlock()
