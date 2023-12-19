@@ -37,14 +37,25 @@ func echoServer(c net.Conn) {
 	log.Printf("Client connected [%s]", c.RemoteAddr().Network())
 	// io.Copy(c, c)
 
-	buffer := make([]byte, 1024)
-	bytes, err := c.Read(buffer)
-	if err != nil {
-		log.Printf("Error [%v]", err)
-	} else {
-		message := strings.TrimSuffix(string(buffer[0:bytes]), "\n")
-		log.Printf("Client has sent a message [%s]", message)
+	buffer := make([]byte, 0)
+	tmpBuffer := make([]byte, 1024)
+
+	for {
+		bytes, err := c.Read(tmpBuffer)
+		if err != nil {
+			log.Printf("Error [%s]", err)
+			break
+		}
+
+		buffer = append(buffer, tmpBuffer[0:bytes]...)
+
+		if bytes < len(tmpBuffer) {
+			break
+		}
 	}
+
+	message := strings.TrimSuffix(string(buffer), "\n")
+	log.Printf("Client has sent a message [%s]", message)
 
 	// if strings.TrimSpace(string(buffer[0:bytes])) == "exit" || strings.TrimSpace(string(buffer[0:bytes])) == "end" {
 	c.Close()
