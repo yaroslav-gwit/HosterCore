@@ -44,18 +44,23 @@ func init() {
 	datasetCmd.AddCommand(datasetListCmd)
 	datasetListCmd.Flags().BoolVarP(&datasetListUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
 
+	// Host Scheduler
+	rootCmd.AddCommand(schedulerCmd)
+	schedulerCmd.AddCommand(schedulerReplicateCmd)
+	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateVmName, "name", "n", "", "VM or Jail name")
+	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateEndpoint, "endpoint", "e", "", "SSH endpoint to send the replicated data to")
+	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateKey, "key", "k", "", "SSH key location")
+	schedulerReplicateCmd.Flags().IntVarP(&schedulerReplicateSpeedLimit, "speed-limit", "s", 50, "Replication speed limit")
+	schedulerCmd.AddCommand(schedulerSnapshotCmd)
+
 	// Jail command section
 	rootCmd.AddCommand(jailCmd)
-
 	// jail -> start
 	jailCmd.AddCommand(jailStartCmd)
-
 	// jail -> start-all
 	jailCmd.AddCommand(jailStartAllCmd)
-
 	// jail -> stop-all
 	jailCmd.AddCommand(jailStopAllCmd)
-
 	// jail -> stop
 	jailCmd.AddCommand(jailStopCmd)
 
