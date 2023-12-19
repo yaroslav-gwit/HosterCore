@@ -46,7 +46,7 @@ func echoServer(c net.Conn) {
 		log.Printf("Client has sent a message [%s]", message)
 	}
 
-	if strings.TrimSpace(string(buffer[0:bytes])) == "exit" || strings.TrimSpace(string(buffer[0:bytes])) == "end" {
-		c.Close()
-	}
+	// if strings.TrimSpace(string(buffer[0:bytes])) == "exit" || strings.TrimSpace(string(buffer[0:bytes])) == "end" {
+	c.Close()
+	// }
 }
