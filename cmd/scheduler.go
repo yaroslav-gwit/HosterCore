@@ -145,6 +145,8 @@ func addSnapshotJob(vmName string, snapshotsToKeep int, snapshotType string) err
 	job := Job{}
 	job.JobType = JOB_TYPE_SNAPSHOT
 	job.Snapshot.VmName = vmName
+	job.Snapshot.SnapshotType = snapshotType
+	job.Snapshot.SnapshotsToKeep = snapshotsToKeep
 
 	jsonJob, err := json.Marshal(job)
 	if err != nil {
