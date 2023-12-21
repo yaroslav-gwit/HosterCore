@@ -23,7 +23,7 @@ const (
 )
 
 func LoggerToSyslog(service string, level string, message string) error {
-	logMessage := fmt.Sprintf("%s: %s", level, message)
+	logMessage := fmt.Sprintf("    %s: %s", level, message)
 	out, err := exec.Command("logger", "-t", service, logMessage).CombinedOutput()
 	if err != nil {
 		errValue := strings.TrimSpace(string(out)) + "; " + err.Error()
@@ -34,7 +34,7 @@ func LoggerToSyslog(service string, level string, message string) error {
 }
 
 func LoggerToFile(service string, level string, message string, fileLocation string) error {
-	logMessage := fmt.Sprintf("%s: %s", level, message)
+	logMessage := fmt.Sprintf("    %s: %s", level, message)
 	out, err := exec.Command("logger", "-t", service, logMessage).CombinedOutput()
 	if err != nil {
 		errValue := strings.TrimSpace(string(out)) + "; " + err.Error()

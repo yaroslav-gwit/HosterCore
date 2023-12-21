@@ -74,7 +74,7 @@ func main() {
 		defer wg.Done()
 		for {
 			executeJobs(&jobsMutex)
-			time.Sleep(SLEEP_REMOVE_DONE_JOBS * time.Second)
+			time.Sleep(SLEEP_EXECUTE_JOBS * time.Second)
 		}
 	}()
 
@@ -152,15 +152,15 @@ func addJob(job Job, m *sync.RWMutex) error {
 	return nil
 }
 
-func getJobs(m *sync.RWMutex) ([]Job, error) {
-	m.RLock()
-	defer m.RUnlock()
+// func getJobs(m *sync.RWMutex) ([]Job, error) {
+// 	m.RLock()
+// 	defer m.RUnlock()
 
-	jobsCopy := []Job{}
-	_ = copy(jobsCopy, jobs)
+// 	jobsCopy := []Job{}
+// 	_ = copy(jobsCopy, jobs)
 
-	return jobsCopy, nil
-}
+// 	return jobsCopy, nil
+// }
 
 // Runs every 17 seconds and removes the old/completed jobs
 func removeDoneJobs(m *sync.RWMutex) error {
@@ -178,10 +178,10 @@ func removeDoneJobs(m *sync.RWMutex) error {
 			jobs = jobs[0 : len(jobs)-1]
 
 			if v.JobType == JOB_TYPE_REPLICATION {
-				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_DEBUG, "Removed the old replication job for: "+v.Replication.VmName)
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_DEBUG, "Replication -> Removed the old job for: "+v.Replication.VmName)
 			}
 			if v.JobType == JOB_TYPE_SNAPSHOT {
-				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_DEBUG, "Removed the old replication job for: "+v.Replication.VmName)
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_DEBUG, "Snapshot -> Removed the old job for: "+v.Snapshot.VmName)
 			}
 
 			return nil
@@ -199,23 +199,24 @@ func executeJobs(m *sync.RWMutex) error {
 	for i, v := range jobs {
 		if v.JobDone && !v.JobDoneLogged {
 			if v.JobType == JOB_TYPE_REPLICATION {
-				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Replication done for: "+v.Replication.VmName)
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Replication -> Done for: "+v.Replication.VmName)
 			}
 			if v.JobType == JOB_TYPE_SNAPSHOT {
-				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Snapshot done for: "+v.Snapshot.VmName)
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Snapshot -> Done for: "+v.Snapshot.VmName)
 			}
 
 			jobs[i].JobDoneLogged = true
 			jobs[i].JobInProgress = false
+
 			continue
 		}
 
 		if v.JobFailed && !v.JobFailedLogged {
 			if v.JobType == JOB_TYPE_REPLICATION {
-				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Replication failed for: "+v.Replication.VmName)
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Replication -> Failed for: "+v.Replication.VmName)
 			}
 			if v.JobType == JOB_TYPE_SNAPSHOT && !v.JobFailedLogged {
-				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Snapshot failed for: "+v.Snapshot.VmName)
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Snapshot -> Failed for: "+v.Snapshot.VmName)
 			}
 
 			jobs[i].JobFailedLogged = true
@@ -227,11 +228,11 @@ func executeJobs(m *sync.RWMutex) error {
 		if v.JobInProgress {
 			if v.JobType == JOB_TYPE_REPLICATION {
 				jobs[i].JobDone = true
-				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Replication still in progress for: "+v.Replication.VmName)
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Replication -> In progress for: "+v.Replication.VmName)
 			}
 			if v.JobType == JOB_TYPE_SNAPSHOT {
 				jobs[i].JobDone = true
-				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Snapshot still in progress for: "+v.Snapshot.VmName)
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Snapshot -> In progress for: "+v.Snapshot.VmName)
 			}
 
 			break
@@ -242,13 +243,13 @@ func executeJobs(m *sync.RWMutex) error {
 
 			if v.JobType == JOB_TYPE_REPLICATION {
 				// replicate
-				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Starting the replication for: "+v.Replication.VmName)
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Replication -> Added a new job for: "+v.Replication.VmName)
 				break
 			}
 
 			if v.JobType == JOB_TYPE_SNAPSHOT {
 				// snapshot
-				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Taking a snapshot for: "+v.Snapshot.VmName)
+				go osfreebsd.LoggerToSyslog("HOSTER_SCHEDULER", osfreebsd.LOGGER_LEVEL_INFO, "Snapshot -> Added a new snapshot job for: "+v.Snapshot.VmName)
 				break
 			}
 		}
