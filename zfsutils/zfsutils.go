@@ -7,11 +7,14 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 type SnapshotInfo struct {
-	Dataset   string   `json:"snapshot_dataset"`
 	Name      string   `json:"snapshot_name"`
+	Dataset   string   `json:"snapshot_dataset"`
 	ShortName string   `json:"snapshot_short_name"`
 	Locked    bool     `json:"snapshot_locked"`
 	Clones    []string `json:"snapshot_clones"`
@@ -117,4 +120,120 @@ func SnapshotList() ([]SnapshotInfo, error) {
 	}
 
 	return info, nil
+}
+
+// Takes a new snapshot, and returns the name of the new snapshot, list of the removed snapshots, or an error
+func TakeSnapshot(dataset string, snapshotType string, keep int) (string, []string, error) {
+	snapshotTypes := []string{"replication", "custom", "frequent", "hourly", "daily", "weekly", "monthly", "yearly"}
+	if slices.Contains(snapshotTypes, snapshotType) {
+		_ = 0
+	} else {
+		return "", []string{}, errors.New("please provide the correct snapshot type")
+	}
+
+	timeNow := time.Now().Format("2006-01-02_15-04-05.000")
+	snapshotName := dataset + "@" + snapshotType + "_" + timeNow
+
+	reSnapTypeMatch := regexp.MustCompile(`@` + snapshotType + "_")
+
+	datasetSnapshots := []SnapshotInfo{}
+	removedSnapshots := []string{}
+	allSnapshots, err := SnapshotList()
+	if err != nil {
+		return "", []string{}, err
+	}
+
+	for _, v := range allSnapshots {
+		if v.Dataset == dataset {
+			if v.Locked || len(v.Clones) > 0 {
+				continue
+			}
+			if reSnapTypeMatch.MatchString(v.Name) {
+				datasetSnapshots = append(datasetSnapshots, v)
+			}
+		}
+	}
+
+	out, err := exec.Command("zfs", "snapshot", snapshotName).CombinedOutput()
+	if err != nil {
+		errString := strings.TrimSpace(string(out)) + "; " + err.Error()
+		return "", []string{}, errors.New(errString)
+	}
+
+	if len(datasetSnapshots) <= keep {
+		return snapshotName, []string{}, nil
+	}
+
+	for i := 0; i < len(datasetSnapshots)-keep; i++ {
+		err := RemoveSnapshot(datasetSnapshots[i].Name)
+		if err != nil {
+			return "", []string{}, err
+		}
+		removedSnapshots = append(removedSnapshots, datasetSnapshots[i].Name)
+	}
+
+	return snapshotName, removedSnapshots, nil
+}
+
+func RemoveSnapshot(snapshotName string) error {
+	reMatchAt := regexp.MustCompile("@")
+	if !reMatchAt.MatchString(snapshotName) {
+		return errors.New("cannot remove, not a snapshot")
+	}
+
+	out, err := exec.Command("zfs", "destroy", snapshotName).CombinedOutput()
+	if err != nil {
+		errString := strings.TrimSpace(string(out)) + "; " + err.Error()
+		return errors.New(errString)
+	}
+
+	return nil
+}
+
+// Finds a dataset for any given VM or a Jail, and returns it's ZFS name as a string
+func FindResourceDataset(resName string) (string, error) {
+	dsList, err := DefaultDatasetList()
+	if err != nil {
+		return "", err
+	}
+
+	reMatchName := regexp.MustCompile(`/` + resName + "$")
+	resFound := false
+	dsName := ""
+	for _, v := range dsList {
+		if reMatchName.MatchString(v) {
+			dsName = v
+			resFound = true
+			break
+		}
+	}
+
+	if !resFound {
+		return "", errors.New("resource was not found")
+	}
+
+	return dsName, nil
+}
+
+// Simply returns a list of available ZFS datasets, using a default ZFS list command
+func DefaultDatasetList() ([]string, error) {
+	out, err := exec.Command("zfs", "list", "-p").CombinedOutput()
+	if err != nil {
+		errString := strings.TrimSpace(string(out)) + "; " + err.Error()
+		return []string{}, errors.New(errString)
+	}
+
+	reSplitSpace := regexp.MustCompile(`\s+`)
+	result := []string{}
+	for i, v := range strings.Split(string(out), "\n") {
+		if i == 0 {
+			continue
+		}
+
+		v = reSplitSpace.Split(v, -1)[0]
+		v = strings.TrimSpace(v)
+		result = append(result, v)
+	}
+
+	return result, nil
 }

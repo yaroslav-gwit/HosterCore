@@ -250,7 +250,6 @@ func executeJobs(m *sync.RWMutex) error {
 				log.Println(logLine)
 			}
 			if v.JobType == JOB_TYPE_SNAPSHOT {
-				jobs[i].JobDone = true
 				logLine := "Snapshot -> In progress for: " + v.Snapshot.VmName
 				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
 				log.Println(logLine)
@@ -273,13 +272,27 @@ func executeJobs(m *sync.RWMutex) error {
 			if v.JobType == JOB_TYPE_SNAPSHOT {
 				// snapshot
 				logLine := "Snapshot -> Started a new job for: " + v.Snapshot.VmName
-				out, err := zfsutils.SnapshotList()
-				if err != nil {
-					log.Println(err)
-				}
 				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
 				log.Println(logLine)
-				log.Println(out)
+
+				dataset, err := zfsutils.FindResourceDataset(v.Snapshot.VmName)
+				if err != nil {
+					log.Printf("Snapshot job jailed: %v", err)
+					jobs[i].JobFailed = true
+					jobs[i].JobError = err.Error()
+				}
+
+				newSnap, removedSnaps, err := zfsutils.TakeSnapshot(dataset, v.Snapshot.SnapshotType, v.Snapshot.SnapshotsToKeep)
+				if err != nil {
+					log.Printf("Snapshot job jailed: %v", err)
+					jobs[i].JobFailed = true
+					jobs[i].JobError = err.Error()
+				} else {
+					log.Printf("New snapshot taken: %s", newSnap)
+					log.Printf("Removed snapshots: %v", removedSnaps)
+					jobs[i].JobDone = true
+				}
+
 				break
 			}
 		}
