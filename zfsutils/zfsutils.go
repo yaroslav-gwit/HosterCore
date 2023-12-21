@@ -134,6 +134,12 @@ func TakeSnapshot(dataset string, snapshotType string, keep int) (string, []stri
 	timeNow := time.Now().Format("2006-01-02_15-04-05.000")
 	snapshotName := dataset + "@" + snapshotType + "_" + timeNow
 
+	out, err := exec.Command("zfs", "snapshot", snapshotName).CombinedOutput()
+	if err != nil {
+		errString := strings.TrimSpace(string(out)) + "; " + err.Error()
+		return "", []string{}, errors.New(errString)
+	}
+
 	reSnapTypeMatch := regexp.MustCompile(`@` + snapshotType + "_")
 
 	datasetSnapshots := []SnapshotInfo{}
@@ -152,12 +158,6 @@ func TakeSnapshot(dataset string, snapshotType string, keep int) (string, []stri
 				datasetSnapshots = append(datasetSnapshots, v)
 			}
 		}
-	}
-
-	out, err := exec.Command("zfs", "snapshot", snapshotName).CombinedOutput()
-	if err != nil {
-		errString := strings.TrimSpace(string(out)) + "; " + err.Error()
-		return "", []string{}, errors.New(errString)
 	}
 
 	if len(datasetSnapshots) <= keep {
