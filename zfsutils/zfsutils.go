@@ -164,7 +164,7 @@ func TakeSnapshot(dataset string, snapshotType string, keep int) (string, []stri
 		return snapshotName, []string{}, nil
 	}
 
-	for i := 0; i < len(datasetSnapshots)-keep; i++ {
+	for i := 0; i <= len(datasetSnapshots)-keep; i++ {
 		err := RemoveSnapshot(datasetSnapshots[i].Name)
 		if err != nil {
 			return "", []string{}, err
