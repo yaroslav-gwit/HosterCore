@@ -68,6 +68,44 @@ var (
 	}
 )
 
+var (
+	schedulerSnapshotAllToKeep int
+	schedulerSnapshotAllType   string
+
+	schedulerSnapshotAllCmd = &cobra.Command{
+		Use:   "snapshot-all",
+		Short: "Use the Scheduling Service to snapshot all VMs and Jails",
+		Long:  `Use the Scheduling Service to snapshot all VMs and Jails in the background mode.`,
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			for _, v := range getAllVms() {
+				err := addSnapshotJob(v, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
+				if err != nil {
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				} else {
+					emojlog.PrintLogMessage("A new background snapshot job has been added for a VM: "+v, emojlog.Changed)
+				}
+			}
+
+			jailList, err := GetAllJailsList()
+			if err != nil {
+				emojlog.PrintLogMessage("could not get a list of Jails: "+err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+			for _, v := range jailList {
+				err := addSnapshotJob(v, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
+				if err != nil {
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				} else {
+					emojlog.PrintLogMessage("A new background snapshot job has been added for a Jail: "+v, emojlog.Changed)
+				}
+			}
+		},
+	}
+)
+
 // Hardcoded code copy, to avoid circular imports
 // Will eliminate it at some point, after the refactoring is complete
 // And when it will be possible to import without the circular import issues

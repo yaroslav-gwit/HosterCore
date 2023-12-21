@@ -282,7 +282,7 @@ func executeJobs(m *sync.RWMutex) error {
 					jobs[i].JobError = err.Error()
 				}
 
-				newSnap, removedSnaps, err := zfsutils.TakeSnapshot(dataset, v.Snapshot.SnapshotType, v.Snapshot.SnapshotsToKeep)
+				newSnap, removedSnaps, err := zfsutils.TakeScheduledSnapshot(dataset, v.Snapshot.SnapshotType, v.Snapshot.SnapshotsToKeep)
 				if err != nil {
 					log.Printf("Snapshot job jailed: %v", err)
 					jobs[i].JobFailed = true

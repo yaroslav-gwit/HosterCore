@@ -23,7 +23,7 @@ type SnapshotInfo struct {
 }
 
 // Returns all ZFS snapshots present on this system
-func SnapshotList() ([]SnapshotInfo, error) {
+func SnapshotListAll() ([]SnapshotInfo, error) {
 	info := []SnapshotInfo{}
 
 	reSplitSpace := regexp.MustCompile(`\s+`)
@@ -123,7 +123,8 @@ func SnapshotList() ([]SnapshotInfo, error) {
 }
 
 // Takes a new snapshot, and returns the name of the new snapshot, list of the removed snapshots, or an error
-func TakeSnapshot(dataset string, snapshotType string, keep int) (string, []string, error) {
+// Useful for scheduling the automated snapshot jobs
+func TakeScheduledSnapshot(dataset string, snapshotType string, keep int) (string, []string, error) {
 	snapshotTypes := []string{"replication", "custom", "frequent", "hourly", "daily", "weekly", "monthly", "yearly"}
 	if slices.Contains(snapshotTypes, snapshotType) {
 		_ = 0
@@ -144,7 +145,7 @@ func TakeSnapshot(dataset string, snapshotType string, keep int) (string, []stri
 
 	datasetSnapshots := []SnapshotInfo{}
 	removedSnapshots := []string{}
-	allSnapshots, err := SnapshotList()
+	allSnapshots, err := SnapshotListAll()
 	if err != nil {
 		return "", []string{}, err
 	}

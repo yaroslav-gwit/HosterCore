@@ -53,8 +53,12 @@ func init() {
 	schedulerReplicateCmd.Flags().IntVarP(&schedulerReplicateSpeedLimit, "speed-limit", "s", 50, "Replication speed limit")
 	// Host Scheduler -> Snapshot
 	schedulerCmd.AddCommand(schedulerSnapshotCmd)
-	schedulerSnapshotCmd.Flags().StringVarP(&schedulerSnapshotType, "type", "t", "custom", "Snapshot type: custom, hourly, daily, weekly, monthly, yearly")
+	schedulerSnapshotCmd.Flags().StringVarP(&schedulerSnapshotType, "type", "t", "custom", "Snapshot type: custom, frequent, hourly, daily, weekly, monthly, yearly")
 	schedulerSnapshotCmd.Flags().IntVarP(&schedulerSnapshotToKeep, "keep", "k", 5, "How many snapshots to keep")
+	// Host Scheduler -> Snapshot All
+	schedulerCmd.AddCommand(schedulerSnapshotAllCmd)
+	schedulerSnapshotAllCmd.Flags().StringVarP(&schedulerSnapshotAllType, "type", "t", "custom", "Snapshot type: custom, frequent, hourly, daily, weekly, monthly, yearly")
+	schedulerSnapshotAllCmd.Flags().IntVarP(&schedulerSnapshotToKeep, "keep", "k", 5, "How many snapshots to keep")
 
 	// Jail Command Section
 	rootCmd.AddCommand(jailCmd)
