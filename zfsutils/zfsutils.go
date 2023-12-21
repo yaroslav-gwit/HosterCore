@@ -24,7 +24,7 @@ func SnapshotList() ([]SnapshotInfo, error) {
 	info := []SnapshotInfo{}
 
 	reSplitSpace := regexp.MustCompile(`\s+`)
-	out, err := exec.Command("/sbin/zfs", "list", "-t", "snapshot", "-p", "-o name,used,userrefs,clones").CombinedOutput()
+	out, err := exec.Command("/sbin/zfs", "list", "-t", "snapshot", "-p", "-o", "name,used,userrefs,clones").CombinedOutput()
 	if err != nil {
 		errString := strings.TrimSpace(string(out)) + "; " + err.Error()
 		return []SnapshotInfo{}, errors.New(errString)
