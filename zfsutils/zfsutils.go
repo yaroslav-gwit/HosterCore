@@ -75,13 +75,25 @@ func SnapshotList() ([]SnapshotInfo, error) {
 		if i == 0 {
 			continue
 		}
+		if len(v) < 1 {
+			continue
+		}
 
 		infoTemp := SnapshotInfo{}
 		tmpList := reSplitSpace.Split(v, -1)
 
-		infoTemp.Dataset = strings.Split(tmpList[nameIndex], "@")[0]
-		infoTemp.Name = tmpList[nameIndex]
-		infoTemp.ShortName = strings.Split(tmpList[nameIndex], "@")[1]
+		if len(tmpList) < 1 {
+			continue
+		}
+
+		nameSplit := strings.Split(tmpList[nameIndex], "@")
+		if len(nameSplit) < 2 {
+			continue
+		} else {
+			infoTemp.Dataset = nameSplit[0]
+			infoTemp.Name = tmpList[nameIndex]
+			infoTemp.ShortName = nameSplit[1]
+		}
 
 		if tmpList[userRefsIndex] == "0" {
 			infoTemp.Locked = false
