@@ -2,6 +2,7 @@ package main
 
 import (
 	"HosterCore/osfreebsd"
+	"HosterCore/zfsutils"
 	"encoding/json"
 	"log"
 	"net"
@@ -9,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/oklog/ulid/v2"
 )
 
 var SockAddr = "/var/run/hoster_scheduler.sock"
@@ -40,6 +43,7 @@ const (
 
 type Job struct {
 	JobDone         bool           `json:"job_done"`
+	JobId           string         `json:"job_id"`
 	JobDoneLogged   bool           `json:"job_done_logged"`
 	JobNext         bool           `json:"job_next"`
 	JobInProgress   bool           `json:"job_in_progress"`
@@ -147,6 +151,7 @@ func addJob(job Job, m *sync.RWMutex) error {
 	m.Lock()
 	defer m.Unlock()
 
+	job.JobId = ulid.Make().String()
 	jobs = append(jobs, job)
 
 	return nil
@@ -259,7 +264,7 @@ func executeJobs(m *sync.RWMutex) error {
 
 			if v.JobType == JOB_TYPE_REPLICATION {
 				// replicate
-				logLine := "Replication -> Added a new job for: " + v.Replication.VmName
+				logLine := "Replication -> Started a new job for: " + v.Replication.VmName
 				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
 				log.Println(logLine)
 				break
@@ -267,9 +272,14 @@ func executeJobs(m *sync.RWMutex) error {
 
 			if v.JobType == JOB_TYPE_SNAPSHOT {
 				// snapshot
-				logLine := "Snapshot -> Added a new job for: " + v.Snapshot.VmName
+				logLine := "Snapshot -> Started a new job for: " + v.Snapshot.VmName
+				out, err := zfsutils.SnapshotList()
+				if err != nil {
+					log.Println(err)
+				}
 				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
 				log.Println(logLine)
+				log.Println(out)
 				break
 			}
 		}
