@@ -46,18 +46,24 @@ var (
 )
 
 var (
-	schedulerSnapshotVmName string
-	schedulerSnapshotType   string
 	schedulerSnapshotToKeep int
+	schedulerSnapshotType   string
 
 	schedulerSnapshotCmd = &cobra.Command{
-		Use:   "snapshot",
+		Use:   "snapshot [VM or Jail name]",
 		Short: "Use the Scheduling Service to snapshot the VM",
 		Long:  `Use the Scheduling Service to snapshot the VM in the background mode.`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
-			cmd.Help()
+
+			err := addSnapshotJob(args[0], schedulerSnapshotToKeep, schedulerSnapshotType)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+
+			emojlog.PrintLogMessage("A new background snapshot job has been added for "+args[0], emojlog.Changed)
 		},
 	}
 )
@@ -114,6 +120,31 @@ func addReplicationJob(vmName string, endpoint string, key string, speedLimit in
 	job.Replication.SshEndpoint = endpoint
 	job.Replication.SshKey = key
 	job.Replication.BufferSpeedLimit = speedLimit
+
+	jsonJob, err := json.Marshal(job)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.Write(jsonJob)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func addSnapshotJob(vmName string, snapshotsToKeep int, snapshotType string) error {
+	c, err := net.Dial("unix", SockAddr)
+	if err != nil {
+		return err
+	}
+
+	defer c.Close()
+
+	job := Job{}
+	job.JobType = JOB_TYPE_SNAPSHOT
+	job.Snapshot.VmName = vmName
 
 	jsonJob, err := json.Marshal(job)
 	if err != nil {
