@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	LOGGER_SRV_REST        = "       HOSTER_REST"
-	LOGGER_SRV_HA_REST     = "    HOSTER_HA_REST"
+	LOGGER_SRV_SCHEDULER   = "  HOSTER_SCHEDULER"
+	LOGGER_SRV_REST_API    = "   HOSTER_REST_API"
+	LOGGER_SRV_HA_REST_API = "HOSTER_HA_REST_API"
 	LOGGER_SRV_HA_WATCHDOG = "HOSTER_HA_WATCHDOG"
 )
 
@@ -23,7 +24,7 @@ const (
 )
 
 func LoggerToSyslog(service string, level string, message string) error {
-	logMessage := fmt.Sprintf("    %s: %s", level, message)
+	logMessage := fmt.Sprintf("%s:    %s", level, message)
 	out, err := exec.Command("logger", "-t", service, logMessage).CombinedOutput()
 	if err != nil {
 		errValue := strings.TrimSpace(string(out)) + "; " + err.Error()
@@ -34,7 +35,7 @@ func LoggerToSyslog(service string, level string, message string) error {
 }
 
 func LoggerToFile(service string, level string, message string, fileLocation string) error {
-	logMessage := fmt.Sprintf("    %s: %s", level, message)
+	logMessage := fmt.Sprintf("%s:    %s", level, message)
 	out, err := exec.Command("logger", "-t", service, logMessage).CombinedOutput()
 	if err != nil {
 		errValue := strings.TrimSpace(string(out)) + "; " + err.Error()
