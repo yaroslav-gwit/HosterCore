@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/emojlog"
+	"HosterCore/osfreebsd"
 	"encoding/json"
 	"net"
 	"os"
@@ -80,7 +81,22 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
+			hostname, err := osfreebsd.SysctlKernHostname()
+			if err != nil {
+				emojlog.PrintLogMessage("could not get a hostname: "+err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+
 			for _, v := range getAllVms() {
+				if !VmLiveCheck(v) {
+					continue
+				}
+
+				vmConf := vmConfig(v)
+				if vmConf.ParentHost != hostname {
+					continue
+				}
+
 				err := addSnapshotJob(v, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -95,7 +111,15 @@ var (
 				os.Exit(1)
 			}
 			for _, v := range jailList {
-				err := addSnapshotJob(v, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
+				jailConf, err := GetJailConfig(v, true)
+				if err != nil {
+					continue
+				}
+				if jailConf.Parent != hostname {
+					continue
+				}
+
+				err = addSnapshotJob(v, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				} else {

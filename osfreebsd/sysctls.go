@@ -121,7 +121,8 @@ func SysctlHwRealmem() (uint64, error) {
 	return result, nil
 }
 
-// Sysctl which returns a system hostname
+// Sysctl which returns a system hostname as a string,
+// or if there was an error -> "EMPTY_HOSTNAME" string
 func SysctlKernHostname() (string, error) {
 	result := ""
 	emptyHostnameLabel := "EMPTY_HOSTNAME"
