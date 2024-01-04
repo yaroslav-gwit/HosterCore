@@ -38,7 +38,8 @@ func GetCpuInfo() (CpuInfo, error) {
 	threadsString = reMatchNumber.FindString(threadsString)
 	c.Threads, err = strconv.Atoi(threadsString)
 	if err != nil {
-		return c, err
+		c.Threads = 1
+		// return c, err
 	}
 
 	allCpus, err := SysctlHwNcpu()

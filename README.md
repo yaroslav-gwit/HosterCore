@@ -25,12 +25,12 @@ Here are some of the features you'll be able to use:
 
 To avoid any frustrations, here is the list of things NOT currently supported:
 
-- Custom `bhyve` flags - I want to make sure every flag introduced has it's own config option
-- File systems other than ZFS
-- Support for Linux as a host (this will never happen with HosterCore)
+- Custom `bhyve` flags are not supported - I want to make sure every flag introduced has it's own config option
+- File systems other than ZFS are not supported
+- Support for Linux as a host is not supported
 - Very niche OSes are not supported due to some `bhyve`+`Hoster` limitations
 - Only UEFI booting is officially supported, with just few exceptions for BIOS based Linux VMs
-- Terraform - `Hoster` is too young to have any IaaC integrations at this point
+- Terraform is not supported - `Hoster` is too young to have any IaaC integrations at this point
 - Custom binary and config location - everything must reside within `/opt/hoster-core` to work properly
 - IPv6 - my ISP doesn't fully support it, so it's hard to implement a support and test it (but it can be done relatively easily, if you are willing to help with a money donation to run a Hetzner host, or a long-term hardware access at your location)
 

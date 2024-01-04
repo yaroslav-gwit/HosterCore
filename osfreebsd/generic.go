@@ -2,6 +2,7 @@ package osfreebsd
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -33,8 +34,15 @@ type PgrepPID struct {
 }
 
 // Searches for a given process on your system, using a command start string
+//
+// Returns a struct with process ID as int and the command used to start it (string):
 func Pgrep(processName string) (pids []PgrepPID, finalErr error) {
-	out, err := exec.Command("/bin/pgrep", "-afSl", processName).CombinedOutput()
+	// Clean the input
+	reMatchInputFilter := regexp.MustCompile(`[']`)
+	processName = reMatchInputFilter.ReplaceAllString(processName, "")
+	processName = strings.TrimSpace(processName)
+
+	out, err := exec.Command("/bin/pgrep", "-afSl", fmt.Sprintf("'%s'", processName)).CombinedOutput()
 	if err != nil {
 		errorString := strings.TrimSpace(string(out)) + "; " + err.Error()
 		finalErr = errors.New(errorString)
@@ -57,8 +65,12 @@ func Pgrep(processName string) (pids []PgrepPID, finalErr error) {
 		}
 
 		processCmd := ""
-		if len(pidSplit) > 0 {
+		if len(pidSplit) >= 2 {
+			processCmd = strings.Join(pidSplit[1:len(pidSplit)-1], " ")
+			processCmd = strings.TrimSpace(processCmd)
+		} else if len(pidSplit) >= 1 {
 			processCmd = pidSplit[1]
+			processCmd = strings.TrimSpace(processCmd)
 		} else {
 			finalErr = errors.New("could not find a process cmd string in " + v)
 			return
