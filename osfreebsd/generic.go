@@ -2,7 +2,6 @@ package osfreebsd
 
 import (
 	"errors"
-	"fmt"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -42,7 +41,7 @@ func Pgrep(processName string) (pids []PgrepPID, finalErr error) {
 	reMatchInputFilter := regexp.MustCompile(`'|"`)
 	processName = reMatchInputFilter.ReplaceAllString(processName, "")
 
-	out, err := exec.Command("/bin/pgrep", "-afSl", fmt.Sprintf("\"%s\"", processName)).CombinedOutput()
+	out, err := exec.Command("/bin/pgrep", "-afSl", processName).CombinedOutput()
 	if err != nil {
 		errorString := strings.TrimSpace(string(out)) + "; " + err.Error()
 		finalErr = errors.New(errorString)
