@@ -128,7 +128,12 @@ func startDnsServer() error {
 func stopDnsServer() error {
 	serviceInfo, err := dnsServerServiceInfo()
 	if err != nil {
-		return err
+		reMatchExit1 := regexp.MustCompile(`exit status 1`)
+		if reMatchExit1.MatchString(err.Error()) {
+			return errors.New("DNS server is not running")
+		} else {
+			return err
+		}
 	}
 
 	err = osfreebsd.KillProcess(osfreebsd.KillSignalTERM, serviceInfo.Pid)
@@ -143,7 +148,12 @@ func stopDnsServer() error {
 func ReloadDnsServer() error {
 	serviceInfo, err := dnsServerServiceInfo()
 	if err != nil {
-		return err
+		reMatchExit1 := regexp.MustCompile(`exit status 1`)
+		if reMatchExit1.MatchString(err.Error()) {
+			return errors.New("DNS server is not running")
+		} else {
+			return err
+		}
 	}
 
 	err = osfreebsd.KillProcess(osfreebsd.KillSignalHUP, serviceInfo.Pid)
@@ -176,11 +186,17 @@ type DnsServerServiceInfoStruct struct {
 func dnsServerServiceInfo() (pgrepOutput DnsServerServiceInfoStruct, finalError error) {
 	pids, err := osfreebsd.Pgrep("dns_server")
 	if err != nil {
-		finalError = err
+		reMatchExit1 := regexp.MustCompile(`exit status 1`)
+		if reMatchExit1.MatchString(err.Error()) {
+			finalError = errors.New("DNS server is not running")
+		} else {
+			finalError = err
+		}
 		return
 	}
+
 	if len(pids) < 1 {
-		finalError = errors.New("the DNS server is not running")
+		finalError = errors.New("DNS server is not running")
 		return
 	}
 
