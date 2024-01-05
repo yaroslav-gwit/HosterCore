@@ -44,7 +44,7 @@ func Pgrep(processName string) (pids []PgrepPID, finalErr error) {
 	out, err := exec.Command("/bin/pgrep", "-afSl", processName).CombinedOutput()
 	if err != nil {
 		errorString := strings.TrimSpace(string(out)) + "; " + err.Error()
-		finalErr = errors.New(errorString)
+		finalErr = errors.New("Pgrep() " + errorString)
 		return
 	}
 
@@ -55,23 +55,19 @@ func Pgrep(processName string) (pids []PgrepPID, finalErr error) {
 			continue
 		}
 
-		pidSplit := reSplitSpace.Split(v, -1)
+		pidSplit := reSplitSpace.Split(v, 1)
 		pidNum, err := strconv.Atoi(pidSplit[0])
-
 		if err != nil {
 			finalErr = err
 			return
 		}
 
 		processCmd := ""
-		if len(pidSplit) >= 2 {
-			processCmd = strings.Join(pidSplit[1:len(pidSplit)-1], " ")
-			processCmd = strings.TrimSpace(processCmd)
-		} else if len(pidSplit) >= 1 {
+		if len(pidSplit) > 0 {
 			processCmd = pidSplit[1]
 			processCmd = strings.TrimSpace(processCmd)
 		} else {
-			finalErr = errors.New("could not find a process cmd string in " + v)
+			finalErr = errors.New("Pgrep() could not find a process cmd string in " + v)
 			return
 		}
 
