@@ -55,10 +55,10 @@ func Pgrep(processName string) (pids []PgrepPID, finalErr error) {
 			continue
 		}
 
-		pidSplit := reSplitSpace.Split(v, 1)
+		pidSplit := reSplitSpace.Split(v, 2)
 		pidNum, err := strconv.Atoi(pidSplit[0])
 		if err != nil {
-			finalErr = err
+			finalErr = errors.New("Pgrep() " + err.Error())
 			return
 		}
 
