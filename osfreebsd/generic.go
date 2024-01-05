@@ -38,11 +38,11 @@ type PgrepPID struct {
 // Returns a struct with process ID as int and the command used to start it (string):
 func Pgrep(processName string) (pids []PgrepPID, finalErr error) {
 	// Clean the input
-	reMatchInputFilter := regexp.MustCompile(`[']`)
-	processName = reMatchInputFilter.ReplaceAllString(processName, "")
 	processName = strings.TrimSpace(processName)
+	reMatchInputFilter := regexp.MustCompile(`'|"`)
+	processName = reMatchInputFilter.ReplaceAllString(processName, "")
 
-	out, err := exec.Command("/bin/pgrep", "-afSl", fmt.Sprintf("'%s'", processName)).CombinedOutput()
+	out, err := exec.Command("/bin/pgrep", "-afSl", fmt.Sprintf("\"%s\"", processName)).CombinedOutput()
 	if err != nil {
 		errorString := strings.TrimSpace(string(out)) + "; " + err.Error()
 		finalErr = errors.New(errorString)
