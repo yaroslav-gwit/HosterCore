@@ -9,30 +9,37 @@ Whether you're managing a small home lab or a large-scale production, `Hoster` c
 
 Here are some of the features you'll be able to use:
 
-- PF firewall that works with every VM individually, without the need for VLANs
+- PF firewall that works with every VM individually (on the IP or DNS name level)
 - Cloud friendly deployment options, with native support for NAT (with Hetzner as a main focus)
-- ZFS Dataset Encryption - your data is safe in the co-location, or on the bare-metal cloud
+- Storage Dataset Encryption - your data is safe in the co-location, or on the bare-metal cloud
 - Instant VM deployments - a new VM can be deployed in less than 1 second
-- Cloud based VM images to avoid spending time with ISOs - it's very similar to `docker pull`, simply run `hoster image download debian12` and it'll be ready for use in minutes
-- CloudInit integration to help you forget about the manual VM configurations - simply deploy the VM, start it and it's immediately ready to be used, with the IP address configured, hostname set, and your own custom scripts executed upon first boot
+- Cloud based VM images to avoid spending time with ISOs - it's very similar to `docker pull`, simply run `hoster image download debian12` and it'll be ready for use in minutes (depending on your internet connection speed)
+- CloudInit integration to help you forget about the manual VM configurations - simply deploy the VM, start it and it's immediately ready to be used (with the IP address configured, hostname set, and your own custom scripts executed upon first boot)
 - Built-in and easy to use OpenZFS replication (based on OpenZFS's send/receive), which gives you the ability to perform continuous asynchronous VM replication between 2 or more hosts, to ensure data safety and availability 🛡️
-- RestAPI for ease of management, and to support the integration with 3rd party systems, or your home-grown solutions
-- HA clustering using the underlying RestAPI with an automated VM failover, so you can avoid complex network configurations - it's just an HTTP, which is easy to firewall and troubleshoot if there is a need for it
-- (not ready, but coming at some point) Hyper Converged setup using Gluster, iSCSI, and ZFS - you'll be able to cluster together Petabytes of storage, dynamically provision iSCSI targets, and mount them on a specific node of your choice
-- (not ready, but coming at some point) Generally available WebUI for VM and Jail management, that supports hundreds of hosts at the same time
-- (not ready, but coming at some point) Specify a `docker-compose.yaml` file location during the VM deployment - it will be automatically picked up by `docker` and executed in a background `tmux` session (you can easily check if the `docker` deployment was successful using the `tmux a` command later on, when you SSH into the VM)
+- RestAPI for ease of management, and to support the integration with 3rd party systems, or your own home-grown solutions
+- HA clustering using the underlying RestAPI with an automated VM failover, so you can avoid complex network configurations - it's all based on the HTTP protocol, which is easy to firewall and troubleshoot if there is a need for it
 - PCI/GPU passthrough is supported, but considered experimental
 
 To avoid any frustrations, here is the list of things NOT currently supported:
 
 - Custom `bhyve` flags are not supported - I want to make sure every flag introduced has it's own config option
 - File systems other than ZFS are not supported
-- Support for Linux as a host is not supported
+- Linux as a host OS is not supported
 - Very niche OSes are not supported due to some `bhyve`+`Hoster` limitations
 - Only UEFI booting is officially supported, with just few exceptions for BIOS based Linux VMs
 - Terraform is not supported - `Hoster` is too young to have any IaaC integrations at this point
-- Custom binary and config location - everything must reside within `/opt/hoster-core` to work properly
-- IPv6 - my ISP doesn't fully support it, so it's hard to implement a support and test it (but it can be done relatively easily, if you are willing to help with a money donation to run a Hetzner host, or a long-term hardware access at your location)
+- Custom binary files location and custom config files location is not supported - everything must reside within `/opt/hoster-core` to work properly
+- IPv6 is not supported yet (unless you want to manage it by hand, or sponsor us to speed up the IPv6 dev integration process)
+- Nested virtualization is not supported by `bhyve`
+- Code is not cross-platform - you can't run it on Illumos or any other BSD system, it only works on FreeBSD
+
+Coming soon:
+
+- Hyper Converged setup using HAST and ZFS
+- Generally available WebUI for VM and Jail management, that supports hundreds of hosts at the same time
+- Specify a `docker-compose.yaml` file location during the VM deployment - it will be automatically picked up by `docker` and executed in a background `tmux` session (you can easily check if the `docker` deployment was successful using the `tmux a` command later on, when you SSH into the VM)
+- Publicly available Grafana dashboards
+- Prometheus integration
 
 ## The why?
 
