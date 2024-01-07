@@ -157,8 +157,8 @@ func customNodeExporterServiceInfo() (pgrepOutput CustomNodeExporterServiceInfo)
 	}
 
 	// reSplitSpace := regexp.MustCompile(`\s+`)
-	reMatchNodeExporterOfficial := regexp.MustCompile(`.*node_exporter[$|\s+]`)
-	reMatchNodeExporterCustom := regexp.MustCompile(`.*node_exporter_custom`)
+	reMatchNodeExporterOfficial := regexp.MustCompile(`/node_exporter[$|\s+]|^node_exporter[$|\s+]`)
+	reMatchNodeExporterCustom := regexp.MustCompile(`node_exporter_custom`)
 
 	for _, v := range pids {
 		if reMatchNodeExporterOfficial.MatchString(v.ProcessCmd) {
