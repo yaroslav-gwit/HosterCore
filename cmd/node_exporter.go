@@ -164,7 +164,7 @@ func customNodeExporterServiceInfo() (pgrepOutput CustomNodeExporterServiceInfo)
 			pgrepOutput.NodeExporterOfficialPid = v.ProcessId
 			pgrepOutput.NodeExporterOfficialRunning = true
 		}
-		if v.ProcessCmd == "node_exporter_custom" {
+		if v.ProcessCmd == "node_exporter_custom" || v.ProcessCmd == "node_exporter_custom &" {
 			pgrepOutput.NodeExporterCustomPid = v.ProcessId
 			pgrepOutput.NodeExporterCustomRunning = true
 		}
