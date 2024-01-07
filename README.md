@@ -6,6 +6,7 @@ Whether you're an experienced sysadmin or just starting out, `Hoster` has got yo
 
 Built using modern, rock solid and battle tested technologies like Go, FreeBSD, bhyve, ZFS, and PF, `Hoster` is a highly opinionated system that puts an emphasis on ease of use and speed of VM deployments.
 Whether you're managing a small home lab or a large-scale production, `Hoster` can easily accommodate your environment 🧑🏼‍💻
+![HosterCore CLI](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-v03.png)
 
 Here are some of the features you'll be able to use:
 
@@ -38,21 +39,9 @@ Coming soon:
 - Hyper Converged setup using HAST and ZFS
 - Generally available WebUI for VM and Jail management, that supports hundreds of hosts at the same time
 - Specify a `docker-compose.yaml` file location during the VM deployment - it will be automatically picked up by `docker` and executed in a background `tmux` session (you can easily check if the `docker` deployment was successful using the `tmux a` command later on, when you SSH into the VM)
-- Publicly available Grafana dashboards
-- Prometheus integration
-
-## The why?
-
-![Hoster Core Screenshot](https://github.com/yaroslav-gwit/HosterCore/raw/main/screenshots/hoster-core-main.png)
-<br>
-My entire perspective on virtualization completely changed when I stumbled upon FreeBSD and bhyve.
-The potential of combining FreeBSD, bhyve, pf, and ZFS became abundantly clear to me.
-However, as I explored existing solutions like `vm-bhyve` and `CBSD`, I couldn't help but feel that they didn't quite match up to my expectations.
-It was this realization that inspired me to embark on a journey to create `Hoster` — a platform that seamlessly integrates bhyve, PF, and ZFS into a powerful virtualization solution.
-You can effortlessly deploy `Hoster` on any hardware, keeping RAM and CPU usage to a minimum.
-Give it a try and let me know your thoughts.
-Your input fuels our continuous project improvements.
-</br>
+- Publicly available `Grafana` dashboards
+- `Prometheus` integration - all VMs and Jails will be discovered and monitored automatically
+- Improved `Traefik` service management
 
 ## Leveraging modern SD-WAN and VPN technologies for scalable `Hoster` networks
 
