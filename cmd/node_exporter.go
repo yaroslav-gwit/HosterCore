@@ -127,13 +127,13 @@ func statusNodeExporter() error {
 	nodeExporterPgrep := customNodeExporterServiceInfo()
 
 	if nodeExporterPgrep.NodeExporterOfficialRunning {
-		fmt.Printf(" 🟢 Node Exporter is running as PID: %d", nodeExporterPgrep.NodeExporterOfficialPid)
+		fmt.Printf(" 🟢 Node Exporter is running as PID: %d\n", nodeExporterPgrep.NodeExporterOfficialPid)
 	} else {
 		fmt.Println(" 🔴 Node Exporter IS NOT running")
 	}
 
 	if nodeExporterPgrep.NodeExporterCustomRunning {
-		fmt.Printf(" 🟢 Node Exporter Custom is running as PID: %d", nodeExporterPgrep.NodeExporterCustomPid)
+		fmt.Printf(" 🟢 Node Exporter Custom is running as PID: %d\n", nodeExporterPgrep.NodeExporterCustomPid)
 	} else {
 		fmt.Println(" 🔴 Node Exporter Custom IS NOT running")
 	}
