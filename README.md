@@ -33,24 +33,18 @@ To avoid any frustrations, here is the list of things NOT currently supported:
 - IPv6 is not supported yet (unless you want to manage it by hand, or sponsor us to speed up the IPv6 dev integration process)
 - Nested virtualization is not supported by `bhyve`
 - Code is not cross-platform - you can't run it on Illumos or any other BSD system, it only works on FreeBSD
+- `bhyve` doesn't support the live VM migration yet
 
-Coming soon:
+Coming soon (or at least at some point 😄):
 
-- Hyper Converged setup using HAST and ZFS
-- Generally available WebUI for VM and Jail management, that supports hundreds of VMs/Jails at the same time
+- Hyper Converged setup using `HAST` and `OpenZFS`
+- Generally available WebUI for VM and Jail management
 - Specify a `docker-compose.yaml` file location during the VM deployment - it will be automatically picked up by `docker` and executed in a background `tmux` session (you can easily check if the `docker` deployment was successful using the `tmux a` command later on, when you SSH into the VM)
 - Publicly available `Grafana` dashboards
 - `Prometheus` integration - all VMs and Jails will be discovered and monitored automatically
 - Improved `Traefik` service management
-
-## Leveraging modern SD-WAN and VPN technologies for scalable `Hoster` networks
-
-`Hoster` supports a variety of overlay network technologies like ZeroTier, Nebula, WireGuard, IPSec, OpenVPN, etc.
-Essentially `Hoster` supports anything FreeBSD supports.
-We haven't implemented any tight coupling in terms of networking.
-Both, VMs and Jails, are connected to the outside world using the bridge adapters, so as long as your VPN/SD-WAN supports a `bridge` mode you'll be fine.
-
-Check our documentation for the specific instructions on the tech stack you are interested in.
+- `Nebula` integration to support building large-scale overlay networks
+- `LazyHoster` (an interface similar to `k9s` or `lazygit`) - a CLI utility to control the whole fleet of machines over the `REST API` (for the WebUI haters 😎)
 
 ## Are there any plans to develop a WebUI?
 
