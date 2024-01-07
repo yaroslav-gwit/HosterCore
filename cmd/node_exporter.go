@@ -39,8 +39,9 @@ var (
 			err := startNodeExporter()
 			if err != nil {
 				emojlog.PrintLogMessage("service could not be started -> "+err.Error(), emojlog.Error)
+			} else {
+				emojlog.PrintLogMessage("node_exporter_custom service has been started", emojlog.Changed)
 			}
-			emojlog.PrintLogMessage("node_exporter_custom service has been started", emojlog.Changed)
 		},
 	}
 )
