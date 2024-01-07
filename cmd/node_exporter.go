@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -156,15 +157,15 @@ func customNodeExporterServiceInfo() (pgrepOutput CustomNodeExporterServiceInfo)
 	}
 
 	// reSplitSpace := regexp.MustCompile(`\s+`)
-	// reMatchNodeExporterOfficial := regexp.MustCompile(`.*node_exporter[$|\s+]`)
-	// reMatchNodeExporterCustom := regexp.MustCompile(`.*node_exporter_custom`)
+	reMatchNodeExporterOfficial := regexp.MustCompile(`.*node_exporter[$|\s+]`)
+	reMatchNodeExporterCustom := regexp.MustCompile(`.*node_exporter_custom`)
 
 	for _, v := range pids {
-		if v.ProcessCmd == "node_exporter" {
+		if reMatchNodeExporterOfficial.MatchString(v.ProcessCmd) {
 			pgrepOutput.NodeExporterOfficialPid = v.ProcessId
 			pgrepOutput.NodeExporterOfficialRunning = true
 		}
-		if v.ProcessCmd == "node_exporter_custom" || v.ProcessCmd == "node_exporter_custom &" {
+		if reMatchNodeExporterCustom.MatchString(v.ProcessCmd) {
 			pgrepOutput.NodeExporterCustomPid = v.ProcessId
 			pgrepOutput.NodeExporterCustomRunning = true
 		}
