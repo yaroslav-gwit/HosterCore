@@ -2,14 +2,14 @@ package cmd
 
 import (
 	"HosterCore/emojlog"
+	"HosterCore/osfreebsd"
 	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path"
-	"regexp"
-	"strings"
+	"syscall"
 
 	"github.com/spf13/cobra"
 )
@@ -89,8 +89,16 @@ func startNodeExporter() error {
 		return err
 	}
 
+	// execFile := path.Dir(execPath) + "/node_exporter_custom"
+	// err = exec.Command("nohup", execFile, "&").Start()
+	// if err != nil {
+	// 	return err
+	// }
+
 	execFile := path.Dir(execPath) + "/node_exporter_custom"
-	err = exec.Command("nohup", execFile, "&").Start()
+	command := exec.Command(execFile)
+	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	err = command.Start()
 	if err != nil {
 		return err
 	}
@@ -99,11 +107,15 @@ func startNodeExporter() error {
 }
 
 func stopNodeExporter() error {
-	nodeExporterPgrep := customNodeExporterServiceInfo()
+	pids := customNodeExporterServiceInfo()
 
-	if nodeExporterPgrep.NodeExporterCustomRunning {
-		_ = exec.Command("kill", "-SIGTERM", nodeExporterPgrep.NodeExporterCustomPid).Run()
-		emojlog.PrintLogMessage("node_exporter_custom was stopped using PID: "+nodeExporterPgrep.NodeExporterCustomPid, emojlog.Changed)
+	if pids.NodeExporterCustomRunning {
+		err := osfreebsd.KillProcess(osfreebsd.KillSignalTERM, pids.NodeExporterCustomPid)
+		if err != nil {
+			return err
+		}
+		logOutput := fmt.Sprintf("node_exporter_custom has been stopped using the PID: %d", pids.NodeExporterCustomPid)
+		emojlog.PrintLogMessage(logOutput, emojlog.Changed)
 	} else {
 		emojlog.PrintLogMessage("node_exporter_custom is not running", emojlog.Error)
 	}
@@ -115,13 +127,13 @@ func statusNodeExporter() error {
 	nodeExporterPgrep := customNodeExporterServiceInfo()
 
 	if nodeExporterPgrep.NodeExporterOfficialRunning {
-		fmt.Println(" 🟢 Node Exporter is running as PID: " + nodeExporterPgrep.NodeExporterOfficialPid)
+		fmt.Printf(" 🟢 Node Exporter is running as PID: %d", nodeExporterPgrep.NodeExporterOfficialPid)
 	} else {
 		fmt.Println(" 🔴 Node Exporter IS NOT running")
 	}
 
 	if nodeExporterPgrep.NodeExporterCustomRunning {
-		fmt.Println(" 🟢 Node Exporter Custom is running as PID: " + nodeExporterPgrep.NodeExporterCustomPid)
+		fmt.Printf(" 🟢 Node Exporter Custom is running as PID: %d", nodeExporterPgrep.NodeExporterCustomPid)
 	} else {
 		fmt.Println(" 🔴 Node Exporter Custom IS NOT running")
 	}
@@ -131,30 +143,46 @@ func statusNodeExporter() error {
 
 type CustomNodeExporterServiceInfo struct {
 	NodeExporterOfficialRunning bool
-	NodeExporterOfficialPid     string
+	NodeExporterOfficialPid     int
 	NodeExporterCustomRunning   bool
-	NodeExporterCustomPid       string
+	NodeExporterCustomPid       int
 }
 
 func customNodeExporterServiceInfo() (pgrepOutput CustomNodeExporterServiceInfo) {
-	out, _ := exec.Command("pgrep", "-lf", "node_exporter").CombinedOutput()
+	// out, _ := exec.Command("pgrep", "-lf", "node_exporter").CombinedOutput()
 
-	reSplitSpace := regexp.MustCompile(`\s+`)
-	reMatchNodeExporterOfficial := regexp.MustCompile(`.*node_exporter[$|\s+]`)
-	reMatchNodeExporterCustom := regexp.MustCompile(`.*node_exporter_custom`)
+	pids, err := osfreebsd.Pgrep("node_exporter")
+	if err != nil {
+		return
+	}
 
-	for _, v := range strings.Split(string(out), "\n") {
-		if reMatchNodeExporterOfficial.MatchString(v) {
-			pid := reSplitSpace.Split(v, -1)[0]
-			pgrepOutput.NodeExporterOfficialPid = pid
+	// reSplitSpace := regexp.MustCompile(`\s+`)
+	// reMatchNodeExporterOfficial := regexp.MustCompile(`.*node_exporter[$|\s+]`)
+	// reMatchNodeExporterCustom := regexp.MustCompile(`.*node_exporter_custom`)
+
+	for _, v := range pids {
+		if v.ProcessCmd == "node_exporter" {
+			pgrepOutput.NodeExporterOfficialPid = v.ProcessId
 			pgrepOutput.NodeExporterOfficialRunning = true
 		}
-		if reMatchNodeExporterCustom.MatchString(v) {
-			pid := reSplitSpace.Split(v, -1)[0]
-			pgrepOutput.NodeExporterCustomPid = pid
+		if v.ProcessCmd == "node_exporter_custom" {
+			pgrepOutput.NodeExporterCustomPid = v.ProcessId
 			pgrepOutput.NodeExporterCustomRunning = true
 		}
 	}
+
+	// for _, v := range strings.Split(string(out), "\n") {
+	// 	if reMatchNodeExporterOfficial.MatchString(v) {
+	// 		pid := reSplitSpace.Split(v, -1)[0]
+	// 		pgrepOutput.NodeExporterOfficialPid = pid
+	// 		pgrepOutput.NodeExporterOfficialRunning = true
+	// 	}
+	// 	if reMatchNodeExporterCustom.MatchString(v) {
+	// 		pid := reSplitSpace.Split(v, -1)[0]
+	// 		pgrepOutput.NodeExporterCustomPid = pid
+	// 		pgrepOutput.NodeExporterCustomRunning = true
+	// 	}
+	// }
 
 	return
 }
