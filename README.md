@@ -37,7 +37,7 @@ To avoid any frustrations, here is the list of things NOT currently supported:
 Coming soon:
 
 - Hyper Converged setup using HAST and ZFS
-- Generally available WebUI for VM and Jail management, that supports hundreds of hosts at the same time
+- Generally available WebUI for VM and Jail management, that supports hundreds of VMs/Jails at the same time
 - Specify a `docker-compose.yaml` file location during the VM deployment - it will be automatically picked up by `docker` and executed in a background `tmux` session (you can easily check if the `docker` deployment was successful using the `tmux a` command later on, when you SSH into the VM)
 - Publicly available `Grafana` dashboards
 - `Prometheus` integration - all VMs and Jails will be discovered and monitored automatically
