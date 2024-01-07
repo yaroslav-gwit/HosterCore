@@ -5,7 +5,6 @@ import (
 	"HosterCore/osfreebsd"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -35,10 +34,10 @@ var (
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := startNodeExporter()
 			if err != nil {
-				emojlog.PrintLogMessage("node_exporter_custom service could not be started", emojlog.Error)
-				log.Fatal(err.Error())
+				emojlog.PrintLogMessage("service could not be started -> "+err.Error(), emojlog.Error)
 			}
 			emojlog.PrintLogMessage("node_exporter_custom service has been started", emojlog.Changed)
 		},
