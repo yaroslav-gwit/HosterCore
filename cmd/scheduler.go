@@ -70,6 +70,7 @@ var (
 		Use:   "status",
 		Short: "Show a status for the background Scheduler service",
 		Long:  "Show a status for the background Scheduler service.",
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
@@ -103,6 +104,53 @@ func statusSchedulerService() error {
 	}
 
 	fmt.Println(" 🔴 Scheduler IS NOT running")
+	return nil
+}
+
+var (
+	schedulerStopCmd = &cobra.Command{
+		Use:   "status",
+		Short: "Show a status for the background Scheduler service",
+		Long:  "Show a status for the background Scheduler service.",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := stopSchedulerService()
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+func stopSchedulerService() error {
+	pids, err := osfreebsd.Pgrep("scheduler")
+	if err != nil {
+		emojlog.PrintLogMessage("Scheduler is not running", emojlog.Error)
+		return nil
+	}
+
+	if len(pids) < 1 {
+		emojlog.PrintLogMessage("Scheduler is not running", emojlog.Error)
+		return nil
+	}
+
+	reMatchScheduler := regexp.MustCompile(`/scheduler`)
+	for _, v := range pids {
+		if reMatchScheduler.MatchString(v.ProcessCmd) {
+			err := osfreebsd.KillProcess(osfreebsd.KillSignalTERM, v.ProcessId)
+			if err != nil {
+				emojlog.PrintLogMessage("Could not stop the Scheduler "+err.Error(), emojlog.Error)
+				return nil
+			}
+			emojlog.PrintLogMessage("Scheduler has been stopped using a PID "+fmt.Sprintf("%d", v.ProcessId), emojlog.Changed)
+			return nil
+		}
+	}
+
+	emojlog.PrintLogMessage("Scheduler is not running", emojlog.Error)
 	return nil
 }
 
