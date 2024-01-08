@@ -130,7 +130,7 @@ func SnapshotListWithDescriptions() ([]SnapshotInfo, error) {
 		return []SnapshotInfo{}, err
 	}
 
-	out, err := exec.Command("zfs", "get", "-r", "hoster:sdescription").CombinedOutput()
+	out, err := exec.Command("zfs", "get", "-o", "name,property,value", "-r", "hoster:sdescription").CombinedOutput()
 	if err != nil {
 		errString := strings.TrimSpace(string(out)) + "; " + err.Error()
 		return []SnapshotInfo{}, errors.New(errString)
@@ -142,7 +142,6 @@ func SnapshotListWithDescriptions() ([]SnapshotInfo, error) {
 	nameIndex := -1
 	propertyIndex := -1
 	valueIndex := -1
-	sourceIndex := -1
 
 	// Parse the header
 	reSplitSpace := regexp.MustCompile(`\s+`)
@@ -155,8 +154,6 @@ func SnapshotListWithDescriptions() ([]SnapshotInfo, error) {
 					propertyIndex = ii
 				} else if strings.TrimSpace(vv) == "VALUE" {
 					valueIndex = ii
-				} else if strings.TrimSpace(vv) == "SOURCE" {
-					sourceIndex = ii
 				}
 			}
 		}
@@ -171,9 +168,6 @@ func SnapshotListWithDescriptions() ([]SnapshotInfo, error) {
 	}
 	if valueIndex == -1 {
 		return []SnapshotInfo{}, errors.New("could not parse a value index")
-	}
-	if sourceIndex == -1 {
-		return []SnapshotInfo{}, errors.New("could not parse a source index")
 	}
 
 	// Parse the output without a header
@@ -197,7 +191,7 @@ func SnapshotListWithDescriptions() ([]SnapshotInfo, error) {
 			continue
 		} else {
 			infoTemp.Name = tmpList[nameIndex]
-			infoTemp.Description = tmpList[valueIndex]
+			infoTemp.Description = strings.Join(tmpList[valueIndex:len(tmpList)-1], " ")
 		}
 
 		snapDescriptions = append(snapDescriptions, infoTemp)
