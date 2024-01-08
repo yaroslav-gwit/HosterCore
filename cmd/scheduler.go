@@ -109,9 +109,9 @@ func statusSchedulerService() error {
 
 var (
 	schedulerStopCmd = &cobra.Command{
-		Use:   "status",
-		Short: "Show a status for the background Scheduler service",
-		Long:  "Show a status for the background Scheduler service.",
+		Use:   "stop",
+		Short: "Stop the background Scheduler service",
+		Long:  "Stop the background Scheduler service.",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
