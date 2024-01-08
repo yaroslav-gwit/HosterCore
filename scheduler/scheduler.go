@@ -67,7 +67,8 @@ func init() {
 	logFile := os.Getenv("LOG_FILE")
 
 	// Log as JSON instead of the default ASCII formatter.
-	log.SetFormatter(&logrus.JSONFormatter{})
+	// Text formatter used as default
+	// log.SetFormatter(&logrus.JSONFormatter{})
 
 	// Output to stdout instead of the default stderr
 	// Can be any io.Writer, see below for File example
