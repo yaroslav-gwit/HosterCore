@@ -34,6 +34,7 @@ var (
 		Long:  `Initialize Hoster integrated DNS Server`,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := startDnsServer()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -50,6 +51,7 @@ var (
 		Long:  `Stop Hoster integrated DNS Server`,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := stopDnsServer()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -66,6 +68,7 @@ var (
 		Long:  `Reload Hoster integrated DNS Server`,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := ReloadDnsServer()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -82,6 +85,7 @@ var (
 		Long:  `Show latest log records for the integrated DNS Server`,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := showLogDns()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -98,6 +102,7 @@ var (
 		Long:  `Get DNS Server service status.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := statusDnsServer()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)

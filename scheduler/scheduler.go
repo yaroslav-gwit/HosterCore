@@ -4,7 +4,6 @@ import (
 	"HosterCore/osfreebsd"
 	"HosterCore/zfsutils"
 	"encoding/json"
-	"log"
 	"net"
 	"os"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/oklog/ulid/v2"
+	"github.com/sirupsen/logrus"
 )
 
 var SockAddr = "/var/run/hoster_scheduler.sock"
@@ -37,8 +37,8 @@ const (
 	JOB_TYPE_REPLICATION = "replication"
 	JOB_TYPE_SNAPSHOT    = "snapshot"
 
-	SLEEP_REMOVE_DONE_JOBS = 17 // used as seconds in the removeDoneJobs loop
-	SLEEP_EXECUTE_JOBS     = 6  // used as seconds in the executeJobs loop
+	SLEEP_REMOVE_DONE_JOBS = 9 // used as seconds in the removeDoneJobs loop
+	SLEEP_EXECUTE_JOBS     = 4 // used as seconds in the executeJobs loop
 )
 
 type Job struct {
@@ -59,6 +59,32 @@ var (
 	jobs      = []Job{}
 	jobsMutex sync.RWMutex
 )
+
+var log = logrus.New()
+
+func init() {
+	logStdOut := os.Getenv("LOG_STDOUT")
+	logFile := os.Getenv("LOG_FILE")
+
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&logrus.JSONFormatter{})
+
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer, see below for File example
+	log.SetOutput(os.Stdout)
+	if logStdOut == "false" && len(logFile) > 2 {
+		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			log.SetOutput(os.Stdout)
+			osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_ERROR, "could not use this file for logging "+logFile+", falling back to STDOUT")
+		} else {
+			log.SetOutput(file)
+		}
+	}
+
+	// Only log the warning severity or above.
+	log.SetLevel(logrus.DebugLevel)
+}
 
 func main() {
 	var wg sync.WaitGroup
@@ -107,14 +133,14 @@ func socketServer(wg *sync.WaitGroup) {
 		go func() {
 			err := socketReceive(conn)
 			if err != nil {
-				log.Println(err)
+				log.Error(err)
 			}
 		}()
 	}
 }
 
 func socketReceive(c net.Conn) error {
-	log.Printf("Client connected [%s]", c.RemoteAddr().Network())
+	log.Infof("Client connected [%s]", c.RemoteAddr().Network())
 
 	buffer := make([]byte, 0)
 	dynamicBuffer := make([]byte, 1024)
@@ -122,7 +148,7 @@ func socketReceive(c net.Conn) error {
 	for {
 		bytes, err := c.Read(dynamicBuffer)
 		if err != nil {
-			log.Printf("Error [%s]", err)
+			log.Errorf("Error [%s]", err)
 			break
 		}
 
@@ -142,7 +168,7 @@ func socketReceive(c net.Conn) error {
 	}
 	addJob(job, &jobsMutex)
 
-	log.Printf("Client has sent a message [%s]", message)
+	log.Infof("Client has sent a message [%s]", message)
 	defer c.Close()
 	return nil
 }
@@ -184,13 +210,13 @@ func removeDoneJobs(m *sync.RWMutex) error {
 
 			if v.JobType == JOB_TYPE_REPLICATION {
 				logLine := "Replication -> Removed the old job for: " + v.Replication.VmName
-				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_DEBUG, logLine)
-				log.Println(logLine)
+				// go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_DEBUG, logLine)
+				log.Info(logLine)
 			}
 			if v.JobType == JOB_TYPE_SNAPSHOT {
 				logLine := "Snapshot -> Removed the old job for: " + v.Snapshot.VmName
-				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_DEBUG, logLine)
-				log.Println(logLine)
+				// go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_DEBUG, logLine)
+				log.Info(logLine)
 			}
 
 			return nil
@@ -209,13 +235,13 @@ func executeJobs(m *sync.RWMutex) error {
 		if v.JobDone && !v.JobDoneLogged {
 			if v.JobType == JOB_TYPE_REPLICATION {
 				logLine := "Replication -> Done for: " + v.Replication.VmName
-				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
-				log.Println(logLine)
+				// go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
+				log.Info(logLine)
 			}
 			if v.JobType == JOB_TYPE_SNAPSHOT {
 				logLine := "Snapshot -> Done for: " + v.Snapshot.VmName
-				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
-				log.Println(logLine)
+				// go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
+				log.Info(logLine)
 			}
 
 			jobs[i].JobDoneLogged = true
@@ -227,13 +253,13 @@ func executeJobs(m *sync.RWMutex) error {
 		if v.JobFailed && !v.JobFailedLogged {
 			if v.JobType == JOB_TYPE_REPLICATION {
 				logLine := "Replication -> Failed for: " + v.Replication.VmName
-				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
-				log.Println(logLine)
+				// go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
+				log.Error(logLine)
 			}
 			if v.JobType == JOB_TYPE_SNAPSHOT && !v.JobFailedLogged {
 				logLine := "Snapshot -> Failed for: " + v.Snapshot.VmName
-				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
-				log.Println(logLine)
+				// go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
+				log.Error(logLine)
 			}
 
 			jobs[i].JobFailedLogged = true
@@ -246,13 +272,13 @@ func executeJobs(m *sync.RWMutex) error {
 			if v.JobType == JOB_TYPE_REPLICATION {
 				jobs[i].JobDone = true
 				logLine := "Replication -> In progress for: " + v.Replication.VmName
-				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
-				log.Println(logLine)
+				// go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
+				log.Info(logLine)
 			}
 			if v.JobType == JOB_TYPE_SNAPSHOT {
 				logLine := "Snapshot -> In progress for: " + v.Snapshot.VmName
-				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
-				log.Println(logLine)
+				// go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
+				log.Info(logLine)
 			}
 
 			break
@@ -264,32 +290,32 @@ func executeJobs(m *sync.RWMutex) error {
 			if v.JobType == JOB_TYPE_REPLICATION {
 				// replicate
 				logLine := "Replication -> Started a new job for: " + v.Replication.VmName
-				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
-				log.Println(logLine)
+				// go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
+				log.Info(logLine)
 				break
 			}
 
 			if v.JobType == JOB_TYPE_SNAPSHOT {
 				// snapshot
 				logLine := "Snapshot -> Started a new job for: " + v.Snapshot.VmName
-				go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
-				log.Println(logLine)
+				// go osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_INFO, logLine)
+				log.Info(logLine)
 
 				dataset, err := zfsutils.FindResourceDataset(v.Snapshot.VmName)
 				if err != nil {
-					log.Printf("Snapshot job jailed: %v", err)
+					log.Infof("Snapshot job jailed: %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 				}
 
 				newSnap, removedSnaps, err := zfsutils.TakeScheduledSnapshot(dataset, v.Snapshot.SnapshotType, v.Snapshot.SnapshotsToKeep)
 				if err != nil {
-					log.Printf("Snapshot job jailed: %v", err)
+					log.Infof("Snapshot job jailed: %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 				} else {
-					log.Printf("New snapshot taken: %s", newSnap)
-					log.Printf("Removed snapshots: %v", removedSnaps)
+					log.Infof("New snapshot taken: %s", newSnap)
+					log.Infof("Removed snapshots: %v", removedSnaps)
 					jobs[i].JobDone = true
 				}
 

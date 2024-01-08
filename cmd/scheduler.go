@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"net"
 	"os"
+	"os/exec"
+	"path"
+	"syscall"
 
 	"github.com/spf13/cobra"
 )
@@ -21,6 +24,43 @@ var (
 		},
 	}
 )
+
+var (
+	schedulerStartCmd = &cobra.Command{
+		Use:   "start",
+		Short: "Start a background Scheduler service",
+		Long:  `Start a background Scheduler service.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := startSchedulerService()
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+func startSchedulerService() error {
+	execPath, err := os.Executable()
+	if err != nil {
+		return err
+	}
+
+	os.Setenv("LOG_FILE", "/var/log/hoster_scheduler.log")
+	os.Setenv("LOG_STDOUT", "false")
+	execFile := path.Dir(execPath) + "/scheduler"
+	command := exec.Command(execFile)
+	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
+	err = command.Start()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 var (
 	schedulerReplicateEndpoint   string
