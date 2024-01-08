@@ -48,6 +48,8 @@ func init() {
 	rootCmd.AddCommand(schedulerCmd)
 	// Host Scheduler -> Start
 	schedulerCmd.AddCommand(schedulerStartCmd)
+	// Host Scheduler -> Status
+	schedulerCmd.AddCommand(schedulerStatusCmd)
 	// Host Scheduler -> Replication
 	schedulerCmd.AddCommand(schedulerReplicateCmd)
 	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateEndpoint, "endpoint", "e", "", "SSH endpoint to send the replicated data to")

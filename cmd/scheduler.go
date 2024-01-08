@@ -4,10 +4,13 @@ import (
 	"HosterCore/emojlog"
 	"HosterCore/osfreebsd"
 	"encoding/json"
+	"fmt"
 	"net"
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
+	"strconv"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -59,6 +62,47 @@ func startSchedulerService() error {
 		return err
 	}
 
+	return nil
+}
+
+var (
+	schedulerStatusCmd = &cobra.Command{
+		Use:   "status",
+		Short: "Show a status for the background Scheduler service",
+		Long:  "Show a status for the background Scheduler service.",
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := statusSchedulerService()
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+func statusSchedulerService() error {
+	pids, err := osfreebsd.Pgrep("scheduler")
+	if err != nil {
+		fmt.Println(" 🔴 Scheduler IS NOT running")
+		return nil
+	}
+
+	if len(pids) < 1 {
+		fmt.Println(" 🔴 Scheduler IS NOT running")
+		return nil
+	}
+
+	reMatchScheduler := regexp.MustCompile(`/scheduler`)
+	for _, v := range pids {
+		if reMatchScheduler.MatchString(v.ProcessCmd) {
+			fmt.Println(" 🟢 Scheduler is running as PID " + strconv.Itoa(v.ProcessId))
+			return nil
+		}
+	}
+
+	fmt.Println(" 🔴 Scheduler IS NOT running")
 	return nil
 }
 

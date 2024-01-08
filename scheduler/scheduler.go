@@ -66,24 +66,23 @@ func init() {
 	logStdOut := os.Getenv("LOG_STDOUT")
 	logFile := os.Getenv("LOG_FILE")
 
-	// Log as JSON instead of the default ASCII formatter.
-	// Text formatter used as default
+	// Log as JSON instead of the default ASCII/text formatter.
 	// log.SetFormatter(&logrus.JSONFormatter{})
 
 	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
 	log.SetOutput(os.Stdout)
+
+	// Log to file, but fallback to STDOUT if something goes wrong
 	if logStdOut == "false" && len(logFile) > 2 {
 		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
-			log.SetOutput(os.Stdout)
 			osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_ERROR, "could not use this file for logging "+logFile+", falling back to STDOUT")
 		} else {
 			log.SetOutput(file)
 		}
 	}
 
-	// Only log the warning severity or above.
+	// Set log severity
 	log.SetLevel(logrus.DebugLevel)
 }
 
