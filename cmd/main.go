@@ -62,7 +62,7 @@ func init() {
 	// Host Scheduler -> Snapshot All
 	schedulerCmd.AddCommand(schedulerSnapshotAllCmd)
 	schedulerSnapshotAllCmd.Flags().StringVarP(&schedulerSnapshotAllType, "type", "t", "custom", "Snapshot type: custom, frequent, hourly, daily, weekly, monthly, yearly")
-	schedulerSnapshotAllCmd.Flags().IntVarP(&schedulerSnapshotToKeep, "keep", "k", 5, "How many snapshots to keep")
+	schedulerSnapshotAllCmd.Flags().IntVarP(&schedulerSnapshotAllToKeep, "keep", "k", 5, "How many snapshots to keep")
 
 	// Jail Command Section
 	rootCmd.AddCommand(jailCmd)
