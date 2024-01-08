@@ -306,3 +306,36 @@ func addSnapshotJob(vmName string, snapshotsToKeep int, snapshotType string) err
 
 	return nil
 }
+
+var (
+	schedulerShowLogCmd = &cobra.Command{
+		Use:   "show-log",
+		Short: "Show latest log records for the Scheduler service",
+		Long:  `Show latest log records for the Scheduler service.`,
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := showLogScheduler()
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+func showLogScheduler() error {
+	tailCmd := exec.Command("tail", "-35", "-f", "/var/log/hoster_scheduler.log")
+
+	tailCmd.Stdin = os.Stdin
+	tailCmd.Stdout = os.Stdout
+	tailCmd.Stderr = os.Stderr
+
+	err := tailCmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

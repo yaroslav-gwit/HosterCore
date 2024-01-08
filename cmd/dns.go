@@ -180,6 +180,7 @@ func showLogDns() error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
