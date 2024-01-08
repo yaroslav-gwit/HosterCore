@@ -35,14 +35,14 @@ func generateSnapshotAllTable() error {
 	var ID = 0
 	var t = table.New(os.Stdout)
 	t.SetAlignment(table.AlignRight, //ID
-		table.AlignLeft,  // Resource Name
-		table.AlignLeft,  // Resource Type
-		table.AlignLeft,  // Snapshot Name
-		table.AlignRight, // Snapshot Size Human
-		table.AlignRight, // Snapshot Size Bytes
-		table.AlignRight, // Snapshot Locked
-		table.AlignRight, // Snapshot Clones/Dependents
-		table.AlignRight, // Snapshot Description
+		table.AlignLeft,   // Resource Name
+		table.AlignCenter, // Resource Type
+		table.AlignLeft,   // Snapshot Name
+		table.AlignRight,  // Snapshot Size Human
+		table.AlignRight,  // Snapshot Size Bytes
+		table.AlignRight,  // Snapshot Locked
+		table.AlignRight,  // Snapshot Clones/Dependents
+		table.AlignRight,  // Snapshot Description
 	)
 
 	if snapshotListAllUnixStyleTable {
@@ -64,18 +64,18 @@ func generateSnapshotAllTable() error {
 		t.SetBorderBottom(false)
 	} else {
 		t.SetHeaders("Hoster ZFS Snapshots")
-		t.SetHeaderColSpans(0, 5)
+		t.SetHeaderColSpans(0, 8)
 
 		t.AddHeaders(
 			"#",
-			"Resource Name",
-			"Resource Type",
+			"Resource\nName",
+			"Resource\nType",
 			"Snapshot Name",
-			"Snapshot Size Human",
-			"Snapshot Size Bytes",
-			"Snapshot Locked",
-			"Snapshot Dependents",
-			"Snapshot Description",
+			"Snapshot\nSize Human",
+			"Snapshot\nSize Bytes",
+			"Snapshot\nLocked",
+			"Snapshot\nDependents",
+			"Snapshot\nDescription",
 		)
 
 		t.SetLineStyle(table.StyleBrightCyan)
