@@ -136,9 +136,9 @@ func SnapshotListWithDescriptions() ([]SnapshotInfo, error) {
 		return []SnapshotInfo{}, errors.New(errString)
 	}
 	// Example output:
-	// NAME                                               PROPERTY             VALUE                SOURCE
-	// iscsihci_001/test-vm-1                             hoster:sdescription  -                    -
-	// iscsihci_001/test-vm-1@custom_2023-12-25_02-22-23  hoster:sdescription  This was a test run  local
+	// NAME                                               PROPERTY             VALUE
+	// iscsihci_001/test-vm-1                             hoster:sdescription  -
+	// iscsihci_001/test-vm-1@custom_2023-12-25_02-22-23  hoster:sdescription  This was a test run
 	nameIndex := -1
 	propertyIndex := -1
 	valueIndex := -1
