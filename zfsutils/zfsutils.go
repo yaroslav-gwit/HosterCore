@@ -191,7 +191,14 @@ func SnapshotListWithDescriptions() ([]SnapshotInfo, error) {
 			continue
 		} else {
 			infoTemp.Name = tmpList[nameIndex]
-			infoTemp.Description = strings.Join(tmpList[valueIndex:len(tmpList)-1], " ")
+			descriptionList := tmpList[valueIndex : len(tmpList)-1]
+			descriptionString := strings.Join(descriptionList, " ")
+			descriptionString = strings.TrimSpace(descriptionString)
+			if len(descriptionString) > 0 {
+				infoTemp.Description = descriptionString
+			} else {
+				infoTemp.Description = "-"
+			}
 		}
 
 		snapDescriptions = append(snapDescriptions, infoTemp)
