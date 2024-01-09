@@ -22,6 +22,7 @@ var (
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := generateSnapshotAllTable()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
