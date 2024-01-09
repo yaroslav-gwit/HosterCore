@@ -35,62 +35,62 @@ var (
 	}
 )
 
-func generateSnapshotTable(vmName string) error {
-	info, err := GetSnapshotInfo(vmName, false)
-	if err != nil {
-		return err
-	}
+// func generateSnapshotTable(vmName string) error {
+// 	info, err := GetSnapshotInfo(vmName, false)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	var ID = 0
-	var t = table.New(os.Stdout)
-	t.SetAlignment(table.AlignRight, //ID
-		table.AlignLeft,  // Snapshot Name
-		table.AlignRight, // Snapshot Size Human
-		table.AlignRight) // Snapshot Size Bytes
+// 	var ID = 0
+// 	var t = table.New(os.Stdout)
+// 	t.SetAlignment(table.AlignRight, //ID
+// 		table.AlignLeft,  // Snapshot Name
+// 		table.AlignRight, // Snapshot Size Human
+// 		table.AlignRight) // Snapshot Size Bytes
 
-	if snapshotListUnixStyleTable {
-		t.SetDividers(table.Dividers{
-			ALL: " ",
-			NES: " ",
-			NSW: " ",
-			NEW: " ",
-			ESW: " ",
-			NE:  " ",
-			NW:  " ",
-			SW:  " ",
-			ES:  " ",
-			EW:  " ",
-			NS:  " ",
-		})
-		t.SetRowLines(false)
-		t.SetBorderTop(false)
-		t.SetBorderBottom(false)
-	} else {
-		t.SetHeaders("ZFS Snapshots for: " + vmName)
-		t.SetHeaderColSpans(0, 4)
+// 	if snapshotListUnixStyleTable {
+// 		t.SetDividers(table.Dividers{
+// 			ALL: " ",
+// 			NES: " ",
+// 			NSW: " ",
+// 			NEW: " ",
+// 			ESW: " ",
+// 			NE:  " ",
+// 			NW:  " ",
+// 			SW:  " ",
+// 			ES:  " ",
+// 			EW:  " ",
+// 			NS:  " ",
+// 		})
+// 		t.SetRowLines(false)
+// 		t.SetBorderTop(false)
+// 		t.SetBorderBottom(false)
+// 	} else {
+// 		t.SetHeaders("ZFS Snapshots for: " + vmName)
+// 		t.SetHeaderColSpans(0, 4)
 
-		t.AddHeaders(
-			"#",
-			"Snapshot Name",
-			"Snapshot Size Human",
-			"Snapshot Size Bytes")
+// 		t.AddHeaders(
+// 			"#",
+// 			"Snapshot Name",
+// 			"Snapshot Size Human",
+// 			"Snapshot Size Bytes")
 
-		t.SetLineStyle(table.StyleBrightCyan)
-		t.SetDividers(table.UnicodeRoundedDividers)
-		t.SetHeaderStyle(table.StyleBold)
-	}
+// 		t.SetLineStyle(table.StyleBrightCyan)
+// 		t.SetDividers(table.UnicodeRoundedDividers)
+// 		t.SetHeaderStyle(table.StyleBold)
+// 	}
 
-	for _, vmSnap := range info {
-		ID = ID + 1
-		t.AddRow(strconv.Itoa(ID),
-			vmSnap.Name,
-			vmSnap.SizeHuman,
-			strconv.Itoa(int(vmSnap.SizeBytes)))
-	}
+// 	for _, vmSnap := range info {
+// 		ID = ID + 1
+// 		t.AddRow(strconv.Itoa(ID),
+// 			vmSnap.Name,
+// 			vmSnap.SizeHuman,
+// 			strconv.Itoa(int(vmSnap.SizeBytes)))
+// 	}
 
-	t.Render()
-	return nil
-}
+// 	t.Render()
+// 	return nil
+// }
 
 type SnapshotInfo struct {
 	Name      string `json:"snapshot_name"`

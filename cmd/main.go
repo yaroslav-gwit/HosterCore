@@ -261,7 +261,7 @@ func init() {
 	// Image command section
 	rootCmd.AddCommand(imageCmd)
 	imageCmd.AddCommand(imageDownloadCmd)
-	imageDownloadCmd.Flags().StringVarP(&imageDataset, "use-dataset", "d", "zroot/vm-encrypted", "Specify the dataset for this particular image")
+	imageDownloadCmd.Flags().StringVarP(&imageDataset, "dataset", "d", "", "Specify the dataset for this particular image (first available dataset is picked otherwise)")
 
 	// VM cmd -> secrets
 	vmCmd.AddCommand(vmSecretsCmd)
@@ -275,8 +275,8 @@ func init() {
 	// VM cmd -> change
 	rootCmd.AddCommand(changeCmd)
 	changeCmd.AddCommand(changeParentCmd)
-	changeParentCmd.Flags().StringVarP(&changeParentVmName, "vm", "", "", "VM Name (mandatory flag)")
-	changeParentCmd.Flags().StringVarP(&changeParentNewParent, "new-parent", "", "", "New parent name (optional, current hostname used by default)")
+	// changeParentCmd.Flags().StringVarP(&changeParentVmName, "vm", "", "", "VM Name (mandatory flag)")
+	changeParentCmd.Flags().StringVarP(&changeParentNewParent, "new-parent", "p", "", "New parent name (optional, current hostname used by default)")
 
 	// VM cmd -> nebula
 	rootCmd.AddCommand(nebulaCmd)

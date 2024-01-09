@@ -41,15 +41,27 @@ var (
 	imageDownloadCmd = &cobra.Command{
 		Use:   "download [osType]",
 		Short: "Download an image from the public or private repo",
-		Long:  `Download an image from the public or private repo`,
+		Long:  `Download an image from the public or private repo.`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := imageDownload(args[0])
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
 			}
+
+			if len(imageDataset) < 1 {
+				hostCfg, err := GetHostConfig()
+				if err != nil {
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
+				}
+
+				imageDataset = hostCfg.ActiveDatasets[0]
+			}
+
 			err = imageUnzip(imageDataset, args[0])
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
