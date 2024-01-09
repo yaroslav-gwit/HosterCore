@@ -33,6 +33,7 @@ var (
 		Use:   "start",
 		Short: "Start a background Scheduler service",
 		Long:  `Start a background Scheduler service.`,
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 

@@ -40,11 +40,6 @@ var (
 				emojlog.PrintLogMessage("Could not load network config: "+err.Error(), emojlog.Error)
 				err = nil
 			}
-			err = applyPfSettings()
-			if err != nil {
-				emojlog.PrintLogMessage("Could not reload pf: "+err.Error(), emojlog.Error)
-				err = nil
-			}
 
 			// Stop and disable Local Unbound to avoid conflicts with our own DNS server
 			stopAndDisableUnbound()
@@ -65,6 +60,18 @@ var (
 					emojlog.PrintLogMessage("Could not start Nebula service: "+err.Error(), emojlog.Error)
 					err = nil
 				}
+			}
+
+			err = applyPfSettings()
+			if err != nil {
+				emojlog.PrintLogMessage("Could not reload pf: "+err.Error(), emojlog.Error)
+				err = nil
+			}
+
+			err = startSchedulerService()
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				err = nil
 			}
 
 			// Start Traefik on `init` if it's config file exists
@@ -127,20 +134,18 @@ func returnMissingModules() ([]string, error) {
 	var loadedModules []string
 	kernelModuleList := []string{"vmm", "nmdm", "if_bridge", "if_vxlan", "if_epair", "if_tap", "if_tuntap", "pf", "pflog"}
 
-	// Add CPU temperature module to the kernel module list
-	// cpuInfo := getCpuInfo()
+	// Load CPU temperature kernel module
 	cpuInfo, err := osfreebsd.GetCpuInfo()
 	if err != nil {
 		return []string{}, err
 	}
-
 	reMatchIntelCpu := regexp.MustCompile(`.*[Ii]ntel.*`)
 	if reMatchIntelCpu.MatchString(cpuInfo.Model) {
 		kernelModuleList = append(kernelModuleList, "coretemp")
 	} else {
 		kernelModuleList = append(kernelModuleList, "amdtemp")
 	}
-	// EOF Add CPU temperature module to the kernel module list
+	// EOF Load CPU temperature kernel module
 
 	for _, v := range strings.Split(string(stdout), "\n") {
 		if reMatchKo.MatchString(v) {
