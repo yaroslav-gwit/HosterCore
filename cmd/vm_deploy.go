@@ -48,6 +48,16 @@ var (
 				osType = osTypeAlias
 			}
 
+			if len(zfsDataset) < 1 {
+				hostCfg, err := GetHostConfig()
+				if err != nil {
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
+				}
+
+				zfsDataset = hostCfg.ActiveDatasets[0]
+			}
+
 			var err error
 			if vmDeployFromIso {
 				err = deployVmFromIso(vmName, networkName, osType, zfsDataset, vmDeployCpus, vmDeployRam, vmDeployStartWhenReady, vmDeployIsoFilePath)

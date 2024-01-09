@@ -167,7 +167,7 @@ func init() {
 	vmDeployCmd.Flags().StringVarP(&vmDeployRam, "ram", "r", "2G", "Amount of RAM to assign to this VM (ie 1500MB, 2GB, etc)")
 	vmDeployCmd.Flags().StringVarP(&osType, "os-type", "t", "debian12", "OS type or distribution (ie: debian12, ubuntu2004, etc)")
 	vmDeployCmd.Flags().StringVarP(&osTypeAlias, "os-stype", "", "", "Alias for the os-type, because it was misspelled in the past as os-stype")
-	vmDeployCmd.Flags().StringVarP(&zfsDataset, "dataset", "d", "zroot/vm-encrypted", "Choose the parent dataset for the VM deployment")
+	vmDeployCmd.Flags().StringVarP(&zfsDataset, "dataset", "d", "", "Choose the parent dataset for the VM deployment (first available dataset will be chosen as default)")
 	vmDeployCmd.Flags().BoolVarP(&vmDeployStartWhenReady, "start-now", "", false, "Whether to start the VM after it's deployed")
 	vmDeployCmd.Flags().StringVarP(&deployIpAddress, "ip-address", "", "", "Set the IP address for your new VM manually")
 	vmDeployCmd.Flags().StringVarP(&deployDnsServer, "dns-server", "", "", "Set a custom DNS server for your new VM")
