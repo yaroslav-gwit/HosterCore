@@ -83,11 +83,13 @@ func deployNewJail(jailName string, dsParent string, release string, cpuLimit in
 	}
 
 	if len(dsParent) < 1 {
-		datasets, err := getZfsDatasetInfo()
+		hostCfg, err := GetHostConfig()
+		// datasets, err := getZfsDatasetInfo()
 		if err != nil {
 			return err
 		}
-		dsParent = datasets[0].Name
+
+		dsParent = hostCfg.ActiveDatasets[0]
 	}
 
 	if len(release) < 1 {
