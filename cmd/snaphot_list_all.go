@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"HosterCore/emojlog"
+	"HosterCore/zfsutils"
+	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 
 	"github.com/aquasecurity/table"
@@ -19,6 +22,7 @@ var (
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := generateSnapshotAllTable()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -32,10 +36,15 @@ func generateSnapshotAllTable() error {
 	var ID = 0
 	var t = table.New(os.Stdout)
 	t.SetAlignment(table.AlignRight, //ID
-		table.AlignLeft,  // VM Name
-		table.AlignLeft,  // Snapshot Name
-		table.AlignRight, // Snapshot Size Human
-		table.AlignRight) // Snapshot Size Bytes
+		table.AlignLeft,   // Resource Name
+		table.AlignCenter, // Resource Type
+		table.AlignLeft,   // Snapshot Name
+		table.AlignRight,  // Snapshot Size Human
+		table.AlignRight,  // Snapshot Size Bytes
+		table.AlignCenter, // Snapshot Locked
+		table.AlignRight,  // Snapshot Clones/Dependents
+		table.AlignRight,  // Snapshot Description
+	)
 
 	if snapshotListAllUnixStyleTable {
 		t.SetDividers(table.Dividers{
@@ -56,35 +65,87 @@ func generateSnapshotAllTable() error {
 		t.SetBorderBottom(false)
 	} else {
 		t.SetHeaders("Hoster ZFS Snapshots")
-		t.SetHeaderColSpans(0, 5)
+		t.SetHeaderColSpans(0, 9)
 
 		t.AddHeaders(
 			"#",
-			"VM Name",
-			"Snapshot Name",
-			"Snapshot Size Human",
-			"Snapshot Size Bytes")
+			"Resource\nName",
+			"Resource\nType",
+			"Snapshot\nName",
+			"Snapshot Size\nHuman",
+			"Snapshot Size\nBytes",
+			"Snapshot\nLocked",
+			"Snapshot\nDependents",
+			"Snapshot\nDescription",
+		)
 
 		t.SetLineStyle(table.StyleBrightCyan)
 		t.SetDividers(table.UnicodeRoundedDividers)
 		t.SetHeaderStyle(table.StyleBold)
 	}
 
-	for _, vm := range getAllVms() {
-		info, err := GetSnapshotInfo(vm, true)
-		if err != nil {
-			return err
-		}
+	vmList := getAllVms()
+	jailList, _ := GetAllJailsList()
+	snapList, err := zfsutils.SnapshotListWithDescriptions()
+	if err != nil {
+		return err
+	}
 
-		for _, vmSnap := range info {
-			ID = ID + 1
-			t.AddRow(strconv.Itoa(ID),
-				vm,
-				vmSnap.Name,
-				vmSnap.SizeHuman,
-				strconv.Itoa(int(vmSnap.SizeBytes)))
+	for _, v := range vmList {
+		reMatch := regexp.MustCompile(`/` + v + `@`)
+		for _, vv := range snapList {
+			if reMatch.MatchString(vv.Name) {
+				ID = ID + 1
+				t.AddRow(
+					strconv.Itoa(ID),
+					v,
+					"VM",
+					vv.Name,
+					vv.SizeHuman,
+					fmt.Sprintf("%d", vv.SizeBytes),
+					fmt.Sprintf("%v", vv.Locked),
+					fmt.Sprintf("%d", len(vv.Clones)),
+					vv.Description,
+				)
+			}
 		}
 	}
+	for _, v := range jailList {
+		reMatch := regexp.MustCompile(`/` + v + `@`)
+		for _, vv := range snapList {
+			if reMatch.MatchString(vv.Name) {
+				ID = ID + 1
+				t.AddRow(
+					strconv.Itoa(ID),
+					v,
+					"Jail",
+					vv.Name,
+					vv.SizeHuman,
+					fmt.Sprintf("%d", vv.SizeBytes),
+					fmt.Sprintf("%v", vv.Locked),
+					fmt.Sprintf("%d", len(vv.Clones)),
+					vv.Description,
+				)
+			}
+		}
+	}
+
+	// for _, vm := range getAllVms() {
+	// 	info, err := GetSnapshotInfo(vm, true)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	for _, vmSnap := range info {
+	// 		ID = ID + 1
+	// 		t.AddRow(strconv.Itoa(ID),
+	// 			vm,
+	// 			vmSnap.Name,
+	// 			vmSnap.SizeHuman,
+	// 			strconv.Itoa(int(vmSnap.SizeBytes)),
+	// 		)
+	// 	}
+	// }
 
 	t.Render()
 	return nil

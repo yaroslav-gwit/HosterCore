@@ -83,11 +83,13 @@ func deployNewJail(jailName string, dsParent string, release string, cpuLimit in
 	}
 
 	if len(dsParent) < 1 {
-		datasets, err := getZfsDatasetInfo()
+		hostCfg, err := GetHostConfig()
+		// datasets, err := getZfsDatasetInfo()
 		if err != nil {
 			return err
 		}
-		dsParent = datasets[0].Name
+
+		dsParent = hostCfg.ActiveDatasets[0]
 	}
 
 	if len(release) < 1 {
@@ -106,7 +108,7 @@ func deployNewJail(jailName string, dsParent string, release string, cpuLimit in
 	if err != nil {
 		return err
 	}
-	emojlog.PrintLogMessage(fmt.Sprintf("Closed ZFS based Jail template %s", release), emojlog.Changed)
+	emojlog.PrintLogMessage(fmt.Sprintf("Cloned an OpenZFS based Jail template %s", release), emojlog.Changed)
 
 	// Create jail_config.json
 	templateJail, err := template.New("templateJailConfigJson").Parse(templateJailConfigJson)
@@ -129,7 +131,7 @@ func deployNewJail(jailName string, dsParent string, release string, cpuLimit in
 	if err != nil {
 		return err
 	}
-	emojlog.PrintLogMessage(fmt.Sprintf("Created /%s/%s/jail_custom_parameters.json", dsParent, jailName), emojlog.Changed)
+	emojlog.PrintLogMessage(fmt.Sprintf("Created /%s/%s/jail_custom_parameters.conf", dsParent, jailName), emojlog.Changed)
 	// EOF Create jail_custom_parameters.conf
 
 	emojlog.PrintLogMessage(fmt.Sprintf("New Jail has been deployed: %s", jailName), emojlog.Info)

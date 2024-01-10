@@ -23,15 +23,16 @@ var (
 )
 
 var (
-	changeParentVmName    string
+	// changeParentVmName    string
 	changeParentNewParent string
 	changeParentCmd       = &cobra.Command{
-		Use:   "parent",
-		Short: "Change VM parent",
-		Long:  `Change VM parent, in order to start this VM on a new host`,
+		Use:   "parent [vmName or jailName]",
+		Short: "Change VM's or Jail's parent",
+		Long:  `Change VM's or Jail's parent, in order to start it on a new host.`,
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
-			err := ReplaceParent(changeParentVmName, changeParentNewParent, false)
+			err := ReplaceParent(args[0], changeParentNewParent, false)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)

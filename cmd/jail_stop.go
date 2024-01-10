@@ -28,7 +28,7 @@ var (
 )
 
 func jailStop(jailName string, logActions bool) error {
-	jailConfig, err := getJailConfig(jailName, false)
+	jailConfig, err := GetJailConfig(jailName, false)
 	if err != nil {
 		return err
 	}

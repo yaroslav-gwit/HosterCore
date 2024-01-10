@@ -26,11 +26,13 @@ require (
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/miekg/dns v1.1.54 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
+	github.com/oklog/ulid/v2 v2.1.0 // indirect
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/savsgio/dictpool v0.0.0-20221023140959-7bf2e61cea94 // indirect
 	github.com/savsgio/gotils v0.0.0-20220530130905-52f3993e8d6d // indirect
 	github.com/schollz/progressbar/v3 v3.13.0 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect

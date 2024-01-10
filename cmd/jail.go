@@ -127,7 +127,7 @@ type JailConfigFileStruct struct {
 	DefaultRouter  string
 }
 
-func getAllJailsList() ([]string, error) {
+func GetAllJailsList() ([]string, error) {
 	zfsDatasets, err := getZfsDatasetInfo()
 	if err != nil {
 		return []string{}, err

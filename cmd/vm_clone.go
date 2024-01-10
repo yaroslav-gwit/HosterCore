@@ -15,7 +15,7 @@ var (
 	vmCloneCmd = &cobra.Command{
 		Use:   "clone [existingVmName] [newVmName]",
 		Short: "Use OpenZFS to clone your VM",
-		Long:  `Use OpenZFS to clone your VM. You'll need to run "cireset" in case you want to use a new VM as a separate machine`,
+		Long:  `Use OpenZFS to clone your VM. You'll need to run "hoster vm cireset [newVmName]" in case the new VM has to be used as a separate machine.`,
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
@@ -30,6 +30,9 @@ var (
 
 // Executes `zfs clone` in the shell, returns an error if something has gone wrong
 func executeVmClone(existingVmName string, newVmName string) error {
+	// To list all datasets which were used as clones, run this (for later use):
+	// zfs list -o name,origin
+
 	// Find a current VM dataset that we can work with
 	currentDataset, err := getVmDataset(existingVmName)
 	if err != nil {
@@ -52,6 +55,7 @@ func executeVmClone(existingVmName string, newVmName string) error {
 		return errors.New(strings.TrimSpace(string(outClone)) + "; " + err.Error())
 	}
 
+	// Reload the internal DNS server
 	err = ReloadDnsServer()
 	if err != nil {
 		return err

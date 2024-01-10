@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"HosterCore/osfreebsd"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -169,27 +170,38 @@ func JsonOutputHostInfo() JsonOutputHostInfoStruct {
 	var tSystemUptime string
 	var tSystemRam = ramResponse{}
 	var tSwapInfo swapInfoStruct
-	var tCpuInfo CpuInfo
+	var tCpuInfo osfreebsd.CpuInfo
 	var tArcSize string
 	var tZrootInfo zrootInfoStruct
 	var tVCPU2PCURatio float64
 
 	var wg = &sync.WaitGroup{}
 	var err error
+
 	wg.Add(1)
 	go func() { defer wg.Done(); tHostname = GetHostName() }()
+
 	wg.Add(1)
 	go func() { defer wg.Done(); tAllVms, tLiveVms, tBackupVms, tProdVmsOffline = VmNumbersOverview() }()
+
 	wg.Add(1)
 	go func() { defer wg.Done(); tSystemUptime = getSystemUptime() }()
+
 	wg.Add(1)
 	go func() { defer wg.Done(); tSystemRam = getHostRam() }()
+
 	wg.Add(1)
 	go func() { defer wg.Done(); tArcSize = getArcSize() }()
+
 	wg.Add(1)
 	go func() { defer wg.Done(); tZrootInfo = getZrootInfo() }()
+
 	wg.Add(1)
-	go func() { defer wg.Done(); tCpuInfo = getCpuInfo() }()
+	go func() {
+		defer wg.Done()
+		tCpuInfo, _ = osfreebsd.GetCpuInfo()
+	}()
+
 	wg.Add(1)
 	go func() { defer wg.Done(); _, tVCPU2PCURatio = getPc2VcRatio() }()
 
@@ -201,6 +213,7 @@ func JsonOutputHostInfo() JsonOutputHostInfoStruct {
 			log.Fatal(err)
 		}
 	}()
+
 	wg.Wait()
 
 	jsonOutputVar := JsonOutputHostInfoStruct{}
@@ -528,73 +541,73 @@ func GetHostName() (hostname string) {
 	return
 }
 
-type CpuInfo struct {
-	Model        string
-	Architecture string
-	Sockets      int
-	Cores        int
-	Threads      int
-	OverallCpus  int
-}
+// type CpuInfo struct {
+// 	Model        string
+// 	Architecture string
+// 	Sockets      int
+// 	Cores        int
+// 	Threads      int
+// 	OverallCpus  int
+// }
 
-func getCpuInfo() CpuInfo {
-	result := CpuInfo{}
+// func getCpuInfo() CpuInfo {
+// 	result := CpuInfo{}
 
-	command, err := exec.Command("sysctl", "-nq", "hw.model").CombinedOutput()
-	if err != nil {
-		fmt.Println("Error", err.Error())
-	}
-	cpuModel := strings.TrimSpace(string(command))
-	reStripCpuModel := regexp.MustCompile(`\(R\)|\(TM\)|@\s|CPU\s`)
-	result.Model = reStripCpuModel.ReplaceAllString(cpuModel, "")
+// 	command, err := exec.Command("sysctl", "-nq", "hw.model").CombinedOutput()
+// 	if err != nil {
+// 		fmt.Println("Error", err.Error())
+// 	}
+// 	cpuModel := strings.TrimSpace(string(command))
+// 	reStripCpuModel := regexp.MustCompile(`\(R\)|\(TM\)|@\s|CPU\s`)
+// 	result.Model = reStripCpuModel.ReplaceAllString(cpuModel, "")
 
-	command, err = exec.Command("sysctl", "-nq", "hw.machine").CombinedOutput()
-	if err != nil {
-		fmt.Println("Error", err.Error())
-	}
-	cpuArch := strings.TrimSpace(string(command))
-	result.Architecture = cpuArch
+// 	command, err = exec.Command("sysctl", "-nq", "hw.machine").CombinedOutput()
+// 	if err != nil {
+// 		fmt.Println("Error", err.Error())
+// 	}
+// 	cpuArch := strings.TrimSpace(string(command))
+// 	result.Architecture = cpuArch
 
-	command, err = exec.Command("sysctl", "-nq", "hw.ncpu").CombinedOutput()
-	if err != nil {
-		fmt.Println("Error", err.Error())
-	}
-	cpuCores := strings.TrimSpace(string(command))
-	result.OverallCpus, _ = strconv.Atoi(cpuCores)
+// 	command, err = exec.Command("sysctl", "-nq", "hw.ncpu").CombinedOutput()
+// 	if err != nil {
+// 		fmt.Println("Error", err.Error())
+// 	}
+// 	cpuCores := strings.TrimSpace(string(command))
+// 	result.OverallCpus, _ = strconv.Atoi(cpuCores)
 
-	command, err = exec.Command("grep", "-i", "package", "/var/run/dmesg.boot").CombinedOutput()
-	if err != nil {
-		fmt.Println("Error", err.Error())
-	}
-	dmesg := string(command)
-	reCpuInfoMatch := regexp.MustCompile(`.*package.*core`)
-	reStripPrefix := regexp.MustCompile(`.*FreeBSD/SMP:\s`)
-	for _, v := range strings.Split(dmesg, "\n") {
-		if reCpuInfoMatch.MatchString(v) {
-			dmesg = reStripPrefix.ReplaceAllString(v, "")
-			break
-		}
-	}
-	var tempCpuInfoList []string
-	var tempCpuInfoListStripped []string
+// 	command, err = exec.Command("grep", "-i", "package", "/var/run/dmesg.boot").CombinedOutput()
+// 	if err != nil {
+// 		fmt.Println("Error", err.Error())
+// 	}
+// 	dmesg := string(command)
+// 	reCpuInfoMatch := regexp.MustCompile(`.*package.*core`)
+// 	reStripPrefix := regexp.MustCompile(`.*FreeBSD/SMP:\s`)
+// 	for _, v := range strings.Split(dmesg, "\n") {
+// 		if reCpuInfoMatch.MatchString(v) {
+// 			dmesg = reStripPrefix.ReplaceAllString(v, "")
+// 			break
+// 		}
+// 	}
+// 	var tempCpuInfoList []string
+// 	var tempCpuInfoListStripped []string
 
-	tempCpuInfoList = append(tempCpuInfoList, strings.Split(dmesg, " x ")...)
-	for _, v := range tempCpuInfoList {
-		v := strings.Split(v, " ")[0]
-		tempCpuInfoListStripped = append(tempCpuInfoListStripped, v)
-	}
+// 	tempCpuInfoList = append(tempCpuInfoList, strings.Split(dmesg, " x ")...)
+// 	for _, v := range tempCpuInfoList {
+// 		v := strings.Split(v, " ")[0]
+// 		tempCpuInfoListStripped = append(tempCpuInfoListStripped, v)
+// 	}
 
-	if len(tempCpuInfoListStripped) <= 2 {
-		result.Sockets, _ = strconv.Atoi(tempCpuInfoListStripped[0])
-		result.Cores, _ = strconv.Atoi(tempCpuInfoListStripped[1])
-		result.Threads = 1
-	} else if len(tempCpuInfoListStripped) > 1 {
-		result.Sockets, _ = strconv.Atoi(tempCpuInfoListStripped[0])
-		result.Cores, _ = strconv.Atoi(tempCpuInfoListStripped[1])
-		result.Threads, _ = strconv.Atoi(tempCpuInfoListStripped[2])
-	}
-	return result
-}
+// 	if len(tempCpuInfoListStripped) <= 2 {
+// 		result.Sockets, _ = strconv.Atoi(tempCpuInfoListStripped[0])
+// 		result.Cores, _ = strconv.Atoi(tempCpuInfoListStripped[1])
+// 		result.Threads = 1
+// 	} else if len(tempCpuInfoListStripped) > 1 {
+// 		result.Sockets, _ = strconv.Atoi(tempCpuInfoListStripped[0])
+// 		result.Cores, _ = strconv.Atoi(tempCpuInfoListStripped[1])
+// 		result.Threads, _ = strconv.Atoi(tempCpuInfoListStripped[2])
+// 	}
+// 	return result
+// }
 
 // If this ratio is > 6:1 you should really stop deploying more VMs to avoid performance issues
 //

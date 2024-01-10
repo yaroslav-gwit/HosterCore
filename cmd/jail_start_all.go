@@ -28,14 +28,14 @@ var (
 )
 
 func startAllJails(consoleLogOutput bool) error {
-	jailList, err := getAllJailsList()
+	jailList, err := GetAllJailsList()
 	if err != nil {
 		return err
 	}
 
 	startId := 0
 	for _, v := range jailList {
-		jailConfig, err := getJailConfig(v, true)
+		jailConfig, err := GetJailConfig(v, true)
 		if err != nil {
 			return err
 		}

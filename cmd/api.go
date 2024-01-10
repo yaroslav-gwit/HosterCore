@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/emojlog"
+	"HosterCore/osfreebsd"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -144,7 +145,6 @@ func startApiServer() error {
 	}
 
 	execFile := path.Dir(execPath) + "/hoster_rest_api"
-	// err = exec.Command("nohup", execFile, "&").Start()
 	cmd := exec.Command(execFile)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	err = cmd.Start()
@@ -165,13 +165,26 @@ func StopApiServer() error {
 	services := ApiProcessServiceInfo()
 
 	if services.ApiServerRunning {
-		_ = exec.Command("kill", "-SIGTERM", services.ApiServerPid).Run()
-		emojlog.PrintLogMessage("ha_watchdog service has been stopped using PID: "+services.ApiServerPid, emojlog.Changed)
+		if services.HaWatchdogRunning {
+			err := osfreebsd.KillProcess(osfreebsd.KillSignalINT, services.ApiServerPid)
+			if err != nil {
+				return err
+			}
+		} else {
+			err := osfreebsd.KillProcess(osfreebsd.KillSignalTERM, services.ApiServerPid)
+			if err != nil {
+				return err
+			}
+		}
+		emojlog.PrintLogMessage("ha_watchdog service has been stopped using PID: "+strconv.Itoa(services.ApiServerPid), emojlog.Changed)
 	}
 
 	if services.HaWatchdogRunning {
-		_ = exec.Command("kill", "-SIGTERM", services.HaWatchDogPid).Run()
-		emojlog.PrintLogMessage("hoster_rest_api service has been stopped using PID: "+services.HaWatchDogPid, emojlog.Changed)
+		err := osfreebsd.KillProcess(osfreebsd.KillSignalTERM, services.HaWatchDogPid)
+		if err != nil {
+			return err
+		}
+		emojlog.PrintLogMessage("hoster_rest_api service has been stopped using PID: "+strconv.Itoa(services.HaWatchDogPid), emojlog.Changed)
 	}
 
 	if !services.ApiServerRunning {
@@ -202,13 +215,13 @@ func statusApiServer() error {
 	debugMode, productionMode := getHaRunMode()
 
 	if apiProcessPgrep.ApiServerRunning {
-		fmt.Println(" 🟢 API Server is running as PID " + apiProcessPgrep.ApiServerPid)
+		fmt.Println(" 🟢 API Server is running as PID " + strconv.Itoa(apiProcessPgrep.ApiServerPid))
 	} else {
 		fmt.Println(" 🔴 API Server IS NOT running")
 	}
 
 	if apiProcessPgrep.HaWatchdogRunning {
-		fmt.Println(" 🟢 HA Watchdog service is running as PID " + apiProcessPgrep.HaWatchDogPid)
+		fmt.Println(" 🟢 HA Watchdog service is running as PID " + strconv.Itoa(apiProcessPgrep.HaWatchDogPid))
 		fmt.Println()
 
 		if debugMode {
@@ -228,9 +241,9 @@ func statusApiServer() error {
 
 type ApiProcessServiceInfoStruct struct {
 	HaWatchdogRunning bool
-	HaWatchDogPid     string
+	HaWatchDogPid     int
 	ApiServerRunning  bool
-	ApiServerPid      string
+	ApiServerPid      int
 }
 
 func ApiProcessServiceInfo() (pgrepOutput ApiProcessServiceInfoStruct) {
@@ -248,18 +261,30 @@ func ApiProcessServiceInfo() (pgrepOutput ApiProcessServiceInfoStruct) {
 			if reMatchSkipLogProcess.MatchString(v) {
 				continue
 			} else {
-				pid := reSplitSpace.Split(v, -1)[0]
+				pidStr := reSplitSpace.Split(v, -1)[0]
+				pid, err := strconv.Atoi(strings.TrimSpace(pidStr))
+				if err != nil {
+					pid = 0
+					pgrepOutput.ApiServerRunning = false
+				} else {
+					pgrepOutput.ApiServerRunning = true
+				}
 				pgrepOutput.ApiServerPid = pid
-				pgrepOutput.ApiServerRunning = true
 			}
 		}
 	}
 
 	for _, v := range strings.Split(string(watchDogPgrepOut), "\n") {
 		if reMatchHaWatchdogProcess.MatchString(v) {
-			pid := reSplitSpace.Split(v, -1)[0]
+			pidStr := reSplitSpace.Split(v, -1)[0]
+			pid, err := strconv.Atoi(strings.TrimSpace(pidStr))
+			if err != nil {
+				pid = 0
+				pgrepOutput.HaWatchdogRunning = false
+			} else {
+				pgrepOutput.HaWatchdogRunning = true
+			}
 			pgrepOutput.HaWatchDogPid = pid
-			pgrepOutput.HaWatchdogRunning = true
 		}
 	}
 

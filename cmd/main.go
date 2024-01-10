@@ -29,47 +29,66 @@ func Execute() {
 }
 
 func init() {
-	// Host command section
+	// Host Command Section
 	rootCmd.AddCommand(hostCmd)
 	hostCmd.Flags().BoolVarP(&jsonHostInfoOutput, "json", "j", false, "Output as JSON (useful for automation)")
 	hostCmd.Flags().BoolVarP(&jsonPrettyHostInfoOutput, "json-pretty", "", false, "Pretty JSON Output")
 
-	// Host network info
+	// Host Network Info
 	rootCmd.AddCommand(networkCmd)
 	networkCmd.AddCommand(networkListCmd)
 	networkListCmd.Flags().BoolVarP(&networkListUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
 
-	// Host dataset info
+	// Host Dataset Info
 	rootCmd.AddCommand(datasetCmd)
 	datasetCmd.AddCommand(datasetListCmd)
 	datasetListCmd.Flags().BoolVarP(&datasetListUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
 
-	// Jail command section
+	// Host Scheduler
+	rootCmd.AddCommand(schedulerCmd)
+	// Host Scheduler -> Start
+	schedulerCmd.AddCommand(schedulerStartCmd)
+	// Host Scheduler -> Status
+	schedulerCmd.AddCommand(schedulerStatusCmd)
+	// Host Scheduler -> Show Log
+	schedulerCmd.AddCommand(schedulerShowLogCmd)
+	// Host Scheduler -> Stop
+	schedulerCmd.AddCommand(schedulerStopCmd)
+	// Host Scheduler -> Replication
+	schedulerCmd.AddCommand(schedulerReplicateCmd)
+	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateEndpoint, "endpoint", "e", "", "SSH endpoint to send the replicated data to")
+	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateKey, "key", "k", "", "SSH key location")
+	schedulerReplicateCmd.Flags().IntVarP(&schedulerReplicateSpeedLimit, "speed-limit", "s", 50, "Replication speed limit")
+	// Host Scheduler -> Snapshot
+	schedulerCmd.AddCommand(schedulerSnapshotCmd)
+	schedulerSnapshotCmd.Flags().StringVarP(&schedulerSnapshotType, "type", "t", "custom", "Snapshot type: custom, frequent, hourly, daily, weekly, monthly, yearly")
+	schedulerSnapshotCmd.Flags().IntVarP(&schedulerSnapshotToKeep, "keep", "k", 5, "How many snapshots to keep")
+	// Host Scheduler -> Snapshot All
+	schedulerCmd.AddCommand(schedulerSnapshotAllCmd)
+	schedulerSnapshotAllCmd.Flags().StringVarP(&schedulerSnapshotAllType, "type", "t", "custom", "Snapshot type: custom, frequent, hourly, daily, weekly, monthly, yearly")
+	schedulerSnapshotAllCmd.Flags().IntVarP(&schedulerSnapshotAllToKeep, "keep", "k", 5, "How many snapshots to keep")
+
+	// Jail Command Section
 	rootCmd.AddCommand(jailCmd)
-
-	// jail -> start
+	// Jail -> start
 	jailCmd.AddCommand(jailStartCmd)
-
-	// jail -> start-all
+	// Jail -> start-all
 	jailCmd.AddCommand(jailStartAllCmd)
-
-	// jail -> stop-all
+	// Jail -> stop-all
 	jailCmd.AddCommand(jailStopAllCmd)
-
-	// jail -> stop
+	// Jail -> stop
 	jailCmd.AddCommand(jailStopCmd)
-
-	// jail -> list
+	// Jail -> list
 	jailCmd.AddCommand(jailListCmd)
 	jailListCmd.Flags().BoolVarP(&jailListCmdUnixStyle, "unix", "u", false, "Show Unix style table (useful for scripting)")
-
-	// jail -> bootstrap
+	// Jail -> destroy
+	jailCmd.AddCommand(jailDestroyCmd)
+	// Jail -> bootstrap
 	jailCmd.AddCommand(jailBootstrapCmd)
 	jailBootstrapCmd.Flags().StringVarP(&jailBootstrapCmdOsRelease, "release", "r", "", "Pick a FreeBSD OS Release version (your own OS release will be used by default)")
 	jailBootstrapCmd.Flags().StringVarP(&jailBootstrapCmdDataset, "dataset", "d", "", "Specify a target dataset (first available DS in your config file will be used as a default)")
 	jailBootstrapCmd.Flags().BoolVarP(&jailBootstrapCmdExcludeLib32, "exclude-lib32", "", false, "Exclude Lib32 from this Jail Template")
-
-	// jail -> deploy
+	// Jail -> deploy
 	jailCmd.AddCommand(jailDeployCmd)
 	jailDeployCmd.Flags().StringVarP(&jailDeployCmdJailName, "name", "n", "", "Jail name, test-jail-1 (2, 3 and so on) will be used by default")
 	jailDeployCmd.Flags().StringVarP(&jailDeployCmdOsRelease, "release", "r", "", "Pick a FreeBSD OS Release version (your own OS release will be used by default)")
@@ -79,9 +98,6 @@ func init() {
 	jailDeployCmd.Flags().StringVarP(&jailDeployCmdIpAddress, "ip", "", "", "IP address")
 	jailDeployCmd.Flags().StringVarP(&jailDeployCmdNetwork, "network", "", "", "Network, eg: internal, external, etc")
 	jailDeployCmd.Flags().StringVarP(&jailDeployCmdDnsServer, "dns-sever", "", "", "Specify a custom DNS server, eg: 1.1.1.1, etc")
-
-	// jail -> destroy
-	jailCmd.AddCommand(jailDestroyCmd)
 
 	// VM command section
 	rootCmd.AddCommand(vmCmd)
@@ -151,7 +167,7 @@ func init() {
 	vmDeployCmd.Flags().StringVarP(&vmDeployRam, "ram", "r", "2G", "Amount of RAM to assign to this VM (ie 1500MB, 2GB, etc)")
 	vmDeployCmd.Flags().StringVarP(&osType, "os-type", "t", "debian12", "OS type or distribution (ie: debian12, ubuntu2004, etc)")
 	vmDeployCmd.Flags().StringVarP(&osTypeAlias, "os-stype", "", "", "Alias for the os-type, because it was misspelled in the past as os-stype")
-	vmDeployCmd.Flags().StringVarP(&zfsDataset, "dataset", "d", "zroot/vm-encrypted", "Choose the parent dataset for the VM deployment")
+	vmDeployCmd.Flags().StringVarP(&zfsDataset, "dataset", "d", "", "Choose the parent dataset for the VM deployment (first available dataset will be chosen as default)")
 	vmDeployCmd.Flags().BoolVarP(&vmDeployStartWhenReady, "start-now", "", false, "Whether to start the VM after it's deployed")
 	vmDeployCmd.Flags().StringVarP(&deployIpAddress, "ip-address", "", "", "Set the IP address for your new VM manually")
 	vmDeployCmd.Flags().StringVarP(&deployDnsServer, "dns-server", "", "", "Set a custom DNS server for your new VM")
@@ -245,7 +261,7 @@ func init() {
 	// Image command section
 	rootCmd.AddCommand(imageCmd)
 	imageCmd.AddCommand(imageDownloadCmd)
-	imageDownloadCmd.Flags().StringVarP(&imageDataset, "use-dataset", "d", "zroot/vm-encrypted", "Specify the dataset for this particular image")
+	imageDownloadCmd.Flags().StringVarP(&imageDataset, "dataset", "d", "", "Specify the dataset for this particular image (first available dataset is picked otherwise)")
 
 	// VM cmd -> secrets
 	vmCmd.AddCommand(vmSecretsCmd)
@@ -259,8 +275,8 @@ func init() {
 	// VM cmd -> change
 	rootCmd.AddCommand(changeCmd)
 	changeCmd.AddCommand(changeParentCmd)
-	changeParentCmd.Flags().StringVarP(&changeParentVmName, "vm", "", "", "VM Name (mandatory flag)")
-	changeParentCmd.Flags().StringVarP(&changeParentNewParent, "new-parent", "", "", "New parent name (optional, current hostname used by default)")
+	// changeParentCmd.Flags().StringVarP(&changeParentVmName, "vm", "", "", "VM Name (mandatory flag)")
+	changeParentCmd.Flags().StringVarP(&changeParentNewParent, "new-parent", "p", "", "New parent name (optional, current hostname used by default)")
 
 	// VM cmd -> nebula
 	rootCmd.AddCommand(nebulaCmd)
