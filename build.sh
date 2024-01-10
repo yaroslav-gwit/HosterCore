@@ -21,61 +21,61 @@ if test -z "${RELEASE}"; then
 
     printf "Building the ${GREEN}hoster${NC} module ... "
     # go build -a -ldflags="-X HosterCore/cmd.HosterVersion=${VERSION}" -o hoster
-    go build -ldflags="-X HosterCore/cmd.HosterVersion=${VERSION}" -o hoster
+    go build -ldflags="-X HosterCore/cmd.HosterVersion=${VERSION}" -trimpath -o hoster
 else
     echo -e "${GREEN}Building the RELEASE version of HosterCore${NC}"
     echo ""
 
     printf "Building the ${GREEN}hoster${NC} module ... "
-    go build -o hoster
+    go build -o hoster -trimpath
 fi
 printf "${GREEN}Done${NC}\n"
 
 printf "Building the ${GREEN}vm_supervisor_service${NC} module ... "
 cd vm_supervisor/
-go build
+go build -trimpath
 printf "${GREEN}Done${NC}\n"
 
 printf "Building the ${GREEN}self_update_service${NC} module ... "
 cd ..
 cd self_update/
-go build
+go build -trimpath
 printf "${GREEN}Done${NC}\n"
 
 printf "Building the ${GREEN}dns_server${NC} module ... "
 cd ..
 cd dns_server/
-go build
+go build -trimpath
 printf "${GREEN}Done${NC}\n"
 
 printf "Building the ${GREEN}mbuffer${NC} limiter module ... "
 cd ..
 cd mbuffer/
-go build
+go build -trimpath
 printf "${GREEN}Done${NC}\n"
 
 printf "Building the ${GREEN}node_exporter_custom${NC} module ... "
 cd ..
 cd node_exporter/
-go build
+go build -trimpath
 printf "${GREEN}Done${NC}\n"
 
 printf "Building the ${GREEN}hoster_rest_api${NC} module ... "
 cd ..
 cd rest_api/
-go build
+go build -trimpath
 printf "${GREEN}Done${NC}\n"
 
 printf "Building the ${GREEN}ha_watchdog${NC} module ... "
 cd ..
 cd ha_watchdog/
-go build
+go build -trimpath
 printf "${GREEN}Done${NC}\n"
 
 printf "Building the ${GREEN}scheduler${NC} module ... "
 cd ..
 cd scheduler/
-go build
+go build -trimpath
 printf "${GREEN}Done${NC}\n"
 
 echo -e "${LIGHT_GREEN}=== Build process done ===${NC}"
