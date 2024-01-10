@@ -82,8 +82,8 @@ func init() {
 		}
 	}
 
-	// Set log severity
 	log.SetLevel(logrus.DebugLevel)
+	log.SetReportCaller(true)
 }
 
 func main() {

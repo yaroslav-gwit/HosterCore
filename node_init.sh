@@ -13,6 +13,7 @@ PUBLIC_INTERFACE="${DEF_PUBLIC_INTERFACE:=$(ifconfig | head -1 | awk '{ print $1
 UPSTREAM_DNS_SERVER="${DEF_UPSTREAM_DNS_SERVER:=1.1.1.2}"
 
 #_ SET WORKING DIRECTORY _#
+zfs create zroot/opt
 HOSTER_WD="/opt/hoster-core/"
 
 #_ INSTALL THE REQUIRED PACKAGES _#
