@@ -142,6 +142,7 @@ func socketServer(wg *sync.WaitGroup) {
 }
 
 var cleanupLogMessage = regexp.MustCompile(`"`)
+var cleanupLogMessage2 = regexp.MustCompile(`""`)
 
 func socketReceive(c net.Conn) error {
 	log.Infof("Client connected [%s]", c.RemoteAddr().Network())
@@ -172,6 +173,7 @@ func socketReceive(c net.Conn) error {
 
 	message := strings.TrimSuffix(string(buffer), "\n")
 	message = cleanupLogMessage.ReplaceAllString(message, "")
+	message = cleanupLogMessage2.ReplaceAllString(message, "nil")
 	log.Infof("Client has sent a message [%s]", message)
 	defer c.Close()
 	return nil
