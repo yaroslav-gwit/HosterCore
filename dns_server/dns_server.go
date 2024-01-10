@@ -96,7 +96,6 @@ func main() {
 	log.Info("DNS Server is listening on 0.0.0.0:53")
 	err := server.ListenAndServe()
 	if err != nil {
-		// fmt.Println("Failed to start DNS server:", err)
 		emojlog.PrintLogMessage("Failed to start the DNS Server", emojlog.Error)
 		os.Exit(1)
 	}
@@ -171,41 +170,41 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 		if requestIsPublic {
 			response, server, err := queryExternalDNS(q)
 			if err != nil {
-				fmt.Println("Failed to query external DNS:", err)
+				log.Error("Failed to query external DNS:", err)
 				continue
 			}
 			m.Answer = append(m.Answer, response.Answer...)
-			logLine = clientIP + " -> " + q.Name + "::" + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
+			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
 			// go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
 			log.Info(logLine)
 		} else if requestIsVmName {
 			rr, err := dns.NewRR(q.Name + " IN A " + vmInfoList[vmListIndex].vmAddress)
 			if err != nil {
-				fmt.Println("Failed to create A record:", err)
+				log.Error("Failed to create an A record:", err)
 				continue
 			}
 			m.Answer = append(m.Answer, rr)
-			logLine = clientIP + " -> " + q.Name + "::" + parseAnswer(m.Answer) + " <- CACHE_HIT::VM"
+			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::VM"
 			// go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
 			log.Info(logLine)
 		} else if requestIsJailName {
 			rr, err := dns.NewRR(q.Name + " IN A " + jailInfoList[jailListIndex].JailAddress)
 			if err != nil {
-				fmt.Println("Failed to create A record:", err)
+				log.Error("Failed to create an A record:", err)
 				continue
 			}
 			m.Answer = append(m.Answer, rr)
-			logLine = clientIP + " -> " + q.Name + "::" + parseAnswer(m.Answer) + " <- CACHE_HIT::Jail"
+			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::Jail"
 			// go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
 			log.Info(logLine)
 		} else {
 			response, server, err := queryExternalDNS(q)
 			if err != nil {
-				fmt.Println("Failed to query external DNS:", err)
+				log.Error("Failed to query external DNS:", err)
 				continue
 			}
 			m.Answer = append(m.Answer, response.Answer...)
-			logLine = clientIP + " -> " + q.Name + "::" + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
+			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
 			// go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
 			log.Info(logLine)
 		}
@@ -213,7 +212,6 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 
 	err := w.WriteMsg(m)
 	if err != nil {
-		// fmt.Println("Failed to send DNS response:", err)
 		log.Error("Failed to send the DNS Response:" + err.Error())
 	}
 }
@@ -254,6 +252,8 @@ func queryExternalDNS(q dns.Question) (*dns.Msg, string, error) {
 var reAnySpaceChar = regexp.MustCompile(`\s+`)
 
 // Parses the DNS answer to only extract the IP address resolved
+//
+// Used purely for the logging purposes
 func parseAnswer(msg []dns.RR) string {
 	msgString := fmt.Sprintf("%s", msg)
 	splitAnswer := reAnySpaceChar.Split(msgString, -1)
@@ -264,7 +264,7 @@ func parseAnswer(msg []dns.RR) string {
 		}
 	}
 	if result == "[" {
-		result = "EMPTY RESPONSE"
+		result = "nil"
 	}
 	return result
 }
