@@ -2,13 +2,13 @@
 // Use of this source code is governed by a Apache License 2.0
 // license that can be found in the LICENSE fil
 
-package main
+package console_login
 
 import (
-	"HosterCore/utils/encryption"
-	"HosterCore/utils/host"
-	dialog "HosterCore/widgets/dialog"
-	edit "HosterCore/widgets/edit"
+	"HosterCore/internal/pkg/encryption"
+	"HosterCore/internal/pkg/host"
+	"HosterCore/internal/pkg/widgets/dialog"
+	"HosterCore/internal/pkg/widgets/edit"
 	"fmt"
 
 	"github.com/gcla/gowid"

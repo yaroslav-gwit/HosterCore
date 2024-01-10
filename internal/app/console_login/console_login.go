@@ -2,13 +2,12 @@
 // Use of this source code is governed by a Apache License 2.0
 // license that can be found in the LICENSE fil
 
-package main
+package console_login
 
 import (
-	hostconfig "HosterCore/models/host_config"
-	"HosterCore/utils/host"
+	hostconfig "HosterCore/internal/models/host_config"
+	"HosterCore/internal/pkg/host"
 	"fmt"
-	"os"
 
 	"github.com/gcla/gowid"
 	"github.com/gcla/gowid/widgets/styled"
@@ -66,9 +65,8 @@ func showHomeWidget(app *gowid.App) {
 	main_widget.SetSubWidget(home_controller.view, app)
 }
 
-//======================================================================
-
-func main() {
+// ======================================================================
+func New() error {
 	var err error
 
 	styles := gowid.Palette{
@@ -94,11 +92,12 @@ func main() {
 	})
 
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		return err
 	}
 
 	login_controller.ShowLoginDialog(main_widget, app)
 
 	app.SimpleMainLoop()
+
+	return nil
 }

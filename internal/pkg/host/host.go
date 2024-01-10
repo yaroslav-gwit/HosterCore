@@ -5,7 +5,7 @@
 package host
 
 import (
-	hostconfig "HosterCore/models/host_config"
+	hostconfig "HosterCore/internal/models/host_config"
 	"encoding/json"
 	"os"
 )

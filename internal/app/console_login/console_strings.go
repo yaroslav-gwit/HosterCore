@@ -2,7 +2,7 @@
 // Use of this source code is governed by a Apache License 2.0
 // license that can be found in the LICENSE fil
 
-package main
+package console_login
 
 import (
 	"fmt"
