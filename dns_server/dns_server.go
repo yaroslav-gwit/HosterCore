@@ -64,7 +64,7 @@ func init() {
 
 func main() {
 	// logFileOutput(LOG_SUPERVISOR, "Starting DNS server", logChannel)
-	log.Info("Starting DNS Server")
+	log.Info("Starting the DNS Server")
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGHUP)
 	go func() {

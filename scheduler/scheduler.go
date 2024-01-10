@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -87,6 +88,7 @@ func init() {
 }
 
 func main() {
+	log.Info("Starting the Scheduler service")
 	var wg sync.WaitGroup
 
 	wg.Add(1)
@@ -139,6 +141,8 @@ func socketServer(wg *sync.WaitGroup) {
 	}
 }
 
+var cleanupLogMessage = regexp.MustCompile(`"`)
+
 func socketReceive(c net.Conn) error {
 	log.Infof("Client connected [%s]", c.RemoteAddr().Network())
 
@@ -159,8 +163,6 @@ func socketReceive(c net.Conn) error {
 		}
 	}
 
-	message := strings.TrimSuffix(string(buffer), "\n")
-
 	job := Job{}
 	err := json.Unmarshal(buffer, &job)
 	if err != nil {
@@ -168,6 +170,8 @@ func socketReceive(c net.Conn) error {
 	}
 	addJob(job, &jobsMutex)
 
+	message := strings.TrimSuffix(string(buffer), "\n")
+	message = cleanupLogMessage.ReplaceAllString(message, "")
 	log.Infof("Client has sent a message [%s]", message)
 	defer c.Close()
 	return nil
