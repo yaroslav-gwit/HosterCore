@@ -174,7 +174,7 @@ func socketReceive(c net.Conn) error {
 	message := strings.TrimSuffix(string(buffer), "\n")
 	message = cleanupLogMessage2.ReplaceAllString(message, "nil")
 	message = cleanupLogMessage.ReplaceAllString(message, "")
-	log.Infof("Client has sent a message [%s]", message)
+	log.Infof("Client has sent a message: [%s]", message)
 	defer c.Close()
 	return nil
 }

@@ -175,7 +175,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 				continue
 			}
 			m.Answer = append(m.Answer, response.Answer...)
-			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  " + server
+			logLine = clientIP + " -> " + q.Name + "::" + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
 			// go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
 			log.Info(logLine)
 		} else if requestIsVmName {
@@ -185,7 +185,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 				continue
 			}
 			m.Answer = append(m.Answer, rr)
-			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  local DB VM"
+			logLine = clientIP + " -> " + q.Name + "::" + parseAnswer(m.Answer) + " <- CACHE_HIT::VM"
 			// go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
 			log.Info(logLine)
 		} else if requestIsJailName {
@@ -195,7 +195,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 				continue
 			}
 			m.Answer = append(m.Answer, rr)
-			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  local DB Jail"
+			logLine = clientIP + " -> " + q.Name + "::" + parseAnswer(m.Answer) + " <- CACHE_HIT::Jail"
 			// go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
 			log.Info(logLine)
 		} else {
@@ -205,7 +205,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 				continue
 			}
 			m.Answer = append(m.Answer, response.Answer...)
-			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  " + server + " did not match any filters, calling an external server"
+			logLine = clientIP + " -> " + q.Name + "::" + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
 			// go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
 			log.Info(logLine)
 		}
