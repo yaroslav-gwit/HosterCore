@@ -172,8 +172,8 @@ func socketReceive(c net.Conn) error {
 	addJob(job, &jobsMutex)
 
 	message := strings.TrimSuffix(string(buffer), "\n")
-	message = cleanupLogMessage.ReplaceAllString(message, "")
 	message = cleanupLogMessage2.ReplaceAllString(message, "nil")
+	message = cleanupLogMessage.ReplaceAllString(message, "")
 	log.Infof("Client has sent a message [%s]", message)
 	defer c.Close()
 	return nil
