@@ -76,7 +76,7 @@ func init() {
 	if logStdOut == "false" && len(logFile) > 2 {
 		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
-			osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_ERROR, "could not use this file for logging "+logFile+", falling back to STDOUT")
+			osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_ERROR, "SCHEDULER: could not use this file for logging "+logFile+", falling back to STDOUT")
 		} else {
 			log.SetOutput(file)
 		}

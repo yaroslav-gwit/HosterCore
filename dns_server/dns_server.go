@@ -3,22 +3,24 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"os/signal"
 	"regexp"
 	"strings"
 	"syscall"
-	"time"
 
 	"HosterCore/cmd"
+	"HosterCore/emojlog"
+	"HosterCore/osfreebsd"
 
 	"github.com/miekg/dns"
+	"github.com/sirupsen/logrus"
 )
 
 // Global state vars
 var vmInfoList []VmInfoStruct
 var jailInfoList []JailInfoStruct
-var logChannel chan LogMessage
+
+// var logChannel chan LogMessage
 var upstreamServers []string
 
 // Hardcoded failover DNS servers (in case user's main DNS server fails)
@@ -27,27 +29,56 @@ const DNS_SRV4_CLOUD_FLARE = "1.1.1.1:53"
 
 // Log file location
 // const LOG_FILE_LOCATION = "/var/run/dns_server"  // OLD LOG
-const LOG_FILE_LOCATION = "/var/log/hoster_dns_server.log"
+// const LOG_FILE_LOCATION = "/var/log/hoster_dns_server.log"
+
+var log = logrus.New()
 
 func init() {
-	logChannel = make(chan LogMessage)
-	go startLogging(LOG_FILE_LOCATION, logChannel)
+	logStdOut := os.Getenv("LOG_STDOUT")
+	logFile := os.Getenv("LOG_FILE")
+
+	// Log as JSON instead of the default ASCII/text formatter.
+	// log.SetFormatter(&logrus.JSONFormatter{})
+
+	// Output to stdout instead of the default stderr
+	log.SetOutput(os.Stdout)
+
+	// Log to file, but fallback to STDOUT if something goes wrong
+	if logStdOut == "false" && len(logFile) > 2 {
+		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_ERROR, "DNS_SERVER: could not use this file for logging "+logFile+", falling back to STDOUT")
+		} else {
+			log.SetOutput(file)
+		}
+	}
+
+	log.SetLevel(logrus.DebugLevel)
+	log.SetReportCaller(true)
 }
 
+// func init() {
+// 	logChannel = make(chan LogMessage)
+// 	go startLogging(LOG_FILE_LOCATION, logChannel)
+// }
+
 func main() {
-	logFileOutput(LOG_SUPERVISOR, "Starting DNS server", logChannel)
+	// logFileOutput(LOG_SUPERVISOR, "Starting DNS server", logChannel)
+	log.Info("Starting DNS Server")
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGHUP)
 	go func() {
 		for sig := range signals {
 			if sig == syscall.SIGHUP {
-				logFileOutput(LOG_SUPERVISOR, "Received a reload signal: SIGHUP", logChannel)
+				// logFileOutput(LOG_SUPERVISOR, "Received a reload signal: SIGHUP", logChannel)
+				log.Info("Received a reload signal: SIGHUP")
 				vmInfoList = getVmsInfo()
 				jailInfoList = getJailsInfo()
 				loadUpstreamDnsServers()
 			}
 			if sig == syscall.SIGKILL {
-				logFileOutput(LOG_SUPERVISOR, "Received a stop signal: SIGKILL", logChannel)
+				// logFileOutput(LOG_SUPERVISOR, "Received a stop signal: SIGKILL", logChannel)
+				log.Info("Received a reload signal: SIGKILL")
 				os.Exit(0)
 			}
 		}
@@ -61,17 +92,21 @@ func main() {
 	server := dns.Server{Addr: ":53", Net: "udp"}
 	server.Handler = dns.HandlerFunc(handleDNSRequest)
 
-	logFileOutput(LOG_SUPERVISOR, "DNS server listening on :53", logChannel)
+	// logFileOutput(LOG_SUPERVISOR, "DNS server listening on :53", logChannel)
+	log.Info("DNS Server is listening on 0.0.0.0:53")
 	err := server.ListenAndServe()
 	if err != nil {
-		fmt.Println("Failed to start DNS server:", err)
+		// fmt.Println("Failed to start DNS server:", err)
+		emojlog.PrintLogMessage("Failed to start the DNS Server", emojlog.Error)
+		os.Exit(1)
 	}
 }
 
 func loadUpstreamDnsServers() {
 	hostConfig, err := cmd.GetHostConfig()
 	if err != nil {
-		logFileOutput(LOG_SUPERVISOR, "Error loading host config file: "+err.Error(), logChannel)
+		// logFileOutput(LOG_SUPERVISOR, "Error loading host config file: "+err.Error(), logChannel)
+		log.Error("Error loading host config file:" + err.Error())
 	}
 
 	upstreamServers = []string{}
@@ -83,8 +118,10 @@ func loadUpstreamDnsServers() {
 			upstreamServers = append(upstreamServers, v+":53")
 		}
 	}
-	debugText := fmt.Sprintf("Loaded these servers from the host config file: %s", upstreamServers)
-	logFileOutput(LOG_SUPERVISOR, debugText, logChannel)
+
+	// debugText := fmt.Sprintf("Loaded these servers from the host config file: %s", upstreamServers)
+	// logFileOutput(LOG_SUPERVISOR, debugText, logChannel)
+	log.Infof("Loaded these servers from the host config file: %s", upstreamServers)
 }
 
 func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
@@ -139,7 +176,8 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 			m.Answer = append(m.Answer, response.Answer...)
 			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  " + server
-			go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
+			// go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
+			log.Info(logLine)
 		} else if requestIsVmName {
 			rr, err := dns.NewRR(q.Name + " IN A " + vmInfoList[vmListIndex].vmAddress)
 			if err != nil {
@@ -148,7 +186,8 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 			m.Answer = append(m.Answer, rr)
 			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  local DB VM"
-			go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
+			// go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
+			log.Info(logLine)
 		} else if requestIsJailName {
 			rr, err := dns.NewRR(q.Name + " IN A " + jailInfoList[jailListIndex].JailAddress)
 			if err != nil {
@@ -157,7 +196,8 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 			m.Answer = append(m.Answer, rr)
 			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  local DB Jail"
-			go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
+			// go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
+			log.Info(logLine)
 		} else {
 			response, server, err := queryExternalDNS(q)
 			if err != nil {
@@ -166,13 +206,15 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 			m.Answer = append(m.Answer, response.Answer...)
 			logLine = clientIP + "  ->  " + q.Name + "  <->  " + parseAnswer(m.Answer) + "  <-  " + server + " did not match any filters, calling an external server"
-			go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
+			// go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
+			log.Info(logLine)
 		}
 	}
 
 	err := w.WriteMsg(m)
 	if err != nil {
-		fmt.Println("Failed to send DNS response:", err)
+		// fmt.Println("Failed to send DNS response:", err)
+		log.Error("Failed to send the DNS Response:" + err.Error())
 	}
 }
 
@@ -282,41 +324,41 @@ type LogMessage struct {
 	Message string
 }
 
-func logFileOutput(msgType string, msgString string, logChannel chan LogMessage) {
-	logChannel <- LogMessage{
-		Type:    msgType,
-		Message: msgString,
-	}
-}
+// func logFileOutput(msgType string, msgString string, logChannel chan LogMessage) {
+// 	logChannel <- LogMessage{
+// 		Type:    msgType,
+// 		Message: msgString,
+// 	}
+// }
 
-func startLogging(logFileLocation string, logChannel chan LogMessage) {
-	logFile, err := os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
-	if err != nil {
-		_ = exec.Command("logger", err.Error()).Run()
-	}
+// func startLogging(logFileLocation string, logChannel chan LogMessage) {
+// 	logFile, err := os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
+// 	if err != nil {
+// 		_ = exec.Command("logger", err.Error()).Run()
+// 	}
 
-	defer func() {
-		if r := recover(); r != nil {
-			logFile, err = os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
-			if err != nil {
-				_ = exec.Command("logger", err.Error()).Run()
-			}
-			errorValue := fmt.Sprintf("PANIC AVOIDED: %v", r)
-			_ = exec.Command("logger", errorValue).Run()
-		}
+// 	defer func() {
+// 		if r := recover(); r != nil {
+// 			logFile, err = os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
+// 			if err != nil {
+// 				_ = exec.Command("logger", err.Error()).Run()
+// 			}
+// 			errorValue := fmt.Sprintf("PANIC AVOIDED: %v", r)
+// 			_ = exec.Command("logger", errorValue).Run()
+// 		}
 
-		logFile.Close()
-	}()
+// 		logFile.Close()
+// 	}()
 
-	for logMsg := range logChannel {
-		timeNow := time.Now().Format("2006-01-02_15-04-05")
-		logLine := timeNow + " [" + logMsg.Type + "] " + logMsg.Message + "\n"
-		_, err := logFile.WriteString(logLine)
-		if err != nil {
-			_ = exec.Command("logger", err.Error()).Run()
-		}
-	}
-}
+// 	for logMsg := range logChannel {
+// 		timeNow := time.Now().Format("2006-01-02_15-04-05")
+// 		logLine := timeNow + " [" + logMsg.Type + "] " + logMsg.Message + "\n"
+// 		_, err := logFile.WriteString(logLine)
+// 		if err != nil {
+// 			_ = exec.Command("logger", err.Error()).Run()
+// 		}
+// 	}
+// }
 
 func IsPublicDomain(topLevelDomain string) bool {
 	for _, v := range publicDomainList {
