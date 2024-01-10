@@ -54,6 +54,7 @@ func startSchedulerService() error {
 
 	os.Setenv("LOG_FILE", "/var/log/hoster_scheduler.log")
 	os.Setenv("LOG_STDOUT", "false")
+
 	execFile := path.Dir(execPath) + "/scheduler"
 	command := exec.Command(execFile)
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
