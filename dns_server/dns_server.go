@@ -27,10 +27,6 @@ var upstreamServers []string
 const DNS_SRV4_QUAD_NINE = "9.9.9.9:53"
 const DNS_SRV4_CLOUD_FLARE = "1.1.1.1:53"
 
-// Log file location
-// const LOG_FILE_LOCATION = "/var/run/dns_server"  // OLD LOG
-// const LOG_FILE_LOCATION = "/var/log/hoster_dns_server.log"
-
 var log = logrus.New()
 
 func init() {
@@ -56,11 +52,6 @@ func init() {
 	log.SetLevel(logrus.DebugLevel)
 	log.SetReportCaller(true)
 }
-
-// func init() {
-// 	logChannel = make(chan LogMessage)
-// 	go startLogging(LOG_FILE_LOCATION, logChannel)
-// }
 
 func main() {
 	// logFileOutput(LOG_SUPERVISOR, "Starting DNS server", logChannel)
@@ -323,42 +314,6 @@ type LogMessage struct {
 	Type    string
 	Message string
 }
-
-// func logFileOutput(msgType string, msgString string, logChannel chan LogMessage) {
-// 	logChannel <- LogMessage{
-// 		Type:    msgType,
-// 		Message: msgString,
-// 	}
-// }
-
-// func startLogging(logFileLocation string, logChannel chan LogMessage) {
-// 	logFile, err := os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
-// 	if err != nil {
-// 		_ = exec.Command("logger", err.Error()).Run()
-// 	}
-
-// 	defer func() {
-// 		if r := recover(); r != nil {
-// 			logFile, err = os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
-// 			if err != nil {
-// 				_ = exec.Command("logger", err.Error()).Run()
-// 			}
-// 			errorValue := fmt.Sprintf("PANIC AVOIDED: %v", r)
-// 			_ = exec.Command("logger", errorValue).Run()
-// 		}
-
-// 		logFile.Close()
-// 	}()
-
-// 	for logMsg := range logChannel {
-// 		timeNow := time.Now().Format("2006-01-02_15-04-05")
-// 		logLine := timeNow + " [" + logMsg.Type + "] " + logMsg.Message + "\n"
-// 		_, err := logFile.WriteString(logLine)
-// 		if err != nil {
-// 			_ = exec.Command("logger", err.Error()).Run()
-// 		}
-// 	}
-// }
 
 func IsPublicDomain(topLevelDomain string) bool {
 	for _, v := range publicDomainList {
