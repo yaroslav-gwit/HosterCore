@@ -46,7 +46,7 @@ func ZfsListMountPoints() (r []MountPoint, e error) {
 
 		// Set the encryption flag
 		encrypted := false
-		if split[3] != "off" {
+		if split[2] != "off" {
 			encrypted = true
 		}
 
