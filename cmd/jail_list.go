@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/pkg/emojlog"
+	HosterJail "HosterCore/pkg/hoster/jail"
 	"errors"
 	"fmt"
 	"os"
@@ -35,6 +36,12 @@ var (
 )
 
 func generateJailsTable(unixStyleTable bool) error {
+	r, err := HosterJail.ListAllSimple()
+	if err != nil {
+		return err
+	}
+	fmt.Println(r)
+
 	jailsList, err := GetAllJailsList()
 	if err != nil {
 		return err
