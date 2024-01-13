@@ -12,6 +12,9 @@ type JailListSimple struct {
 	HosterZfs.MountPoint
 }
 
+// Scans all Hoster-related ZFS datasets in search for Jail config files.
+//
+// Returns a list of Jails found + their basic ZFS dataset parameters (check the struct for the list of such parameters).
 func ListAllSimple() (r []JailListSimple, e error) {
 	hostConfig, err := HosterHost.GetHostConfig()
 	if err != nil {
