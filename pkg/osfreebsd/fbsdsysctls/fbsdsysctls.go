@@ -1,4 +1,4 @@
-package osfreebsd
+package fbsdsysctls
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-package osfreebsd
+package fbsdlogger
 
 import (
 	"errors"

@@ -9,8 +9,8 @@ import (
 	"syscall"
 
 	"HosterCore/cmd"
-	"HosterCore/emojlog"
-	"HosterCore/osfreebsd"
+	"HosterCore/pkg/emojlog"
+	"HosterCore/pkg/osfreebsd/fbsdlogger"
 
 	"github.com/miekg/dns"
 	"github.com/sirupsen/logrus"
@@ -43,7 +43,7 @@ func init() {
 	if logStdOut == "false" && len(logFile) > 2 {
 		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
-			osfreebsd.LoggerToSyslog(osfreebsd.LOGGER_SRV_SCHEDULER, osfreebsd.LOGGER_LEVEL_ERROR, "DNS_SERVER: could not use this file for logging "+logFile+", falling back to STDOUT")
+			fbsdlogger.LoggerToSyslog(fbsdlogger.LOGGER_SRV_SCHEDULER, fbsdlogger.LOGGER_LEVEL_ERROR, "DNS_SERVER: could not use this file for logging "+logFile+", falling back to STDOUT")
 		} else {
 			log.SetOutput(file)
 		}

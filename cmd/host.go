@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"HosterCore/osfreebsd"
+	"HosterCore/pkg/osfreebsd/fbsdosinfo"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -170,7 +170,7 @@ func JsonOutputHostInfo() JsonOutputHostInfoStruct {
 	var tSystemUptime string
 	var tSystemRam = ramResponse{}
 	var tSwapInfo swapInfoStruct
-	var tCpuInfo osfreebsd.CpuInfo
+	var tCpuInfo fbsdosinfo.CpuInfo
 	var tArcSize string
 	var tZrootInfo zrootInfoStruct
 	var tVCPU2PCURatio float64
@@ -199,7 +199,7 @@ func JsonOutputHostInfo() JsonOutputHostInfoStruct {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		tCpuInfo, _ = osfreebsd.GetCpuInfo()
+		tCpuInfo, _ = fbsdosinfo.GetCpuInfo()
 	}()
 
 	wg.Add(1)

@@ -1,4 +1,4 @@
-package osfreebsd
+package fbsdkill
 
 import (
 	"errors"

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"HosterCore/emojlog"
+	"HosterCore/pkg/emojlog"
 	"archive/zip"
 	"encoding/json"
 	"errors"

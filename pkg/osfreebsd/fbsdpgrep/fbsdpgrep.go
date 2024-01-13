@@ -1,4 +1,4 @@
-package osfreebsd
+package fbsdpgrep
 
 import (
 	"errors"
@@ -7,25 +7,6 @@ import (
 	"strconv"
 	"strings"
 )
-
-// Returns a slice of strings from `dmesg.boot` split at a carriage return
-func DmesgCpuGrep() ([]string, error) {
-	out, err := exec.Command("grep", "-i", "package", "/var/run/dmesg.boot").CombinedOutput()
-	if err != nil {
-		errorString := strings.TrimSpace(string(out)) + "; " + err.Error()
-		return []string{}, errors.New(errorString)
-	}
-
-	r := []string{}
-	for _, v := range strings.Split(string(out), "\n") {
-		v = strings.TrimSpace(v)
-		if len(v) > 0 {
-			r = append(r, v)
-		}
-	}
-
-	return r, nil
-}
 
 type PgrepPID struct {
 	ProcessId  int

@@ -31,6 +31,8 @@ else
 fi
 printf "${GREEN}Done${NC}\n"
 
+cd internal
+
 printf "Building the ${GREEN}vm_supervisor_service${NC} module ... "
 cd vm_supervisor/
 go build -trimpath

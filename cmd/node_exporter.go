@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"HosterCore/emojlog"
-	"HosterCore/osfreebsd"
+	"HosterCore/pkg/emojlog"
+	"HosterCore/pkg/osfreebsd/fbsdkill"
+	"HosterCore/pkg/osfreebsd/fbsdpgrep"
 	"errors"
 	"fmt"
 	"os"
@@ -111,7 +112,7 @@ func stopNodeExporter() error {
 	pids := customNodeExporterServiceInfo()
 
 	if pids.NodeExporterCustomRunning {
-		err := osfreebsd.KillProcess(osfreebsd.KillSignalTERM, pids.NodeExporterCustomPid)
+		err := fbsdkill.KillProcess(fbsdkill.KillSignalTERM, pids.NodeExporterCustomPid)
 		if err != nil {
 			return err
 		}
@@ -152,7 +153,7 @@ type CustomNodeExporterServiceInfo struct {
 func customNodeExporterServiceInfo() (pgrepOutput CustomNodeExporterServiceInfo) {
 	// out, _ := exec.Command("pgrep", "-lf", "node_exporter").CombinedOutput()
 
-	pids, err := osfreebsd.Pgrep("node_exporter")
+	pids, err := fbsdpgrep.Pgrep("node_exporter")
 	if err != nil {
 		return
 	}

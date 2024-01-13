@@ -1,4 +1,4 @@
-package osfreebsd
+package byteconversion
 
 import (
 	"fmt"

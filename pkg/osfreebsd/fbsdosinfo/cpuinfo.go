@@ -1,9 +1,12 @@
-package osfreebsd
+package fbsdosinfo
 
 import (
+	"HosterCore/pkg/osfreebsd/fbsdsysctls"
 	"errors"
+	"os/exec"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type CpuInfo struct {
@@ -42,23 +45,23 @@ func GetCpuInfo() (CpuInfo, error) {
 		// return c, err
 	}
 
-	allCpus, err := SysctlHwNcpu()
+	allCpus, err := fbsdsysctls.SysctlHwNcpu()
 	if err != nil {
 		return c, err
 	}
 	c.Cores = allCpus / (c.Threads * c.Sockets)
 
-	c.Model, err = SysctlHwModel()
+	c.Model, err = fbsdsysctls.SysctlHwModel()
 	if err != nil {
 		return c, err
 	}
 
-	c.Architecture, err = SysctlHwMachine()
+	c.Architecture, err = fbsdsysctls.SysctlHwMachine()
 	if err != nil {
 		return c, err
 	}
 
-	c.OverallCpus, err = SysctlHwNcpu()
+	c.OverallCpus, err = fbsdsysctls.SysctlHwNcpu()
 	if err != nil {
 		return c, err
 	}
@@ -66,43 +69,21 @@ func GetCpuInfo() (CpuInfo, error) {
 	return c, nil
 }
 
-type RamInfo struct {
-	RamFreeHuman    string
-	RamFreeBytes    uint64
-	RamUsedHuman    string
-	RamUsedBytes    uint64
-	RamOverallHuman string
-	RamOverallBytes uint64
-}
-
-// Returns a structured RAM information for your FreeBSD system
-func GetRamInfo() (RamInfo, error) {
-	r := RamInfo{}
-
-	hwPagesize, err := SysctlHwPagesize()
+// Returns a slice of strings from `dmesg.boot` split at a carriage return
+func DmesgCpuGrep() ([]string, error) {
+	out, err := exec.Command("grep", "-i", "package", "/var/run/dmesg.boot").CombinedOutput()
 	if err != nil {
-		return r, err
-	}
-	freePages, err := SysctlVmStatsVmVfreecount()
-	if err != nil {
-		return r, err
-	}
-	realMem, err := SysctlHwRealmem()
-	if err != nil {
-		return r, err
+		errorString := strings.TrimSpace(string(out)) + "; " + err.Error()
+		return []string{}, errors.New(errorString)
 	}
 
-	resultFreeBytes := freePages * hwPagesize
-	resultUsedBytes := realMem - resultFreeBytes
-
-	r.RamFreeHuman = BytesToHuman(resultFreeBytes)
-	r.RamFreeBytes = resultFreeBytes
-
-	r.RamUsedHuman = BytesToHuman(resultUsedBytes)
-	r.RamUsedBytes = resultUsedBytes
-
-	r.RamOverallHuman = BytesToHuman(realMem)
-	r.RamOverallBytes = realMem
+	r := []string{}
+	for _, v := range strings.Split(string(out), "\n") {
+		v = strings.TrimSpace(v)
+		if len(v) > 0 {
+			r = append(r, v)
+		}
+	}
 
 	return r, nil
 }
