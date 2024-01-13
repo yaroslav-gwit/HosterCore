@@ -13,7 +13,8 @@ type MountPoint struct {
 	Encrypted  bool
 }
 
-func ZfsListMountPoints() (r []MountPoint, e error) {
+// Lists all ZFS datasets, and extracts some additional information.
+func ListMountPoints() (r []MountPoint, e error) {
 	out, err := exec.Command("zfs", "list", "-o", "name,mountpoint,encryption").CombinedOutput()
 	if err != nil {
 		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())

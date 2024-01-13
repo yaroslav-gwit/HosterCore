@@ -22,7 +22,7 @@ func ListAllSimple() (r []JailListSimple, e error) {
 		return
 	}
 
-	mountPoints, err := HosterZfs.ZfsListMountPoints()
+	mountPoints, err := HosterZfs.ListMountPoints()
 	if err != nil {
 		e = err
 		return
