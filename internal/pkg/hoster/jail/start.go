@@ -14,7 +14,7 @@ import (
 
 type JailStart struct {
 	JailName      string
-	JailHostName  string
+	JailHostname  string
 	JailRootPath  string
 	CpuLimitReal  int
 	DefaultRouter string
