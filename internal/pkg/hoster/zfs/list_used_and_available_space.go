@@ -56,7 +56,7 @@ func ListUsedAndAvailableSpace() (r []SpaceUsedAndAvailable, e error) {
 			return
 		}
 
-		spaceAvailable, err := strconv.ParseUint(split[1], 10, 64)
+		spaceAvailable, err := strconv.ParseUint(split[2], 10, 64)
 		if err != nil {
 			e = err
 			return
