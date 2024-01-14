@@ -3,8 +3,8 @@ package cmd
 import (
 	"HosterCore/internal/pkg/emojlog"
 	HosterJail "HosterCore/internal/pkg/hoster/jail"
+	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/aquasecurity/table"
 	"github.com/spf13/cobra"
@@ -36,12 +36,6 @@ func generateJailsTable(unixStyleTable bool) error {
 		return err
 	}
 
-	// jailsList, err := GetAllJailsList()
-	// if err != nil {
-	// 	return err
-	// }
-
-	var ID = 0
 	var t = table.New(os.Stdout)
 	t.SetAlignment(table.AlignRight, //ID
 		table.AlignLeft,   // Jail Name
@@ -51,7 +45,7 @@ func generateJailsTable(unixStyleTable bool) error {
 		table.AlignLeft,   // Main IP Address
 		table.AlignLeft,   // Release
 		table.AlignLeft,   // Uptime
-		table.AlignLeft,   // Space Used
+		table.AlignCenter, // Space Used/Available
 		table.AlignLeft,   // Description
 	)
 
@@ -94,66 +88,10 @@ func generateJailsTable(unixStyleTable bool) error {
 		t.SetHeaderStyle(table.StyleBold)
 	}
 
-	// for _, v := range jailsList {
-	// 	jailConfig, err := GetJailConfig(v, true)
-	// 	if err != nil {
-	// 		fmt.Println("103 fail: " + err.Error())
-	// 		continue
-	// 	}
-
-	// 	ID = ID + 1
-
-	// 	jailStatus := ""
-	// 	jailOnline, err := checkJailOnline(jailConfig)
-	// 	if err != nil {
-	// 		fmt.Println("112 fail: " + err.Error())
-	// 		continue
-	// 		// return nil
-	// 	}
-
-	// 	if jailOnline {
-	// 		jailStatus = jailStatus + "🟢"
-	// 	} else {
-	// 		jailStatus = jailStatus + "🔴"
-	// 	}
-
-	// 	jailDsInfo, err := jailZfsDatasetInfo(jailConfig.ZfsDatasetPath)
-	// 	if err != nil {
-	// 		fmt.Println("125 fail: " + err.Error())
-	// 		continue
-	// 		// return err
-	// 	}
-	// 	if jailDsInfo.Encrypted {
-	// 		jailStatus = jailStatus + "🔒"
-	// 	}
-
-	// 	if jailConfig.Production {
-	// 		jailStatus = jailStatus + "🔁"
-	// 	}
-
-	// 	jailRelease, err := getJailReleaseInfo(jailConfig)
-	// 	if err != nil {
-	// 		fmt.Println("139 fail: " + err.Error())
-	// 		continue
-	// 		// return err
-	// 	}
-
-	// 	jailUptime := getJailUptime(v)
-
-	// 	t.AddRow(strconv.Itoa(ID),
-	// 		v,
-	// 		jailStatus,
-	// 		strconv.Itoa(jailConfig.CPULimitPercent)+"%",
-	// 		jailConfig.RAMLimit,
-	// 		jailConfig.IPAddress,
-	// 		jailRelease,
-	// 		jailUptime,
-	// 		jailDsInfo.StorageUsedHuman,
-	// 		jailConfig.Description,
-	// 	)
-	// }
+	ID := 0
 	for _, v := range jailList {
-		t.AddRow(strconv.Itoa(ID),
+		ID += 1
+		t.AddRow(fmt.Sprintf("%d", ID),
 			v.Name,
 			v.Status,
 			v.CPULimit,
@@ -169,45 +107,3 @@ func generateJailsTable(unixStyleTable bool) error {
 	t.Render()
 	return nil
 }
-
-// type JailZfsDatasetStruct struct {
-// 	Encrypted        bool
-// 	StorageUsedHuman string
-// 	StorageUsedBytes int
-// }
-
-// func jailZfsDatasetInfo(zfsDatasetPath string) (zfsDsInfo JailZfsDatasetStruct, zfsDsError error) {
-// 	zfsListOutput, err := exec.Command("zfs", "list", "-Hp", "-o", "name,encryption,used", zfsDatasetPath).CombinedOutput()
-// 	//    [0]                               [1]          [2]
-// 	// zroot/vm-encrypted/wordpress-one	aes-256-gcm	1244692480
-// 	if err != nil {
-// 		errorValue := "FATAL: " + string(zfsListOutput) + "; " + err.Error()
-// 		zfsDsError = errors.New(errorValue)
-// 		return
-// 	}
-
-// 	reSpaceSplit := regexp.MustCompile(`\s+`)
-// 	for _, v := range strings.Split(string(zfsListOutput), "\n") {
-// 		tempSplitList := reSpaceSplit.Split(v, -1)
-// 		if len(tempSplitList) <= 1 {
-// 			continue
-// 		}
-
-// 		if tempSplitList[1] == "off" {
-// 			zfsDsInfo.Encrypted = false
-// 		} else {
-// 			zfsDsInfo.Encrypted = true
-// 		}
-
-// 		zfsDsInfo.StorageUsedBytes, err = strconv.Atoi(tempSplitList[2])
-// 		if err != nil {
-// 			zfsDsError = err
-// 			return
-// 		}
-
-// 		zfsDsInfo.StorageUsedHuman = ByteConversion(zfsDsInfo.StorageUsedBytes)
-// 		return
-// 	}
-
-// 	return
-// }
