@@ -41,7 +41,7 @@ func Start(jailName string) error {
 	}
 	jailDsFolder := jailDsInfo.MountPoint.Mountpoint + "/" + jailName
 
-	jailConfig, err := GetJailConfig(jailName)
+	jailConfig, err := GetJailConfig(jailDsFolder)
 	if err != nil {
 		return err
 	}
