@@ -56,7 +56,7 @@ func Start(jailName string) error {
 	jailStartConf.JailConfig = jailConfig
 	jailStartConf.JailName = jailName
 	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
-	jailStartConf.JailHostName = jailName + "." + hostname + "." + "lan"
+	jailStartConf.JailHostname = jailName + "." + hostname + "." + "lan"
 	jailStartConf.JailRootPath = jailDsFolder + "/" + JAIL_ROOT_FOLDER
 	cpus, err := FreeBSDsysctls.SysctlHwVmmMaxcpu()
 	if err != nil {
