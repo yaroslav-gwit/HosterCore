@@ -40,6 +40,7 @@ func ListAllExtendedTable() (r []JailListExtendedTable, e error) {
 	}
 
 	zfsSpace, err := HosterZfs.ListUsedAndAvailableSpace()
+	fmt.Println(zfsSpace)
 	if err != nil {
 		e = err
 		return
