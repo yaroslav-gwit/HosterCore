@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"HosterCore/pkg/emojlog"
-	"HosterCore/pkg/osfreebsd/fbsdkill"
-	"HosterCore/pkg/osfreebsd/fbsdpgrep"
+	"HosterCore/internal/pkg/emojlog"
+	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
+	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
 	"errors"
 	"fmt"
 	"os"
@@ -145,7 +145,7 @@ func stopDnsServer() error {
 		}
 	}
 
-	err = fbsdkill.KillProcess(fbsdkill.KillSignalTERM, serviceInfo.Pid)
+	err = FreeBSDKill.KillProcess(FreeBSDKill.KillSignalTERM, serviceInfo.Pid)
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func ReloadDnsServer() error {
 		}
 	}
 
-	err = fbsdkill.KillProcess(fbsdkill.KillSignalHUP, serviceInfo.Pid)
+	err = FreeBSDKill.KillProcess(FreeBSDKill.KillSignalHUP, serviceInfo.Pid)
 	if err != nil {
 		return err
 	}
@@ -193,7 +193,7 @@ type DnsServerServiceInfoStruct struct {
 }
 
 func dnsServerServiceInfo() (pgrepOutput DnsServerServiceInfoStruct, finalError error) {
-	pids, err := fbsdpgrep.Pgrep("dns_server")
+	pids, err := FreeBSDPgrep.Pgrep("dns_server")
 	if err != nil {
 		reMatchExit1 := regexp.MustCompile(`exit status 1`)
 		if reMatchExit1.MatchString(err.Error()) {

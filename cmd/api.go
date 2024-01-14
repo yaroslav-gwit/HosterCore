@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"HosterCore/pkg/emojlog"
-	"HosterCore/pkg/osfreebsd/fbsdkill"
+	"HosterCore/internal/pkg/emojlog"
+	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -166,12 +166,12 @@ func StopApiServer() error {
 
 	if services.ApiServerRunning {
 		if services.HaWatchdogRunning {
-			err := fbsdkill.KillProcess(fbsdkill.KillSignalINT, services.ApiServerPid)
+			err := FreeBSDKill.KillProcess(FreeBSDKill.KillSignalINT, services.ApiServerPid)
 			if err != nil {
 				return err
 			}
 		} else {
-			err := fbsdkill.KillProcess(fbsdkill.KillSignalTERM, services.ApiServerPid)
+			err := FreeBSDKill.KillProcess(FreeBSDKill.KillSignalTERM, services.ApiServerPid)
 			if err != nil {
 				return err
 			}
@@ -180,7 +180,7 @@ func StopApiServer() error {
 	}
 
 	if services.HaWatchdogRunning {
-		err := fbsdkill.KillProcess(fbsdkill.KillSignalTERM, services.HaWatchDogPid)
+		err := FreeBSDKill.KillProcess(FreeBSDKill.KillSignalTERM, services.HaWatchDogPid)
 		if err != nil {
 			return err
 		}

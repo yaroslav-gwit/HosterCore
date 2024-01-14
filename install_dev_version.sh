@@ -27,42 +27,42 @@ fi
 
 # 2
 if [[ $1 == 2 || $1 == "vm_supervisor" || ${BUILD_ALL} == yes ]]; then
-    cp -v internal/vm_supervisor/vm_supervisor /opt/hoster-core/vm_supervisor_service 2>/dev/null || echo -e "${ERROR_TEXT} vm_supervisor_service binary is in use"
+    cp -v internal/app/vm_supervisor/vm_supervisor /opt/hoster-core/vm_supervisor_service 2>/dev/null || echo -e "${ERROR_TEXT} vm_supervisor_service binary is in use"
 fi
 
 # 3
 if [[ $1 == 3 || ${BUILD_ALL} == yes ]]; then
-    cp -v internal/self_update/self_update /opt/hoster-core/self_update_service 2>/dev/null || echo -e "${ERROR_TEXT} self_update_service binary is in use"
+    cp -v internal/app/self_update/self_update /opt/hoster-core/self_update_service 2>/dev/null || echo -e "${ERROR_TEXT} self_update_service binary is in use"
 fi
 
 # 4
 if [[ $1 == 4 || ${BUILD_ALL} == yes ]]; then
-    cp -v internal/dns_server/dns_server /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} dns_server binary is in use"
+    cp -v internal/app/dns_server/dns_server /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} dns_server binary is in use"
 fi
 
 # 5
 if [[ $1 == 5 || ${BUILD_ALL} == yes ]]; then
-    cp -v internal/mbuffer/mbuffer /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} mbuffer binary is in use"
+    cp -v internal/app/mbuffer/mbuffer /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} mbuffer binary is in use"
 fi
 
 # 6
 if [[ $1 == 6 || ${BUILD_ALL} == yes ]]; then
-    cp -v internal/node_exporter/node_exporter /opt/hoster-core/node_exporter_custom 2>/dev/null || echo -e "${ERROR_TEXT} node_exporter_custom binary is in use"
+    cp -v internal/app/node_exporter/node_exporter /opt/hoster-core/node_exporter_custom 2>/dev/null || echo -e "${ERROR_TEXT} node_exporter_custom binary is in use"
 fi
 
 # 7
 if [[ $1 == 7 || ${BUILD_ALL} == yes ]]; then
-    cp -v internal/rest_api/rest_api /opt/hoster-core/hoster_rest_api 2>/dev/null || echo -e "${ERROR_TEXT} hoster_rest_api binary is in use"
+    cp -v internal/app/rest_api/rest_api /opt/hoster-core/hoster_rest_api 2>/dev/null || echo -e "${ERROR_TEXT} hoster_rest_api binary is in use"
 fi
 
 # 8
 if [[ $1 == 8 || ${BUILD_ALL} == yes ]]; then
-    cp -v internal/ha_watchdog/ha_watchdog /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} ha_watchdog binary is in use"
+    cp -v internal/app/ha_watchdog/ha_watchdog /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} ha_watchdog binary is in use"
 fi
 
 # 9
 if [[ $1 == 9 || ${BUILD_ALL} == yes ]]; then
-    cp -v internal/scheduler/scheduler /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} scheduler binary is in use"
+    cp -v internal/app/scheduler/scheduler /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} scheduler binary is in use"
 fi
 
 echo -e "${LIGHT_GREEN}=== Installation process done ===${NC}"

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"HosterCore/pkg/emojlog"
+	"HosterCore/internal/pkg/emojlog"
 	"bufio"
 	"errors"
 	"fmt"

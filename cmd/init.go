@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"HosterCore/pkg/emojlog"
-	"HosterCore/pkg/osfreebsd/fbsdosinfo"
+	"HosterCore/internal/pkg/emojlog"
+	FreeBSDOsInfo "HosterCore/internal/pkg/freebsd/info"
 	"errors"
 	"os"
 	"os/exec"
@@ -135,7 +135,7 @@ func returnMissingModules() ([]string, error) {
 	kernelModuleList := []string{"vmm", "nmdm", "if_bridge", "if_vxlan", "if_epair", "if_tap", "if_tuntap", "pf", "pflog"}
 
 	// Load CPU temperature kernel module
-	cpuInfo, err := fbsdosinfo.GetCpuInfo()
+	cpuInfo, err := FreeBSDOsInfo.GetCpuInfo()
 	if err != nil {
 		return []string{}, err
 	}

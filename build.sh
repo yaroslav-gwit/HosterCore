@@ -31,7 +31,7 @@ else
 fi
 printf "${GREEN}Done${NC}\n"
 
-cd internal
+cd internal/app
 
 printf "Building the ${GREEN}vm_supervisor_service${NC} module ... "
 cd vm_supervisor/

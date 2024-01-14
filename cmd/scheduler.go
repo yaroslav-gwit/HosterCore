@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"HosterCore/pkg/emojlog"
-	"HosterCore/pkg/osfreebsd/fbsdkill"
-	"HosterCore/pkg/osfreebsd/fbsdpgrep"
-	"HosterCore/pkg/osfreebsd/fbsdsysctls"
+	"HosterCore/internal/pkg/emojlog"
+	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
+	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
+	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -88,7 +88,7 @@ var (
 )
 
 func statusSchedulerService() error {
-	pids, err := fbsdpgrep.Pgrep("scheduler")
+	pids, err := FreeBSDPgrep.Pgrep("scheduler")
 	if err != nil {
 		fmt.Println(" 🔴 Scheduler IS NOT running")
 		return nil
@@ -130,7 +130,7 @@ var (
 )
 
 func stopSchedulerService() error {
-	pids, err := fbsdpgrep.Pgrep("scheduler")
+	pids, err := FreeBSDPgrep.Pgrep("scheduler")
 	if err != nil {
 		emojlog.PrintLogMessage("Scheduler is not running", emojlog.Error)
 		return nil
@@ -144,7 +144,7 @@ func stopSchedulerService() error {
 	reMatchScheduler := regexp.MustCompile(`/scheduler`)
 	for _, v := range pids {
 		if reMatchScheduler.MatchString(v.ProcessCmd) {
-			err := fbsdkill.KillProcess(fbsdkill.KillSignalTERM, v.ProcessId)
+			err := FreeBSDKill.KillProcess(FreeBSDKill.KillSignalTERM, v.ProcessId)
 			if err != nil {
 				emojlog.PrintLogMessage("Could not stop the Scheduler "+err.Error(), emojlog.Error)
 				return nil
@@ -217,7 +217,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			hostname, err := fbsdsysctls.SysctlKernHostname()
+			hostname, err := FreeBSDsysctls.SysctlKernHostname()
 			if err != nil {
 				emojlog.PrintLogMessage("could not get a hostname: "+err.Error(), emojlog.Error)
 				os.Exit(1)

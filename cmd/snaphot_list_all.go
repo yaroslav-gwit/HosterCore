@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"HosterCore/pkg/emojlog"
-	"HosterCore/pkg/zfsutils"
+	"HosterCore/internal/pkg/emojlog"
+	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"fmt"
 	"os"
 	"regexp"
