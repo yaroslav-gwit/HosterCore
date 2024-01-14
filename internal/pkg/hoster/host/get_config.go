@@ -28,8 +28,9 @@ const confFileName = "host_config.json"
 // Used only in the GetHostConfig().
 func getHostConfigLocation() (r string, e error) {
 	for _, v := range HosterLocations.GetConfigFolders() {
-		if FileExists.CheckUsingOsStat(v + "/" + confFileName) {
-			r = v
+		configLocation := v + "/" + confFileName
+		if FileExists.CheckUsingOsStat(configLocation) {
+			r = configLocation
 			return
 		}
 	}
