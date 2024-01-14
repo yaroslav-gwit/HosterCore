@@ -52,6 +52,7 @@ func ListAllExtendedTable() (r []JailListExtendedTable, e error) {
 
 		jailConfig, err := GetJailConfig(jailDsFolder)
 		if err != nil {
+			fmt.Println(err)
 			continue
 		}
 
@@ -85,6 +86,7 @@ func ListAllExtendedTable() (r []JailListExtendedTable, e error) {
 
 		release, err := ReleaseVersion(jailDsFolder)
 		if err != nil {
+			fmt.Println(err)
 			continue
 		}
 		jailStruct.Release = release
