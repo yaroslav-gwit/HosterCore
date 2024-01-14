@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	HosterTables "HosterCore/internal/pkg/hoster/tables.go"
+
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +19,7 @@ var rootCmd = &cobra.Command{
 		printZfsDatasetInfo()
 		printNetworkInfoTable()
 		vmListMain()
-		generateJailsTable(false)
+		HosterTables.GenerateJailsTable(false)
 	},
 }
 
