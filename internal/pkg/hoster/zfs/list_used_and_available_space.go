@@ -16,7 +16,7 @@ type SpaceUsedAndAvailable struct {
 
 // Lists all ZFS datasets, and extracts some additional information.
 func ListUsedAndAvailableSpace() (r []SpaceUsedAndAvailable, e error) {
-	out, err := exec.Command("zfs", "list", "-o", "name,mountpoint,encryption").CombinedOutput()
+	out, err := exec.Command("zfs", "list", "-p,", "-o", "name,used,available").CombinedOutput()
 	if err != nil {
 		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
 		return
