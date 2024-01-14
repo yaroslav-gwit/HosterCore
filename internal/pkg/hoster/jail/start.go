@@ -112,7 +112,7 @@ func Start(jailName string) error {
 		jailConfigString = jailConfigString + "\n}"
 	}
 
-	err = createMissingConfigFiles(jailConfig, jailDsInfo.MountPoint.Mountpoint+"/"+"root_folder")
+	err = createMissingConfigFiles(jailConfig, jailDsFolder+"/"+"root_folder")
 	if err != nil {
 		return err
 	}
