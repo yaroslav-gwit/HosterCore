@@ -48,7 +48,7 @@ func ListAllExtendedTable() (r []JailListExtendedTable, e error) {
 	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 	for _, v := range jails {
 		jailStruct := JailListExtendedTable{}
-		jailDsFolder := v.MountPoint.DsName + "/" + v.JailName
+		jailDsFolder := v.MountPoint.Mountpoint + "/" + v.JailName
 
 		jailConfig, err := GetJailConfig(jailDsFolder)
 		if err != nil {
