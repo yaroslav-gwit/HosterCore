@@ -19,6 +19,7 @@ type JailStart struct {
 	CpuLimitReal  int
 	DefaultRouter string
 	Netmask       string
+	DnsServer     string
 	JailConfig
 	HosterNetwork.EpairInterface
 }
@@ -75,6 +76,7 @@ func Start(jailName string) error {
 			jailStartConf.DefaultRouter = v.Gateway
 			Netmask := strings.Split(v.Subnet, "/")[1]
 			jailStartConf.Netmask = Netmask
+			jailStartConf.DNSServer = v.Gateway
 		}
 	}
 	// EOF Set JailStart values
