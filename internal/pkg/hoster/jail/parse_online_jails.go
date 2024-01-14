@@ -12,7 +12,7 @@ type LiveJailStruct struct {
 	ID         int
 	Name       string
 	Path       string
-	Running    bool
+	Dying      bool
 	Ip4address string
 	Ip6address string
 }
@@ -63,7 +63,7 @@ func GetRunningJails() ([]LiveJailStruct, error) {
 		tempStruct.Name = tempList[1]
 		tempStruct.Path = tempList[2]
 
-		tempStruct.Running, err = strconv.ParseBool(tempList[3])
+		tempStruct.Dying, err = strconv.ParseBool(tempList[3])
 		if err != nil {
 			return []LiveJailStruct{}, err
 		}

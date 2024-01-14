@@ -9,6 +9,7 @@ import (
 
 type JailListExtendedTable struct {
 	Name             string
+	Running          bool
 	Status           string
 	CPULimit         string
 	RAMLimit         string
@@ -61,15 +62,17 @@ func ListAllExtendedTable() (r []JailListExtendedTable, e error) {
 		if jailConfig.Parent == hostname {
 			for _, vv := range onlineJails {
 				if v.JailName == vv.Name {
-					if vv.Running {
-						jailStruct.Status += JAIL_EMOJI_ONLINE
-					} else {
-						jailStruct.Status += JAIL_EMOJI_OFFLINE
-					}
+					jailStruct.Running = true
 				}
 			}
 		} else {
 			jailStruct.Status += JAIL_EMOJI_BACKUP
+		}
+
+		if jailStruct.Running {
+			jailStruct.Status += JAIL_EMOJI_ONLINE
+		} else {
+			jailStruct.Status += JAIL_EMOJI_OFFLINE
 		}
 
 		if v.MountPoint.Encrypted {

@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"facette.io/natsort"
 	"github.com/spf13/cobra"
@@ -174,34 +173,34 @@ func checkJailOnline(jailConfig JailConfigFileStruct) (jailOnline bool, jailErro
 // Checks `/etc/os-release` inside of the jail, and parses out the FreeBSD release from it (eg 13.2-RELEASE).
 //
 // Returns "-", if the Jail was just deployed, because the `/etc/os-release` is missing.
-func getJailReleaseInfo(jailConfig JailConfigFileStruct) (jailRelease string, jailError error) {
-	var jailOsReleaseFile []byte
-	var err error
+// func getJailReleaseInfo(jailConfig JailConfigFileStruct) (jailRelease string, jailError error) {
+// 	var jailOsReleaseFile []byte
+// 	var err error
 
-	if FileExists(jailConfig.JailRootPath + "/etc/os-release") {
-		jailOsReleaseFile, err = os.ReadFile(jailConfig.JailRootPath + "/etc/os-release")
-		if err != nil {
-			jailError = err
-			return
-		}
-	} else {
-		jailRelease = "-"
-	}
+// 	if FileExists(jailConfig.JailRootPath + "/etc/os-release") {
+// 		jailOsReleaseFile, err = os.ReadFile(jailConfig.JailRootPath + "/etc/os-release")
+// 		if err != nil {
+// 			jailError = err
+// 			return
+// 		}
+// 	} else {
+// 		jailRelease = "-"
+// 	}
 
-	reMatchVersion := regexp.MustCompile(`VERSION=`)
-	reMatchQuotes := regexp.MustCompile(`"`)
+// 	reMatchVersion := regexp.MustCompile(`VERSION=`)
+// 	reMatchQuotes := regexp.MustCompile(`"`)
 
-	for _, v := range strings.Split(string(jailOsReleaseFile), "\n") {
-		if reMatchVersion.MatchString(v) {
-			v = reMatchVersion.ReplaceAllString(v, "")
-			v = reMatchQuotes.ReplaceAllString(v, "")
-			jailRelease = v
-			return
-		}
-	}
+// 	for _, v := range strings.Split(string(jailOsReleaseFile), "\n") {
+// 		if reMatchVersion.MatchString(v) {
+// 			v = reMatchVersion.ReplaceAllString(v, "")
+// 			v = reMatchQuotes.ReplaceAllString(v, "")
+// 			jailRelease = v
+// 			return
+// 		}
+// 	}
 
-	return
-}
+// 	return
+// }
 
 func createJailUptimeStateFile(jailName string) {
 	clearJailUptimeStateFile(jailName)
@@ -212,39 +211,39 @@ func clearJailUptimeStateFile(jailName string) {
 	_ = os.Remove("/var/run/hoster_jail_state_" + jailName)
 }
 
-func getJailUptime(jailName string) (jailUptime string) {
-	fileStat, err := os.Stat("/var/run/hoster_jail_state_" + jailName)
-	if err != nil {
-		jailUptime = "0s"
-		return
-	}
+// func getJailUptime(jailName string) (jailUptime string) {
+// 	fileStat, err := os.Stat("/var/run/hoster_jail_state_" + jailName)
+// 	if err != nil {
+// 		jailUptime = "0s"
+// 		return
+// 	}
 
-	rawUptime := fileStat.ModTime().Unix()
-	jailUptime = convertUnixTimeToUptime(rawUptime)
-	return
-}
+// 	rawUptime := fileStat.ModTime().Unix()
+// 	jailUptime = convertUnixTimeToUptime(rawUptime)
+// 	return
+// }
 
-func convertUnixTimeToUptime(uptime int64) string {
-	unixTime := time.Unix(uptime, 0)
+// func convertUnixTimeToUptime(uptime int64) string {
+// 	unixTime := time.Unix(uptime, 0)
 
-	timeSince := time.Since(unixTime).Seconds()
-	secondsModulus := int(timeSince) % 60.0
+// 	timeSince := time.Since(unixTime).Seconds()
+// 	secondsModulus := int(timeSince) % 60.0
 
-	minutesSince := (timeSince - float64(secondsModulus)) / 60.0
-	minutesModulus := int(minutesSince) % 60.0
+// 	minutesSince := (timeSince - float64(secondsModulus)) / 60.0
+// 	minutesModulus := int(minutesSince) % 60.0
 
-	hoursSince := (minutesSince - float64(minutesModulus)) / 60
-	hoursModulus := int(hoursSince) % 24
+// 	hoursSince := (minutesSince - float64(minutesModulus)) / 60
+// 	hoursModulus := int(hoursSince) % 24
 
-	daysSince := (int(hoursSince) - hoursModulus) / 24
+// 	daysSince := (int(hoursSince) - hoursModulus) / 24
 
-	result := strconv.Itoa(daysSince) + "d "
-	result = result + strconv.Itoa(hoursModulus) + "h "
-	result = result + strconv.Itoa(minutesModulus) + "m "
-	result = result + strconv.Itoa(secondsModulus) + "s"
+// 	result := strconv.Itoa(daysSince) + "d "
+// 	result = result + strconv.Itoa(hoursModulus) + "h "
+// 	result = result + strconv.Itoa(minutesModulus) + "m "
+// 	result = result + strconv.Itoa(secondsModulus) + "s"
 
-	return result
-}
+// 	return result
+// }
 
 func getMajorFreeBsdRelease() (release string, releaseError error) {
 	out, err := exec.Command("uname", "-r").CombinedOutput()
