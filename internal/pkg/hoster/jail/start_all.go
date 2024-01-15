@@ -23,12 +23,20 @@ func StartAll() error {
 		return err
 	}
 
+	first := true
 	for _, v := range jails {
 		running, err := isJailRunning(v.JailName)
 		if err != nil || running {
 			log.Error(err.Error())
 			continue
 		}
+
+		if first {
+			first = false
+		} else {
+			log.Spacer()
+		}
+
 		log.Info("Starting the Jail: " + v.JailName)
 
 		jailDsInfo := HosterJailUtils.JailListSimple{}
@@ -83,7 +91,6 @@ func StartAll() error {
 		}
 
 		log.Info("The Jail is now running: " + v.JailName)
-		log.Spacer()
 	}
 
 	return nil
