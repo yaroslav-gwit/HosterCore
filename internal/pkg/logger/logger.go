@@ -11,20 +11,28 @@ import (
 )
 
 type Log struct {
-	Logger       *logrus.Logger
-	FileLocation string
+	*logrus.Logger
+	ConfigSet bool
 }
 
-// Log as JSON instead of the default ASCII/text formatter.
-// log.SetFormatter(&logrus.JSONFormatter{})
 func New() *Log {
-	// Initialize Logrus' Struct
+	// Initialize Logrus' Struct to avoid de-ref pointer issues
 	l := &Log{
 		Logger: logrus.New(),
 	}
 
-	// Set log output
-	l.Logger.SetOutput(os.Stdout)
+	// Log as JSON instead of the default ASCII/text formatter.
+	// l.Logger.SetFormatter(&logrus.JSONFormatter{})
+
+	// Set the logger's output to /dev/null by default,
+	// if no file was configured using the SetFileLocation()
+	nullFile, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0666)
+	if err != nil {
+		// Handle the error if unable to open /dev/null
+		panic(err)
+	}
+	l.Logger.SetOutput(nullFile)
+
 	// Set log level
 	l.Logger.SetLevel(logrus.DebugLevel)
 	// Report caller func
@@ -39,7 +47,6 @@ func (l *Log) SetFileLocation(logLocation string) {
 		FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "could not use this file for logging "+logLocation+", falling back to STDOUT")
 	} else {
 		l.Logger.SetOutput(file)
-		l.FileLocation = logLocation
 	}
 }
 
@@ -51,9 +58,7 @@ func (l *Log) Info(value interface{}) {
 		emojlog.PrintLogLine(emojlog.Info, stringValue)
 	}
 
-	if len(l.FileLocation) > 1 {
-		l.Logger.Info(value)
-	}
+	l.Logger.Info(value)
 }
 
 // Test Error Func
@@ -64,7 +69,15 @@ func (l *Log) Error(value interface{}) {
 		emojlog.PrintLogLine(emojlog.Error, stringValue)
 	}
 
-	if len(l.FileLocation) > 1 {
-		l.Logger.Info(value)
-	}
+	l.Logger.Error(value)
+}
+
+// Test Info Func
+func (l *Log) InfoToFile(value interface{}) {
+	l.Logger.Info(value)
+}
+
+// Test Error Func
+func (l *Log) ErrorToFile(value interface{}) {
+	l.Logger.Error(value)
 }

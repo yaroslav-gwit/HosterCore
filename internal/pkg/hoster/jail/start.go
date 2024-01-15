@@ -26,9 +26,18 @@ type JailStart struct {
 	HosterNetwork.EpairInterface
 }
 
+var log = HosterLogger.New()
+
+// SetLogger sets the logger for this package
+func SetLogger(l *HosterLogger.Log) {
+	log = l
+}
+
 func Start(jailName string) error {
-	log := HosterLogger.New()
-	log.SetFileLocation("/var/log/hoster_audit_jail.log")
+	// If the logger was already set, ignore this
+	if !log.ConfigSet {
+		log.SetFileLocation("/var/log/hoster_audit_jail.log")
+	}
 	log.Info("Starting the Jail: " + jailName)
 
 	running, err := isJailRunning(jailName)
@@ -36,8 +45,9 @@ func Start(jailName string) error {
 		return err
 	}
 	if running {
-		//lint:ignore ST1005 ignore this!
-		return errors.New("Jail is already running")
+		errorValue := "Jail is already running: " + jailName
+		log.ErrorToFile(errorValue)
+		return errors.New(errorValue)
 	}
 
 	// Check if Jail exists and get it's dataset configuration
