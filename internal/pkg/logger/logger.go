@@ -11,39 +11,23 @@ import (
 )
 
 type Log struct {
-	Out          *logrus.Logger
-	Err          *logrus.Logger
-	File         *logrus.Logger
+	Logger       *logrus.Logger
 	FileLocation string
 }
 
-var logger *Log
-
-func init() {
-	// Log as JSON instead of the default ASCII/text formatter.
-	// log.SetFormatter(&logrus.JSONFormatter{})
-	// logger.SetDefaultValues()
-}
+// Log as JSON instead of the default ASCII/text formatter.
+// log.SetFormatter(&logrus.JSONFormatter{})
 func New() *Log {
-	logger.SetDefaultValues()
-	return logger
-}
+	l := &Log{}
 
-func (l *Log) SetDefaultValues() {
 	// Set log outputs
-	l.Err.SetOutput(os.Stderr)
-	l.Out.SetOutput(os.Stdout)
-	l.File.SetOutput(os.Stdout)
-
+	l.Logger.SetOutput(os.Stdout)
 	// Set log level
-	l.Err.SetLevel(logrus.DebugLevel)
-	l.Out.SetLevel(logrus.DebugLevel)
-	l.File.SetLevel(logrus.DebugLevel)
-
+	l.Logger.SetLevel(logrus.DebugLevel)
 	// Report caller func
-	l.Err.SetReportCaller(true)
-	l.Out.SetReportCaller(true)
-	l.File.SetReportCaller(true)
+	l.Logger.SetReportCaller(true)
+
+	return l
 }
 
 func (l *Log) SetFileLocation(logLocation string) {
@@ -51,7 +35,7 @@ func (l *Log) SetFileLocation(logLocation string) {
 	if err != nil {
 		FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "could not use this file for logging "+logLocation+", falling back to STDOUT")
 	} else {
-		l.File.SetOutput(file)
+		l.Logger.SetOutput(file)
 		l.FileLocation = logLocation
 	}
 }
@@ -64,8 +48,8 @@ func (l *Log) Info(value interface{}) {
 		emojlog.PrintLogLine(emojlog.Info, stringValue)
 	}
 
-	if len(logger.FileLocation) > 1 {
-		l.File.Info(value)
+	if len(l.FileLocation) > 1 {
+		l.Logger.Info(value)
 	}
 }
 
@@ -77,7 +61,7 @@ func (l *Log) Error(value interface{}) {
 		emojlog.PrintLogLine(emojlog.Error, stringValue)
 	}
 
-	if len(logger.FileLocation) > 1 {
-		l.File.Info(value)
+	if len(l.FileLocation) > 1 {
+		l.Logger.Info(value)
 	}
 }
