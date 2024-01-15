@@ -40,7 +40,7 @@ func generateSnapshotAllTable() error {
 		table.AlignCenter, // Resource Type
 		table.AlignLeft,   // Snapshot Name
 		table.AlignRight,  // Snapshot Size Human
-		table.AlignRight,  // Snapshot Size Bytes
+		// table.AlignRight,  // Snapshot Size Bytes
 		table.AlignCenter, // Snapshot Locked
 		table.AlignRight,  // Snapshot Clones/Dependents
 		table.AlignRight,  // Snapshot Description
@@ -65,7 +65,8 @@ func generateSnapshotAllTable() error {
 		t.SetBorderBottom(false)
 	} else {
 		t.SetHeaders("Hoster ZFS Snapshots")
-		t.SetHeaderColSpans(0, 9)
+		// t.SetHeaderColSpans(0, 9)
+		t.SetHeaderColSpans(0, 8)
 
 		t.AddHeaders(
 			"#",
@@ -102,7 +103,7 @@ func generateSnapshotAllTable() error {
 					"VM",
 					vv.Name,
 					vv.SizeHuman,
-					fmt.Sprintf("%d", vv.SizeBytes),
+					// fmt.Sprintf("%d", vv.SizeBytes),
 					fmt.Sprintf("%v", vv.Locked),
 					fmt.Sprintf("%d", len(vv.Clones)),
 					vv.Description,
