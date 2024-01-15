@@ -10,61 +10,76 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var logOut = logrus.New()
-var logErr = logrus.New()
-var logFile = logrus.New()
-var logFileSet = false
+type Log struct {
+	Out          *logrus.Logger
+	Err          *logrus.Logger
+	File         *logrus.Logger
+	FileLocation string
+}
+
+var logger *Log
 
 func init() {
 	// Log as JSON instead of the default ASCII/text formatter.
 	// log.SetFormatter(&logrus.JSONFormatter{})
-
-	// Output to stdout instead of the default stderr
-	logOut.SetOutput(os.Stdout)
-	logErr.SetOutput(os.Stderr)
-	logFile.SetOutput(os.Stdout)
-
-	// Set log level
-	logOut.SetLevel(logrus.DebugLevel)
-	logErr.SetLevel(logrus.DebugLevel)
-	logFile.SetLevel(logrus.DebugLevel)
-
-	// Report caller func
-	logOut.SetReportCaller(true)
-	logErr.SetReportCaller(true)
-	logFile.SetReportCaller(true)
+	// logger.SetDefaultValues()
+}
+func New() *Log {
+	logger.SetDefaultValues()
+	return logger
 }
 
-func SetFileLocation(logLocation string) {
+func (l *Log) SetDefaultValues() *Log {
+	// Set log outputs
+	l.Err.SetOutput(os.Stderr)
+	l.Out.SetOutput(os.Stdout)
+	l.File.SetOutput(os.Stdout)
+
+	// Set log level
+	l.Err.SetLevel(logrus.DebugLevel)
+	l.Out.SetLevel(logrus.DebugLevel)
+	l.File.SetLevel(logrus.DebugLevel)
+
+	// Report caller func
+	l.Err.SetReportCaller(true)
+	l.Out.SetReportCaller(true)
+	l.File.SetReportCaller(true)
+
+	return l
+}
+
+func (l *Log) SetFileLocation(logLocation string) {
 	file, err := os.OpenFile(logLocation, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "could not use this file for logging "+logLocation+", falling back to STDOUT")
 	} else {
-		logFile.SetOutput(file)
-		logFileSet = true
+		l.File.SetOutput(file)
+		l.FileLocation = logLocation
 	}
 }
 
-func Info(value interface{}) {
+// Test Info Func
+func (l *Log) Info(value interface{}) {
 	term := os.Getenv("TERM")
 	if strings.HasPrefix(term, "xterm") || strings.HasPrefix(term, "term") {
 		stringValue := fmt.Sprintf("%s", value)
 		emojlog.PrintLogLine(emojlog.Info, stringValue)
 	}
 
-	if logFileSet {
-		logFile.Info(value)
+	if len(logger.FileLocation) > 1 {
+		l.File.Info(value)
 	}
 }
 
-func Error(value interface{}) {
+// Test Error Func
+func (l *Log) Error(value interface{}) {
 	term := os.Getenv("TERM")
 	if strings.HasPrefix(term, "xterm") || strings.HasPrefix(term, "term") {
 		stringValue := fmt.Sprintf("%s", value)
 		emojlog.PrintLogLine(emojlog.Error, stringValue)
 	}
 
-	if logFileSet {
-		logFile.Error(value)
+	if len(logger.FileLocation) > 1 {
+		l.File.Info(value)
 	}
 }

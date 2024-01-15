@@ -27,8 +27,9 @@ type JailStart struct {
 }
 
 func Start(jailName string) error {
-	HosterLogger.SetFileLocation("/var/log/hoster_audit_jail.log")
-	HosterLogger.Info("Starting the Jail: " + jailName)
+	log := HosterLogger.New()
+	log.SetFileLocation("/var/log/hoster_audit_jail.log")
+	log.Info("Starting the Jail: " + jailName)
 
 	running, err := isJailRunning(jailName)
 	if err != nil {
@@ -94,6 +95,7 @@ func Start(jailName string) error {
 		return err
 	}
 
+	log.Info("The Jail is now running: " + jailName)
 	return nil
 }
 
