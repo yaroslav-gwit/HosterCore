@@ -29,7 +29,7 @@ func New() *Log {
 	return logger
 }
 
-func (l *Log) SetDefaultValues() *Log {
+func (l *Log) SetDefaultValues() {
 	// Set log outputs
 	l.Err.SetOutput(os.Stderr)
 	l.Out.SetOutput(os.Stdout)
@@ -44,8 +44,6 @@ func (l *Log) SetDefaultValues() *Log {
 	l.Err.SetReportCaller(true)
 	l.Out.SetReportCaller(true)
 	l.File.SetReportCaller(true)
-
-	return l
 }
 
 func (l *Log) SetFileLocation(logLocation string) {
