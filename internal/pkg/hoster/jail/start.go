@@ -25,11 +25,6 @@ type JailStart struct {
 }
 
 func Start(jailName string) error {
-	jails, err := ListAllSimple()
-	if err != nil {
-		return err
-	}
-
 	// Check if Jail is already online
 	jailsOnline, err := GetRunningJails()
 	if err != nil {
@@ -42,6 +37,11 @@ func Start(jailName string) error {
 	}
 	// EOF Check if Jail is already online
 
+	// Check if Jail exists and get it's dataset configuration
+	jails, err := ListAllSimple()
+	if err != nil {
+		return err
+	}
 	jailDsInfo := JailListSimple{}
 	jailFound := false
 	for _, v := range jails {
@@ -54,6 +54,7 @@ func Start(jailName string) error {
 		return fmt.Errorf("this Jail was not found: %s", jailName)
 	}
 	jailDsFolder := jailDsInfo.MountPoint.Mountpoint + "/" + jailName
+	// EOF Check if Jail exists and get it's dataset configuration
 
 	jailConfig, err := GetJailConfig(jailDsFolder)
 	if err != nil {
@@ -88,7 +89,6 @@ func Start(jailName string) error {
 			jailStartConf.DefaultRouter = v.Gateway
 			Netmask := strings.Split(v.Subnet, "/")[1]
 			jailStartConf.Netmask = Netmask
-			// jailStartConf.DNSServer = v.Gateway
 		}
 	}
 	// EOF Set JailStart values
@@ -131,16 +131,20 @@ func Start(jailName string) error {
 		return err
 	}
 
+	// Generate and write the Jail runtime config file
 	_ = os.Remove(jailDsFolder + "/" + "jail_temp_runtime.conf")
 	err = os.WriteFile(jailDsFolder+"/"+"jail_temp_runtime.conf", []byte(jailConfigString), 0640)
 	if err != nil {
 		return err
 	}
+	// EOF Generate and write the Jail runtime config file
 
+	// Execute Jail start shell command
 	out, err := exec.Command("jail", "-f", jailDsFolder+"/"+"jail_temp_runtime.conf", "-c").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
 	}
+	// EOF Execute Jail start shell command
 
 	err = CreateUptimeStateFile(jailName)
 	if err != nil {
@@ -166,13 +170,13 @@ func createMissingConfigFiles(jailConfig JailConfig, jailRootPath string) error 
 		if err != nil {
 			return err
 		}
+		defer file.Close()
 
 		err = t.Execute(file, jailConfig)
 		if err != nil {
 			file.Close()
 			return err
 		}
-		file.Close()
 	}
 	// EOF rc.conf
 
