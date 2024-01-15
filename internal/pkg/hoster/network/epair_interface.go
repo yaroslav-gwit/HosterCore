@@ -48,7 +48,7 @@ func CreateEpairInterface(jailName string, networkName string) (r EpairInterface
 	// EOF Add newly created interfaces to the return list
 
 	// Set a description for the new interface
-	out, err = exec.Command("ifconfig", r.IFaceA, "description", fmt.Sprintf("\"%s %s network:%s\"", jailName, r.IFaceA, networkName)).CombinedOutput()
+	out, err = exec.Command("ifconfig", r.IFaceA, "description", fmt.Sprintf("\"jail::%s iface::%s network::%s\"", jailName, r.IFaceA, networkName)).CombinedOutput()
 	if err != nil {
 		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
 		return
@@ -71,5 +71,9 @@ func CreateEpairInterface(jailName string, networkName string) (r EpairInterface
 	}
 	// EOF Bring up the interface
 
+	return
+}
+
+func DestroyEpairInterfaces(jailName string, networkName string) (r EpairInterface, e error) {
 	return
 }
