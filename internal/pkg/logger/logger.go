@@ -1,9 +1,6 @@
 package HosterLogger
 
 import (
-	"HosterCore/internal/pkg/emojlog"
-	FreeBSDLogger "HosterCore/internal/pkg/freebsd/logger"
-	"fmt"
 	"os"
 	"strings"
 
@@ -13,6 +10,7 @@ import (
 type Log struct {
 	*logrus.Logger
 	ConfigSet bool
+	Term      bool
 }
 
 func New() *Log {
@@ -34,50 +32,20 @@ func New() *Log {
 	l.Logger.SetOutput(nullFile)
 
 	// Set log level
-	l.Logger.SetLevel(logrus.DebugLevel)
+	logLevel := os.Getenv("HOSTER_LOG_LEVEL")
+	if logLevel == "DEBUG" {
+		l.Logger.SetLevel(logrus.DebugLevel)
+	} else {
+		l.Logger.SetLevel(logrus.InfoLevel)
+	}
+
 	// Report caller func
-	l.Logger.SetReportCaller(true)
+	// l.Logger.SetReportCaller(true)
+
+	term := os.Getenv("TERM")
+	if strings.HasPrefix(term, "xterm") || strings.HasPrefix(term, "term") {
+		l.Term = true
+	}
 
 	return l
-}
-
-func (l *Log) SetFileLocation(logLocation string) {
-	file, err := os.OpenFile(logLocation, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "could not use this file for logging "+logLocation+", falling back to STDOUT")
-	} else {
-		l.Logger.SetOutput(file)
-	}
-}
-
-// Test Info Func
-func (l *Log) Info(value interface{}) {
-	term := os.Getenv("TERM")
-	if strings.HasPrefix(term, "xterm") || strings.HasPrefix(term, "term") {
-		stringValue := fmt.Sprintf("%s", value)
-		emojlog.PrintLogLine(emojlog.Info, stringValue)
-	}
-
-	l.Logger.Info(value)
-}
-
-// Test Error Func
-func (l *Log) Error(value interface{}) {
-	term := os.Getenv("TERM")
-	if strings.HasPrefix(term, "xterm") || strings.HasPrefix(term, "term") {
-		stringValue := fmt.Sprintf("%s", value)
-		emojlog.PrintLogLine(emojlog.Error, stringValue)
-	}
-
-	l.Logger.Error(value)
-}
-
-// Test Info Func
-func (l *Log) InfoToFile(value interface{}) {
-	l.Logger.Info(value)
-}
-
-// Test Error Func
-func (l *Log) ErrorToFile(value interface{}) {
-	l.Logger.Error(value)
 }

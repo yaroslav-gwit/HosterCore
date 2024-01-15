@@ -1,4 +1,4 @@
-package HosterJail
+package HosterJailUtils
 
 import (
 	HosterHost "HosterCore/internal/pkg/hoster/host"
@@ -44,7 +44,7 @@ func ListAllSimple() (r []JailListSimple, e error) {
 		}
 
 		for _, file := range files {
-			if file.IsDir() && JailExists(fmt.Sprintf("%s/%s", v.Mountpoint, file.Name())) {
+			if file.IsDir() && JailConfigExists(fmt.Sprintf("%s/%s", v.Mountpoint, file.Name())) {
 				jailSimple := JailListSimple{}
 				jailSimple.MountPoint = v
 				jailSimple.JailName = file.Name()

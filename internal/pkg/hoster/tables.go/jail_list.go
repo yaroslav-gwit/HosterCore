@@ -1,7 +1,7 @@
 package HosterTables
 
 import (
-	HosterJail "HosterCore/internal/pkg/hoster/jail"
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	"fmt"
 	"os"
 
@@ -9,7 +9,7 @@ import (
 )
 
 func GenerateJailsTable(unixStyleTable bool) error {
-	jailList, err := HosterJail.ListAllExtendedTable()
+	jailList, err := HosterJailUtils.ListAllExtendedTable()
 	if err != nil {
 		return err
 	}

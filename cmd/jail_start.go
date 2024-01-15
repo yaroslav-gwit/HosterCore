@@ -26,7 +26,6 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			// err := jailStart(args[0], true)
 			err := HosterJail.Start(args[0])
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)

@@ -1,4 +1,4 @@
-package HosterJail
+package HosterJailUtils
 
 import (
 	"errors"

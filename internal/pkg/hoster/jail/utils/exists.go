@@ -1,4 +1,4 @@
-package HosterJail
+package HosterJailUtils
 
 import (
 	FileExists "HosterCore/internal/pkg/file_exists"
@@ -10,7 +10,7 @@ import (
 // For example: JailExists(/zroot/vm-encrypted/jail-test-1) or JailExists(/zroot/vm-encrypted/jail-test-1/)
 //
 // Trailing "/" is automatically removed.
-func JailExists(folderPath string) (r bool) {
+func JailConfigExists(folderPath string) (r bool) {
 	folderPath = strings.TrimSuffix(folderPath, "/")
 
 	if FileExists.CheckUsingOsStat(folderPath + "/" + JAIL_CONFIG_NAME) {

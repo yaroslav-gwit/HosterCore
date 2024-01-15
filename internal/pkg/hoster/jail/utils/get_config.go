@@ -1,4 +1,4 @@
-package HosterJail
+package HosterJailUtils
 
 import (
 	FileExists "HosterCore/internal/pkg/file_exists"

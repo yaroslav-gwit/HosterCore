@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterJail "HosterCore/internal/pkg/hoster/jail"
 	"fmt"
 	"os"
 	"os/exec"
@@ -18,7 +19,9 @@ var (
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
-			err := jailStop(args[0], true)
+
+			// err := jailStop(args[0], true)
+			err := HosterJail.Stop(args[0])
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
