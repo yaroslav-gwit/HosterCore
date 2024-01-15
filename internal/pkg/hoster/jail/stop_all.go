@@ -25,7 +25,7 @@ func StopAll() error {
 	first := true
 	for _, v := range jails {
 		running, err := isJailRunning(v.JailName)
-		if err != nil || !running {
+		if err != nil {
 			log.Error(err.Error())
 			continue
 		}
