@@ -5,6 +5,7 @@ import (
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	HosterNetwork "HosterCore/internal/pkg/hoster/network"
 	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
 	"os"
@@ -28,6 +29,18 @@ func Start(jailName string) error {
 	if err != nil {
 		return err
 	}
+
+	// Check if Jail is already online
+	jailsOnline, err := GetRunningJails()
+	if err != nil {
+		return err
+	}
+	for _, v := range jailsOnline {
+		if v.Name == jailName {
+			return errors.New("this Jail is already running: " + jailName)
+		}
+	}
+	// EOF Check if Jail is already online
 
 	jailDsInfo := JailListSimple{}
 	jailFound := false

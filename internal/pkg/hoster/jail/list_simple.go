@@ -8,8 +8,8 @@ import (
 )
 
 type JailListSimple struct {
-	JailName   string
-	MountPoint HosterZfs.MountPoint
+	JailName string
+	HosterZfs.MountPoint
 }
 
 // Scans all Hoster-related ZFS datasets in search for Jail config files.
@@ -45,7 +45,10 @@ func ListAllSimple() (r []JailListSimple, e error) {
 
 		for _, file := range files {
 			if file.IsDir() && JailExists(fmt.Sprintf("%s/%s", v.Mountpoint, file.Name())) {
-				r = append(r, JailListSimple{MountPoint: v, JailName: file.Name()})
+				jailSimple := JailListSimple{}
+				jailSimple.MountPoint = v
+				jailSimple.JailName = file.Name()
+				r = append(r, jailSimple)
 			}
 		}
 	}
