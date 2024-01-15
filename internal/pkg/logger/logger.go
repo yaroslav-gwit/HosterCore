@@ -18,9 +18,12 @@ type Log struct {
 // Log as JSON instead of the default ASCII/text formatter.
 // log.SetFormatter(&logrus.JSONFormatter{})
 func New() *Log {
-	l := &Log{}
+	// Initialize Logrus' Struct
+	l := &Log{
+		Logger: logrus.New(),
+	}
 
-	// Set log outputs
+	// Set log output
 	l.Logger.SetOutput(os.Stdout)
 	// Set log level
 	l.Logger.SetLevel(logrus.DebugLevel)
