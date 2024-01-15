@@ -3,7 +3,9 @@ package HosterJail
 import (
 	FileExists "HosterCore/internal/pkg/file_exists"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterNetwork "HosterCore/internal/pkg/hoster/network"
+	HosterLogger "HosterCore/internal/pkg/logger"
 	"bytes"
 	"errors"
 	"fmt"
@@ -25,17 +27,17 @@ type JailStart struct {
 }
 
 func Start(jailName string) error {
-	// Check if Jail is already online
-	jailsOnline, err := GetRunningJails()
+	HosterLogger.SetFileLocation("/var/log/hoster_audit_jail.log")
+	HosterLogger.Info("Starting the Jail: " + jailName)
+
+	running, err := isJailRunning(jailName)
 	if err != nil {
 		return err
 	}
-	for _, v := range jailsOnline {
-		if v.Name == jailName {
-			return errors.New("this Jail is already running: " + jailName)
-		}
+	if running {
+		//lint:ignore ST1005 ignore this!
+		return errors.New("Jail is already running")
 	}
-	// EOF Check if Jail is already online
 
 	// Check if Jail exists and get it's dataset configuration
 	jails, err := ListAllSimple()
@@ -51,7 +53,8 @@ func Start(jailName string) error {
 		}
 	}
 	if !jailFound {
-		return fmt.Errorf("this Jail was not found: %s", jailName)
+		//lint:ignore ST1005 ignore this!
+		return fmt.Errorf("Jail doesn't exist: %s", jailName)
 	}
 	jailDsFolder := jailDsInfo.MountPoint.Mountpoint + "/" + jailName
 	// EOF Check if Jail exists and get it's dataset configuration
@@ -66,87 +69,27 @@ func Start(jailName string) error {
 		return err
 	}
 
-	// Set JailStart values
-	jailStartConf := JailStart{}
-	jailStartConf.JailConfig = jailConfig
-	jailStartConf.JailName = jailName
-	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
-	jailStartConf.JailHostname = jailName + "." + hostname + "." + "lan"
-	jailStartConf.JailRootPath = jailDsFolder + "/" + JAIL_ROOT_FOLDER
-	cpus, err := FreeBSDsysctls.SysctlHwVmmMaxcpu()
-	if err != nil {
-		return err
-	}
-	jailStartConf.CpuLimitReal = jailConfig.CPULimitPercent * cpus
-	jailStartConf.EpairInterface = ifaces
-
-	networks, err := HosterNetwork.GetNetworkConfig()
-	if err != nil {
-		return err
-	}
-	for _, v := range networks {
-		if jailConfig.Network == v.NetworkName {
-			jailStartConf.DefaultRouter = v.Gateway
-			Netmask := strings.Split(v.Subnet, "/")[1]
-			jailStartConf.Netmask = Netmask
-		}
-	}
-	// EOF Set JailStart values
-
-	t, err := template.New("templateJailRunningConfigPartial").Parse(templateJailRunningConfigPartial)
+	err = createMissingConfigFiles(jailConfig, jailDsFolder+"/"+JAIL_ROOT_FOLDER)
 	if err != nil {
 		return err
 	}
 
-	var jailConfigBuffer bytes.Buffer
-	err = t.Execute(&jailConfigBuffer, jailStartConf)
-	if err != nil {
-		return err
-	}
-	var jailConfigString = jailConfigBuffer.String()
-
-	var additionalConfig []byte
-	if FileExists.CheckUsingOsStat(jailDsFolder + "/" + jailConfig.ConfigFileAppend) {
-		additionalConfig, err = os.ReadFile(jailDsFolder + "/" + jailConfig.ConfigFileAppend)
-		if err != nil {
-			return err
-		}
-	}
-
-	if len(additionalConfig) > 0 {
-		additionalConfigSplit := strings.Split(string(additionalConfig), "\n")
-		for _, v := range additionalConfigSplit {
-			if len(v) > 0 {
-				v = strings.TrimSpace(v)
-				jailConfigString = jailConfigString + "    " + v + "\n"
-			}
-		}
-		jailConfigString = jailConfigString + "}"
-	} else {
-		jailConfigString = jailConfigString + "\n}"
-	}
-
-	err = createMissingConfigFiles(jailConfig, jailDsFolder+"/"+"root_folder")
+	jailStartConf, err := setJailStartValues(jailName, jailDsFolder, jailConfig, ifaces)
 	if err != nil {
 		return err
 	}
 
-	// Generate and write the Jail runtime config file
-	_ = os.Remove(jailDsFolder + "/" + "jail_temp_runtime.conf")
-	err = os.WriteFile(jailDsFolder+"/"+"jail_temp_runtime.conf", []byte(jailConfigString), 0640)
+	jailTempRuntimeLocation, err := generatePartialTemplate(jailStartConf, jailConfig, jailDsFolder)
 	if err != nil {
 		return err
 	}
-	// EOF Generate and write the Jail runtime config file
 
-	// Execute Jail start shell command
-	out, err := exec.Command("jail", "-f", jailDsFolder+"/"+"jail_temp_runtime.conf", "-c").CombinedOutput()
+	out, err := exec.Command("jail", "-f", jailTempRuntimeLocation, "-c").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
 	}
-	// EOF Execute Jail start shell command
 
-	err = CreateUptimeStateFile(jailName)
+	err = HosterJailUtils.CreateUptimeStateFile(jailName)
 	if err != nil {
 		return err
 	}
@@ -161,7 +104,7 @@ func createMissingConfigFiles(jailConfig JailConfig, jailRootPath string) error 
 
 	// rc.conf
 	if !FileExists.CheckUsingOsStat(jailRootPath + "/etc/rc.conf") {
-		t, err := template.New("templateJailRcConf").Parse(templateJailRcConf)
+		t, err := template.New("rc.conf").Parse(HosterJailUtils.TemplateJailRcConf)
 		if err != nil {
 			return err
 		}
@@ -181,7 +124,7 @@ func createMissingConfigFiles(jailConfig JailConfig, jailRootPath string) error 
 	// EOF rc.conf
 
 	// resolv.conf
-	templateResolvConf, err := template.New("templateJailResolvConf").Parse(templateJailResolvConf)
+	templateResolvConf, err := template.New("resolv.conf").Parse(HosterJailUtils.TemplateJailResolvConf)
 	if err != nil {
 		return err
 	}
@@ -200,4 +143,105 @@ func createMissingConfigFiles(jailConfig JailConfig, jailRootPath string) error 
 	// EOF resolv.conf
 
 	return nil
+}
+
+func isJailRunning(jailName string) (r bool, e error) {
+	jailsOnline, err := GetRunningJails()
+	if err != nil {
+		e = err
+		return
+	}
+
+	for _, v := range jailsOnline {
+		if v.Name == jailName {
+			r = true
+			return
+		}
+	}
+
+	return
+}
+
+func setJailStartValues(jailName string, jailDsFolder string, jailConfig JailConfig, ifaces HosterNetwork.EpairInterface) (r JailStart, e error) {
+	r.JailConfig = jailConfig
+	r.JailName = jailName
+
+	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
+	r.JailHostname = jailName + "." + hostname + "." + "lan"
+
+	r.JailRootPath = jailDsFolder + "/" + JAIL_ROOT_FOLDER
+	cpus, err := FreeBSDsysctls.SysctlHwVmmMaxcpu()
+	if err != nil {
+		e = err
+		return
+	}
+	r.CpuLimitReal = jailConfig.CPULimitPercent * cpus
+	r.EpairInterface = ifaces
+
+	networks, err := HosterNetwork.GetNetworkConfig()
+	if err != nil {
+		e = err
+		return
+	}
+
+	for _, v := range networks {
+		if jailConfig.Network == v.NetworkName {
+			r.DefaultRouter = v.Gateway
+			Netmask := strings.Split(v.Subnet, "/")[1]
+			r.Netmask = Netmask
+		}
+	}
+
+	return
+}
+
+func generatePartialTemplate(jailStartConf JailStart, jailConfig JailConfig, jailDsFolder string) (r string, e error) {
+	t, err := template.New("jConfigPartial").Parse(HosterJailUtils.TemplateJailRunningConfigPartial)
+	if err != nil {
+		e = err
+		return
+	}
+
+	var jailConfigBuffer bytes.Buffer
+	err = t.Execute(&jailConfigBuffer, jailStartConf)
+	if err != nil {
+		e = err
+		return
+	}
+	var jailConfigString = jailConfigBuffer.String()
+
+	var additionalConfig []byte
+	if FileExists.CheckUsingOsStat(jailDsFolder + "/" + jailConfig.ConfigFileAppend) {
+		additionalConfig, err = os.ReadFile(jailDsFolder + "/" + jailConfig.ConfigFileAppend)
+		if err != nil {
+			e = err
+			return
+		}
+	}
+
+	if len(additionalConfig) > 0 {
+		additionalConfigSplit := strings.Split(string(additionalConfig), "\n")
+		for _, v := range additionalConfigSplit {
+			if len(v) > 0 {
+				v = strings.TrimSpace(v)
+				jailConfigString = jailConfigString + "    " + v + "\n"
+			}
+		}
+		jailConfigString = jailConfigString + "}"
+	} else {
+		jailConfigString = jailConfigString + "\n}"
+	}
+
+	// Generate and write the Jail runtime config file
+	var jailTempRuntimeLocation = jailDsFolder + "/" + JAIL_TEMP_RUNTIME
+	r = jailTempRuntimeLocation
+	_ = os.Remove(jailTempRuntimeLocation)
+	err = os.WriteFile(jailTempRuntimeLocation, []byte(jailConfigString), 0640)
+	if err != nil {
+		e = err
+		return
+	}
+	// EOF Generate and write the Jail runtime config file
+
+	return
 }

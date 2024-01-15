@@ -3,6 +3,7 @@ package HosterJail
 import (
 	"HosterCore/internal/pkg/byteconversion"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterZfs "HosterCore/internal/pkg/hoster/zfs"
 	"fmt"
 )
@@ -93,7 +94,7 @@ func ListAllExtendedTable() (r []JailListExtendedTable, e error) {
 			continue
 		}
 		jailStruct.Release = release
-		jailStruct.Uptime = GetUptimeHuman(v.JailName)
+		jailStruct.Uptime = HosterJailUtils.GetUptimeHuman(v.JailName)
 		jailStruct.Description = jailConfig.Description
 
 		for _, vv := range zfsSpace {

@@ -1,4 +1,4 @@
-package HosterJail
+package HosterJailUtils
 
 import (
 	timeconversion "HosterCore/internal/pkg/time_conversion"
