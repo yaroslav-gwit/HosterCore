@@ -30,7 +30,11 @@ func StartAll() error {
 			log.Error(err.Error())
 			continue
 		}
+		if running {
+			continue
+		}
 
+		// Insert an empty spacer on every one but first iteration
 		if first {
 			first = false
 		} else {

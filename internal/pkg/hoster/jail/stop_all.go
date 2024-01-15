@@ -12,57 +12,58 @@ import (
 	"strings"
 )
 
-func StopAll(jailName string) error {
+func StopAll() error {
 	// If the logger was already set, ignore this
 	if !log.ConfigSet {
 		log.SetFileLocation(HosterJailUtils.JAIL_AUDIT_LOG_LOCATION)
 	}
-	log.Info("Stopping the Jail: " + jailName)
-
-	running, err := isJailRunning(jailName)
-	if err != nil {
-		return err
-	}
-	if !running {
-		errorValue := "Jail is already offline: " + jailName
-		log.ErrorToFile(errorValue)
-		return errors.New(errorValue)
-	}
-
-	// Check if Jail exists and get it's dataset configuration
 	jails, err := HosterJailUtils.ListAllSimple()
 	if err != nil {
 		return err
 	}
-	jailDsInfo := HosterJailUtils.JailListSimple{}
-	jailFound := false
+
+	first := true
 	for _, v := range jails {
-		if v.JailName == jailName {
-			jailFound = true
-			jailDsInfo = v
+		running, err := isJailRunning(v.JailName)
+		if err != nil || !running {
+			log.Error(err.Error())
+			continue
 		}
-	}
-	if !jailFound {
-		errorValue := fmt.Sprintf("Jail doesn't exist: %s", jailName)
-		log.ErrorToFile(errorValue)
-		return errors.New(errorValue)
-	}
-	jailTempRuntimeLocation := jailDsInfo.MountPoint.Mountpoint + "/" + jailName + "/" + HosterJailUtils.JAIL_TEMP_RUNTIME
-	// EOF Check if Jail exists and get it's dataset configuration
+		if !running {
+			continue
+		}
 
-	out, err := exec.Command("jail", "-f", jailTempRuntimeLocation, "-r", jailName).CombinedOutput()
-	if err != nil {
-		errorValue := fmt.Sprintf("%s; %s", strings.TrimSpace(string(out)), err.Error())
-		log.ErrorToFile(errorValue)
-		return errors.New(errorValue)
+		// Insert an empty spacer on every one but first iteration
+		if first {
+			first = false
+		} else {
+			log.Spacer()
+		}
+
+		log.Info("Stopping the Jail: " + v.JailName)
+		jailDsInfo := HosterJailUtils.JailListSimple{}
+		for _, vv := range jails {
+			if v.JailName == vv.JailName {
+				jailDsInfo = v
+			}
+		}
+
+		jailTempRuntimeLocation := jailDsInfo.MountPoint.Mountpoint + "/" + v.JailName + "/" + HosterJailUtils.JAIL_TEMP_RUNTIME
+		out, err := exec.Command("jail", "-f", jailTempRuntimeLocation, "-r", v.JailName).CombinedOutput()
+		if err != nil {
+			errorValue := fmt.Sprintf("%s; %s", strings.TrimSpace(string(out)), err.Error())
+			log.ErrorToFile(errorValue)
+			return errors.New(errorValue)
+		}
+
+		err = HosterJailUtils.RemoveUptimeStateFile(v.JailName)
+		if err != nil {
+			log.ErrorToFile(err.Error())
+			return err
+		}
+
+		log.Info("Jail has been stopped: " + v.JailName)
 	}
 
-	err = HosterJailUtils.RemoveUptimeStateFile(jailName)
-	if err != nil {
-		log.ErrorToFile(err.Error())
-		return err
-	}
-
-	log.Info("Jail has been stopped: " + jailName)
 	return nil
 }
