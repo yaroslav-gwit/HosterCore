@@ -1,3 +1,7 @@
+// Copyright 2023 Hoster Authors. All rights reserved.
+// Use of this source code is governed by an Apache License 2.0
+// license that can be found in the LICENSE file.
+
 package HosterJail
 
 import (
@@ -20,7 +24,7 @@ func Stop(jailName string) error {
 		return err
 	}
 	if !running {
-		errorValue := "Jail is offline: " + jailName
+		errorValue := "Jail is already offline: " + jailName
 		log.ErrorToFile(errorValue)
 		return errors.New(errorValue)
 	}
@@ -46,7 +50,7 @@ func Stop(jailName string) error {
 	jailTempRuntimeLocation := jailDsInfo.MountPoint.Mountpoint + "/" + jailName + "/" + HosterJailUtils.JAIL_TEMP_RUNTIME
 	// EOF Check if Jail exists and get it's dataset configuration
 
-	out, err := exec.Command("jail", "-f", jailTempRuntimeLocation, "-r").CombinedOutput()
+	out, err := exec.Command("jail", "-f", jailTempRuntimeLocation, "-r", jailName).CombinedOutput()
 	if err != nil {
 		errorValue := fmt.Sprintf("%s; %s", strings.TrimSpace(string(out)), err.Error())
 		log.ErrorToFile(errorValue)
