@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"HosterCore/internal/pkg/emojlog"
+	HosterJail "HosterCore/internal/pkg/hoster/jail"
 	"errors"
 	"os"
 	"os/exec"
@@ -20,6 +22,82 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 			cmd.Help()
+		},
+	}
+)
+
+var (
+	jailStartCmd = &cobra.Command{
+		Use:   "start [jailName]",
+		Short: "Start a specific Jail",
+		Long:  `Start a specific Jail using it's name`,
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := HosterJail.Start(args[0])
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+var (
+	jailStartAllCmd = &cobra.Command{
+		Use:   "start-all",
+		Short: "Start all available Jails on this system",
+		Long:  `Start all available Jails on this system.`,
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			// err := startAllJails(true)
+			err := HosterJail.StartAll()
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+var (
+	jailStopCmd = &cobra.Command{
+		Use:   "stop [jailName]",
+		Short: "Stop a specific Jail",
+		Long:  `Stop a specific Jail using it's name`,
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			// err := jailStop(args[0], true)
+			err := HosterJail.Stop(args[0])
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+var (
+	jailStopAllCmd = &cobra.Command{
+		Use:   "stop-all",
+		Short: "Stop all online Jails on this system",
+		Long:  `Stop all online Jails on this system.`,
+
+		Args: cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			// err := stopAllJails(true)
+			err := HosterJail.StopAll()
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
 		},
 	}
 )
@@ -170,79 +248,13 @@ func checkJailOnline(jailConfig JailConfigFileStruct) (jailOnline bool, jailErro
 	return
 }
 
-// Checks `/etc/os-release` inside of the jail, and parses out the FreeBSD release from it (eg 13.2-RELEASE).
-//
-// Returns "-", if the Jail was just deployed, because the `/etc/os-release` is missing.
-// func getJailReleaseInfo(jailConfig JailConfigFileStruct) (jailRelease string, jailError error) {
-// 	var jailOsReleaseFile []byte
-// 	var err error
-
-// 	if FileExists(jailConfig.JailRootPath + "/etc/os-release") {
-// 		jailOsReleaseFile, err = os.ReadFile(jailConfig.JailRootPath + "/etc/os-release")
-// 		if err != nil {
-// 			jailError = err
-// 			return
-// 		}
-// 	} else {
-// 		jailRelease = "-"
-// 	}
-
-// 	reMatchVersion := regexp.MustCompile(`VERSION=`)
-// 	reMatchQuotes := regexp.MustCompile(`"`)
-
-// 	for _, v := range strings.Split(string(jailOsReleaseFile), "\n") {
-// 		if reMatchVersion.MatchString(v) {
-// 			v = reMatchVersion.ReplaceAllString(v, "")
-// 			v = reMatchQuotes.ReplaceAllString(v, "")
-// 			jailRelease = v
-// 			return
-// 		}
-// 	}
-
-// 	return
+// func _createJailUptimeStateFile(jailName string) {
+// 	_clearJailUptimeStateFile(jailName)
+// 	_, _ = os.Create("/var/run/hoster_jail_state_" + jailName)
 // }
 
-func createJailUptimeStateFile(jailName string) {
-	clearJailUptimeStateFile(jailName)
-	_, _ = os.Create("/var/run/hoster_jail_state_" + jailName)
-}
-
-func clearJailUptimeStateFile(jailName string) {
-	_ = os.Remove("/var/run/hoster_jail_state_" + jailName)
-}
-
-// func getJailUptime(jailName string) (jailUptime string) {
-// 	fileStat, err := os.Stat("/var/run/hoster_jail_state_" + jailName)
-// 	if err != nil {
-// 		jailUptime = "0s"
-// 		return
-// 	}
-
-// 	rawUptime := fileStat.ModTime().Unix()
-// 	jailUptime = convertUnixTimeToUptime(rawUptime)
-// 	return
-// }
-
-// func convertUnixTimeToUptime(uptime int64) string {
-// 	unixTime := time.Unix(uptime, 0)
-
-// 	timeSince := time.Since(unixTime).Seconds()
-// 	secondsModulus := int(timeSince) % 60.0
-
-// 	minutesSince := (timeSince - float64(secondsModulus)) / 60.0
-// 	minutesModulus := int(minutesSince) % 60.0
-
-// 	hoursSince := (minutesSince - float64(minutesModulus)) / 60
-// 	hoursModulus := int(hoursSince) % 24
-
-// 	daysSince := (int(hoursSince) - hoursModulus) / 24
-
-// 	result := strconv.Itoa(daysSince) + "d "
-// 	result = result + strconv.Itoa(hoursModulus) + "h "
-// 	result = result + strconv.Itoa(minutesModulus) + "m "
-// 	result = result + strconv.Itoa(secondsModulus) + "s"
-
-// 	return result
+// func _clearJailUptimeStateFile(jailName string) {
+// 	_ = os.Remove("/var/run/hoster_jail_state_" + jailName)
 // }
 
 func getMajorFreeBsdRelease() (release string, releaseError error) {

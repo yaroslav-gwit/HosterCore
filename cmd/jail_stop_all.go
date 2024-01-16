@@ -1,68 +1,39 @@
 package cmd
 
-import (
-	"HosterCore/internal/pkg/emojlog"
-	HosterJail "HosterCore/internal/pkg/hoster/jail"
-	"fmt"
-	"os"
+// func _stopAllJails(consoleLogOutput bool) error {
+// 	jailList, err := GetAllJailsList()
+// 	if err != nil {
+// 		return err
+// 	}
 
-	"github.com/spf13/cobra"
-)
+// 	startId := 0
+// 	for _, v := range jailList {
+// 		jailConfig, err := GetJailConfig(v, true)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		jailOnline, err := checkJailOnline(jailConfig)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		if !jailOnline {
+// 			continue
+// 		}
 
-var (
-	jailStopAllCmd = &cobra.Command{
-		Use:   "stop-all",
-		Short: "Stop all online Jails on this system",
-		Long:  `Stop all online Jails on this system.`,
+// 		// Print out the output splitter
+// 		if startId == 0 {
+// 			_ = 0
+// 		} else {
+// 			fmt.Println("  ───────────")
+// 		}
 
-		Args: cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			checkInitFile()
+// 		err = _jailStop(v, consoleLogOutput)
+// 		if err != nil {
+// 			return err
+// 		}
 
-			// err := stopAllJails(true)
-			err := HosterJail.StopAll()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-		},
-	}
-)
+// 		startId += 1
+// 	}
 
-func stopAllJails(consoleLogOutput bool) error {
-	jailList, err := GetAllJailsList()
-	if err != nil {
-		return err
-	}
-
-	startId := 0
-	for _, v := range jailList {
-		jailConfig, err := GetJailConfig(v, true)
-		if err != nil {
-			return err
-		}
-		jailOnline, err := checkJailOnline(jailConfig)
-		if err != nil {
-			return err
-		}
-		if !jailOnline {
-			continue
-		}
-
-		// Print out the output splitter
-		if startId == 0 {
-			_ = 0
-		} else {
-			fmt.Println("  ───────────")
-		}
-
-		err = jailStop(v, consoleLogOutput)
-		if err != nil {
-			return err
-		}
-
-		startId += 1
-	}
-
-	return nil
-}
+// 	return nil
+// }

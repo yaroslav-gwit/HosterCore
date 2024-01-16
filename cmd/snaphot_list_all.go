@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"fmt"
 	"os"
@@ -86,7 +87,7 @@ func generateSnapshotAllTable() error {
 	}
 
 	vmList := getAllVms()
-	jailList, _ := GetAllJailsList()
+	jailList, _ := HosterJailUtils.ListAllSimple()
 	snapList, err := zfsutils.SnapshotListWithDescriptions()
 	if err != nil {
 		return err
@@ -111,14 +112,15 @@ func generateSnapshotAllTable() error {
 			}
 		}
 	}
+
 	for _, v := range jailList {
-		reMatch := regexp.MustCompile(`/` + v + `@`)
 		for _, vv := range snapList {
-			if reMatch.MatchString(vv.Name) {
+			jaiDs := v.DsName + "/" + v.JailName
+			if jaiDs == vv.Dataset {
 				ID = ID + 1
 				t.AddRow(
 					strconv.Itoa(ID),
-					v,
+					v.JailName,
 					"Jail",
 					vv.Name,
 					vv.SizeHuman,
@@ -130,23 +132,6 @@ func generateSnapshotAllTable() error {
 			}
 		}
 	}
-
-	// for _, vm := range getAllVms() {
-	// 	info, err := GetSnapshotInfo(vm, true)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	for _, vmSnap := range info {
-	// 		ID = ID + 1
-	// 		t.AddRow(strconv.Itoa(ID),
-	// 			vm,
-	// 			vmSnap.Name,
-	// 			vmSnap.SizeHuman,
-	// 			strconv.Itoa(int(vmSnap.SizeBytes)),
-	// 		)
-	// 	}
-	// }
 
 	t.Render()
 	return nil

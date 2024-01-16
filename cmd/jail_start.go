@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"HosterCore/internal/pkg/emojlog"
-	HosterJail "HosterCore/internal/pkg/hoster/jail"
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,166 +9,134 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"text/template"
-
-	"github.com/spf13/cobra"
 )
 
-var (
-	jailStartCmd = &cobra.Command{
-		Use:   "start [jailName]",
-		Short: "Start a specific Jail",
-		Long:  `Start a specific Jail using it's name`,
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			checkInitFile()
+// func _jailStart(jailName string, logActions bool) error {
+// 	jailConfig, err := GetJailConfig(jailName, false)
+// 	if err != nil {
+// 		return err
+// 	}
 
-			err := HosterJail.Start(args[0])
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-		},
-	}
-)
+// 	ifaces, err := _createEpairInterfaces(jailConfig)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	jailConfig.VnetInterfaceA = ifaces[0]
+// 	jailConfig.VnetInterfaceB = ifaces[1]
 
-func jailStart(jailName string, logActions bool) error {
-	jailConfig, err := GetJailConfig(jailName, false)
-	if err != nil {
-		return err
-	}
+// 	t, err := template.New("templateJailRunningConfigPartial").Parse(templateJailRunningConfigPartial)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	ifaces, err := createEpairInterfaces(jailConfig)
-	if err != nil {
-		return err
-	}
-	jailConfig.VnetInterfaceA = ifaces[0]
-	jailConfig.VnetInterfaceB = ifaces[1]
+// 	var jailConfigBuffer bytes.Buffer
+// 	err = t.Execute(&jailConfigBuffer, jailConfig)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	t, err := template.New("templateJailRunningConfigPartial").Parse(templateJailRunningConfigPartial)
-	if err != nil {
-		return err
-	}
+// 	var jailConfigString = jailConfigBuffer.String()
 
-	var jailConfigBuffer bytes.Buffer
-	err = t.Execute(&jailConfigBuffer, jailConfig)
-	if err != nil {
-		return err
-	}
+// 	var additionalConfig []byte
+// 	if FileExists(jailConfig.JailFolder + jailConfig.ConfigFileAppend) {
+// 		additionalConfig, err = os.ReadFile(jailConfig.JailFolder + jailConfig.ConfigFileAppend)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
 
-	var jailConfigString = jailConfigBuffer.String()
+// 	if len(additionalConfig) > 0 {
+// 		additionalConfigSplit := strings.Split(string(additionalConfig), "\n")
+// 		for _, v := range additionalConfigSplit {
+// 			if len(v) > 0 {
+// 				v = strings.TrimSpace(v)
+// 				jailConfigString = jailConfigString + "    " + v + "\n"
+// 			}
+// 		}
+// 		jailConfigString = jailConfigString + "}"
+// 	} else {
+// 		jailConfigString = jailConfigString + "\n}"
+// 	}
 
-	var additionalConfig []byte
-	if FileExists(jailConfig.JailFolder + jailConfig.ConfigFileAppend) {
-		additionalConfig, err = os.ReadFile(jailConfig.JailFolder + jailConfig.ConfigFileAppend)
-		if err != nil {
-			return err
-		}
-	}
+// 	if logActions {
+// 		emojlog.PrintLogMessage("Starting the Jail: "+jailName, emojlog.Info)
+// 	}
 
-	if len(additionalConfig) > 0 {
-		additionalConfigSplit := strings.Split(string(additionalConfig), "\n")
-		for _, v := range additionalConfigSplit {
-			if len(v) > 0 {
-				v = strings.TrimSpace(v)
-				jailConfigString = jailConfigString + "    " + v + "\n"
-			}
-		}
-		jailConfigString = jailConfigString + "}"
-	} else {
-		jailConfigString = jailConfigString + "\n}"
-	}
+// 	err = createMissingConfigFiles(jailConfig)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if logActions {
-		emojlog.PrintLogMessage("Starting the Jail: "+jailName, emojlog.Info)
-	}
+// 	_ = os.Remove(jailConfig.JailFolder + "jail_temp_runtime.conf")
+// 	err = os.WriteFile(jailConfig.JailFolder+"jail_temp_runtime.conf", []byte(jailConfigString), 0644)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	err = createMissingConfigFiles(jailConfig)
-	if err != nil {
-		return err
-	}
+// 	_ = os.Remove("/etc/jail.conf")
+// 	err = os.WriteFile("/etc/jail.conf", []byte(jailConfigString), 0644)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	_ = os.Remove(jailConfig.JailFolder + "jail_temp_runtime.conf")
-	err = os.WriteFile(jailConfig.JailFolder+"jail_temp_runtime.conf", []byte(jailConfigString), 0644)
-	if err != nil {
-		return err
-	}
+// 	emojlog.PrintLogMessage(fmt.Sprintf("Starting a Jail: %s. Please give it a moment...", jailName), emojlog.Debug)
+// 	out, err := exec.Command("service", "jail", "onestart", jailName).CombinedOutput()
+// 	if err != nil {
+// 		errorValue := "FATAL: " + strings.TrimSpace(string(out)) + "; " + err.Error()
+// 		return fmt.Errorf("%s", errorValue)
+// 	}
 
-	_ = os.Remove("/etc/jail.conf")
-	err = os.WriteFile("/etc/jail.conf", []byte(jailConfigString), 0644)
-	if err != nil {
-		return err
-	}
+// 	_createJailUptimeStateFile(jailName)
+// 	_ = os.Remove("/etc/jail.conf")
 
-	emojlog.PrintLogMessage(fmt.Sprintf("Starting a Jail: %s. Please give it a moment...", jailName), emojlog.Debug)
-	out, err := exec.Command("service", "jail", "onestart", jailName).CombinedOutput()
-	if err != nil {
-		errorValue := "FATAL: " + strings.TrimSpace(string(out)) + "; " + err.Error()
-		return fmt.Errorf("%s", errorValue)
-	}
+// 	if logActions {
+// 		emojlog.PrintLogMessage("Created a Jail uptime state file", emojlog.Changed)
+// 		emojlog.PrintLogMessage("The Jail is up now: "+jailName, emojlog.Changed)
+// 	}
 
-	// jailCreateCommand := []string{"jail", "-c", "-f", jailConfig.JailFolder + "jail_temp_runtime.conf"}
-	// if logActions {
-	// 	emojlog.PrintLogMessage("Executing the Jail startup script: "+strings.Join(jailCreateCommand, " "), emojlog.Debug)
-	// 	emojlog.PrintLogMessage("Please give it a moment...", emojlog.Debug)
-	// }
-	// jailCreateOutput, err := exec.Command("jail", "-c", "-f", jailConfig.JailFolder+"jail_temp_runtime.conf").CombinedOutput()
-	// if err != nil {
-	// 	errorValue := "FATAL: " + strings.TrimSpace(string(jailCreateOutput)) + "; " + err.Error()
-	// 	return errors.New(errorValue)
-	// }
+// 	return nil
+// }
 
-	createJailUptimeStateFile(jailName)
-	_ = os.Remove("/etc/jail.conf")
+// const templateJailRunningConfigPartial = `# Running Jail config generated by Hoster
+// {{ .JailName }} {
+//     host.hostname = {{ .JailHostname }};
+// 	vnet;
+// 	vnet.interface = "{{ .VnetInterfaceB }}";
+//     path = "{{ .JailRootPath }}";
+//     exec.start = "{{ .StartupScript }}";
+//     exec.stop = "{{ .ShutdownScript }}";
+//     exec.consolelog = "/var/log/jail_console_{{ .JailName }}.log";
 
-	if logActions {
-		emojlog.PrintLogMessage("Created a Jail uptime state file", emojlog.Changed)
-		emojlog.PrintLogMessage("The Jail is up now: "+jailName, emojlog.Changed)
-	}
+//     # Log Jail startup and shutdown
+//     exec.prestart = "logger HOSTER_JAILS starting the Jail: {{ .JailName }}";
+//     exec.poststart = "logger HOSTER_JAILS the Jail has been started: {{ .JailName }}";
+//     exec.prestop = "logger HOSTER_JAILS stopping the Jail: {{ .JailName }}";
+//     exec.poststop = "logger HOSTER_JAILS the Jail has been stopped: {{ .JailName }}";
 
-	return nil
-}
+//     # Apply Jail resource limits
+//     exec.poststart += "rctl -a jail:{{ .JailName }}:memoryuse:deny={{ .RAMLimit }}";
+//     exec.poststart += "rctl -a jail:{{ .JailName }}:memorylocked:deny={{ .RAMLimit }}";
+//     exec.poststart += "rctl -a jail:{{ .JailName }}:pcpu:deny={{ .CpuLimitReal }}";
 
-const templateJailRunningConfigPartial = `# Running Jail config generated by Hoster
-{{ .JailName }} {
-    host.hostname = {{ .JailHostname }};
-	vnet;
-	vnet.interface = "{{ .VnetInterfaceB }}";
-    path = "{{ .JailRootPath }}";
-    exec.start = "{{ .StartupScript }}";
-    exec.stop = "{{ .ShutdownScript }}";
-    exec.consolelog = "/var/log/jail_console_{{ .JailName }}.log";
+// 	# Apply VNet network IP address
+//     exec.poststart += "jexec {{ .JailName }} ifconfig {{ .VnetInterfaceB }} inet {{ .IPAddress }}/{{ .Netmask }}";
+//     exec.poststart += "jexec {{ .JailName }} ifconfig {{ .VnetInterfaceB }} up";
+//     exec.poststart += "jexec {{ .JailName }} route add default {{ .DefaultRouter }}";
 
-    # Log Jail startup and shutdown
-    exec.prestart = "logger HOSTER_JAILS starting the Jail: {{ .JailName }}";
-    exec.poststart = "logger HOSTER_JAILS the Jail has been started: {{ .JailName }}";
-    exec.prestop = "logger HOSTER_JAILS stopping the Jail: {{ .JailName }}";
-    exec.poststop = "logger HOSTER_JAILS the Jail has been stopped: {{ .JailName }}";
+// 	# Cleanup the created resources
+//     exec.poststop += "rctl -r jail:{{ .JailName }}";
+//     exec.poststop += "ifconfig {{ .VnetInterfaceA }} destroy";
+//     exec.poststop += "umount {{ .JailRootPath }}/dev || logger 'HOSTER_JAILS could not unmount {{ .JailRootPath }}/dev'";
 
-    # Apply Jail resource limits
-    exec.poststart += "rctl -a jail:{{ .JailName }}:memoryuse:deny={{ .RAMLimit }}";
-    exec.poststart += "rctl -a jail:{{ .JailName }}:memorylocked:deny={{ .RAMLimit }}";
-    exec.poststart += "rctl -a jail:{{ .JailName }}:pcpu:deny={{ .CpuLimitReal }}";
+//     # Apply timezone settings
+//     exec.poststart += "tzsetup -sC {{ .JailRootPath }} {{ .Timezone }}";
 
-	# Apply VNet network IP address
-    exec.poststart += "jexec {{ .JailName }} ifconfig {{ .VnetInterfaceB }} inet {{ .IPAddress }}/{{ .Netmask }}";
-    exec.poststart += "jexec {{ .JailName }} ifconfig {{ .VnetInterfaceB }} up";
-    exec.poststart += "jexec {{ .JailName }} route add default {{ .DefaultRouter }}";
+// 	# Misc
+//     exec.clean;
+//     stop.timeout = 10;
 
-	# Cleanup the created resources
-    exec.poststop += "rctl -r jail:{{ .JailName }}";
-    exec.poststop += "ifconfig {{ .VnetInterfaceA }} destroy";
-    exec.poststop += "umount {{ .JailRootPath }}/dev || logger 'HOSTER_JAILS could not unmount {{ .JailRootPath }}/dev'";
-
-    # Apply timezone settings
-    exec.poststart += "tzsetup -sC {{ .JailRootPath }} {{ .Timezone }}";
-
-	# Misc
-    exec.clean;
-    stop.timeout = 10;
-
-    # Additional config
-`
+//     # Additional config
+// `
 
 func checkIfJailExists(jailName string) (jailExists bool) {
 	datasets, err := getZfsDatasetInfo()
@@ -270,114 +235,110 @@ func GetJailConfig(jailName string, ignoreJailExistsCheck bool) (jailConfig Jail
 	return
 }
 
-const templateJailRcConf = `# Hoster generated RC.CONF
-clear_tmp_enable="YES"
-syslogd_flags="-ss"
+// const templateJailRcConf = `# Hoster generated RC.CONF
+// clear_tmp_enable="YES"
+// syslogd_flags="-ss"
 
-# DISABLE ANY SENDMAIL ACTIVITY TO CUT THE START-UP TIME
-sendmail_enable="NO"
-sendmail_submit_enable="NO"
-sendmail_outbound_enable="NO"
-sendmail_msp_queue_enable="NO"
+// # DISABLE ANY SENDMAIL ACTIVITY TO CUT THE START-UP TIME
+// sendmail_enable="NO"
+// sendmail_submit_enable="NO"
+// sendmail_outbound_enable="NO"
+// sendmail_msp_queue_enable="NO"
 
-`
+// `
 
-const templateJailResolvConf = `# Hoster generated RESOLV.CONF
-search {{ .Parent }}.internal.lan
-nameserver {{ .DnsServer }}
-`
+// const templateJailResolvConf = `# Hoster generated RESOLV.CONF
+// search {{ .Parent }}.internal.lan
+// nameserver {{ .DnsServer }}
+// `
 
-func createMissingConfigFiles(jailConfig JailConfigFileStruct) error {
-	if !FileExists(jailConfig.JailRootPath + "/etc/fstab") {
-		_, _ = os.Create(jailConfig.JailRootPath + "/etc/fstab")
-	}
+// func createMissingConfigFiles(jailConfig JailConfigFileStruct) error {
+// 	if !FileExists(jailConfig.JailRootPath + "/etc/fstab") {
+// 		_, _ = os.Create(jailConfig.JailRootPath + "/etc/fstab")
+// 	}
 
-	// rc.conf
-	if !FileExists(jailConfig.JailRootPath + "/etc/rc.conf") {
-		t, err := template.New("templateJailRcConf").Parse(templateJailRcConf)
-		if err != nil {
-			return err
-		}
+// 	// rc.conf
+// 	if !FileExists(jailConfig.JailRootPath + "/etc/rc.conf") {
+// 		t, err := template.New("templateJailRcConf").Parse(templateJailRcConf)
+// 		if err != nil {
+// 			return err
+// 		}
 
-		file, err := os.Create(jailConfig.JailRootPath + "/etc/rc.conf")
-		if err != nil {
-			return err
-		}
+// 		file, err := os.Create(jailConfig.JailRootPath + "/etc/rc.conf")
+// 		if err != nil {
+// 			return err
+// 		}
 
-		err = t.Execute(file, jailConfig)
-		if err != nil {
-			file.Close()
-			return err
-		}
-		file.Close()
-	}
-	// EOF rc.conf
+// 		err = t.Execute(file, jailConfig)
+// 		if err != nil {
+// 			file.Close()
+// 			return err
+// 		}
+// 		file.Close()
+// 	}
+// 	// EOF rc.conf
 
-	// resolv.conf
-	templateResolvConf, err := template.New("templateJailResolvConf").Parse(templateJailResolvConf)
-	if err != nil {
-		return err
-	}
+// 	// resolv.conf
+// 	templateResolvConf, err := template.New("templateJailResolvConf").Parse(templateJailResolvConf)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	fileResolvConf, err := os.Create(jailConfig.JailRootPath + "/etc/resolv.conf")
-	if err != nil {
-		return err
-	}
+// 	fileResolvConf, err := os.Create(jailConfig.JailRootPath + "/etc/resolv.conf")
+// 	if err != nil {
+// 		return err
+// 	}
 
-	err = templateResolvConf.Execute(fileResolvConf, jailConfig)
-	if err != nil {
-		fileResolvConf.Close()
-		return err
-	}
-	fileResolvConf.Close()
-	// EOF resolv.conf
+// 	err = templateResolvConf.Execute(fileResolvConf, jailConfig)
+// 	if err != nil {
+// 		fileResolvConf.Close()
+// 		return err
+// 	}
+// 	fileResolvConf.Close()
+// 	// EOF resolv.conf
 
-	return nil
-}
-
-func createEpairInterfaces(jailConfig JailConfigFileStruct) (epairInterfaces []string, ifconfigError error) {
-	// Create new epair interface
-	out, err := exec.Command("ifconfig", "epair", "create").CombinedOutput()
-	if err != nil {
-		ifconfigError = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
-		return
-	}
-	// EOF Create new epair interface
-
-	// Add newly created interfaces to the return list
-	epairIfaceA := strings.TrimSpace(string(out))
-	epairIfaceB := strings.TrimSuffix(epairIfaceA, "a") + "b"
-	epairInterfaces = append(epairInterfaces, epairIfaceA)
-	epairInterfaces = append(epairInterfaces, epairIfaceB)
-	// EOF Add newly created interfaces to the return list
-
-	// Set a description for the new interface
-	err = exec.Command("ifconfig", epairIfaceA, "description", fmt.Sprintf("\"%s %s network:%s\"", jailConfig.JailName, epairIfaceA, jailConfig.Network)).Run()
-	if err != nil {
-		ifconfigError = err
-		return
-	}
-	// EOF Set a description for the new interface
-
-	// Add the interface to the VM network bridge
-	err = exec.Command("ifconfig", "vm-"+jailConfig.Network, "addm", epairIfaceA, "up").Run()
-	if err != nil {
-		ifconfigError = err
-		return
-	}
-	// EOF Add the interface to the VM network bridge
-
-	// Bring up the interface
-	err = exec.Command("ifconfig", epairIfaceA, "up").Run()
-	if err != nil {
-		ifconfigError = err
-		return
-	}
-	// EOF Bring up the interface
-
-	return
-}
-
-// func teardownEpairInterfaces(jailName string) error {
 // 	return nil
+// }
+
+// func _createEpairInterfaces(jailConfig JailConfigFileStruct) (epairInterfaces []string, ifconfigError error) {
+// 	// Create new epair interface
+// 	out, err := exec.Command("ifconfig", "epair", "create").CombinedOutput()
+// 	if err != nil {
+// 		ifconfigError = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
+// 		return
+// 	}
+// 	// EOF Create new epair interface
+
+// 	// Add newly created interfaces to the return list
+// 	epairIfaceA := strings.TrimSpace(string(out))
+// 	epairIfaceB := strings.TrimSuffix(epairIfaceA, "a") + "b"
+// 	epairInterfaces = append(epairInterfaces, epairIfaceA)
+// 	epairInterfaces = append(epairInterfaces, epairIfaceB)
+// 	// EOF Add newly created interfaces to the return list
+
+// 	// Set a description for the new interface
+// 	err = exec.Command("ifconfig", epairIfaceA, "description", fmt.Sprintf("\"%s %s network:%s\"", jailConfig.JailName, epairIfaceA, jailConfig.Network)).Run()
+// 	if err != nil {
+// 		ifconfigError = err
+// 		return
+// 	}
+// 	// EOF Set a description for the new interface
+
+// 	// Add the interface to the VM network bridge
+// 	err = exec.Command("ifconfig", "vm-"+jailConfig.Network, "addm", epairIfaceA, "up").Run()
+// 	if err != nil {
+// 		ifconfigError = err
+// 		return
+// 	}
+// 	// EOF Add the interface to the VM network bridge
+
+// 	// Bring up the interface
+// 	err = exec.Command("ifconfig", epairIfaceA, "up").Run()
+// 	if err != nil {
+// 		ifconfigError = err
+// 		return
+// 	}
+// 	// EOF Bring up the interface
+
+// 	return
 // }
