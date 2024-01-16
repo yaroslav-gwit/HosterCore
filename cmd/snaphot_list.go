@@ -26,6 +26,7 @@ var (
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := generateSnapshotTableNew(args[0])
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -151,7 +152,7 @@ func generateSnapshotTableNew(vmName string) error {
 		table.AlignCenter, // Resource Type
 		table.AlignLeft,   // Snapshot Name
 		table.AlignRight,  // Snapshot Size Human
-		table.AlignRight,  // Snapshot Size Bytes
+		// table.AlignRight,  // Snapshot Size Bytes
 		table.AlignCenter, // Snapshot Locked
 		table.AlignRight,  // Snapshot Clones/Dependents
 		table.AlignRight,  // Snapshot Description
@@ -176,7 +177,8 @@ func generateSnapshotTableNew(vmName string) error {
 		t.SetBorderBottom(false)
 	} else {
 		t.SetHeaders("Hoster ZFS Snapshots")
-		t.SetHeaderColSpans(0, 9)
+		// t.SetHeaderColSpans(0, 9)
+		t.SetHeaderColSpans(0, 8)
 
 		t.AddHeaders(
 			"#",
@@ -184,7 +186,7 @@ func generateSnapshotTableNew(vmName string) error {
 			"Resource\nType",
 			"Snapshot\nName",
 			"Snapshot Size\nHuman",
-			"Snapshot Size\nBytes",
+			// "Snapshot Size\nBytes",
 			"Snapshot\nLocked",
 			"Snapshot\nDependents",
 			"Snapshot\nDescription",
@@ -227,7 +229,7 @@ func generateSnapshotTableNew(vmName string) error {
 				resType,
 				vv.Name,
 				vv.SizeHuman,
-				fmt.Sprintf("%d", vv.SizeBytes),
+				// fmt.Sprintf("%d", vv.SizeBytes),
 				fmt.Sprintf("%v", vv.Locked),
 				fmt.Sprintf("%d", len(vv.Clones)),
 				vv.Description,
