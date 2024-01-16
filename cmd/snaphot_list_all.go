@@ -93,49 +93,45 @@ func generateSnapshotAllTable() error {
 		return err
 	}
 
-	go func() {
-		for _, v := range vmList {
-			reMatch := regexp.MustCompile(`/` + v + `@`)
-			for _, vv := range snapList {
-				if reMatch.MatchString(vv.Name) {
-					ID = ID + 1
-					t.AddRow(
-						strconv.Itoa(ID),
-						v,
-						"VM",
-						vv.Name,
-						vv.SizeHuman,
-						// fmt.Sprintf("%d", vv.SizeBytes),
-						fmt.Sprintf("%v", vv.Locked),
-						fmt.Sprintf("%d", len(vv.Clones)),
-						vv.Description,
-					)
-				}
+	for _, v := range vmList {
+		reMatch := regexp.MustCompile(`/` + v + `@`)
+		for _, vv := range snapList {
+			if reMatch.MatchString(vv.Name) {
+				ID = ID + 1
+				t.AddRow(
+					strconv.Itoa(ID),
+					v,
+					"VM",
+					vv.Name,
+					vv.SizeHuman,
+					// fmt.Sprintf("%d", vv.SizeBytes),
+					fmt.Sprintf("%v", vv.Locked),
+					fmt.Sprintf("%d", len(vv.Clones)),
+					vv.Description,
+				)
 			}
 		}
-	}()
+	}
 
-	go func() {
-		for _, v := range jailList {
-			for _, vv := range snapList {
-				jaiDs := v.DsName + "/" + v.JailName
-				if jaiDs == vv.Dataset {
-					ID = ID + 1
-					t.AddRow(
-						strconv.Itoa(ID),
-						v.JailName,
-						"Jail",
-						vv.Name,
-						vv.SizeHuman,
-						// fmt.Sprintf("%d", vv.SizeBytes),
-						fmt.Sprintf("%v", vv.Locked),
-						fmt.Sprintf("%d", len(vv.Clones)),
-						vv.Description,
-					)
-				}
+	for _, v := range jailList {
+		for _, vv := range snapList {
+			jaiDs := v.DsName + "/" + v.JailName
+			if jaiDs == vv.Dataset {
+				ID = ID + 1
+				t.AddRow(
+					strconv.Itoa(ID),
+					v.JailName,
+					"Jail",
+					vv.Name,
+					vv.SizeHuman,
+					// fmt.Sprintf("%d", vv.SizeBytes),
+					fmt.Sprintf("%v", vv.Locked),
+					fmt.Sprintf("%d", len(vv.Clones)),
+					vv.Description,
+				)
 			}
 		}
-	}()
+	}
 
 	t.Render()
 	return nil

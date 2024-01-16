@@ -9,24 +9,41 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 func SnapshotListWithDescriptions() ([]SnapshotInfo, error) {
 	snapDescriptions := []SnapshotInfo{}
-	snapList, err := SnapshotListAll()
+
+	snapList := []SnapshotInfo{}
+	var err error
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		snapList, err = SnapshotListAll()
+		wg.Done()
+	}()
 	if err != nil {
 		return []SnapshotInfo{}, err
 	}
 
-	out, err := exec.Command("zfs", "get", "-o", "name,property,value", "-r", "hoster:sdescription").CombinedOutput()
-	if err != nil {
-		errString := strings.TrimSpace(string(out)) + "; " + err.Error()
-		return []SnapshotInfo{}, errors.New(errString)
-	}
-	// Example output:
-	// NAME                                               PROPERTY             VALUE
-	// iscsihci_001/test-vm-1                             hoster:sdescription  -
-	// iscsihci_001/test-vm-1@custom_2023-12-25_02-22-23  hoster:sdescription  This was a test run
+	wg.Add(1)
+	var out []byte
+	go func() {
+		out, err = exec.Command("zfs", "get", "-o", "name,property,value", "-r", "hoster:sdescription").CombinedOutput()
+		if err != nil {
+			errString := strings.TrimSpace(string(out)) + "; " + err.Error()
+			err = errors.New(errString)
+		}
+		wg.Done()
+		// Example output:
+		// NAME                                               PROPERTY             VALUE
+		// iscsihci_001/test-vm-1                             hoster:sdescription  -
+		// iscsihci_001/test-vm-1@custom_2023-12-25_02-22-23  hoster:sdescription  This was a test run
+	}()
+	wg.Wait()
+
 	nameIndex := -1
 	propertyIndex := -1
 	valueIndex := -1
