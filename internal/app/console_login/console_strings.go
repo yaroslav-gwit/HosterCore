@@ -12,20 +12,25 @@ import (
 )
 
 var (
-	welcome_string = "Welcome to Hoster"
-	wait_string    = "Please wait..."
-	warning_string = "You've entered an incorrect PIN too many times.\n\n Try again in %vs."
-	incorrect_pin  = "Incorrect PIN entered"
+	welcomeString      = "Welcome to Hoster"
+	waitString         = "Please wait..."
+	warningString      = "You've entered an incorrect PIN too many times.\n\n Try again in %vs."
+	incorrectPinString = "Incorrect PIN entered"
+	sessionInfoString  = "Logged in as %v (automatic logout in %v seconds)"
 )
 
 func MakeWarningTring(timeout int) string {
-	return fmt.Sprintf(warning_string, timeout)
+	return fmt.Sprintf(warningString, timeout)
+}
+
+func MakeSessionInfoText(user_name string, time int) string {
+	return fmt.Sprintf(sessionInfoString, user_name, time)
 }
 
 func GetWaitText() *text.Widget {
 	wait_message := text.NewFromContentExt(
 		text.NewContent([]text.ContentSegment{
-			text.StringContent(wait_string),
+			text.StringContent(waitString),
 		}),
 		text.Options{
 			Align: gowid.HAlignMiddle{},

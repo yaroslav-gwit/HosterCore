@@ -22,9 +22,9 @@ import (
 )
 
 var (
-	pinAttempts  = 1
-	pin_edit     *edit.Widget
-	login_dialog *dialog.Widget
+	pinAttempts = 1
+	pinEdit     *edit.Widget
+	loginDialog *dialog.Widget
 )
 
 type LoginController struct {
@@ -55,15 +55,15 @@ func (c *LoginController) CreateLoginDialog(holder *styled.Widget) {
 	flow := gowid.RenderFlow{}
 	msg := text.New("Enter PIN to login: ")
 	title := hpadding.New(msg, gowid.HAlignMiddle{}, gowid.RenderFixed{})
-	pin_edit = edit.New(
+	pinEdit = edit.New(
 		edit.Options{
 			Mask:    edit.MakeMask('*'),
 			Numeric: edit.MakeNumeric(true, c.GetMaxPINLength()),
 		})
 	edit := styled.New(
-		framed.NewUnicode(pin_edit),
+		framed.NewUnicode(pinEdit),
 		gowid.MakePaletteRef("edit"))
-	login_dialog = dialog.New(
+	loginDialog = dialog.New(
 		framed.NewSpace(vpadding.New(
 			pile.New([]gowid.IContainerWidget{
 				&gowid.ContainerWidget{IWidget: title, D: flow},
@@ -94,25 +94,25 @@ func (c *LoginController) CreateLoginDialogWithError(holder *styled.Widget) {
 	flow := gowid.RenderFlow{}
 	msg := text.New("Enter PIN to login: ")
 	title := hpadding.New(msg, gowid.HAlignMiddle{}, gowid.RenderFixed{})
-	pin_edit = edit.New(
+	pinEdit = edit.New(
 		edit.Options{
 			Mask:    edit.MakeMask('*'),
 			Numeric: edit.MakeNumeric(true, c.GetMaxPINLength()),
 		})
 	edit := styled.New(
-		framed.NewUnicode(pin_edit),
+		framed.NewUnicode(pinEdit),
 		gowid.MakePaletteRef("edit"))
 	spacer := divider.NewBlank()
 	warning_message :=
 		text.NewFromContentExt(
 			text.NewContent([]text.ContentSegment{
-				text.StyledContent(incorrect_pin, gowid.MakePaletteRef("warning_text")),
+				text.StyledContent(incorrectPinString, gowid.MakePaletteRef("warning_text")),
 			}),
 			text.Options{
 				Align: gowid.HAlignMiddle{},
 			},
 		)
-	login_dialog = dialog.New(
+	loginDialog = dialog.New(
 		framed.NewSpace(vpadding.New(
 			pile.New([]gowid.IContainerWidget{
 				&gowid.ContainerWidget{IWidget: title, D: flow},
@@ -138,8 +138,8 @@ func (c *LoginController) ShowLoginDialog(holder *styled.Widget, app *gowid.App)
 	}
 
 	c.CreateLoginDialog(holder)
-	if login_dialog != nil {
-		login_dialog.Open(holder, gowid.RenderWithRatio{R: 0.2}, app)
+	if loginDialog != nil {
+		loginDialog.Open(holder, gowid.RenderWithRatio{R: 0.2}, app)
 	}
 }
 
@@ -149,16 +149,16 @@ func (c *LoginController) ShowLoginDialogWithError(holder *styled.Widget, app *g
 	}
 
 	c.CreateLoginDialogWithError(holder)
-	if login_dialog != nil {
-		login_dialog.Open(holder, gowid.RenderWithRatio{R: 0.2}, app)
+	if loginDialog != nil {
+		loginDialog.Open(holder, gowid.RenderWithRatio{R: 0.2}, app)
 	}
 }
 
 func (c *LoginController) CloseLoginDialog(app *gowid.App) {
-	pin_edit = nil
+	pinEdit = nil
 
-	if login_dialog != nil {
-		login_dialog.Close(app)
+	if loginDialog != nil {
+		loginDialog.Close(app)
 	}
 }
 
@@ -169,7 +169,7 @@ func (c *LoginController) PinVerification(_ gowid.IApp, widget gowid.IWidget) {
 	// Read PIN from edit
 	pin := c.GetPinFromDialog()
 
-	login_controller.CloseLoginDialog(app)
+	loginController.CloseLoginDialog(app)
 
 	// Load host config
 	hostConfig, err := host.GetHostConfig()
@@ -186,7 +186,7 @@ func (c *LoginController) PinVerification(_ gowid.IApp, widget gowid.IWidget) {
 		showHomeWidget(app)
 	} else {
 		pinAttempts++
-		login_controller.ShowLoginDialogWithError(main_widget, app)
+		loginController.ShowLoginDialogWithError(mainWidget, app)
 	}
 
 	// Check the number of pin attempts
@@ -197,11 +197,11 @@ func (c *LoginController) PinVerification(_ gowid.IApp, widget gowid.IWidget) {
 }
 
 func (c *LoginController) GetPinFromDialog() string {
-	if pin_edit == nil {
+	if pinEdit == nil {
 		return ""
 	}
 
-	return pin_edit.Text()
+	return pinEdit.Text()
 }
 
 func (c *LoginController) GetMaximumPINAttempts() int {

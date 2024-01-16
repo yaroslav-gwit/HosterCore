@@ -20,25 +20,29 @@ const (
 	maxPINLengthDefault       = 6
 	maximumPINAttemptsDefault = 3
 	lockTimeoutDefault        = 1800 // 30 m
+	sessionTimeDefault        = 300  // 5 m
 )
 
 // ======================================================================
 // variables
 
 var (
-	host_config      hostconfig.Config
-	app              *gowid.App
-	main_widget      *styled.Widget
-	login_controller *LoginController
-	lock_controller  *LockController
-	home_controller  *HomeController
+	host_config     hostconfig.Config
+	app             *gowid.App
+	mainWidget      *styled.Widget
+	loginController *LoginController
+	lockController  *LockController
+	homeController  *HomeController
 )
 
 // ======================================================================
 // Header
 
-func getHeaderText() *text.Widget {
-	header_text := text.New(welcome_string, text.Options{Align: gowid.HAlignMiddle{}})
+func getHeaderText() *styled.Widget {
+	header_text := styled.New(
+		text.New(welcomeString, text.Options{Align: gowid.HAlignMiddle{}}),
+		gowid.MakePaletteRef("info_text"),
+	)
 	return header_text
 }
 
@@ -46,23 +50,24 @@ func getHeaderText() *text.Widget {
 // Widgets
 
 func showLoginWidget(app *gowid.App) {
-	login_controller = NewLoginController()
+	loginController = NewLoginController()
 
-	main_widget.SetSubWidget(login_controller.view, app)
-	login_controller.ShowLoginDialog(login_controller.view.Widget, app)
+	mainWidget.SetSubWidget(loginController.view, app)
+	loginController.ShowLoginDialog(loginController.view.Widget, app)
 }
 
 func showWarningWidget(app *gowid.App) {
-	lock_controller = NewLockController()
+	lockController = NewLockController()
 
-	main_widget.SetSubWidget(lock_controller.view, app)
-	lock_controller.AnimateLock(app)
+	mainWidget.SetSubWidget(lockController.view, app)
+	lockController.AnimateLock(app)
 }
 
 func showHomeWidget(app *gowid.App) {
-	home_controller = NewHomeController()
+	homeController = NewHomeController()
 
-	main_widget.SetSubWidget(home_controller.view, app)
+	mainWidget.SetSubWidget(homeController.view, app)
+	homeController.AnimateSessionTime(app)
 }
 
 // ======================================================================
@@ -73,6 +78,7 @@ func New() error {
 		"body":               gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("black"), gowid.NewUrwidColor("light gray"), gowid.StyleBold),
 		"background":         gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("blue")),
 		"warning_background": gowid.MakeStyledPaletteEntry(gowid.ColorNone, gowid.NewUrwidColor("dark red"), gowid.StyleBold),
+		"info_text":          gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("white"), gowid.ColorNone, gowid.StyleBold),
 		"warning_text":       gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("dark red"), gowid.ColorNone, gowid.StyleBold),
 		"edit":               gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("dark blue")),
 		"banner":             gowid.MakePaletteEntry(gowid.ColorWhite, gowid.MakeRGBColor("#60d")),
@@ -83,11 +89,11 @@ func New() error {
 		fmt.Println(err)
 	}
 
-	login_controller = NewLoginController()
-	main_widget = login_controller.view.Widget
+	loginController = NewLoginController()
+	mainWidget = loginController.view.Widget
 
 	app, err = gowid.NewApp(gowid.AppArgs{
-		View:    main_widget,
+		View:    mainWidget,
 		Palette: &styles,
 	})
 
@@ -95,7 +101,7 @@ func New() error {
 		return err
 	}
 
-	login_controller.ShowLoginDialog(main_widget, app)
+	loginController.ShowLoginDialog(mainWidget, app)
 
 	app.SimpleMainLoop()
 

@@ -15,6 +15,7 @@ type (
 		MaxPINLength       int    `json:"max_pin_length"`
 		MaximumPINAttempts int    `json:"maximum_pin_attempts"`
 		LockTimeout        int    `json:"lock_timeout"`
+		SessionTime        int    `json:"session_time"`
 	}
 
 	Config struct {
