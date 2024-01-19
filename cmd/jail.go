@@ -3,11 +3,10 @@ package cmd
 import (
 	"HosterCore/internal/pkg/emojlog"
 	HosterJail "HosterCore/internal/pkg/hoster/jail"
-	"errors"
+	HosterTables "HosterCore/internal/pkg/hoster/tables.go"
 	"os"
 	"os/exec"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"facette.io/natsort"
@@ -102,6 +101,45 @@ var (
 	}
 )
 
+var (
+	jailListCmdUnixStyle bool
+
+	jailListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "List all available Jails in a single table",
+		Long:  `List all available Jails in a single table.`,
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := HosterTables.GenerateJailsTable(jailListCmdUnixStyle)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+var (
+	jailDestroyCmd = &cobra.Command{
+		Use:   "destroy [jailName]",
+		Short: "Destroy any existing Jail",
+		Long:  `Destroy any existing Jail.`,
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			// err := executeJailDestroy(args[0], true)
+			err := HosterJail.Destroy(args[0])
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
 type LiveJailStruct struct {
 	ID         int
 	Name       string
@@ -114,63 +152,63 @@ type LiveJailStruct struct {
 // Gets the list of actively running Jails using the underlying `jls` command.
 //
 // Only used to compare with the list of deployed Jails, to figure out if the Jail is running (live) or not.
-func getRunningJails() ([]LiveJailStruct, error) {
-	reSpaceSplit := regexp.MustCompile(`\s+`)
-	jails := []LiveJailStruct{}
+// func getRunningJails() ([]LiveJailStruct, error) {
+// 	reSpaceSplit := regexp.MustCompile(`\s+`)
+// 	jails := []LiveJailStruct{}
 
-	out, err := exec.Command("jls", "-h", "jid", "name", "path", "dying", "ip4.addr", "ip6.addr").CombinedOutput()
-	// Example output (in case we need to compare it if anything changes on the FreeBSD side in the future)
-	// jid  name   path        dying   ip4.addr   ip6.addr
-	// [0]  [1]     [2]         [3]       [4]      [5]
-	// 1  example /root/jail   false  10.0.105.50   -
-	// 2  twelve  /root/12_4   false  10.0.105.51   -
-	// 3  twelve1 /root/12_4_1 false  10.0.105.52   -
-	// 4  twelve2 /root/12_4_2 false  10.0.105.53   -
-	// 5  twelve3 /root/12_4_3 false  10.0.105.54   -
+// 	out, err := exec.Command("jls", "-h", "jid", "name", "path", "dying", "ip4.addr", "ip6.addr").CombinedOutput()
+// 	// Example output (in case we need to compare it if anything changes on the FreeBSD side in the future)
+// 	// jid  name   path        dying   ip4.addr   ip6.addr
+// 	// [0]  [1]     [2]         [3]       [4]      [5]
+// 	// 1  example /root/jail   false  10.0.105.50   -
+// 	// 2  twelve  /root/12_4   false  10.0.105.51   -
+// 	// 3  twelve1 /root/12_4_1 false  10.0.105.52   -
+// 	// 4  twelve2 /root/12_4_2 false  10.0.105.53   -
+// 	// 5  twelve3 /root/12_4_3 false  10.0.105.54   -
 
-	if err != nil {
-		errorValue := "output: " + string(out) + " " + err.Error()
-		return []LiveJailStruct{}, errors.New(errorValue)
-	}
+// 	if err != nil {
+// 		errorValue := "output: " + string(out) + " " + err.Error()
+// 		return []LiveJailStruct{}, errors.New(errorValue)
+// 	}
 
-	for i, v := range strings.Split(string(out), "\n") {
-		// Skip the header
-		if i == 0 {
-			continue
-		}
-		// Skip empty lines
-		if len(v) < 1 {
-			continue
-		}
+// 	for i, v := range strings.Split(string(out), "\n") {
+// 		// Skip the header
+// 		if i == 0 {
+// 			continue
+// 		}
+// 		// Skip empty lines
+// 		if len(v) < 1 {
+// 			continue
+// 		}
 
-		tempList := reSpaceSplit.Split(strings.TrimSpace(v), -1)
-		// In case we need to check the split output in the future
-		// fmt.Println(tempList)
+// 		tempList := reSpaceSplit.Split(strings.TrimSpace(v), -1)
+// 		// In case we need to check the split output in the future
+// 		// fmt.Println(tempList)
 
-		tempStruct := LiveJailStruct{}
+// 		tempStruct := LiveJailStruct{}
 
-		jailId, err := strconv.Atoi(tempList[0])
-		if err != nil {
-			return []LiveJailStruct{}, err
-		}
+// 		jailId, err := strconv.Atoi(tempList[0])
+// 		if err != nil {
+// 			return []LiveJailStruct{}, err
+// 		}
 
-		tempStruct.ID = jailId
-		tempStruct.Name = tempList[1]
-		tempStruct.Path = tempList[2]
+// 		tempStruct.ID = jailId
+// 		tempStruct.Name = tempList[1]
+// 		tempStruct.Path = tempList[2]
 
-		tempStruct.Running, err = strconv.ParseBool(tempList[3])
-		if err != nil {
-			return []LiveJailStruct{}, err
-		}
+// 		tempStruct.Running, err = strconv.ParseBool(tempList[3])
+// 		if err != nil {
+// 			return []LiveJailStruct{}, err
+// 		}
 
-		tempStruct.Ip4address = tempList[4]
-		tempStruct.Ip6address = tempList[5]
+// 		tempStruct.Ip4address = tempList[4]
+// 		tempStruct.Ip6address = tempList[5]
 
-		jails = append(jails, tempStruct)
-	}
+// 		jails = append(jails, tempStruct)
+// 	}
 
-	return jails, nil
-}
+// 	return jails, nil
+// }
 
 type JailConfigFileStruct struct {
 	CPULimitPercent  int    `json:"cpu_limit_percent"`
@@ -231,22 +269,22 @@ func GetAllJailsList() ([]string, error) {
 	return jails, nil
 }
 
-func checkJailOnline(jailConfig JailConfigFileStruct) (jailOnline bool, jailError error) {
-	liveJails, err := getRunningJails()
-	if err != nil {
-		jailError = err
-		return
-	}
+// func checkJailOnline(jailConfig JailConfigFileStruct) (jailOnline bool, jailError error) {
+// 	liveJails, err := getRunningJails()
+// 	if err != nil {
+// 		jailError = err
+// 		return
+// 	}
 
-	for _, v := range liveJails {
-		if v.Path == jailConfig.JailRootPath {
-			jailOnline = true
-			return
-		}
-	}
+// 	for _, v := range liveJails {
+// 		if v.Path == jailConfig.JailRootPath {
+// 			jailOnline = true
+// 			return
+// 		}
+// 	}
 
-	return
-}
+// 	return
+// }
 
 // func _createJailUptimeStateFile(jailName string) {
 // 	_clearJailUptimeStateFile(jailName)

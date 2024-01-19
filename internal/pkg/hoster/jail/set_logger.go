@@ -8,7 +8,8 @@ import HosterLogger "HosterCore/internal/pkg/logger"
 
 var log = HosterLogger.New()
 
-// Override the logger for this package
+// Function that helps override the logger settings for this package
+// and configure different logging settings from a higher-up function.
 func SetLogger(l *HosterLogger.Log) {
 	log = l
 }

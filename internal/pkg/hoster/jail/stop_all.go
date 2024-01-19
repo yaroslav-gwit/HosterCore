@@ -12,6 +12,9 @@ import (
 	"strings"
 )
 
+// Stops all available jails on this system. Offline Jails will be ignored.
+//
+// Has it's own logging configured.
 func StopAll() error {
 	// If the logger was already set, ignore this
 	if !log.ConfigSet {

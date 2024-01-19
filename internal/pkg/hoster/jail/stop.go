@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// Stops a Jail using it's name. Has it's own logging configured.
 func Stop(jailName string) error {
 	// If the logger was already set, ignore this
 	if !log.ConfigSet {
@@ -47,7 +48,7 @@ func Stop(jailName string) error {
 		log.ErrorToFile(errorValue)
 		return errors.New(errorValue)
 	}
-	jailTempRuntimeLocation := jailDsInfo.MountPoint.Mountpoint + "/" + jailName + "/" + HosterJailUtils.JAIL_TEMP_RUNTIME
+	jailTempRuntimeLocation := jailDsInfo.Mountpoint + "/" + jailName + "/" + HosterJailUtils.JAIL_TEMP_RUNTIME
 	// EOF Check if Jail exists and get it's dataset configuration
 
 	out, err := exec.Command("jail", "-f", jailTempRuntimeLocation, "-r", jailName).CombinedOutput()

@@ -29,6 +29,7 @@ type JailStart struct {
 	HosterNetwork.EpairInterface
 }
 
+// Starts a Jail using it's name. Has it's own logging configured.
 func Start(jailName string) error {
 	// If the logger was already set, ignore this
 	if !log.ConfigSet {

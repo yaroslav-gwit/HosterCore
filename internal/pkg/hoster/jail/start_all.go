@@ -12,6 +12,9 @@ import (
 	"strings"
 )
 
+// Starts all available jails on this system. Running Jails will be ignored.
+//
+// Has it's own logging configured.
 func StartAll() error {
 	// If the logger was already set, ignore this
 	if !log.ConfigSet {
