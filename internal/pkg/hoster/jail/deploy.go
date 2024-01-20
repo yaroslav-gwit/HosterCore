@@ -110,9 +110,13 @@ func generateJailTestName() (r string, e error) {
 
 	var existingFolders []string
 	for _, v := range datasets {
+		if v.Mountpoint+"/" == "-" {
+			continue
+		}
+
 		entries, err := os.ReadDir(v.Mountpoint + "/")
 		if err != nil {
-			e = err
+			e = fmt.Errorf("could not list files in the directory: %s", err.Error())
 			return
 		}
 		for _, vv := range entries {
