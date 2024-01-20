@@ -12,6 +12,7 @@ import (
 	"html/template"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type DeployInput struct {
@@ -36,7 +37,7 @@ func Deploy(input DeployInput) error {
 	prod := true
 
 	// Generate a test-jail-{number} name automatically, if none was given
-	if len(input.JailName) < 1 {
+	if len(strings.TrimSpace(input.JailName)) < 1 {
 		input.JailName, err = generateJailTestName()
 		prod = false
 		if err != nil {
@@ -143,11 +144,10 @@ jailNameLoop:
 			continue jailNameLoop
 		} else {
 			r = tempJailName
-			break jailNameLoop
+			// break jailNameLoop
+			return
 		}
 	}
-
-	return
 }
 
 func generateJailDeployConfig(cpuLimit int, ramLimit string, ipAddress string, network string, dnsServer string, prod bool) (r HosterJailUtils.JailConfig, e error) {
