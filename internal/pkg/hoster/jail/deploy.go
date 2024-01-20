@@ -31,8 +31,6 @@ func Deploy(input DeployInput) error {
 	if !log.ConfigSet {
 		log.SetFileLocation(HosterJailUtils.JAIL_AUDIT_LOG_LOCATION)
 	}
-	log.Info("Deploying a new Jail: " + input.JailName)
-
 	var err error
 	prod := true
 
@@ -44,6 +42,7 @@ func Deploy(input DeployInput) error {
 			return err
 		}
 	}
+	log.Info("Deploying a new Jail: " + input.JailName)
 
 	err = HosterVmUtils.ValidateResName(input.JailName)
 	if err != nil {
