@@ -102,25 +102,36 @@ func Deploy(input DeployInput) error {
 }
 
 func generateJailTestName() (r string, e error) {
-	datasets, err := HosterZfs.ListMountPoints()
+	allDatasets, err := HosterZfs.ListMountPoints()
+	if err != nil {
+		e = err
+		return
+	}
+	activeDatasets, err := HosterHost.GetHostConfig()
 	if err != nil {
 		e = err
 		return
 	}
 
 	var existingFolders []string
-	for _, v := range datasets {
-		if v.Mountpoint+"/" == "-" {
-			continue
-		}
+	for _, v := range activeDatasets.ActiveZfsDatasets {
+		for _, vv := range allDatasets {
+			if vv.Mountpoint == "-" {
+				continue
+			}
+			if vv.DsName != v {
+				continue
+			}
 
-		entries, err := os.ReadDir(v.Mountpoint + "/")
-		if err != nil {
-			e = fmt.Errorf("could not list files in the directory: %s", err.Error())
-			return
-		}
-		for _, vv := range entries {
-			existingFolders = append(existingFolders, vv.Name())
+			entries, err := os.ReadDir(vv.Mountpoint + "/")
+			if err != nil {
+				e = fmt.Errorf("could not list files in the directory: %s", err.Error())
+				return
+			}
+			for _, vv := range entries {
+				existingFolders = append(existingFolders, vv.Name())
+			}
+
 		}
 	}
 
