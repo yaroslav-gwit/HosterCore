@@ -8,38 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
-
-	"github.com/spf13/cobra"
-)
-
-var (
-	jailDeployCmdOsRelease string
-	jailDeployCmdDataset   string
-	jailDeployCmdJailName  string
-	jailDeployCmdCpuLimit  int
-	jailDeployCmdRamLimit  string
-	jailDeployCmdIpAddress string
-	jailDeployCmdNetwork   string
-	jailDeployCmdDnsServer string
-	// jailDeployCmdTimezone    string
-	// jailDeployCmdProduction  string
-	// jailDeployCmdDescription string
-
-	jailDeployCmd = &cobra.Command{
-		Use:   "deploy",
-		Short: "Deploy a new Jail",
-		Long:  `Deploy a new Jail.`,
-		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			checkInitFile()
-
-			err := deployNewJail(jailDeployCmdJailName, jailDeployCmdDataset, jailDeployCmdOsRelease, jailDeployCmdCpuLimit, jailDeployCmdRamLimit, jailDeployCmdIpAddress, jailDeployCmdNetwork, jailDeployCmdDnsServer)
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-		},
-	}
 )
 
 const templateJailConfigJson = `{

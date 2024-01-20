@@ -140,6 +140,46 @@ var (
 	}
 )
 
+var (
+	jailDeployCmdOsRelease string
+	jailDeployCmdDataset   string
+	jailDeployCmdJailName  string
+	jailDeployCmdCpuLimit  int
+	jailDeployCmdRamLimit  string
+	jailDeployCmdIpAddress string
+	jailDeployCmdNetwork   string
+	jailDeployCmdDnsServer string
+	// jailDeployCmdTimezone    string
+	// jailDeployCmdProduction  string
+	// jailDeployCmdDescription string
+
+	jailDeployCmd = &cobra.Command{
+		Use:   "deploy",
+		Short: "Deploy a new Jail",
+		Long:  `Deploy a new Jail.`,
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			i := HosterJail.DeployInput{}
+			i.CpuLimit = jailDeployCmdCpuLimit
+			i.DnsServer = jailDeployCmdDnsServer
+			i.DsParent = jailDeployCmdDataset
+			i.IpAddress = jailDeployCmdIpAddress
+			i.JailName = jailDeployCmdJailName
+			i.Network = jailDeployCmdNetwork
+			i.RamLimit = jailDeployCmdRamLimit
+			i.Release = jailDeployCmdOsRelease
+
+			err := HosterJail.Deploy(i)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
 type LiveJailStruct struct {
 	ID         int
 	Name       string

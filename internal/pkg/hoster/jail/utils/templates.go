@@ -62,3 +62,27 @@ const TemplateJailResolvConf = `# Hoster generated RESOLV.CONF
 search {{ .Parent }}.lan
 nameserver {{ .DnsServer }}
 `
+
+const TemplateJailConfigJson = `{
+    "cpu_limit_percent": {{ .CPULimitPercent }},
+    "ram_limit": "{{ .RAMLimit }}",
+
+    "startup_script": "/bin/sh /etc/rc",
+    "shutdown_script": "/bin/sh /etc/rc.shutdown jail",
+    "config_file_append": "jail_custom_parameters.conf",
+
+    "ip_address": "{{ .IPAddress }}",
+    "network": "{{ .Network }}",
+    "dns_server": "{{ .DnsServer }}",
+
+    "timezone": "{{ .Timezone }}",
+    "parent": "{{ .Parent }}",
+    "production": {{ .Production }},
+    "description": "{{ .Description }}"
+}
+`
+
+const TemplateJailCustomParameters = `mount.devfs;
+allow.raw_sockets = "1";
+allow.sysvipc = "1";
+`
