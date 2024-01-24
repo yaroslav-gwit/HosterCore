@@ -260,6 +260,9 @@ func init() {
 	// Init command section
 	rootCmd.AddCommand(initCmd)
 
+	// Prometheus command section
+	rootCmd.AddCommand(prometheusCmd)
+
 	// Image command section
 	rootCmd.AddCommand(imageCmd)
 	imageCmd.AddCommand(imageDownloadCmd)
