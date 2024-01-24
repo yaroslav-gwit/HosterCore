@@ -67,7 +67,7 @@ func Destroy(jailName string) error {
 	// EOF Get the parent dataset
 
 	// Remove the Jail dataset
-	out, err = exec.Command("zfs", "destroy", jailDs).CombinedOutput()
+	out, err = exec.Command("zfs", "destroy", "-r", jailDs).CombinedOutput()
 	if err != nil {
 		errorValue := "could not remove the dataset " + jailDs + ": " + strings.TrimSpace(string(out)) + "; " + err.Error()
 		return fmt.Errorf("%s", errorValue)
