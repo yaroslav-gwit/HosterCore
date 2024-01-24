@@ -11,6 +11,7 @@ import (
 	"HosterCore/cmd"
 	"HosterCore/internal/pkg/emojlog"
 	FreeBSDLogger "HosterCore/internal/pkg/freebsd/logger"
+	HosterHost "HosterCore/internal/pkg/hoster/host"
 
 	"github.com/miekg/dns"
 	"github.com/sirupsen/logrus"
@@ -92,16 +93,18 @@ func main() {
 	}
 }
 
+// Parses and loads the list of upstream DNS servers from the host config file.
 func loadUpstreamDnsServers() {
-	hostConfig, err := cmd.GetHostConfig()
+	// Load host config
+	hostConf, err := HosterHost.GetHostConfig()
 	if err != nil {
-		// logFileOutput(LOG_SUPERVISOR, "Error loading host config file: "+err.Error(), logChannel)
 		log.Error("Error loading host config file:" + err.Error())
 	}
 
+	// Load upstream DNS servers from the host config
 	upstreamServers = []string{}
 	reMatchPort := regexp.MustCompile(`.*:\d+`)
-	for _, v := range hostConfig.DnsServers {
+	for _, v := range hostConf.DnsServers {
 		if reMatchPort.MatchString(v) {
 			upstreamServers = append(upstreamServers, v)
 		} else {
@@ -109,8 +112,12 @@ func loadUpstreamDnsServers() {
 		}
 	}
 
-	// debugText := fmt.Sprintf("Loaded these servers from the host config file: %s", upstreamServers)
-	// logFileOutput(LOG_SUPERVISOR, debugText, logChannel)
+	// If host config doesn't include any servers, use the public ones
+	if len(upstreamServers) < 1 {
+		upstreamServers = append(upstreamServers, DNS_SRV4_QUAD_NINE)
+		upstreamServers = append(upstreamServers, DNS_SRV4_CLOUD_FLARE)
+	}
+
 	log.Infof("Loaded these servers from the host config file: %s", upstreamServers)
 }
 
@@ -213,17 +220,12 @@ func queryExternalDNS(q dns.Question) (*dns.Msg, string, error) {
 	m := dns.Msg{}
 	m.SetQuestion(q.Name, q.Qtype)
 
-	// Set the list of DNS servers to try
-	servers := upstreamServers
-	servers = append(servers, DNS_SRV4_QUAD_NINE)
-	servers = append(servers, DNS_SRV4_CLOUD_FLARE)
-
 	var response *dns.Msg
 	var err error
 	var responseServer string
 
 	// Try each DNS server until a response is received or all servers fail
-	for _, server := range servers {
+	for _, server := range upstreamServers {
 		response, _, err = c.Exchange(&m, server)
 		if err == nil && response != nil && response.Rcode != dns.RcodeServerFailure {
 			// Received a successful response, break the loop
