@@ -23,7 +23,7 @@ var (
 				log.Fatal(e)
 			}
 
-			result, _ := json.MarshalIndent(r, "", "    ")
+			result, _ := json.MarshalIndent(r, "", "   ")
 			fmt.Println(string(result))
 		},
 	}

@@ -13,8 +13,8 @@ import (
 // }
 
 type PrometheusTarget struct {
-	Targets []string            `json:"targets"`
-	Labels  []map[string]string `json:"labels"`
+	Targets []string                 `json:"targets"`
+	Labels  []map[string]interface{} `json:"labels"`
 }
 
 func GenerateTargets() (r []PrometheusTarget, e error) {
@@ -29,7 +29,12 @@ func GenerateTargets() (r []PrometheusTarget, e error) {
 	for _, v := range jails {
 		pt := PrometheusTarget{}
 		pt.Targets = append(pt.Targets, v.JailName)
-		pt.Labels = append(pt.Labels, map[string]string{"parent": hostname})
+
+		pt.Labels = append(pt.Labels, map[string]interface{}{"hoster_parent": hostname})
+		pt.Labels = append(pt.Labels, map[string]interface{}{"hoster_resource_type": "jail"})
+		pt.Labels = append(pt.Labels, map[string]interface{}{"hoster_resource_name": v.JailName})
+		pt.Labels = append(pt.Labels, map[string]interface{}{"jail_name": v.JailName})
+		pt.Labels = append(pt.Labels, map[string]interface{}{"hoster_resource_encrypted": v.Encrypted})
 
 		r = append(r, pt)
 	}
