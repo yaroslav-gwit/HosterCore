@@ -24,7 +24,7 @@ var (
 			}
 
 			result, _ := json.MarshalIndent(r, "", "    ")
-			fmt.Println(result)
+			fmt.Println(string(result))
 		},
 	}
 )
