@@ -1,13 +1,17 @@
-package cmd
+package HosterJail
 
 import (
+	"HosterCore/internal/pkg/byteconversion"
 	"HosterCore/internal/pkg/emojlog"
+	FreeBSDOsInfo "HosterCore/internal/pkg/freebsd/info"
+	HosterHost "HosterCore/internal/pkg/hoster/host"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
-	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/schollz/progressbar/v3"
@@ -18,37 +22,35 @@ import (
 // and extracts the downloaded files there.
 //
 // Returns an `error` if something goes wrong. Starts and reports the download progress otherwise.
-func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) error {
+func BootstrapOfficial(release string, dataset string, excludeLib32 bool) error {
 	// FreeBSD Mirror to get the archives from
 	// https://download.freebsd.org/releases/amd64/
 	var err error
 
 	if len(release) < 1 {
-		release, err = getMajorFreeBsdRelease()
+		release, err = FreeBSDOsInfo.GetMajorReleaseVersion()
 		if err != nil {
 			return err
 		}
+	}
+
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		return err
 	}
 
 	if len(dataset) < 1 {
-		datasets, err := getZfsDatasetInfo()
-		if err != nil {
-			return err
+		dataset = hostConf.ActiveZfsDatasets[0]
+	} else {
+		if !slices.Contains(hostConf.ActiveZfsDatasets, dataset) {
+			return errors.New("dataset you wanted to use doesn't exist: " + dataset)
 		}
-		dataset = datasets[0].Name
 	}
 
-	dsExists, err := doesDatasetExist(dataset)
+	// Create a new, nested ZFS dataset for our Jail template
+	out, err := exec.Command("zfs", "create", fmt.Sprintf("%s/jail-template-%s", dataset, release)).CombinedOutput()
 	if err != nil {
-		return err
-	}
-	if !dsExists {
-		return fmt.Errorf("sorry, the dataset specified doesn't exist: %s", dataset)
-	}
-
-	err = createNestedZfsDataset(dataset, "jail-template-"+release)
-	if err != nil {
-		return err
+		return fmt.Errorf("error: %s; %s", strings.TrimSpace(string(out)), err.Error())
 	}
 
 	// Check if the release exists block
@@ -75,6 +77,7 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 	}
 	// EOF Check if the release exists block
 
+	// TO DO: create a separate, generic archive download function to deduplicate the code below
 	// Download base.txz
 	archiveName := "base.txz"
 	baseFileLocation := fmt.Sprintf("/tmp/%s/%s", release, archiveName)
@@ -100,7 +103,7 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 	if err != nil {
 		return err
 	} else {
-		emojlog.PrintLogMessage(fmt.Sprintf("%s has been downloaded (%s)", archiveName, ByteConversion(int(bytesWritten))), emojlog.Changed)
+		emojlog.PrintLogMessage(fmt.Sprintf("%s has been downloaded (%s)", archiveName, byteconversion.BytesToHuman(uint64(bytesWritten))), emojlog.Changed)
 	}
 
 	err = res.Body.Close()
@@ -143,7 +146,7 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 		if err != nil {
 			return err
 		} else {
-			emojlog.PrintLogMessage(fmt.Sprintf("%s has been downloaded (%s)", archiveName, ByteConversion(int(bytesWritten))), emojlog.Changed)
+			emojlog.PrintLogMessage(fmt.Sprintf("%s has been downloaded (%s)", archiveName, byteconversion.BytesToHuman(uint64(bytesWritten))), emojlog.Changed)
 		}
 
 		err = res.Body.Close()
@@ -187,63 +190,27 @@ func bootstrapJailArchives(release string, dataset string, excludeLib32 bool) er
 	return nil
 }
 
-// Creates a new (nested) ZFS dataset, which is usually used as a template for VMs and Jails.
-//
-// Returns an error, if the operation was not successful.
-func createNestedZfsDataset(parentDs string, nestedDs string) error {
-	datasets, err := getZfsDatasetInfo()
-	if err != nil {
-		return err
-	}
-
-	dsFound := false
-	for _, v := range datasets {
-		if v.Name == parentDs {
-			dsFound = true
-		}
-	}
-	if !dsFound {
-		return fmt.Errorf("parent ZFS dataset could not be found: %s", parentDs)
-	}
-
-	dsExists, err := doesDatasetExist(parentDs + "/" + nestedDs)
-	if err != nil {
-		return err
-	}
-	if dsExists {
-		return fmt.Errorf("sorry, the dataset already exists: %s/%s", parentDs, nestedDs)
-	}
-
-	out, err := exec.Command("zfs", "create", parentDs+"/"+nestedDs).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("could not create a new dataset: %s; %s", strings.TrimSpace(string(out)), err.Error())
-	}
-
-	return nil
-}
-
 // Checks if the ZFS dataset exists, and returns true or false.
-//
 // Takes in a full dataset path (ZFS path, not a mount path)
-func doesDatasetExist(dataset string) (bool, error) {
-	out, err := exec.Command("zfs", "list", "-Hp").CombinedOutput()
-	if err != nil {
-		return false, fmt.Errorf("could not run `zfs list`: %s; %s", strings.TrimSpace(string(out)), err.Error())
-	}
-
-	reSplitAtSpace := regexp.MustCompile(`\s+`)
-	for _, v := range strings.Split(string(out), "\n") {
-		if len(v) < 1 {
-			continue
-		}
-		v = reSplitAtSpace.Split(v, -1)[0]
-		if dataset == v {
-			return true, nil
-		}
-	}
-
-	return false, nil
-}
+// TBD to integrate
+//
+// func doesDatasetExist(dataset string) (bool, error) {
+// 	out, err := exec.Command("zfs", "list", "-Hp").CombinedOutput()
+// 	if err != nil {
+// 		return false, fmt.Errorf("could not run `zfs list`: %s; %s", strings.TrimSpace(string(out)), err.Error())
+// 	}
+// 	reSplitAtSpace := regexp.MustCompile(`\s+`)
+// 	for _, v := range strings.Split(string(out), "\n") {
+// 		if len(v) < 1 {
+// 			continue
+// 		}
+// 		v = reSplitAtSpace.Split(v, -1)[0]
+// 		if dataset == v {
+// 			return true, nil
+// 		}
+// 	}
+// 	return false, nil
+// }
 
 func extractTxz(archivePath, rootFolder string) error {
 	out, err := exec.Command("tar", "-xf", archivePath, "-C", rootFolder, "--unlink").CombinedOutput()

@@ -180,6 +180,29 @@ var (
 	}
 )
 
+var (
+	jailBootstrapCmdOsRelease    string
+	jailBootstrapCmdDataset      string
+	jailBootstrapCmdExcludeLib32 bool
+
+	jailBootstrapCmd = &cobra.Command{
+		Use:   "bootstrap",
+		Short: "Bootstrap a new Jail template",
+		Long:  `Bootstrap a new Jail template`,
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			// err := bootstrapJailArchives(jailBootstrapCmdOsRelease, jailBootstrapCmdDataset, jailBootstrapCmdExcludeLib32)
+			err := HosterJail.BootstrapOfficial(jailBootstrapCmdOsRelease, jailBootstrapCmdDataset, jailBootstrapCmdExcludeLib32)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
 type LiveJailStruct struct {
 	ID         int
 	Name       string
