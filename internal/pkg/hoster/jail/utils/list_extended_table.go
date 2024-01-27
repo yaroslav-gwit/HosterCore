@@ -12,14 +12,14 @@ import (
 )
 
 type JailListExtendedTable struct {
-	Name             string
-	Running          bool
-	Status           string
-	CPULimit         string
-	RAMLimit         string
+	Name             string // Jail Name
+	Running          bool   // is Jail Online/Running
+	Status           string // status inside of the CLI table, e.g. 🟢🔒🔁
+	CPULimit         string // CPU limit, e.g. 50%
+	RAMLimit         string // RAM limit, e.g. 10G
 	MainIpAddress    string
 	Release          string
-	Uptime           string
+	Uptime           string // Human readable uptime format, e.g. 20d 10h 19m 1s
 	StorageUsed      string
 	StorageAvailable string
 	Description      string

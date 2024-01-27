@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"errors"
 	"fmt"
@@ -200,14 +201,19 @@ func generateSnapshotTableNew(vmName string) error {
 	resFound := false
 	resType := ""
 	vmList := getAllVms()
-	jailList, _ := GetAllJailsList()
+	jails, _ := HosterJailUtils.ListAllSimple()
 
 	if slices.Contains(vmList, vmName) {
 		resFound = true
 		resType = "VM"
-	} else if slices.Contains(jailList, vmName) {
-		resFound = true
-		resType = "Jail"
+	}
+	if !resFound {
+		for _, v := range jails {
+			if v.JailName == vmName {
+				resFound = true
+				resType = "Jail"
+			}
+		}
 	}
 
 	if !resFound {

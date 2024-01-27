@@ -12,6 +12,7 @@ import (
 	"HosterCore/internal/pkg/emojlog"
 	FreeBSDLogger "HosterCore/internal/pkg/freebsd/logger"
 	HosterHost "HosterCore/internal/pkg/hoster/host"
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 
 	"github.com/miekg/dns"
 	"github.com/sirupsen/logrus"
@@ -285,22 +286,16 @@ type JailInfoStruct struct {
 	JailAddress string
 }
 
-func getJailsInfo() []JailInfoStruct {
-	jailInfoVar := []JailInfoStruct{}
-
-	jailList, err := cmd.GetAllJailsList()
+func getJailsInfo() (r []JailInfoStruct) {
+	jails, err := HosterJailUtils.ListAllExtendedTable()
 	if err != nil {
-		return []JailInfoStruct{}
-	}
-	for _, v := range jailList {
-		jailsConfig, err := cmd.GetJailConfig(v, true)
-		if err != nil {
-			return []JailInfoStruct{}
-		}
-		jailInfoVar = append(jailInfoVar, JailInfoStruct{JailName: v, JailAddress: jailsConfig.IPAddress})
+		return
 	}
 
-	return jailInfoVar
+	for _, v := range jails {
+		r = append(r, JailInfoStruct{JailName: v.Name, JailAddress: v.MainIpAddress})
+	}
+	return
 }
 
 const (

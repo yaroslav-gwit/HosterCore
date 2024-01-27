@@ -5,6 +5,7 @@ import (
 	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
 	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -241,25 +242,20 @@ var (
 				}
 			}
 
-			jailList, err := GetAllJailsList()
+			jails, err := HosterJailUtils.ListAllExtendedTable()
 			if err != nil {
 				emojlog.PrintLogMessage("could not get a list of Jails: "+err.Error(), emojlog.Error)
 				os.Exit(1)
 			}
-			for _, v := range jailList {
-				jailConf, err := GetJailConfig(v, true)
-				if err != nil {
+			for _, v := range jails {
+				if !v.Running {
 					continue
 				}
-				if jailConf.Parent != hostname {
-					continue
-				}
-
-				err = addSnapshotJob(v, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
+				err = addSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				} else {
-					emojlog.PrintLogMessage("A new background snapshot job has been added for a Jail: "+v, emojlog.Changed)
+					emojlog.PrintLogMessage("A new background snapshot job has been added for a Jail: "+v.Name, emojlog.Changed)
 				}
 			}
 		},

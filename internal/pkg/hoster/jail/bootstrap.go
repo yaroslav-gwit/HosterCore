@@ -2,9 +2,9 @@ package HosterJail
 
 import (
 	"HosterCore/internal/pkg/byteconversion"
-	"HosterCore/internal/pkg/emojlog"
 	FreeBSDOsInfo "HosterCore/internal/pkg/freebsd/info"
 	HosterHost "HosterCore/internal/pkg/hoster/host"
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	"errors"
 	"fmt"
 	"io"
@@ -23,6 +23,11 @@ import (
 //
 // Returns an `error` if something goes wrong. Starts and reports the download progress otherwise.
 func BootstrapOfficial(release string, dataset string, excludeLib32 bool) error {
+	// If the logger was already set, ignore this
+	if !log.ConfigSet {
+		log.SetFileLocation(HosterJailUtils.JAIL_AUDIT_LOG_LOCATION)
+	}
+
 	// FreeBSD Mirror to get the archives from
 	// https://download.freebsd.org/releases/amd64/
 	var err error
@@ -103,7 +108,8 @@ func BootstrapOfficial(release string, dataset string, excludeLib32 bool) error 
 	if err != nil {
 		return err
 	} else {
-		emojlog.PrintLogMessage(fmt.Sprintf("%s has been downloaded (%s)", archiveName, byteconversion.BytesToHuman(uint64(bytesWritten))), emojlog.Changed)
+		message := fmt.Sprintf("%s has been downloaded (%s)", archiveName, byteconversion.BytesToHuman(uint64(bytesWritten)))
+		log.Info(message)
 	}
 
 	err = res.Body.Close()
@@ -146,7 +152,8 @@ func BootstrapOfficial(release string, dataset string, excludeLib32 bool) error 
 		if err != nil {
 			return err
 		} else {
-			emojlog.PrintLogMessage(fmt.Sprintf("%s has been downloaded (%s)", archiveName, byteconversion.BytesToHuman(uint64(bytesWritten))), emojlog.Changed)
+			message := fmt.Sprintf("%s has been downloaded (%s)", archiveName, byteconversion.BytesToHuman(uint64(bytesWritten)))
+			log.Info(message)
 		}
 
 		err = res.Body.Close()
@@ -170,23 +177,23 @@ func BootstrapOfficial(release string, dataset string, excludeLib32 bool) error 
 		return err
 	}
 
-	emojlog.PrintLogMessage(fmt.Sprintf("Extracting %s to %s", baseFileLocation, jailTemplateRootPath), emojlog.Debug)
+	log.Info(fmt.Sprintf("Extracting %s to %s", baseFileLocation, jailTemplateRootPath))
 	err = extractTxz(baseFileLocation, jailTemplateRootPath)
 	if err != nil {
 		return err
 	}
-	emojlog.PrintLogMessage(fmt.Sprintf("%s has been extracted", baseFileLocation), emojlog.Changed)
+	log.Info(fmt.Sprintf("%s has been extracted", baseFileLocation))
 
 	if !excludeLib32 {
-		emojlog.PrintLogMessage(fmt.Sprintf("Extracting %s to %s", lib32FileLocation, jailTemplateRootPath), emojlog.Debug)
+		log.Info(fmt.Sprintf("Extracting %s to %s", lib32FileLocation, jailTemplateRootPath))
 		err = extractTxz(lib32FileLocation, jailTemplateRootPath)
 		if err != nil {
 			return err
 		}
-		emojlog.PrintLogMessage(fmt.Sprintf("%s has been extracted", lib32FileLocation), emojlog.Changed)
+		log.Info(fmt.Sprintf("%s has been extracted", lib32FileLocation))
 	}
 
-	emojlog.PrintLogMessage(fmt.Sprintf("A new Jail template has been bootstrapped (%s) at %s", release, jailTemplateFolder), emojlog.Info)
+	log.Info(fmt.Sprintf("A new Jail template has been bootstrapped (%s) at %s", release, jailTemplateFolder))
 	return nil
 }
 

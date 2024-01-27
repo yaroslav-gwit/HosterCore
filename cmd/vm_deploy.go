@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	"bufio"
 	"encoding/json"
 	"errors"
@@ -828,16 +829,13 @@ func generateNewIp(networkName string) (string, error) {
 	// EOF Add existing VM IPs
 
 	// Add existing Jail IPs
-	jailList, err := GetAllJailsList()
+	jails, err := HosterJailUtils.ListAllExtendedTable()
 	if err != nil {
-		return "", err
-	}
-	for _, v := range jailList {
-		jailsConfig, err := GetJailConfig(v, true)
-		if err != nil {
-			return "", nil
+		_ = 0
+	} else {
+		for _, v := range jails {
+			existingIps = append(existingIps, v.MainIpAddress)
 		}
-		existingIps = append(existingIps, jailsConfig.IPAddress)
 	}
 	// EOF Add existing Jail IPs
 
