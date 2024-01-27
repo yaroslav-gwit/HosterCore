@@ -61,6 +61,16 @@ func concatMetrics() string {
 		wg.Done()
 	}()
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		metricsText, err := getHosterVersion()
+		if err != nil {
+			return
+		}
+		addMetricsToList(metricsText)
+	}()
+
 	wg.Wait()
 	for i, v := range metricsList {
 		if i == 0 {
@@ -247,6 +257,20 @@ func getZpoolInfo() string {
 		result = result + "\n"
 	}
 	return result
+}
+
+func getHosterVersion() (r string, e error) {
+	out, err := exec.Command("hoster", "version").CombinedOutput()
+	if err != nil {
+		e = fmt.Errorf("could not get hoster version: %s; %s", strings.TrimSpace(string(out)), err.Error())
+		return
+	}
+	hosterVersion := strings.TrimSpace(string(out))
+
+	r = "# HELP HosterCore version.\n"
+	r = r + "# TYPE hoster gauge\n"
+	r = r + fmt.Sprintf(`hoster{version="%s"} 1`, hosterVersion) + "\n"
+	return
 }
 
 func getNodeExporterMetrics() string {
