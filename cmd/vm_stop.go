@@ -8,26 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
-)
-
-var (
-	vmStopCmdForceStop bool
-	vmStopCmdCleanUp   bool
-	vmStopCmd          = &cobra.Command{
-		Use:   "stop [vmName]",
-		Short: "Stop a particular VM using it's name",
-		Long:  `Stop a particular VM using it's name`,
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			checkInitFile()
-			err := VmStop(args[0], vmStopCmdForceStop, vmStopCmdCleanUp)
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-			}
-		},
-	}
 )
 
 func VmStop(vmName string, forceKill bool, forceCleanup bool) error {

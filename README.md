@@ -39,12 +39,14 @@ Coming soon (or at least at some point 😄):
 
 - Hyper Converged setup using `HAST` and `OpenZFS`
 - Generally available WebUI for VM and Jail management
-- Specify a `docker-compose.yaml` file location during the VM deployment - it will be automatically picked up by `docker` and executed in a background `tmux` session (you can easily check if the `docker` deployment was successful using the `tmux a` command later on, when you SSH into the VM)
+- The ability to specify a `docker-compose.yaml` file location during the VM deployment (`hoster vm deploy --from-docker-compose compose.yaml`) - it will be automatically picked up by `docker` and executed in a background `tmux` session (you can easily check if the `docker` deployment was successful using the `tmux a` command later on, when you SSH into the VM)
 - Publicly available `Grafana` dashboards
 - `Prometheus` integration - all VMs and Jails will be discovered and monitored automatically
-- Improved `Traefik` service management
-- `Nebula` integration to support building large-scale overlay networks
+- Automated, full mesh `WireGuard` config generation based on your internal cluster topology, with the support for multi-tenancy and multiple cluster groups
+- `Tailscale` installation and configuration guide (specific to `Hoster`), which will provide an easy way to access and manage your cluster and it's resources
+- Basic integration with `Tailscale`, to allow the automated routing updates for the remote users and admins
 - `LazyHoster` (an interface similar to `k9s` or `lazygit`) - a CLI utility to control the whole fleet of machines over the `REST API` (for the WebUI haters 😎)
+- More VM and Jail templates
 
 ## Are there any plans to develop a WebUI?
 

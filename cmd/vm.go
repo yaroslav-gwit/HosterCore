@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	"fmt"
+	"os"
 	"regexp"
 	"time"
 
@@ -17,6 +19,27 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 			cmd.Help()
+		},
+	}
+)
+
+var (
+	vmStopCmdForceStop bool
+	vmStopCmdCleanUp   bool
+	vmStopCmd          = &cobra.Command{
+		Use:   "stop [vmName]",
+		Short: "Stop a particular VM using it's name",
+		Long:  `Stop a particular VM using it's name`,
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			// err := VmStop(args[0], vmStopCmdForceStop, vmStopCmdCleanUp)
+			err := HosterVm.Stop(args[0], vmStopCmdForceStop, vmStopCmdCleanUp)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
 		},
 	}
 )

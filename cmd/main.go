@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	HosterTables "HosterCore/internal/pkg/hoster/tables.go"
+	HosterTables "HosterCore/internal/pkg/hoster/cli_tables"
 
 	"github.com/spf13/cobra"
 )

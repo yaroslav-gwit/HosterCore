@@ -1,3 +1,7 @@
+// Copyright 2023 Hoster Authors. All rights reserved.
+// Use of this source code is governed by an Apache License 2.0
+// license that can be found in the LICENSE file.
+
 package HosterVmUtils
 
 import (
@@ -5,16 +9,19 @@ import (
 	"strconv"
 )
 
+// Runs some VM or Jail name validations, before they can be deployed or cloned.
+//
+// Returns an error, if one of the checks fails.
 func ValidateResName(resourceName string) error {
-	vmNameMinLength := 5
-	vmNameMaxLength := 22
-	vmNameCantStartWith := "1234567890-_"
-	vmNameValidChars := "qwertyuiopasdfghjklzxcvbnm-QWERTYUIOPASDFGHJKLZXCVBNM_1234567890"
+	minLength := 5
+	maxLength := 25
+	cantStartWith := "1234567890-_"
+	validChars := "qwertyuiopasdfghjklzxcvbnm-QWERTYUIOPASDFGHJKLZXCVBNM_1234567890"
 
 	// Check if vmName uses valid characters
 	for _, v := range resourceName {
 		valid := false
-		for _, vv := range vmNameValidChars {
+		for _, vv := range validChars {
 			if v == vv {
 				valid = true
 				break
@@ -31,7 +38,7 @@ func ValidateResName(resourceName string) error {
 		if i > 1 {
 			break
 		}
-		for _, vv := range vmNameCantStartWith {
+		for _, vv := range cantStartWith {
 			if v == vv {
 				return errors.New("name cannot start with a number, an underscore or a hyphen")
 			}
@@ -39,11 +46,11 @@ func ValidateResName(resourceName string) error {
 	}
 	// EOF Check if vmName starts with a valid character
 
-	// Check vmName length
-	if len(resourceName) < vmNameMinLength {
-		return errors.New("name cannot contain less than " + strconv.Itoa(vmNameMinLength) + " characters")
-	} else if len(resourceName) > vmNameMaxLength {
-		return errors.New("name cannot contain more than " + strconv.Itoa(vmNameMaxLength) + " characters")
+	// Check the name length
+	if len(resourceName) < minLength {
+		return errors.New("name cannot contain less than " + strconv.Itoa(minLength) + " characters")
+	} else if len(resourceName) > maxLength {
+		return errors.New("name cannot contain more than " + strconv.Itoa(maxLength) + " characters")
 	}
 	// EOF Check vmName length
 

@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterTables "HosterCore/internal/pkg/hoster/cli_tables"
 	HosterJail "HosterCore/internal/pkg/hoster/jail"
-	HosterTables "HosterCore/internal/pkg/hoster/tables.go"
 	"os"
 
 	"github.com/spf13/cobra"
