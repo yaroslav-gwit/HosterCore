@@ -11,7 +11,6 @@ import (
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"errors"
 	"fmt"
-	"os/exec"
 	"regexp"
 	"slices"
 )
@@ -110,7 +109,10 @@ func SendShutdownSignalToVm(vmName string, forceKill bool, forceCleanup bool) er
 		}
 
 		if forceKill && forceCleanup {
-			_ = exec.Command("bhyvectl", "--destroy", "--vm="+vmName).Run()
+			err := HosterVmUtils.BhyveCtlDestroy(vmName)
+			if err != nil {
+				log.Error(err.Error())
+			}
 		}
 	}
 
@@ -126,7 +128,7 @@ func SendShutdownSignalToVm(vmName string, forceKill bool, forceCleanup bool) er
 
 	// Clean-up the network interfaces, if they still exist, and log
 	if forceCleanup {
-		ifaces, err := HosterNetwork.NetworkCleanup(vmName)
+		ifaces, err := HosterNetwork.VmNetworkCleanup(vmName)
 		if err != nil {
 			return err
 		}

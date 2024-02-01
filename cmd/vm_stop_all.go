@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -27,9 +28,11 @@ func VmStopAll(forceStopAll bool, cleanup bool) {
 			time.Sleep(time.Millisecond * time.Duration(sleepTime))
 		}
 		if forceStopAll {
-			VmStop(vm, true, vmStopAllCmdCleanUp)
+			// VmStop(vm, true, vmStopAllCmdCleanUp)
+			HosterVm.Stop(vm, true, vmStopAllCmdCleanUp)
 		} else {
-			VmStop(vm, false, false)
+			// VmStop(vm, false, false)
+			HosterVm.Stop(vm, false, false)
 		}
 	}
 }

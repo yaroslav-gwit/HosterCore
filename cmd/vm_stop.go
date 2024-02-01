@@ -1,254 +1,243 @@
 package cmd
 
-import (
-	"HosterCore/internal/pkg/emojlog"
-	"errors"
-	"os/exec"
-	"regexp"
-	"strings"
-	"time"
+// func VmStop(vmName string, forceKill bool, forceCleanup bool) error {
+// 	allVms := getAllVms()
+// 	if !slices.Contains(allVms, vmName) {
+// 		return errors.New("VM is not found on this system")
+// 	} else if !VmLiveCheck(vmName) && !forceKill {
+// 		return errors.New("VM is already stopped")
+// 	}
 
-	"golang.org/x/exp/slices"
-)
+// 	err := SendShutdownSignalToVm(vmName, forceKill, true, forceCleanup)
+// 	if err != nil {
+// 		return err
+// 	}
 
-func VmStop(vmName string, forceKill bool, forceCleanup bool) error {
-	allVms := getAllVms()
-	if !slices.Contains(allVms, vmName) {
-		return errors.New("VM is not found on this system")
-	} else if !VmLiveCheck(vmName) && !forceKill {
-		return errors.New("VM is already stopped")
-	}
+// 	// OLD WAY OF STOPPING VMs
+// 	// StopBhyveProcess(vmName, false, forceStop)
+// 	// vmSupervisorCleanup(vmName)
+// 	// StopBhyveProcess(vmName, true, forceKill)
+// 	// NetworkCleanup(vmName, false)
+// 	// BhyvectlDestroy(vmName, false)
 
-	err := SendShutdownSignalToVm(vmName, forceKill, true, forceCleanup)
-	if err != nil {
-		return err
-	}
+// 	return nil
+// }
 
-	// OLD WAY OF STOPPING VMs
-	// StopBhyveProcess(vmName, false, forceStop)
-	// vmSupervisorCleanup(vmName)
-	// StopBhyveProcess(vmName, true, forceKill)
-	// NetworkCleanup(vmName, false)
-	// BhyvectlDestroy(vmName, false)
+// func SendShutdownSignalToVm(vmName string, forceKill bool, logOutput bool, cleanup bool) error {
+// 	if logOutput {
+// 		emojlog.PrintLogMessage("Stopping the VM: "+vmName, emojlog.Debug)
+// 	}
 
-	return nil
-}
+// 	pid, err := exec.Command("pgrep", "-afSl", vmName).CombinedOutput()
+// 	if err != nil && !forceKill {
+// 		return errors.New("could not find the VM process specified (is the VM running?)")
+// 	}
 
-func SendShutdownSignalToVm(vmName string, forceKill bool, logOutput bool, cleanup bool) error {
-	if logOutput {
-		emojlog.PrintLogMessage("Stopping the VM: "+vmName, emojlog.Debug)
-	}
+// 	reMatchVm := regexp.MustCompile(`\s+bhyve:\s+` + vmName + `$`)
+// 	reSplitSpace := regexp.MustCompile(`\s+`)
+// 	vmPid := ""
+// 	for _, v := range strings.Split(string(pid), "\n") {
+// 		if reMatchVm.MatchString(v) {
+// 			vmPid = reSplitSpace.Split(v, -1)[0]
+// 			vmPid = strings.TrimSpace(vmPid)
+// 		}
+// 	}
 
-	pid, err := exec.Command("pgrep", "-afSl", vmName).CombinedOutput()
-	if err != nil && !forceKill {
-		return errors.New("could not find the VM process specified (is the VM running?)")
-	}
+// 	if len(vmPid) == 0 && !forceKill {
+// 		return errors.New("could not find the VM process specified (is the VM running?)")
+// 	}
 
-	reMatchVm := regexp.MustCompile(`\s+bhyve:\s+` + vmName + `$`)
-	reSplitSpace := regexp.MustCompile(`\s+`)
-	vmPid := ""
-	for _, v := range strings.Split(string(pid), "\n") {
-		if reMatchVm.MatchString(v) {
-			vmPid = reSplitSpace.Split(v, -1)[0]
-			vmPid = strings.TrimSpace(vmPid)
-		}
-	}
+// 	if forceKill {
+// 		err = exec.Command("kill", "-SIGKILL", vmPid).Run()
+// 		if logOutput && err == nil && len(vmPid) > 0 {
+// 			emojlog.PrintLogMessage("Forceful SIGKILL signal has been sent to: "+vmName+"; PID: "+vmPid, emojlog.Changed)
+// 		}
 
-	if len(vmPid) == 0 && !forceKill {
-		return errors.New("could not find the VM process specified (is the VM running?)")
-	}
+// 		// Clean-up some leftover artifacts
+// 		if cleanup {
+// 			_ = exec.Command("bhyvectl", "--destroy", "--vm="+vmName).Run()
+// 			vmSupervisorCleanup(vmName, false)
+// 			// BhyvectlDestroy(vmName, false)
+// 			NetworkCleanup(vmName, false)
+// 		}
+// 	} else {
+// 		_ = exec.Command("kill", "-SIGTERM", vmPid).Run()
+// 		if logOutput {
+// 			emojlog.PrintLogMessage("Graceful SIGTERM signal has been sent to: "+vmName+"; PID: "+vmPid, emojlog.Changed)
+// 		}
+// 	}
 
-	if forceKill {
-		err = exec.Command("kill", "-SIGKILL", vmPid).Run()
-		if logOutput && err == nil && len(vmPid) > 0 {
-			emojlog.PrintLogMessage("Forceful SIGKILL signal has been sent to: "+vmName+"; PID: "+vmPid, emojlog.Changed)
-		}
+// 	return nil
+// }
 
-		// Clean-up some leftover artifacts
-		if cleanup {
-			_ = exec.Command("bhyvectl", "--destroy", "--vm="+vmName).Run()
-			vmSupervisorCleanup(vmName, false)
-			// BhyvectlDestroy(vmName, false)
-			NetworkCleanup(vmName, false)
-		}
-	} else {
-		_ = exec.Command("kill", "-SIGTERM", vmPid).Run()
-		if logOutput {
-			emojlog.PrintLogMessage("Graceful SIGTERM signal has been sent to: "+vmName+"; PID: "+vmPid, emojlog.Changed)
-		}
-	}
+// func StopBhyveProcess(vmName string, quiet bool, kill bool) {
+// 	if !quiet {
+// 		emojlog.PrintLogMessage("Stopping the VM: "+vmName, emojlog.Info)
+// 	}
 
-	return nil
-}
+// 	cmd := exec.Command("pgrep", "-lf", vmName)
+// 	stdout, stderr := cmd.Output()
+// 	if stderr != nil {
+// 		if cmd.ProcessState.ExitCode() == 1 {
+// 			_ = 0
+// 		} else if !quiet {
+// 			emojlog.PrintLogMessage("pgrep exited with an error: "+stderr.Error(), emojlog.Error)
+// 		}
+// 	}
 
-func StopBhyveProcess(vmName string, quiet bool, kill bool) {
-	if !quiet {
-		emojlog.PrintLogMessage("Stopping the VM: "+vmName, emojlog.Info)
-	}
+// 	processId := ""
+// 	reMatchVm, _ := regexp.Compile(`.*bhyve:\s` + vmName)
+// 	reMatchVmX2, _ := regexp.Compile(`(.*` + vmName + `\s){2}`)
 
-	cmd := exec.Command("pgrep", "-lf", vmName)
-	stdout, stderr := cmd.Output()
-	if stderr != nil {
-		if cmd.ProcessState.ExitCode() == 1 {
-			_ = 0
-		} else if !quiet {
-			emojlog.PrintLogMessage("pgrep exited with an error: "+stderr.Error(), emojlog.Error)
-		}
-	}
+// 	for _, v := range strings.Split(string(stdout), "\n") {
+// 		if reMatchVm.MatchString(v) {
+// 			processId = strings.TrimSpace(strings.Split(v, " ")[0])
+// 			break
+// 		} else if reMatchVmX2.MatchString(v) {
+// 			processId = strings.TrimSpace(strings.Split(v, " ")[0])
+// 			break
+// 		}
+// 	}
 
-	processId := ""
-	reMatchVm, _ := regexp.Compile(`.*bhyve:\s` + vmName)
-	reMatchVmX2, _ := regexp.Compile(`(.*` + vmName + `\s){2}`)
+// 	stopCommand1 := ""
+// 	stopCommand2 := ""
+// 	if kill {
+// 		stopCommand1 = "kill"
+// 		stopCommand2 = "-SIGKILL"
+// 	} else {
+// 		stopCommand1 = "kill"
+// 		stopCommand2 = "-SIGTERM"
+// 	}
 
-	for _, v := range strings.Split(string(stdout), "\n") {
-		if reMatchVm.MatchString(v) {
-			processId = strings.TrimSpace(strings.Split(v, " ")[0])
-			break
-		} else if reMatchVmX2.MatchString(v) {
-			processId = strings.TrimSpace(strings.Split(v, " ")[0])
-			break
-		}
-	}
+// 	cmd = exec.Command(stopCommand1, stopCommand2, processId)
+// 	stderr = cmd.Run()
+// 	if stderr != nil && !quiet {
+// 		emojlog.PrintLogMessage("kill was not successful (this is okay, vm supervisor will gracefully deal with it): "+stderr.Error(), emojlog.Warning)
+// 	}
 
-	stopCommand1 := ""
-	stopCommand2 := ""
-	if kill {
-		stopCommand1 = "kill"
-		stopCommand2 = "-SIGKILL"
-	} else {
-		stopCommand1 = "kill"
-		stopCommand2 = "-SIGTERM"
-	}
+// 	if !quiet {
+// 		emojlog.PrintLogMessage("Done stopping the bhyve VM process: "+vmName, emojlog.Changed)
+// 	}
+// }
 
-	cmd = exec.Command(stopCommand1, stopCommand2, processId)
-	stderr = cmd.Run()
-	if stderr != nil && !quiet {
-		emojlog.PrintLogMessage("kill was not successful (this is okay, vm supervisor will gracefully deal with it): "+stderr.Error(), emojlog.Warning)
-	}
+// func vmSupervisorCleanup(vmName string, logOutput bool) {
+// 	if logOutput {
+// 		emojlog.PrintLogMessage("Performing vm_supervisor cleanup", emojlog.Debug)
+// 	}
 
-	if !quiet {
-		emojlog.PrintLogMessage("Done stopping the bhyve VM process: "+vmName, emojlog.Changed)
-	}
-}
+// 	// reMatchVm, _ := regexp.Compile(`for\s+` + vmName + `\s&`)
+// 	reMatchVm, _ := regexp.Compile(`for\s+` + vmName + `$`)
+// 	processId := ""
 
-func vmSupervisorCleanup(vmName string, logOutput bool) {
-	if logOutput {
-		emojlog.PrintLogMessage("Performing vm_supervisor cleanup", emojlog.Debug)
-	}
+// 	iteration := 0
+// 	for {
+// 		time.Sleep(time.Second * 2)
+// 		processId = ""
+// 		cmd := exec.Command("pgrep", "-lf", vmName)
+// 		stdout, stderr := cmd.Output()
+// 		if stderr != nil {
+// 			if cmd.ProcessState.ExitCode() == 1 {
+// 				_ = 0
+// 			} else if logOutput {
+// 				emojlog.PrintLogMessage("pgrep exited with an error: "+stderr.Error(), emojlog.Error)
+// 			}
+// 		}
 
-	// reMatchVm, _ := regexp.Compile(`for\s+` + vmName + `\s&`)
-	reMatchVm, _ := regexp.Compile(`for\s+` + vmName + `$`)
-	processId := ""
+// 		for _, v := range strings.Split(string(stdout), "\n") {
+// 			v = strings.TrimSpace(v)
+// 			if reMatchVm.MatchString(v) {
+// 				processId = strings.Split(v, " ")[0]
+// 			}
+// 		}
 
-	iteration := 0
-	for {
-		time.Sleep(time.Second * 2)
-		processId = ""
-		cmd := exec.Command("pgrep", "-lf", vmName)
-		stdout, stderr := cmd.Output()
-		if stderr != nil {
-			if cmd.ProcessState.ExitCode() == 1 {
-				_ = 0
-			} else if logOutput {
-				emojlog.PrintLogMessage("pgrep exited with an error: "+stderr.Error(), emojlog.Error)
-			}
-		}
+// 		if len(processId) < 1 {
+// 			if logOutput {
+// 				emojlog.PrintLogMessage("VM process is dead", emojlog.Debug)
+// 			}
+// 			break
+// 		}
 
-		for _, v := range strings.Split(string(stdout), "\n") {
-			v = strings.TrimSpace(v)
-			if reMatchVm.MatchString(v) {
-				processId = strings.Split(v, " ")[0]
-			}
-		}
+// 		iteration = iteration + 1
+// 		if iteration > 3 {
+// 			cmd := exec.Command("kill", "-SIGKILL", processId)
+// 			stderr := cmd.Run()
 
-		if len(processId) < 1 {
-			if logOutput {
-				emojlog.PrintLogMessage("VM process is dead", emojlog.Debug)
-			}
-			break
-		}
+// 			if logOutput {
+// 				if stderr != nil {
+// 					emojlog.PrintLogMessage("kill was not successful: "+stderr.Error(), emojlog.Error)
+// 				}
+// 				emojlog.PrintLogMessage("Forcefully killing the vm_supervisor, due to operation timeout: "+processId, emojlog.Debug)
+// 			}
+// 		}
+// 	}
+// 	if logOutput {
+// 		emojlog.PrintLogMessage("Done cleaning up after vm supervisor", emojlog.Changed)
+// 	}
+// }
 
-		iteration = iteration + 1
-		if iteration > 3 {
-			cmd := exec.Command("kill", "-SIGKILL", processId)
-			stderr := cmd.Run()
+// func NetworkCleanup(vmName string, quiet bool) {
+// 	if !quiet {
+// 		emojlog.PrintLogMessage("Starting network cleanup", emojlog.Debug)
+// 	}
+// 	cmd := exec.Command("ifconfig")
+// 	stdout, stderr := cmd.Output()
+// 	if stderr != nil && !quiet {
+// 		emojlog.PrintLogMessage("ifconfig exited with an error: "+stderr.Error(), emojlog.Error)
+// 	}
 
-			if logOutput {
-				if stderr != nil {
-					emojlog.PrintLogMessage("kill was not successful: "+stderr.Error(), emojlog.Error)
-				}
-				emojlog.PrintLogMessage("Forcefully killing the vm_supervisor, due to operation timeout: "+processId, emojlog.Debug)
-			}
-		}
-	}
-	if logOutput {
-		emojlog.PrintLogMessage("Done cleaning up after vm supervisor", emojlog.Changed)
-	}
-}
+// 	reMatchDescription, _ := regexp.Compile(`.*description:.*`)
+// 	reMatchVm, _ := regexp.Compile(`\s+` + vmName + `\s+`)
+// 	rePickTap, _ := regexp.Compile(`[\s|"]tap\d+`)
+// 	for _, v := range strings.Split(string(stdout), "\n") {
+// 		if reMatchDescription.MatchString(v) && reMatchVm.MatchString(v) {
+// 			tap := rePickTap.FindString(v)
+// 			tap = strings.TrimSpace(tap)
+// 			tap = strings.ReplaceAll(tap, "\"", "")
+// 			emojlog.PrintLogMessage("Destroying TAP interface: "+tap, emojlog.Debug)
+// 			ifconfigDestroyCmd1 := "ifconfig"
+// 			ifconfigDestroyCmd3 := "destroy"
+// 			cmd := exec.Command(ifconfigDestroyCmd1, tap, ifconfigDestroyCmd3)
+// 			stderr := cmd.Run()
+// 			if stderr != nil && !quiet {
+// 				emojlog.PrintLogMessage("ifconfig destroy was not successful: "+stderr.Error(), emojlog.Error)
 
-func NetworkCleanup(vmName string, quiet bool) {
-	if !quiet {
-		emojlog.PrintLogMessage("Starting network cleanup", emojlog.Debug)
-	}
-	cmd := exec.Command("ifconfig")
-	stdout, stderr := cmd.Output()
-	if stderr != nil && !quiet {
-		emojlog.PrintLogMessage("ifconfig exited with an error: "+stderr.Error(), emojlog.Error)
-	}
+// 			}
+// 		}
+// 	}
+// 	if !quiet {
+// 		emojlog.PrintLogMessage("Done cleaning up TAP network interfaces", emojlog.Debug)
+// 	}
+// }
 
-	reMatchDescription, _ := regexp.Compile(`.*description:.*`)
-	reMatchVm, _ := regexp.Compile(`\s+` + vmName + `\s+`)
-	rePickTap, _ := regexp.Compile(`[\s|"]tap\d+`)
-	for _, v := range strings.Split(string(stdout), "\n") {
-		if reMatchDescription.MatchString(v) && reMatchVm.MatchString(v) {
-			tap := rePickTap.FindString(v)
-			tap = strings.TrimSpace(tap)
-			tap = strings.ReplaceAll(tap, "\"", "")
-			emojlog.PrintLogMessage("Destroying TAP interface: "+tap, emojlog.Debug)
-			ifconfigDestroyCmd1 := "ifconfig"
-			ifconfigDestroyCmd3 := "destroy"
-			cmd := exec.Command(ifconfigDestroyCmd1, tap, ifconfigDestroyCmd3)
-			stderr := cmd.Run()
-			if stderr != nil && !quiet {
-				emojlog.PrintLogMessage("ifconfig destroy was not successful: "+stderr.Error(), emojlog.Error)
+// func BhyvectlDestroy(vmName string, quiet bool) {
+// 	if !quiet {
+// 		emojlog.PrintLogMessage("Cleaning up Bhyve resources", emojlog.Debug)
+// 	}
+// 	time.Sleep(time.Second * 2)
+// 	lsCommand1 := "ls"
+// 	lsCommand2 := "-1"
+// 	lsCommand3 := "/dev/vmm/"
+// 	cmd := exec.Command(lsCommand1, lsCommand2, lsCommand3)
+// 	stdout, _ := cmd.Output()
 
-			}
-		}
-	}
-	if !quiet {
-		emojlog.PrintLogMessage("Done cleaning up TAP network interfaces", emojlog.Debug)
-	}
-}
-
-func BhyvectlDestroy(vmName string, quiet bool) {
-	if !quiet {
-		emojlog.PrintLogMessage("Cleaning up Bhyve resources", emojlog.Debug)
-	}
-	time.Sleep(time.Second * 2)
-	lsCommand1 := "ls"
-	lsCommand2 := "-1"
-	lsCommand3 := "/dev/vmm/"
-	cmd := exec.Command(lsCommand1, lsCommand2, lsCommand3)
-	stdout, _ := cmd.Output()
-
-	matchVM, _ := regexp.Compile(`^` + vmName + `$`)
-	for _, v := range strings.Split(string(stdout), "\n") {
-		v = strings.TrimSpace(v)
-		if matchVM.MatchString(v) {
-			if !quiet {
-				emojlog.PrintLogMessage("Destroying a VM using bhyvectl: "+vmName, emojlog.Debug)
-			}
-			bhyvectlCommand1 := "bhyvectl"
-			bhyvectlCommand2 := "--destroy"
-			bhyvectlCommand3 := "--vm=" + vmName
-			cmd := exec.Command(bhyvectlCommand1, bhyvectlCommand2, bhyvectlCommand3)
-			stderr := cmd.Run()
-			if stderr != nil && !quiet {
-				emojlog.PrintLogMessage("bhyvectl exited with an error: "+stderr.Error(), emojlog.Error)
-			}
-		}
-	}
-	if !quiet {
-		emojlog.PrintLogMessage("Done cleaning up Bhyve resources", emojlog.Changed)
-	}
-}
+// 	matchVM, _ := regexp.Compile(`^` + vmName + `$`)
+// 	for _, v := range strings.Split(string(stdout), "\n") {
+// 		v = strings.TrimSpace(v)
+// 		if matchVM.MatchString(v) {
+// 			if !quiet {
+// 				emojlog.PrintLogMessage("Destroying a VM using bhyvectl: "+vmName, emojlog.Debug)
+// 			}
+// 			bhyvectlCommand1 := "bhyvectl"
+// 			bhyvectlCommand2 := "--destroy"
+// 			bhyvectlCommand3 := "--vm=" + vmName
+// 			cmd := exec.Command(bhyvectlCommand1, bhyvectlCommand2, bhyvectlCommand3)
+// 			stderr := cmd.Run()
+// 			if stderr != nil && !quiet {
+// 				emojlog.PrintLogMessage("bhyvectl exited with an error: "+stderr.Error(), emojlog.Error)
+// 			}
+// 		}
+// 	}
+// 	if !quiet {
+// 		emojlog.PrintLogMessage("Done cleaning up Bhyve resources", emojlog.Changed)
+// 	}
+// }

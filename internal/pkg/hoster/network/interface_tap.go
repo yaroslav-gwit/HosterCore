@@ -20,7 +20,7 @@ type Iface struct {
 
 // Perform a network clean-up, and return a list of networks interfaces.
 // The return value is a struct that includes the interface name, and of the destroy op was a success.
-func NetworkCleanup(vmName string) (r []Iface, e error) {
+func VmNetworkCleanup(vmName string) (r []Iface, e error) {
 	out, err := exec.Command("ifconfig").CombinedOutput()
 	if err != nil {
 		e = fmt.Errorf("error: %s; %s", strings.TrimSpace(string(out)), err.Error())

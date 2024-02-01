@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	"errors"
 	"os"
 	"os/exec"
@@ -45,7 +46,8 @@ func ZfsSnapshotRollback(vmName string, snapshotName string, forceStop bool, for
 	}
 
 	if forceStop {
-		err := VmStop(vmName, forceStop, true)
+		// err := VmStop(vmName, forceStop, true)
+		err := HosterVm.Stop(vmName, forceStop, true)
 		if err != nil {
 			return err
 		}

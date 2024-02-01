@@ -2,6 +2,7 @@ package main
 
 import (
 	"HosterCore/cmd"
+	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -257,7 +258,8 @@ func main() {
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
-		err := cmd.VmStop(vm.Name, false, false)
+		// err := cmd.VmStop(vm.Name, false, false)
+		err := HosterVm.Stop(vm.Name, false, false)
 		if err != nil {
 			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusBadRequest)
@@ -276,7 +278,8 @@ func main() {
 			fiberContext.Status(fiber.StatusUnprocessableEntity)
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
-		err := cmd.VmStop(vm.Name, true, false)
+		// err := cmd.VmStop(vm.Name, true, false)
+		err := HosterVm.Stop(vm.Name, true, false)
 		if err != nil {
 			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusBadRequest)

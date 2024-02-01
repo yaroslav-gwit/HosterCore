@@ -1,7 +1,8 @@
 package main
 
 import (
-	"HosterCore/cmd"
+	HosterNetwork "HosterCore/internal/pkg/hoster/network"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"bufio"
 	"io"
 	"os"
@@ -69,32 +70,40 @@ func main() {
 			if exitCode == 1 || exitCode == 2 {
 				logFileOutput(LOG_SUPERVISOR, "Bhyve received a shutdown signal: "+strconv.Itoa(exitCode)+". Executing the shutdown sequence...")
 				logFileOutput(LOG_SUPERVISOR, "Shutting down -> Performing network cleanup")
-				cmd.NetworkCleanup(vmName, true)
+				// cmd.NetworkCleanup(vmName, true)
+				_, _ = HosterNetwork.VmNetworkCleanup(vmName)
 				logFileOutput(LOG_SUPERVISOR, "Shutting down -> Performing Bhyve cleanup")
-				cmd.BhyvectlDestroy(vmName, true)
+				// cmd.BhyvectlDestroy(vmName, true)
+				_ = HosterVmUtils.BhyveCtlDestroy(vmName)
 				logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. The VM has been shutdown.")
 				os.Exit(0)
 			} else {
 				logFileOutput(LOG_SUPERVISOR, "Bhyve returned a panic exit code: "+strconv.Itoa(exitCode))
 				logFileOutput(LOG_SUPERVISOR, "Shutting down all VM related processes and performing system clean up")
-				cmd.NetworkCleanup(vmName, true)
-				cmd.BhyvectlDestroy(vmName, true)
+				// cmd.NetworkCleanup(vmName, true)
+				_, _ = HosterNetwork.VmNetworkCleanup(vmName)
+				// cmd.BhyvectlDestroy(vmName, true)
+				_ = HosterVmUtils.BhyveCtlDestroy(vmName)
 				logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. Unexpected exit code.")
 				os.Exit(101)
 			}
 		} else {
 			logFileOutput(LOG_SUPERVISOR, "Bhyve received a reboot signal. Executing the reboot sequence...")
 			logFileOutput(LOG_SUPERVISOR, "Rebooting -> Performing network cleanup")
-			cmd.NetworkCleanup(vmName, true)
+			// cmd.NetworkCleanup(vmName, true)
+			_, _ = HosterNetwork.VmNetworkCleanup(vmName)
 			logFileOutput(LOG_SUPERVISOR, "Rebooting -> Performing Bhyve cleanup")
-			cmd.BhyvectlDestroy(vmName, true)
+			// cmd.BhyvectlDestroy(vmName, true)
+			_ = HosterVmUtils.BhyveCtlDestroy(vmName)
 			logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. The VM will start back up in a moment.")
 			restartVmProcess(vmName)
 			os.Exit(0)
 		}
 		logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. SOMETHING UNPREDICTED HAPPENED! THE PROCESS HAD TO EXIT!")
-		cmd.NetworkCleanup(vmName, true)
-		cmd.BhyvectlDestroy(vmName, true)
+		// cmd.NetworkCleanup(vmName, true)
+		_, _ = HosterNetwork.VmNetworkCleanup(vmName)
+		// cmd.BhyvectlDestroy(vmName, true)
+		_ = HosterVmUtils.BhyveCtlDestroy(vmName)
 		os.Exit(1000)
 	}
 }
@@ -116,8 +125,10 @@ func readAndLogOutput(reader *bufio.Reader, name string) {
 		}
 
 		if reMatchProcessFailureLogLine1.MatchString(strings.TrimSpace(line)) {
-			cmd.NetworkCleanup(vmName, true)
-			cmd.BhyvectlDestroy(vmName, true)
+			// cmd.NetworkCleanup(vmName, true)
+			_, _ = HosterNetwork.VmNetworkCleanup(vmName)
+			// cmd.BhyvectlDestroy(vmName, true)
+			_ = HosterVmUtils.BhyveCtlDestroy(vmName)
 			logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. Observed a bhyve process failure.")
 			os.Exit(1001)
 		}

@@ -74,6 +74,8 @@ func CreateEpairInterface(jailName string, networkName string) (r EpairInterface
 	return
 }
 
-func DestroyEpairInterfaces(jailName string, networkName string) (r EpairInterface, e error) {
+// TBD: as of now this is handled by the system's shell-based start-up/tear-down script,
+// but eventually this function will have to take over.
+func JailNetworkCleanup(jailName string, networkName string) (r EpairInterface, e error) {
 	return
 }
