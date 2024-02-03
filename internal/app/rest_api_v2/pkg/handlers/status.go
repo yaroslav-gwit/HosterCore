@@ -18,7 +18,7 @@ func init() {
 }
 
 func SetStatusCode(w http.ResponseWriter, httpStatusCode int) {
-	log.HttpStatusCode = httpStatusCode
+	log.SetStatusCode(httpStatusCode)
 
 	w.Header().Add("Access-Control-Allow-Methods", "*")
 	w.Header().Add("Access-Control-Allow-Origin", "*")

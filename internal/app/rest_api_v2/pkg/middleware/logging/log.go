@@ -14,12 +14,13 @@ var lock sync.RWMutex
 
 type Log struct {
 	*logrus.Logger
-	RespError      bool
-	ErrorMessage   string
-	RespDebug      bool
-	DebugMessage   string
-	InfoMessage    string
-	HttpStatusCode int
+	RespError         bool
+	ErrorMessage      string
+	RespDebug         bool
+	DebugMessage      string
+	InfoMessage       string
+	HttpStatusCode    int
+	HttpStatusCodeSet bool
 }
 
 func Configure(level logrus.Level) *Log {
@@ -93,8 +94,27 @@ func (log *Log) SetDebugMessage(message string) {
 	log.DebugMessage = message
 }
 
+func (log *Log) SetStatusCode(status int) {
+	lock.Lock()
+	defer lock.Unlock()
+
+	log.HttpStatusCode = status
+}
+
+func (log *Log) UnsetStatusCode() {
+	lock.Lock()
+	defer lock.Unlock()
+
+	log.HttpStatusCode = 0
+}
+
 func (log *Log) LogResponses(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set default status OK, if the status is empty
+		if log.HttpStatusCode == 0 {
+			log.SetStatusCode(http.StatusOK)
+		}
+
 		timeStart := time.Now()
 		next.ServeHTTP(w, r)
 
@@ -135,5 +155,8 @@ func (log *Log) LogResponses(next http.Handler) http.Handler {
 			"client_address": r.RemoteAddr,
 			"latency":        fmt.Sprintf("%dms", time.Since(timeStart).Milliseconds()),
 		}).Info(infoMessage)
+
+		// Clear out the HTTP status code
+		log.UnsetStatusCode()
 	})
 }
