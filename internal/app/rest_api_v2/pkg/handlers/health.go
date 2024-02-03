@@ -33,14 +33,13 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 // @Security BasicAuth
 // @Router /health/ha-auth [get]
 func HealthCheckHaAuth(w http.ResponseWriter, r *http.Request) {
-	if ApiAuth.CheckHaUser(r) {
+	auth := ApiAuth.CheckHaUser(r)
+	if auth {
 		payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 		SetStatusCode(w, http.StatusOK)
 		w.Write(payload)
 	} else {
-		payload, _ := JSONResponse.GenerateJson(w, "message", "unauthorized")
-		SetStatusCode(w, http.StatusUnauthorized)
-		w.Write(payload)
+		UnauthenticatedResponse(w)
 	}
 }
 
@@ -53,13 +52,12 @@ func HealthCheckHaAuth(w http.ResponseWriter, r *http.Request) {
 // @Security BasicAuth
 // @Router /health/auth [get]
 func HealthCheckAuth(w http.ResponseWriter, r *http.Request) {
-	if ApiAuth.CheckRestUser(r) {
+	auth := ApiAuth.CheckHaUser(r)
+	if auth {
 		payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 		SetStatusCode(w, http.StatusOK)
 		w.Write(payload)
 	} else {
-		payload, _ := JSONResponse.GenerateJson(w, "message", "unauthorized")
-		SetStatusCode(w, http.StatusUnauthorized)
-		w.Write(payload)
+		UnauthenticatedResponse(w)
 	}
 }

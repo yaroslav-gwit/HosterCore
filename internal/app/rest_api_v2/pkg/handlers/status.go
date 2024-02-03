@@ -17,9 +17,10 @@ func init() {
 }
 
 func SetStatusCode(w http.ResponseWriter, httpStatusCode int) {
+	log.HttpStatusCode = httpStatusCode
+
 	w.Header().Add("Access-Control-Allow-Methods", "*")
 	w.Header().Add("Access-Control-Allow-Origin", "*")
-	log.HttpStatusCode = httpStatusCode
 	w.WriteHeader(httpStatusCode)
 }
 
@@ -38,8 +39,8 @@ func ReportError(w http.ResponseWriter, httpStatusCode int, errorValue string) {
 }
 
 func UnauthenticatedResponse(w http.ResponseWriter) {
-	w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-	payload, err := JSONResponse.GenerateJson(w, "error", "unauthorized")
+	w.Header().Add("WWW-Authenticate", `Basic realm="Restricted"`)
+	payload, err := JSONResponse.GenerateJson(w, "message", "unauthorized")
 	if err != nil {
 		ReportError(w, http.StatusUnauthorized, err.Error())
 		return
