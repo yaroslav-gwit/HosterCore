@@ -2,6 +2,7 @@ package handlers
 
 import (
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
+	"fmt"
 	"net/http"
 )
 
@@ -11,4 +12,5 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 
 	SetStatusCode(w, http.StatusNotFound)
 	w.Write(payload)
+	fmt.Fprint(w, "404 - Not Found")
 }
