@@ -74,13 +74,13 @@ func main() {
 	r.HandleFunc("/api/v2/health/auth-ha", handlers.HealthCheckHaAuth).Methods("GET")
 	r.HandleFunc("/api/v2/health/auth-any", handlers.HealthCheckAnyAuth).Methods("GET")
 
+	// Catch-all route for 404 errors
+	r.NotFoundHandler = http.HandlerFunc(handlers.NotFoundHandler)
+
 	// Middleware -> Logging
 	log = MiddlewareLogging.Configure(logrus.DebugLevel)
 	handlers.SetLogConfig(log)
 	r.Use(log.LogResponses)
-
-	// Catch-all route for 404 errors
-	r.NotFoundHandler = http.HandlerFunc(handlers.NotFoundHandler)
 
 	http.Handle("/", r)
 	srv := &http.Server{

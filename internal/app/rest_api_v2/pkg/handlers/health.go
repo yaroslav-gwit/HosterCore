@@ -4,8 +4,6 @@ import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	"net/http"
-
-	"github.com/sirupsen/logrus"
 )
 
 // @Tags Health
@@ -15,11 +13,7 @@ import (
 // @Success 200 {object} Models_SimpleSuccess
 // @Router /health [get]
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
-	payload, err := JSONResponse.GenerateJson(w, "message", "healthy")
-	if err != nil {
-		logrus.Error(err)
-	}
-
+	payload, _ := JSONResponse.GenerateJson(w, "message", "healthy")
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }

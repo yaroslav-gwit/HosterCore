@@ -7,8 +7,8 @@ import (
 
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	payload, _ := JSONResponse.GenerateJson(w, "message", "404")
-
 	log.SetErrorMessage("404")
+
 	SetStatusCode(w, http.StatusNotFound)
 	w.Write(payload)
 }
