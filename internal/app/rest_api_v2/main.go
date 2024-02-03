@@ -73,6 +73,10 @@ func main() {
 	r.HandleFunc("/api/v2/health/auth", handlers.HealthCheckRegularAuth).Methods("GET")
 	r.HandleFunc("/api/v2/health/auth-ha", handlers.HealthCheckHaAuth).Methods("GET")
 	r.HandleFunc("/api/v2/health/auth-any", handlers.HealthCheckAnyAuth).Methods("GET")
+	// Catch-all route for 404 errors
+	// r.NotFoundHandler = http.HandlerFunc(handlers.NotFoundHandler)
+	// r.NotFoundHandler = r.NewRoute().HandlerFunc(http.NotFound).GetHandler()
+	r.NotFoundHandler = r.NewRoute().HandlerFunc(handlers.NotFoundHandler).GetHandler()
 
 	// Middleware -> Logging
 	log = MiddlewareLogging.Configure(logrus.DebugLevel)
@@ -80,9 +84,6 @@ func main() {
 	r.Use(log.LogResponses)
 
 	http.Handle("/", r)
-	// Catch-all route for 404 errors
-	// r.NotFoundHandler = http.HandlerFunc(handlers.NotFoundHandler)
-	r.NotFoundHandler = r.NewRoute().HandlerFunc(http.NotFound).GetHandler()
 	srv := &http.Server{
 		Addr:         "0.0.0.0:4000",
 		WriteTimeout: 5 * time.Second,
