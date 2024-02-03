@@ -72,7 +72,7 @@ func CheckHaUser(r *http.Request) bool {
 }
 
 // Could be useful in some cases. Might delete later, after the initial testing.
-func CheckBothUsers(r *http.Request) bool {
+func CheckAnyUser(r *http.Request) bool {
 	if CheckHaUser(r) || CheckRestUser(r) {
 		return true
 	}

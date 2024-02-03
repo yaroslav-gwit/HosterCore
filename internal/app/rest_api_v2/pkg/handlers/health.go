@@ -25,15 +25,15 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Tags Health
-// @Summary Check the regular user authentication.
-// @Description Check the regular user authentication.
+// @Summary Check the HA user authentication.
+// @Description Check the HA user authentication.
 // @Produce json
 // @Success 200 {object} Models_SimpleSuccess
 // @Failure 500 {object} SwaggerError
 // @Security BasicAuth
-// @Router /health/ha-auth [get]
-func HealthCheckHaAuth(w http.ResponseWriter, r *http.Request) {
-	auth := ApiAuth.CheckHaUser(r)
+// @Router /health/auth [get]
+func HealthCheckAuth(w http.ResponseWriter, r *http.Request) {
+	auth := ApiAuth.CheckRestUser(r)
 	if auth {
 		payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 		SetStatusCode(w, http.StatusOK)
@@ -45,14 +45,14 @@ func HealthCheckHaAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Tags Health
-// @Summary Check the HA user authentication.
-// @Description Check the HA user authentication.
+// @Summary Check the regular user authentication.
+// @Description Check the regular user authentication.
 // @Produce json
 // @Success 200 {object} Models_SimpleSuccess
 // @Failure 500 {object} SwaggerError
 // @Security BasicAuth
-// @Router /health/auth [get]
-func HealthCheckAuth(w http.ResponseWriter, r *http.Request) {
+// @Router /health/ha-auth [get]
+func HealthCheckHaAuth(w http.ResponseWriter, r *http.Request) {
 	auth := ApiAuth.CheckHaUser(r)
 	if auth {
 		payload, _ := JSONResponse.GenerateJson(w, "message", "success")
