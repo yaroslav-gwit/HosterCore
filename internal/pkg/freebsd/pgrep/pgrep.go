@@ -13,10 +13,12 @@ type PgrepPID struct {
 	ProcessCmd string
 }
 
-// Searches for a given process on your system, using a command start string
+// Searches for a given process on your system, using the start command string (e.g. "bash script.sh", or "/opt/custom/binary --bla").
 //
-// Returns a struct with process ID as int and the command used to start it (string):
-func Pgrep(processName string) (pids []PgrepPID, finalErr error) {
+// Returns a list of structs with the process ID (int) and the command (string) used to start it.
+//
+// TIP: use a generic string to begin with (e.g. "bhyve") and then filter the results using regex or string matching patterns inside of your caller function.
+func Pgrep(processName string) (r []PgrepPID, e error) {
 	// Clean the input
 	processName = strings.TrimSpace(processName)
 	reMatchInputFilter := regexp.MustCompile(`'|"`)
@@ -25,7 +27,7 @@ func Pgrep(processName string) (pids []PgrepPID, finalErr error) {
 	out, err := exec.Command("/bin/pgrep", "-afSl", processName).CombinedOutput()
 	if err != nil {
 		errorString := strings.TrimSpace(string(out)) + "; " + err.Error()
-		finalErr = errors.New("Pgrep() " + errorString)
+		e = errors.New("Pgrep() " + errorString)
 		return
 	}
 
@@ -39,7 +41,7 @@ func Pgrep(processName string) (pids []PgrepPID, finalErr error) {
 		pidSplit := reSplitSpace.Split(v, 2)
 		pidNum, err := strconv.Atoi(pidSplit[0])
 		if err != nil {
-			finalErr = errors.New("Pgrep() " + err.Error())
+			e = errors.New("Pgrep() " + err.Error())
 			return
 		}
 
@@ -48,11 +50,11 @@ func Pgrep(processName string) (pids []PgrepPID, finalErr error) {
 			processCmd = pidSplit[1]
 			processCmd = strings.TrimSpace(processCmd)
 		} else {
-			finalErr = errors.New("Pgrep() could not find a process cmd string in " + v)
+			e = errors.New("Pgrep() could not find a process cmd string in " + v)
 			return
 		}
 
-		pids = append(pids, PgrepPID{ProcessId: pidNum, ProcessCmd: processCmd})
+		r = append(r, PgrepPID{ProcessId: pidNum, ProcessCmd: processCmd})
 	}
 
 	return
