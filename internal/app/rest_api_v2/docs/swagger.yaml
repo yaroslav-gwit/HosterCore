@@ -41,6 +41,45 @@ paths:
       - Health
   /health/auth:
     get:
+      description: Check the REGULAR user authentication.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Models_SimpleSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Check the REGULAR user authentication.
+      tags:
+      - Health
+  /health/auth-any:
+    get:
+      description: 'Check if any of the two users can log in. Useful for the routes
+        which are required by both users: regular and HA.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Models_SimpleSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Check ANY user authentication.
+      tags:
+      - Health
+  /health/auth-ha:
+    get:
       description: Check the HA user authentication.
       produces:
       - application/json
@@ -56,25 +95,6 @@ paths:
       security:
       - BasicAuth: []
       summary: Check the HA user authentication.
-      tags:
-      - Health
-  /health/ha-auth:
-    get:
-      description: Check the regular user authentication.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.Models_SimpleSuccess'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.SwaggerError'
-      security:
-      - BasicAuth: []
-      summary: Check the regular user authentication.
       tags:
       - Health
 swagger: "2.0"

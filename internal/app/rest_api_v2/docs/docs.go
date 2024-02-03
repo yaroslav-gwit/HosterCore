@@ -51,14 +51,14 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Check the HA user authentication.",
+                "description": "Check the REGULAR user authentication.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Health"
                 ],
-                "summary": "Check the HA user authentication.",
+                "summary": "Check the REGULAR user authentication.",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -75,21 +75,52 @@ const docTemplate = `{
                 }
             }
         },
-        "/health/ha-auth": {
+        "/health/auth-any": {
             "get": {
                 "security": [
                     {
                         "BasicAuth": []
                     }
                 ],
-                "description": "Check the regular user authentication.",
+                "description": "Check if any of the two users can log in. Useful for the routes which are required by both users: regular and HA.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Health"
                 ],
-                "summary": "Check the regular user authentication.",
+                "summary": "Check ANY user authentication.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.Models_SimpleSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/health/auth-ha": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Check the HA user authentication.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Check the HA user authentication.",
                 "responses": {
                     "200": {
                         "description": "OK",

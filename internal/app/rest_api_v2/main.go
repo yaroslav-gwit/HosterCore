@@ -79,11 +79,12 @@ func main() {
 	handlers.SetLogConfig(log)
 	r.Use(log.LogResponses)
 
+	// Catch-all route for 404 errors
+	r.NotFoundHandler = http.HandlerFunc(handlers.NotFoundHandler)
+
 	http.Handle("/", r)
 	srv := &http.Server{
-		// Handler: r,
-		Addr: "0.0.0.0:4000",
-		// Good practice: enforce timeouts for servers you create!
+		Addr:         "0.0.0.0:4000",
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 	}
