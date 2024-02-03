@@ -19,13 +19,13 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Tags Health
-// @Summary Check the REGULAR user authentication.
-// @Description Check the REGULAR user authentication.
+// @Summary Check the `regular` user authentication.
+// @Description Check the `regular` user authentication.
 // @Produce json
 // @Success 200 {object} Models_SimpleSuccess
 // @Failure 500 {object} SwaggerError
 // @Security BasicAuth
-// @Router /health/auth [get]
+// @Router /health/auth/regular [get]
 func HealthCheckRegularAuth(w http.ResponseWriter, r *http.Request) {
 	auth := ApiAuth.CheckRestUser(r)
 	if auth {
@@ -39,13 +39,13 @@ func HealthCheckRegularAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Tags Health
-// @Summary Check the HA user authentication.
-// @Description Check the HA user authentication.
+// @Summary Check the `HA` user authentication.
+// @Description Check the `HA` user authentication.
 // @Produce json
 // @Success 200 {object} Models_SimpleSuccess
 // @Failure 500 {object} SwaggerError
 // @Security BasicAuth
-// @Router /health/auth-ha [get]
+// @Router /health/auth/ha [get]
 func HealthCheckHaAuth(w http.ResponseWriter, r *http.Request) {
 	auth := ApiAuth.CheckHaUser(r)
 	if auth {
@@ -59,13 +59,13 @@ func HealthCheckHaAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Tags Health
-// @Summary Check ANY user authentication.
-// @Description Check if any of the two users can log in. Useful for the routes which are required by both users: regular and HA.
+// @Summary Check `any` user authentication.
+// @Description Check if `any` of the two users can log in. Useful for the routes which are required by both users: regular and HA.
 // @Produce json
 // @Success 200 {object} Models_SimpleSuccess
 // @Failure 500 {object} SwaggerError
 // @Security BasicAuth
-// @Router /health/auth-any [get]
+// @Router /health/auth/any [get]
 func HealthCheckAnyAuth(w http.ResponseWriter, r *http.Request) {
 	auth := ApiAuth.CheckAnyUser(r)
 	if auth {

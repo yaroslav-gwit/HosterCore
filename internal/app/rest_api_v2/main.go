@@ -43,9 +43,9 @@ func init() {
 
 // var log *MiddlewareLogging.Log
 
-// @title `Hoster` Node REST API Docs
+// @title Hoster Node REST API Docs
 // @version 2.0
-// @description REST API documentation for the `Hoster` nodes. This HTTP endpoint located directly on the `Hoster` node. Please, take some extra care with the things you execute here, because many of them can be destructive and non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).
+// @description REST API documentation for the `Hoster` nodes. This HTTP endpoint located directly on the `Hoster` node.<br>Please, take some extra care with the things you execute here, because many of them can be destructive and non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @BasePath /api/v2
@@ -66,9 +66,9 @@ func main() {
 
 	// Health checks
 	r.HandleFunc("/api/v2/health", handlers.HealthCheck).Methods("GET")
-	r.HandleFunc("/api/v2/health/auth", handlers.HealthCheckRegularAuth).Methods("GET")
-	r.HandleFunc("/api/v2/health/auth-ha", handlers.HealthCheckHaAuth).Methods("GET")
-	r.HandleFunc("/api/v2/health/auth-any", handlers.HealthCheckAnyAuth).Methods("GET")
+	r.HandleFunc("/api/v2/health/auth/ha", handlers.HealthCheckHaAuth).Methods("GET")
+	r.HandleFunc("/api/v2/health/auth/any", handlers.HealthCheckAnyAuth).Methods("GET")
+	r.HandleFunc("/api/v2/health/auth/regular", handlers.HealthCheckRegularAuth).Methods("GET")
 	// Catch-all route for 404 errors
 	r.NotFoundHandler = r.NewRoute().HandlerFunc(handlers.NotFoundHandler).GetHandler()
 

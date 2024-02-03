@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "REST API documentation for the `Hoster` nodes. This HTTP endpoint located directly on the `Hoster` node. Please, take some extra care with the things you execute here, because many of them can be destructive and non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).",
-        "title": "`Hoster` Node REST API Docs",
+        "description": "REST API documentation for the `Hoster` nodes. This HTTP endpoint located directly on the `Hoster` node.\u003cbr\u003ePlease, take some extra care with the things you execute here, because many of them can be destructive and non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).",
+        "title": "Hoster Node REST API Docs",
         "contact": {},
         "license": {
             "name": "Apache 2.0",
@@ -32,21 +32,21 @@
                 }
             }
         },
-        "/health/auth": {
+        "/health/auth/any": {
             "get": {
                 "security": [
                     {
                         "BasicAuth": []
                     }
                 ],
-                "description": "Check the REGULAR user authentication.",
+                "description": "Check if `any` of the two users can log in. Useful for the routes which are required by both users: regular and HA.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Health"
                 ],
-                "summary": "Check the REGULAR user authentication.",
+                "summary": "Check `any` user authentication.",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -63,21 +63,21 @@
                 }
             }
         },
-        "/health/auth-any": {
+        "/health/auth/ha": {
             "get": {
                 "security": [
                     {
                         "BasicAuth": []
                     }
                 ],
-                "description": "Check if any of the two users can log in. Useful for the routes which are required by both users: regular and HA.",
+                "description": "Check the `HA` user authentication.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Health"
                 ],
-                "summary": "Check ANY user authentication.",
+                "summary": "Check the `HA` user authentication.",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -94,21 +94,21 @@
                 }
             }
         },
-        "/health/auth-ha": {
+        "/health/auth/regular": {
             "get": {
                 "security": [
                     {
                         "BasicAuth": []
                     }
                 ],
-                "description": "Check the HA user authentication.",
+                "description": "Check the `regular` user authentication.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Health"
                 ],
-                "summary": "Check the HA user authentication.",
+                "summary": "Check the `regular` user authentication.",
                 "responses": {
                     "200": {
                         "description": "OK",

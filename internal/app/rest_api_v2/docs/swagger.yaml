@@ -16,13 +16,13 @@ definitions:
 info:
   contact: {}
   description: REST API documentation for the `Hoster` nodes. This HTTP endpoint located
-    directly on the `Hoster` node. Please, take some extra care with the things you
-    execute here, because many of them can be destructive and non-revertible (e.g.
+    directly on the `Hoster` node.<br>Please, take some extra care with the things
+    you execute here, because many of them can be destructive and non-revertible (e.g.
     vm destroy, snapshot rollback, host reboot, etc).
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: '`Hoster` Node REST API Docs'
+  title: Hoster Node REST API Docs
   version: "2.0"
 paths:
   /health:
@@ -38,28 +38,9 @@ paths:
       summary: REST API server health status.
       tags:
       - Health
-  /health/auth:
+  /health/auth/any:
     get:
-      description: Check the REGULAR user authentication.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.Models_SimpleSuccess'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.SwaggerError'
-      security:
-      - BasicAuth: []
-      summary: Check the REGULAR user authentication.
-      tags:
-      - Health
-  /health/auth-any:
-    get:
-      description: 'Check if any of the two users can log in. Useful for the routes
+      description: 'Check if `any` of the two users can log in. Useful for the routes
         which are required by both users: regular and HA.'
       produces:
       - application/json
@@ -74,12 +55,12 @@ paths:
             $ref: '#/definitions/handlers.SwaggerError'
       security:
       - BasicAuth: []
-      summary: Check ANY user authentication.
+      summary: Check `any` user authentication.
       tags:
       - Health
-  /health/auth-ha:
+  /health/auth/ha:
     get:
-      description: Check the HA user authentication.
+      description: Check the `HA` user authentication.
       produces:
       - application/json
       responses:
@@ -93,7 +74,26 @@ paths:
             $ref: '#/definitions/handlers.SwaggerError'
       security:
       - BasicAuth: []
-      summary: Check the HA user authentication.
+      summary: Check the `HA` user authentication.
+      tags:
+      - Health
+  /health/auth/regular:
+    get:
+      description: Check the `regular` user authentication.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Models_SimpleSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Check the `regular` user authentication.
       tags:
       - Health
 swagger: "2.0"
