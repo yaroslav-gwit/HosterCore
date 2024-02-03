@@ -70,8 +70,9 @@ func main() {
 
 	// Health checks
 	r.HandleFunc("/api/v2/health", handlers.HealthCheck).Methods("GET")
-	r.HandleFunc("/api/v2/health/auth", handlers.HealthCheckAuth).Methods("GET")
-	r.HandleFunc("/api/v2/health/ha-auth", handlers.HealthCheckHaAuth).Methods("GET")
+	r.HandleFunc("/api/v2/health/auth", handlers.HealthCheckRegularAuth).Methods("GET")
+	r.HandleFunc("/api/v2/health/auth-ha", handlers.HealthCheckHaAuth).Methods("GET")
+	r.HandleFunc("/api/v2/health/auth-any", handlers.HealthCheckAnyAuth).Methods("GET")
 
 	// Middleware -> Logging
 	log = MiddlewareLogging.Configure(logrus.DebugLevel)
