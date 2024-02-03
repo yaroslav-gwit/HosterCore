@@ -73,7 +73,6 @@ func main() {
 	)).Methods("GET")
 	// Define a route to serve the static file
 	r.HandleFunc("/api/v2/swagger.json", func(w http.ResponseWriter, r *http.Request) {
-		handlers.SetStatusCode(w, http.StatusOK)
 		http.ServeFile(w, r, "docs/swagger.json")
 	})
 	// Catch-all route for 404 errors
