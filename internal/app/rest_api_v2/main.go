@@ -52,30 +52,32 @@ func init() {
 func main() {
 	// log = MiddlewareLogging.Configure(logrus.DebugLevel)
 	r := mux.NewRouter()
-	// Swagger docs
-	r.PathPrefix("/api/v2/swagger/").Handler(httpSwagger.Handler(
-		httpSwagger.URL("/api/v2/swagger.json"), //The url pointing to API definition
-		httpSwagger.DeepLinking(true),
-		httpSwagger.DocExpansion("none"),
-		httpSwagger.DomID("swagger-ui"),
-	)).Methods(http.MethodGet)
-	// Define a route to serve the static file
-	r.HandleFunc("/api/v2/swagger.json", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "docs/swagger.json")
-	})
 
 	// Health checks
 	r.HandleFunc("/api/v2/health", handlers.HealthCheck).Methods("GET")
 	r.HandleFunc("/api/v2/health/auth/ha", handlers.HealthCheckHaAuth).Methods("GET")
 	r.HandleFunc("/api/v2/health/auth/any", handlers.HealthCheckAnyAuth).Methods("GET")
 	r.HandleFunc("/api/v2/health/auth/regular", handlers.HealthCheckRegularAuth).Methods("GET")
-	// Catch-all route for 404 errors
-	r.NotFoundHandler = r.NewRoute().HandlerFunc(handlers.NotFoundHandler).GetHandler()
 
 	// Middleware -> Logging
 	log = MiddlewareLogging.Configure(logrus.DebugLevel)
 	handlers.SetLogConfig(log)
 	r.Use(log.LogResponses)
+
+	// Swagger docs
+	r.PathPrefix("/api/v2/swagger/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("/api/v2/swagger.json"), //The url pointing to API definition
+		httpSwagger.DeepLinking(true),
+		httpSwagger.DocExpansion("none"),
+		httpSwagger.DomID("swagger-ui"),
+	)).Methods("GET")
+	// Define a route to serve the static file
+	r.HandleFunc("/api/v2/swagger.json", func(w http.ResponseWriter, r *http.Request) {
+		handlers.SetStatusCode(w, http.StatusOK)
+		http.ServeFile(w, r, "docs/swagger.json")
+	})
+	// Catch-all route for 404 errors
+	r.NotFoundHandler = r.NewRoute().HandlerFunc(handlers.NotFoundHandler).GetHandler()
 
 	http.Handle("/", r)
 	srv := &http.Server{
