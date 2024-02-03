@@ -1,0 +1,80 @@
+basePath: /api/v2
+definitions:
+  handlers.Models_SimpleSuccess:
+    properties:
+      message:
+        description: success
+        type: string
+    type: object
+  handlers.SwaggerError:
+    properties:
+      id:
+        type: integer
+      message:
+        type: string
+    type: object
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: REST API documentation for the backend `Hoster` servers.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Hoster REST API Docs (FreeBSD backend REST API)
+  version: "2.0"
+paths:
+  /health:
+    get:
+      description: Simple function, that returns this REST API server health status.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Models_SimpleSuccess'
+      summary: REST API server health status.
+      tags:
+      - Health
+  /health/auth:
+    get:
+      description: Check the HA user authentication.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Models_SimpleSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Check the HA user authentication.
+      tags:
+      - Health
+  /health/ha-auth:
+    get:
+      description: Check the regular user authentication.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Models_SimpleSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Check the regular user authentication.
+      tags:
+      - Health
+swagger: "2.0"
