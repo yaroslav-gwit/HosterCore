@@ -39,7 +39,8 @@ func HealthCheckHaAuth(w http.ResponseWriter, r *http.Request) {
 		SetStatusCode(w, http.StatusOK)
 		w.Write(payload)
 	} else {
-		UnauthenticatedResponse(w)
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
 	}
 }
 
@@ -58,6 +59,7 @@ func HealthCheckAuth(w http.ResponseWriter, r *http.Request) {
 		SetStatusCode(w, http.StatusOK)
 		w.Write(payload)
 	} else {
-		UnauthenticatedResponse(w)
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
 	}
 }

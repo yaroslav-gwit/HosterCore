@@ -5,6 +5,7 @@ import (
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	MiddlewareLogging "HosterCore/internal/app/rest_api_v2/pkg/middleware/logging"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -38,14 +39,11 @@ func ReportError(w http.ResponseWriter, httpStatusCode int, errorValue string) {
 	w.Write(payload)
 }
 
-func UnauthenticatedResponse(w http.ResponseWriter) {
+func UnauthenticatedResponse(w http.ResponseWriter, user string, pass string) {
+	payload, _ := JSONResponse.GenerateJson(w, "message", "unauthorized")
 	w.Header().Add("WWW-Authenticate", `Basic realm="Restricted"`)
-	payload, err := JSONResponse.GenerateJson(w, "message", "unauthorized")
-	if err != nil {
-		ReportError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
 
+	log.ErrorMessage = fmt.Sprintf("could not authenticate '%s' using '%s'", user, pass)
 	SetStatusCode(w, http.StatusUnauthorized)
 	w.Write(payload)
 }

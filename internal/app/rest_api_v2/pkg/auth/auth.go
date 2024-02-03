@@ -2,7 +2,6 @@ package ApiAuth
 
 import (
 	RestApiConfig "HosterCore/internal/app/rest_api_v2/pkg/config"
-	"fmt"
 	"net/http"
 )
 
@@ -10,7 +9,7 @@ import (
 // Returns true if we were able to confirm both.
 func CheckRestUser(r *http.Request) bool {
 	user, pass, _ := r.BasicAuth()
-	fmt.Println(user, pass)
+	// fmt.Println(user, pass)
 	userCheck := ""
 	passCheck := ""
 
@@ -43,7 +42,7 @@ func CheckRestUser(r *http.Request) bool {
 // Returns true if we were able to confirm both.
 func CheckHaUser(r *http.Request) bool {
 	user, pass, _ := r.BasicAuth()
-	fmt.Println(user, pass)
+	// fmt.Println(user, pass)
 	userCheck := ""
 	passCheck := ""
 
