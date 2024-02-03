@@ -2,6 +2,7 @@ package ApiAuth
 
 import (
 	RestApiConfig "HosterCore/internal/app/rest_api_v2/pkg/config"
+	"fmt"
 	"net/http"
 )
 
@@ -9,6 +10,7 @@ import (
 // Returns true if we were able to confirm both.
 func CheckRestUser(r *http.Request) bool {
 	user, pass, _ := r.BasicAuth()
+	fmt.Println(user, pass)
 	userCheck := ""
 	passCheck := ""
 
@@ -26,7 +28,7 @@ func CheckRestUser(r *http.Request) bool {
 		}
 	}
 	// Password cannot be empty
-	if len(userCheck) < 1 || len(passCheck) < 1 {
+	if len(userCheck) < 1 || len(passCheck) < 1 || len(user) < 1 || len(pass) < 1 {
 		return false
 	}
 	// Check user credentials
@@ -41,6 +43,7 @@ func CheckRestUser(r *http.Request) bool {
 // Returns true if we were able to confirm both.
 func CheckHaUser(r *http.Request) bool {
 	user, pass, _ := r.BasicAuth()
+	fmt.Println(user, pass)
 	userCheck := ""
 	passCheck := ""
 
@@ -58,7 +61,7 @@ func CheckHaUser(r *http.Request) bool {
 		}
 	}
 	// Password cannot be empty
-	if len(userCheck) < 1 || len(passCheck) < 1 {
+	if len(userCheck) < 1 || len(passCheck) < 1 || len(user) < 1 || len(pass) < 1 {
 		return false
 	}
 	// Check user credentials
