@@ -8,7 +8,7 @@ import (
 )
 
 func ListTemplates() (r []string, e error) {
-	reMatchTemplate := regexp.MustCompile(`/jail-template-`)
+	reMatchTemplate := regexp.MustCompile(`^jail-template-`)
 
 	hostConfig, err := HosterHost.GetHostConfig()
 	if err != nil {
