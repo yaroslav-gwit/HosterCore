@@ -7,6 +7,6 @@ type SwaggerError struct {
 }
 
 // Purely Swagger related object, not used anywhere else in the codebase
-type Models_SimpleSuccess struct {
+type SwaggerSuccess struct {
 	Message string `json:"message"` // success
 }

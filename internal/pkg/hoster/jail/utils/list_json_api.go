@@ -10,21 +10,6 @@ import (
 	HosterZfs "HosterCore/internal/pkg/hoster/zfs"
 )
 
-type JailApi struct {
-	JailConfig
-	Name           string `json:"name"`
-	Uptime         string `json:"uptime"`
-	Running        bool   `json:"running"`
-	Encrypted      bool   `json:"encrypted"`
-	Backup         bool   `json:"backup"`
-	Release        string `json:"release"`
-	CurrentHost    string `json:"current_host"`
-	SpaceUsedHuman string `json:"space_used_h"`
-	SpaceUsedBytes uint64 `json:"space_used_b"`
-	SpaceFreeHuman string `json:"space_free_h"`
-	SpaceFreeBytes uint64 `json:"space_free_b"`
-}
-
 func ListJsonApi() (r []JailApi, e error) {
 	jails, err := ListAllSimple()
 	if err != nil {

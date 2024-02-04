@@ -10,7 +10,7 @@ import (
 // @Summary REST API server health status.
 // @Description Simple function, that returns this REST API server health status.
 // @Produce json
-// @Success 200 {object} Models_SimpleSuccess
+// @Success 200 {object} SwaggerSuccess
 // @Router /health [get]
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	payload, _ := JSONResponse.GenerateJson(w, "message", "healthy")
@@ -22,7 +22,7 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 // @Summary Check the `regular` user authentication.
 // @Description Check the `regular` user authentication.
 // @Produce json
-// @Success 200 {object} Models_SimpleSuccess
+// @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Security BasicAuth
 // @Router /health/auth/regular [get]
@@ -42,7 +42,7 @@ func HealthCheckRegularAuth(w http.ResponseWriter, r *http.Request) {
 // @Summary Check the `HA` user authentication.
 // @Description Check the `HA` user authentication.
 // @Produce json
-// @Success 200 {object} Models_SimpleSuccess
+// @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Security BasicAuth
 // @Router /health/auth/ha [get]
@@ -62,7 +62,7 @@ func HealthCheckHaAuth(w http.ResponseWriter, r *http.Request) {
 // @Summary Check `any` user authentication.
 // @Description Check if `any` of the two users can log in. Useful for the routes which are required by both users: regular and HA.
 // @Produce json
-// @Success 200 {object} Models_SimpleSuccess
+// @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Security BasicAuth
 // @Router /health/auth/any [get]

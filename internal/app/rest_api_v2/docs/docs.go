@@ -33,7 +33,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.Models_SimpleSuccess"
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
                         }
                     }
                 }
@@ -58,7 +58,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.Models_SimpleSuccess"
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
                         }
                     },
                     "500": {
@@ -89,7 +89,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.Models_SimpleSuccess"
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
                         }
                     },
                     "500": {
@@ -120,7 +120,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.Models_SimpleSuccess"
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
                         }
                     },
                     "500": {
@@ -134,21 +134,19 @@ const docTemplate = `{
         },
         "/jail/all": {
             "get": {
+                "description": "Get Jail info.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Jails"
                 ],
-                "summary": "Get the list of all Jails, including the information about them.",
+                "summary": "Get Jail info.",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/HosterJailUtils.JailApi"
-                            }
+                            "$ref": "#/definitions/HosterJailUtils.JailApi"
                         }
                     },
                     "500": {
@@ -236,15 +234,6 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.Models_SimpleSuccess": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "description": "success",
-                    "type": "string"
-                }
-            }
-        },
         "handlers.SwaggerError": {
             "type": "object",
             "properties": {
@@ -252,6 +241,15 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.SwaggerSuccess": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "success",
                     "type": "string"
                 }
             }

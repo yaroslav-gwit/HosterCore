@@ -49,17 +49,17 @@ definitions:
       uptime:
         type: string
     type: object
-  handlers.Models_SimpleSuccess:
-    properties:
-      message:
-        description: success
-        type: string
-    type: object
   handlers.SwaggerError:
     properties:
       id:
         type: integer
       message:
+        type: string
+    type: object
+  handlers.SwaggerSuccess:
+    properties:
+      message:
+        description: success
         type: string
     type: object
 info:
@@ -83,7 +83,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.Models_SimpleSuccess'
+            $ref: '#/definitions/handlers.SwaggerSuccess'
       summary: REST API server health status.
       tags:
       - Health
@@ -97,7 +97,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.Models_SimpleSuccess'
+            $ref: '#/definitions/handlers.SwaggerSuccess'
         "500":
           description: Internal Server Error
           schema:
@@ -116,7 +116,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.Models_SimpleSuccess'
+            $ref: '#/definitions/handlers.SwaggerSuccess'
         "500":
           description: Internal Server Error
           schema:
@@ -135,7 +135,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.Models_SimpleSuccess'
+            $ref: '#/definitions/handlers.SwaggerSuccess'
         "500":
           description: Internal Server Error
           schema:
@@ -147,20 +147,19 @@ paths:
       - Health
   /jail/all:
     get:
+      description: Get Jail info.
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/HosterJailUtils.JailApi'
-            type: array
+            $ref: '#/definitions/HosterJailUtils.JailApi'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.SwaggerError'
-      summary: Get the list of all Jails, including the information about them.
+      summary: Get Jail info.
       tags:
       - Jails
 swagger: "2.0"
