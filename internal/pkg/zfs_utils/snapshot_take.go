@@ -55,13 +55,14 @@ func TakeScheduledSnapshot(dataset string, snapshotType string, keep int) (snaps
 	}
 
 	if len(datasetSnapshots) <= keep {
-		return snapshotName, []string{}, nil
+		return
 	}
 
 	for i := 0; i < len(datasetSnapshots)-keep; i++ {
 		err := RemoveSnapshot(datasetSnapshots[i].Name)
 		if err != nil {
-			return "", []string{}, err
+			e = err
+			return
 		}
 		removedSnapshots = append(removedSnapshots, datasetSnapshots[i].Name)
 	}
