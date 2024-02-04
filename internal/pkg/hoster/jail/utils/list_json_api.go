@@ -56,8 +56,8 @@ func ListJsonApi() (r []JailApi, e error) {
 		}
 
 		jailStruct.Name = v.JailName
+		jailStruct.JailConfig = jailConfig
 		jailStruct.CurrentHost = hostname
-		jailStruct.Parent = jailConfig.Parent
 		if jailConfig.Parent == hostname {
 			for _, vv := range onlineJails {
 				if v.JailName == vv.Name {
@@ -72,17 +72,12 @@ func ListJsonApi() (r []JailApi, e error) {
 			jailStruct.Encrypted = true
 		}
 
-		jailStruct.CPULimitPercent = jailConfig.CPULimitPercent
-		jailStruct.RAMLimit = jailConfig.RAMLimit
-		jailStruct.IPAddress = jailConfig.IPAddress
-
 		release, err := ReleaseVersion(jailDsFolder)
 		if err != nil {
 			continue
 		}
 		jailStruct.Release = release
 		jailStruct.Uptime = GetUptimeHuman(v.JailName)
-		jailStruct.Description = jailConfig.Description
 
 		for _, vv := range zfsSpace {
 			if v.MountPoint.DsName+"/"+v.JailName == vv.Name {
