@@ -5,7 +5,7 @@
 package zfsutils
 
 import (
-	"errors"
+	"fmt"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -16,30 +16,31 @@ import (
 
 // Takes a new snapshot, and returns the name of the new snapshot, list of the removed snapshots, or an error
 // Useful for scheduling the automated snapshot jobs
-func TakeScheduledSnapshot(dataset string, snapshotType string, keep int) (string, []string, error) {
+func TakeScheduledSnapshot(dataset string, snapshotType string, keep int) (snapshotName string, removedSnapshots []string, e error) {
 	snapshotTypes := []string{"replication", "custom", "frequent", "hourly", "daily", "weekly", "monthly", "yearly"}
 	if slices.Contains(snapshotTypes, snapshotType) {
 		_ = 0
 	} else {
-		return "", []string{}, errors.New("please provide the correct snapshot type")
+		e = fmt.Errorf("please provide the correct snapshot type")
+		return
 	}
 
 	timeNow := time.Now().Format("2006-01-02_15-04-05.000")
-	snapshotName := dataset + "@" + snapshotType + "_" + timeNow
+	snapshotName = dataset + "@" + snapshotType + "_" + timeNow
 
 	out, err := exec.Command("zfs", "snapshot", snapshotName).CombinedOutput()
 	if err != nil {
-		errString := strings.TrimSpace(string(out)) + "; " + err.Error()
-		return "", []string{}, errors.New(errString)
+		e = fmt.Errorf(strings.TrimSpace(string(out)) + "; " + err.Error())
+		return
 	}
 
 	reSnapTypeMatch := regexp.MustCompile(`@` + snapshotType + "_")
-
 	datasetSnapshots := []SnapshotInfo{}
-	removedSnapshots := []string{}
+	// removedSnapshots := []string{}
 	allSnapshots, err := SnapshotListAll()
 	if err != nil {
-		return "", []string{}, err
+		e = err
+		return
 	}
 
 	for _, v := range allSnapshots {
