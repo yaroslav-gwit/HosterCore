@@ -23,6 +23,7 @@ func JailList(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckAnyUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
+		return
 	}
 
 	jails, err := HosterJailUtils.ListJsonApi()
@@ -53,6 +54,7 @@ func JailListTemplates(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
+		return
 	}
 
 	templates, err := HosterJailUtils.ListTemplates()
@@ -85,6 +87,7 @@ func JailInfo(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckAnyUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
+		return
 	}
 
 	vars := mux.Vars(r)
@@ -119,6 +122,7 @@ func JailStart(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckAnyUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
+		return
 	}
 
 	vars := mux.Vars(r)
@@ -148,6 +152,7 @@ func JailStop(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckAnyUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
+		return
 	}
 
 	vars := mux.Vars(r)
@@ -177,6 +182,7 @@ func JailDestroy(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
+		return
 	}
 
 	vars := mux.Vars(r)
