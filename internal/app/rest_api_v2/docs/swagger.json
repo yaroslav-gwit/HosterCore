@@ -127,6 +127,35 @@
         },
         "/jail/all": {
             "get": {
+                "description": "Get the list of all Jails, including the information about them.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "List all Jails.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/HosterJailUtils.JailApi"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/jail/info/{jail_name}": {
+            "get": {
                 "description": "Get Jail info.",
                 "produces": [
                     "application/json"
