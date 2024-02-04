@@ -107,3 +107,26 @@ func JailStop(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+// @Tags Jails
+// @Summary Destroy a specific Jail.
+// @Description Destroy a specific Jail using it's name as a parameter. `DANGER` - destructive operation!
+// @Produce json
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param jail_name path string true "Jail Name"
+// @Router /jail/destroy/{jail_name} [delete]
+func JailDestroy(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	jailName := vars["jail_name"]
+
+	err := HosterJail.Destroy(jailName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}

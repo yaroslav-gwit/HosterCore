@@ -164,6 +164,30 @@ paths:
       summary: List all Jails.
       tags:
       - Jails
+  /jail/destroy/{jail_name}:
+    delete:
+      description: Destroy a specific Jail using it's name as a parameter. `DANGER`
+        - destructive operation!
+      parameters:
+      - description: Jail Name
+        in: path
+        name: jail_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      summary: Destroy a specific Jail.
+      tags:
+      - Jails
   /jail/info/{jail_name}:
     get:
       description: Get Jail info.

@@ -154,6 +154,41 @@
                 }
             }
         },
+        "/jail/destroy/{jail_name}": {
+            "delete": {
+                "description": "Destroy a specific Jail using it's name as a parameter. `DANGER` - destructive operation!",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Destroy a specific Jail.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Jail Name",
+                        "name": "jail_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/info/{jail_name}": {
             "get": {
                 "description": "Get Jail info.",

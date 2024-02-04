@@ -64,10 +64,11 @@ func main() {
 	r.HandleFunc("/api/v2/health/auth/any", handlers.HealthCheckAnyAuth).Methods("GET")
 	r.HandleFunc("/api/v2/health/auth/regular", handlers.HealthCheckRegularAuth).Methods("GET")
 	// Jails
-	r.HandleFunc("/api/v2/jail/all", handlers.JailList).Methods("GET")
-	r.HandleFunc("/api/v2/jail/info/{jail_name}", handlers.JailInfo).Methods("GET")
-	r.HandleFunc("/api/v2/jail/start/{jail_name}", handlers.JailStart).Methods("POST")
-	r.HandleFunc("/api/v2/jail/stop/{jail_name}", handlers.JailStop).Methods("POST")
+	r.HandleFunc("/api/v2/jail/all", handlers.JailList).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/jail/info/{jail_name}", handlers.JailInfo).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/jail/start/{jail_name}", handlers.JailStart).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/jail/stop/{jail_name}", handlers.JailStop).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/jail/destroy/{jail_name}", handlers.JailDestroy).Methods(http.MethodDelete)
 
 	// Swagger docs
 	r.PathPrefix("/api/v2/swagger/").Handler(httpSwagger.Handler(
