@@ -198,3 +198,31 @@ func JailDestroy(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+// @Tags Jails
+// @Summary Deploy a new Jail.
+// @Description Deploy a new Jail.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body HosterJail.DeployInput true "Request payload"
+// @Router /jail/deploy [delete]
+func JailDeploy(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := HosterJail.DeployInput{}
+	err := HosterJail.Deploy(input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}

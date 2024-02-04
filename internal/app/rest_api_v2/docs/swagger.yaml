@@ -1,5 +1,24 @@
 basePath: /api/v2
 definitions:
+  HosterJail.DeployInput:
+    properties:
+      cpuLimit:
+        type: integer
+      dnsServer:
+        type: string
+      dsParent:
+        type: string
+      ipAddress:
+        type: string
+      jailName:
+        type: string
+      network:
+        type: string
+      ramLimit:
+        type: string
+      release:
+        type: string
+    type: object
   HosterJailUtils.JailApi:
     properties:
       backup:
@@ -164,6 +183,32 @@ paths:
       security:
       - BasicAuth: []
       summary: List all Jails.
+      tags:
+      - Jails
+  /jail/deploy:
+    delete:
+      description: Deploy a new Jail.
+      parameters:
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/HosterJail.DeployInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Deploy a new Jail.
       tags:
       - Jails
   /jail/destroy/{jail_name}:

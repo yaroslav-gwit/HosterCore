@@ -166,6 +166,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/jail/deploy": {
+            "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Deploy a new Jail.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Deploy a new Jail.",
+                "parameters": [
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/HosterJail.DeployInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/destroy/{jail_name}": {
             "delete": {
                 "security": [
@@ -362,6 +404,35 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "HosterJail.DeployInput": {
+            "type": "object",
+            "properties": {
+                "cpuLimit": {
+                    "type": "integer"
+                },
+                "dnsServer": {
+                    "type": "string"
+                },
+                "dsParent": {
+                    "type": "string"
+                },
+                "ipAddress": {
+                    "type": "string"
+                },
+                "jailName": {
+                    "type": "string"
+                },
+                "network": {
+                    "type": "string"
+                },
+                "ramLimit": {
+                    "type": "string"
+                },
+                "release": {
+                    "type": "string"
+                }
+            }
+        },
         "HosterJailUtils.JailApi": {
             "type": "object",
             "properties": {
