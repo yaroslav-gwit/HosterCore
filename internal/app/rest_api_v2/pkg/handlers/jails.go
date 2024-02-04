@@ -12,7 +12,7 @@ import (
 // @Produce json
 // @Success 200 {object} []HosterJailUtils.JailApi
 // @Failure 500 {object} SwaggerError
-// @Router /vm/all [get]
+// @Router /jail/all [get]
 func JailList(w http.ResponseWriter, r *http.Request) {
 	jails, err := HosterJailUtils.ListJsonApi()
 	if err != nil {

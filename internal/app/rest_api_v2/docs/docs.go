@@ -132,7 +132,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vm/all": {
+        "/jail/all": {
             "get": {
                 "produces": [
                     "application/json"

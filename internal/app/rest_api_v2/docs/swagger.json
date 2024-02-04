@@ -125,7 +125,7 @@
                 }
             }
         },
-        "/vm/all": {
+        "/jail/all": {
             "get": {
                 "produces": [
                     "application/json"
