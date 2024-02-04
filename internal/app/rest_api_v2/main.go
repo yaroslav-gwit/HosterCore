@@ -66,6 +66,8 @@ func main() {
 	// Jails
 	r.HandleFunc("/api/v2/jail/all", handlers.JailList).Methods("GET")
 	r.HandleFunc("/api/v2/jail/info/{jail_name}", handlers.JailInfo).Methods("GET")
+	r.HandleFunc("/api/v2/jail/start/{jail_name}", handlers.JailStart).Methods("POST")
+	r.HandleFunc("/api/v2/jail/stop/{jail_name}", handlers.JailStop).Methods("POST")
 
 	// Swagger docs
 	r.PathPrefix("/api/v2/swagger/").Handler(httpSwagger.Handler(

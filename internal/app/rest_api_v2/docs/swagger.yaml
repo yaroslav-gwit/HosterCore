@@ -187,4 +187,50 @@ paths:
       summary: Get Jail info.
       tags:
       - Jails
+  /jail/start/{jail_name}:
+    post:
+      description: Start a specific Jail using it's name as a parameter.
+      parameters:
+      - description: Jail Name
+        in: path
+        name: jail_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      summary: Start a specific Jail.
+      tags:
+      - Jails
+  /jail/stop/{jail_name}:
+    post:
+      description: Stop a specific Jail using it's name as a parameter.
+      parameters:
+      - description: Jail Name
+        in: path
+        name: jail_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      summary: Stop a specific Jail.
+      tags:
+      - Jails
 swagger: "2.0"

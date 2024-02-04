@@ -195,6 +195,76 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/jail/start/{jail_name}": {
+            "post": {
+                "description": "Start a specific Jail using it's name as a parameter.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Start a specific Jail.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Jail Name",
+                        "name": "jail_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/jail/stop/{jail_name}": {
+            "post": {
+                "description": "Stop a specific Jail using it's name as a parameter.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Stop a specific Jail.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Jail Name",
+                        "name": "jail_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
