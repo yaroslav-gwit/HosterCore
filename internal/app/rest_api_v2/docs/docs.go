@@ -167,7 +167,7 @@ const docTemplate = `{
             }
         },
         "/jail/deploy": {
-            "delete": {
+            "post": {
                 "security": [
                     {
                         "BasicAuth": []

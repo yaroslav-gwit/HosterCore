@@ -186,7 +186,7 @@ paths:
       tags:
       - Jails
   /jail/deploy:
-    delete:
+    post:
       description: Deploy a new Jail.
       parameters:
       - description: Request payload

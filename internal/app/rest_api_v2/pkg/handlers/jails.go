@@ -207,7 +207,7 @@ func JailDestroy(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Param Input body HosterJail.DeployInput true "Request payload"
-// @Router /jail/deploy [delete]
+// @Router /jail/deploy [post]
 func JailDeploy(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
