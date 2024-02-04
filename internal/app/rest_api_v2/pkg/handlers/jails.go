@@ -38,7 +38,7 @@ func JailList(w http.ResponseWriter, r *http.Request) {
 // @Summary List all Jail templates.
 // @Description Get the list of all Jail templates.
 // @Produce json
-// @Success 200 {object} SwaggerStringList
+// @Success 200 {array} string
 // @Failure 500 {object} SwaggerError
 // @Router /jail/templates [get]
 func JailListTemplates(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +48,13 @@ func JailListTemplates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload, _ := JSONResponse.GenerateJson(w, "message", templates)
+	// payload, _ := JSONResponse.GenerateJson(w, "message", templates)
+	payload, err := json.Marshal(templates)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }

@@ -56,14 +56,6 @@ definitions:
       message:
         type: string
     type: object
-  handlers.SwaggerStringList:
-    properties:
-      message:
-        description: success
-        items:
-          type: string
-        type: array
-    type: object
   handlers.SwaggerSuccess:
     properties:
       message:
@@ -274,7 +266,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.SwaggerStringList'
+            items:
+              type: string
+            type: array
         "500":
           description: Internal Server Error
           schema:
