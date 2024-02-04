@@ -91,4 +91,5 @@ func main() {
 	if err != nil {
 		logInternal.Fatal("could not start the REST API server: " + err.Error())
 	}
+	logInternal.Info("The REST APIv2 is now running on :4000")
 }
