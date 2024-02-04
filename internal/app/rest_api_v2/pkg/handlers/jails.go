@@ -20,7 +20,7 @@ import (
 // @Failure 500 {object} SwaggerError
 // @Router /jail/all [get]
 func JailList(w http.ResponseWriter, r *http.Request) {
-	if ApiAuth.CheckAnyUser(r) {
+	if !ApiAuth.CheckAnyUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
 	}
@@ -50,7 +50,7 @@ func JailList(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} SwaggerError
 // @Router /jail/templates [get]
 func JailListTemplates(w http.ResponseWriter, r *http.Request) {
-	if ApiAuth.CheckRestUser(r) {
+	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
 	}
@@ -82,7 +82,7 @@ func JailListTemplates(w http.ResponseWriter, r *http.Request) {
 // @Param jail_name path string true "Jail Name"
 // @Router /jail/info/{jail_name} [get]
 func JailInfo(w http.ResponseWriter, r *http.Request) {
-	if ApiAuth.CheckAnyUser(r) {
+	if !ApiAuth.CheckAnyUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
 	}
@@ -116,7 +116,7 @@ func JailInfo(w http.ResponseWriter, r *http.Request) {
 // @Param jail_name path string true "Jail Name"
 // @Router /jail/start/{jail_name} [post]
 func JailStart(w http.ResponseWriter, r *http.Request) {
-	if ApiAuth.CheckAnyUser(r) {
+	if !ApiAuth.CheckAnyUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
 	}
@@ -145,7 +145,7 @@ func JailStart(w http.ResponseWriter, r *http.Request) {
 // @Param jail_name path string true "Jail Name"
 // @Router /jail/stop/{jail_name} [post]
 func JailStop(w http.ResponseWriter, r *http.Request) {
-	if ApiAuth.CheckAnyUser(r) {
+	if !ApiAuth.CheckAnyUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
 	}
@@ -174,7 +174,7 @@ func JailStop(w http.ResponseWriter, r *http.Request) {
 // @Param jail_name path string true "Jail Name"
 // @Router /jail/destroy/{jail_name} [delete]
 func JailDestroy(w http.ResponseWriter, r *http.Request) {
-	if ApiAuth.CheckRestUser(r) {
+	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
 	}
