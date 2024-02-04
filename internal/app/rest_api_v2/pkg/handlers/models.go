@@ -10,3 +10,8 @@ type SwaggerError struct {
 type SwaggerSuccess struct {
 	Message string `json:"message"` // success
 }
+
+// Purely Swagger related object, not used anywhere else in the codebase
+type SwaggerStringList struct {
+	Message []string `json:"message"` // success
+}

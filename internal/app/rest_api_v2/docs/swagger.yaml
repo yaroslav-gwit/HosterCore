@@ -56,6 +56,14 @@ definitions:
       message:
         type: string
     type: object
+  handlers.SwaggerStringList:
+    properties:
+      message:
+        description: success
+        items:
+          type: string
+        type: array
+    type: object
   handlers.SwaggerSuccess:
     properties:
       message:
@@ -166,7 +174,7 @@ paths:
       - Jails
   /jail/destroy/{jail_name}:
     delete:
-      description: Destroy a specific Jail using it's name as a parameter. `DANGER`
+      description: Destroy a specific Jail using it's name as a parameter.<br>`DANGER`
         - destructive operation!
       parameters:
       - description: Jail Name
@@ -255,6 +263,23 @@ paths:
           schema:
             $ref: '#/definitions/handlers.SwaggerError'
       summary: Stop a specific Jail.
+      tags:
+      - Jails
+  /jail/templates:
+    get:
+      description: Get the list of all Jail templates.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerStringList'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      summary: List all Jail templates.
       tags:
       - Jails
 swagger: "2.0"

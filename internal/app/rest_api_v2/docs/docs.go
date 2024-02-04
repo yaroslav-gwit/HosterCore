@@ -163,7 +163,7 @@ const docTemplate = `{
         },
         "/jail/destroy/{jail_name}": {
             "delete": {
-                "description": "Destroy a specific Jail using it's name as a parameter. ` + "`" + `DANGER` + "`" + ` - destructive operation!",
+                "description": "Destroy a specific Jail using it's name as a parameter.\u003cbr\u003e` + "`" + `DANGER` + "`" + ` - destructive operation!",
                 "produces": [
                     "application/json"
                 ],
@@ -300,6 +300,32 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/jail/templates": {
+            "get": {
+                "description": "Get the list of all Jail templates.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "List all Jail templates.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerStringList"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -385,6 +411,18 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "handlers.SwaggerStringList": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "success",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

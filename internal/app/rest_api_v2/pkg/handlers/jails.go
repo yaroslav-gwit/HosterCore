@@ -35,6 +35,25 @@ func JailList(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Tags Jails
+// @Summary List all Jail templates.
+// @Description Get the list of all Jail templates.
+// @Produce json
+// @Success 200 {object} SwaggerStringList
+// @Failure 500 {object} SwaggerError
+// @Router /jail/templates [get]
+func JailListTemplates(w http.ResponseWriter, r *http.Request) {
+	templates, err := HosterJailUtils.ListTemplates()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", templates)
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags Jails
 // @Summary Get Jail info.
 // @Description Get Jail info.
 // @Produce json
@@ -110,7 +129,7 @@ func JailStop(w http.ResponseWriter, r *http.Request) {
 
 // @Tags Jails
 // @Summary Destroy a specific Jail.
-// @Description Destroy a specific Jail using it's name as a parameter. `DANGER` - destructive operation!
+// @Description Destroy a specific Jail using it's name as a parameter.<br>`DANGER` - destructive operation!
 // @Produce json
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
