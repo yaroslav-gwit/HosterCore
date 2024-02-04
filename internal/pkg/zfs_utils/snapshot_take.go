@@ -14,8 +14,9 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// Takes a new snapshot, and returns the name of the new snapshot, list of the removed snapshots, or an error
-// Useful for scheduling the automated snapshot jobs
+// Takes a new snapshot, returns the name of the new snapshot, list of the removed snapshots, and/or an error.
+//
+// Useful for scheduling the automated snapshot jobs.
 func TakeScheduledSnapshot(dataset string, snapshotType string, keep int) (snapshotName string, removedSnapshots []string, e error) {
 	snapshotTypes := []string{"replication", "custom", "frequent", "hourly", "daily", "weekly", "monthly", "yearly"}
 	if slices.Contains(snapshotTypes, snapshotType) {
