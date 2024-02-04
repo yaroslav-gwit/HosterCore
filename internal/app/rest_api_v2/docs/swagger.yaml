@@ -161,6 +161,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
       summary: List all Jails.
       tags:
       - Jails
@@ -185,6 +187,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
       summary: Destroy a specific Jail.
       tags:
       - Jails
@@ -208,6 +212,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
       summary: Get Jail info.
       tags:
       - Jails
@@ -231,6 +237,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
       summary: Start a specific Jail.
       tags:
       - Jails
@@ -254,6 +262,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
       summary: Stop a specific Jail.
       tags:
       - Jails
@@ -273,6 +283,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
       summary: List all Jail templates.
       tags:
       - Jails

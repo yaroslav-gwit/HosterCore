@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	HosterJail "HosterCore/internal/pkg/hoster/jail"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
@@ -14,10 +15,16 @@ import (
 // @Summary List all Jails.
 // @Description Get the list of all Jails, including the information about them.
 // @Produce json
+// @Security BasicAuth
 // @Success 200 {object} []HosterJailUtils.JailApi
 // @Failure 500 {object} SwaggerError
 // @Router /jail/all [get]
 func JailList(w http.ResponseWriter, r *http.Request) {
+	if ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+	}
+
 	jails, err := HosterJailUtils.ListJsonApi()
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
@@ -38,10 +45,16 @@ func JailList(w http.ResponseWriter, r *http.Request) {
 // @Summary List all Jail templates.
 // @Description Get the list of all Jail templates.
 // @Produce json
+// @Security BasicAuth
 // @Success 200 {array} string
 // @Failure 500 {object} SwaggerError
 // @Router /jail/templates [get]
 func JailListTemplates(w http.ResponseWriter, r *http.Request) {
+	if ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+	}
+
 	templates, err := HosterJailUtils.ListTemplates()
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
@@ -63,11 +76,17 @@ func JailListTemplates(w http.ResponseWriter, r *http.Request) {
 // @Summary Get Jail info.
 // @Description Get Jail info.
 // @Produce json
+// @Security BasicAuth
 // @Success 200 {object} HosterJailUtils.JailApi
 // @Failure 500 {object} SwaggerError
 // @Param jail_name path string true "Jail Name"
 // @Router /jail/info/{jail_name} [get]
 func JailInfo(w http.ResponseWriter, r *http.Request) {
+	if ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+	}
+
 	vars := mux.Vars(r)
 	jailName := vars["jail_name"]
 
@@ -91,11 +110,17 @@ func JailInfo(w http.ResponseWriter, r *http.Request) {
 // @Summary Start a specific Jail.
 // @Description Start a specific Jail using it's name as a parameter.
 // @Produce json
+// @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Param jail_name path string true "Jail Name"
 // @Router /jail/start/{jail_name} [post]
 func JailStart(w http.ResponseWriter, r *http.Request) {
+	if ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+	}
+
 	vars := mux.Vars(r)
 	jailName := vars["jail_name"]
 
@@ -114,11 +139,17 @@ func JailStart(w http.ResponseWriter, r *http.Request) {
 // @Summary Stop a specific Jail.
 // @Description Stop a specific Jail using it's name as a parameter.
 // @Produce json
+// @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Param jail_name path string true "Jail Name"
 // @Router /jail/stop/{jail_name} [post]
 func JailStop(w http.ResponseWriter, r *http.Request) {
+	if ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+	}
+
 	vars := mux.Vars(r)
 	jailName := vars["jail_name"]
 
@@ -137,11 +168,17 @@ func JailStop(w http.ResponseWriter, r *http.Request) {
 // @Summary Destroy a specific Jail.
 // @Description Destroy a specific Jail using it's name as a parameter.<br>`DANGER` - destructive operation!
 // @Produce json
+// @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Param jail_name path string true "Jail Name"
 // @Router /jail/destroy/{jail_name} [delete]
 func JailDestroy(w http.ResponseWriter, r *http.Request) {
+	if ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+	}
+
 	vars := mux.Vars(r)
 	jailName := vars["jail_name"]
 

@@ -134,6 +134,11 @@ const docTemplate = `{
         },
         "/jail/all": {
             "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Get the list of all Jails, including the information about them.",
                 "produces": [
                     "application/json"
@@ -163,6 +168,11 @@ const docTemplate = `{
         },
         "/jail/destroy/{jail_name}": {
             "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Destroy a specific Jail using it's name as a parameter.\u003cbr\u003e` + "`" + `DANGER` + "`" + ` - destructive operation!",
                 "produces": [
                     "application/json"
@@ -198,6 +208,11 @@ const docTemplate = `{
         },
         "/jail/info/{jail_name}": {
             "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Get Jail info.",
                 "produces": [
                     "application/json"
@@ -233,6 +248,11 @@ const docTemplate = `{
         },
         "/jail/start/{jail_name}": {
             "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Start a specific Jail using it's name as a parameter.",
                 "produces": [
                     "application/json"
@@ -268,6 +288,11 @@ const docTemplate = `{
         },
         "/jail/stop/{jail_name}": {
             "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Stop a specific Jail using it's name as a parameter.",
                 "produces": [
                     "application/json"
@@ -303,6 +328,11 @@ const docTemplate = `{
         },
         "/jail/templates": {
             "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Get the list of all Jail templates.",
                 "produces": [
                     "application/json"
