@@ -167,6 +167,12 @@ paths:
   /jail/info/{jail_name}:
     get:
       description: Get Jail info.
+      parameters:
+      - description: Jail Name
+        in: path
+        name: jail_name
+        required: true
+        type: string
       produces:
       - application/json
       responses:

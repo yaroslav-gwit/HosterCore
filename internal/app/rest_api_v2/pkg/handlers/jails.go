@@ -38,6 +38,7 @@ func JailList(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Success 200 {object} HosterJailUtils.JailApi
 // @Failure 500 {object} SwaggerError
+// @Param jail_name path string true "Jail Name"
 // @Router /jail/info/{jail_name} [get]
 func JailInfo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

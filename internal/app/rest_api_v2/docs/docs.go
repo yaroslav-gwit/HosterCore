@@ -171,6 +171,15 @@ const docTemplate = `{
                     "Jails"
                 ],
                 "summary": "Get Jail info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Jail Name",
+                        "name": "jail_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
