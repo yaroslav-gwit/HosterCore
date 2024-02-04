@@ -216,7 +216,14 @@ func JailDeploy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	input := HosterJail.DeployInput{}
-	err := HosterJail.Deploy(input)
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = HosterJail.Deploy(input)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
