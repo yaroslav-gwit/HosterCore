@@ -63,6 +63,8 @@ func main() {
 	r.HandleFunc("/api/v2/health/auth/ha", handlers.HealthCheckHaAuth).Methods("GET")
 	r.HandleFunc("/api/v2/health/auth/any", handlers.HealthCheckAnyAuth).Methods("GET")
 	r.HandleFunc("/api/v2/health/auth/regular", handlers.HealthCheckRegularAuth).Methods("GET")
+	// Jails
+	r.HandleFunc("/api/v2/jail/all", handlers.JailList).Methods("GET")
 
 	// Swagger docs
 	r.PathPrefix("/api/v2/swagger/").Handler(httpSwagger.Handler(

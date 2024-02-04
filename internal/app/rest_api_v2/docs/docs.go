@@ -131,9 +131,111 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/vm/all": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Get the list of all Jails, including the information about them.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/HosterJailUtils.JailApi"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "HosterJailUtils.JailApi": {
+            "type": "object",
+            "properties": {
+                "backup": {
+                    "type": "boolean"
+                },
+                "config_file_append": {
+                    "type": "string"
+                },
+                "cpu_limit_percent": {
+                    "type": "integer"
+                },
+                "current_host": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "dns_server": {
+                    "type": "string"
+                },
+                "encrypted": {
+                    "type": "boolean"
+                },
+                "ip_address": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "network": {
+                    "type": "string"
+                },
+                "parent": {
+                    "type": "string"
+                },
+                "production": {
+                    "type": "boolean"
+                },
+                "ram_limit": {
+                    "type": "string"
+                },
+                "release": {
+                    "type": "string"
+                },
+                "running": {
+                    "type": "boolean"
+                },
+                "shutdown_script": {
+                    "type": "string"
+                },
+                "space_free_b": {
+                    "type": "integer"
+                },
+                "space_free_h": {
+                    "type": "string"
+                },
+                "space_used_b": {
+                    "type": "integer"
+                },
+                "space_used_h": {
+                    "type": "string"
+                },
+                "startup_script": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "uptime": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.Models_SimpleSuccess": {
             "type": "object",
             "properties": {
@@ -164,7 +266,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/v2",
 	Schemes:          []string{},
 	Title:            "Hoster Node REST API Docs",
-	Description:      "REST API documentation for the `Hoster` nodes. This HTTP endpoint located directly on the `Hoster` node.<br>Please, take some extra care with the things you execute here, because many of them can be destructive and non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).",
+	Description:      "REST API documentation for the `Hoster` nodes. This HTTP endpoint is located directly on the `Hoster` node.<br>Please, take some extra care with the things you execute here, because many of them can be destructive and non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
