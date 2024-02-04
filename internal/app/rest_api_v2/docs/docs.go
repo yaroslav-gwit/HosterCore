@@ -139,7 +139,7 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Get the list of all Jails, including the information about them.",
+                "description": "Get the list of all Jails, including the information about them.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
                 "produces": [
                     "application/json"
                 ],
@@ -173,7 +173,7 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Deploy a new Jail.",
+                "description": "Deploy a new Jail using a set of defined parameters.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
                 "produces": [
                     "application/json"
                 ],
@@ -215,7 +215,7 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Destroy a specific Jail using it's name as a parameter.\u003cbr\u003e` + "`" + `DANGER` + "`" + ` - destructive operation!",
+                "description": "Destroy a specific Jail using it's name as a parameter.\u003cbr\u003e` + "`" + `DANGER` + "`" + ` - destructive operation!\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
                 "produces": [
                     "application/json"
                 ],
@@ -255,7 +255,7 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Get Jail info.",
+                "description": "Get Jail info.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
                 "produces": [
                     "application/json"
                 ],
@@ -295,7 +295,7 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Start a specific Jail using it's name as a parameter.",
+                "description": "Start a specific Jail using it's name as a parameter.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
                 "produces": [
                     "application/json"
                 ],
@@ -335,7 +335,7 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Stop a specific Jail using it's name as a parameter.",
+                "description": "Stop a specific Jail using it's name as a parameter.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
                 "produces": [
                     "application/json"
                 ],
@@ -375,7 +375,7 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Get the list of all Jail templates.",
+                "description": "Get the list of all Jail templates.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
                 "produces": [
                     "application/json"
                 ],

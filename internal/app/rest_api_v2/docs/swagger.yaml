@@ -166,7 +166,8 @@ paths:
       - Health
   /jail/all:
     get:
-      description: Get the list of all Jails, including the information about them.
+      description: 'Get the list of all Jails, including the information about them.<br>`AUTH`:
+        Both users are allowed.'
       produces:
       - application/json
       responses:
@@ -187,7 +188,8 @@ paths:
       - Jails
   /jail/deploy:
     post:
-      description: Deploy a new Jail.
+      description: 'Deploy a new Jail using a set of defined parameters.<br>`AUTH`:
+        Only `rest` user is allowed.'
       parameters:
       - description: Request payload
         in: body
@@ -213,8 +215,8 @@ paths:
       - Jails
   /jail/destroy/{jail_name}:
     delete:
-      description: Destroy a specific Jail using it's name as a parameter.<br>`DANGER`
-        - destructive operation!
+      description: 'Destroy a specific Jail using it''s name as a parameter.<br>`DANGER`
+        - destructive operation!<br>`AUTH`: Only `rest` user is allowed.'
       parameters:
       - description: Jail Name
         in: path
@@ -239,7 +241,7 @@ paths:
       - Jails
   /jail/info/{jail_name}:
     get:
-      description: Get Jail info.
+      description: 'Get Jail info.<br>`AUTH`: Both users are allowed.'
       parameters:
       - description: Jail Name
         in: path
@@ -264,7 +266,8 @@ paths:
       - Jails
   /jail/start/{jail_name}:
     post:
-      description: Start a specific Jail using it's name as a parameter.
+      description: 'Start a specific Jail using it''s name as a parameter.<br>`AUTH`:
+        Both users are allowed.'
       parameters:
       - description: Jail Name
         in: path
@@ -289,7 +292,8 @@ paths:
       - Jails
   /jail/stop/{jail_name}:
     post:
-      description: Stop a specific Jail using it's name as a parameter.
+      description: 'Stop a specific Jail using it''s name as a parameter.<br>`AUTH`:
+        Both users are allowed.'
       parameters:
       - description: Jail Name
         in: path
@@ -314,7 +318,8 @@ paths:
       - Jails
   /jail/templates:
     get:
-      description: Get the list of all Jail templates.
+      description: 'Get the list of all Jail templates.<br>`AUTH`: Only `rest` user
+        is allowed.'
       produces:
       - application/json
       responses:

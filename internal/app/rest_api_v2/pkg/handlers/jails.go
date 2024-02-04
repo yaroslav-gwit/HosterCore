@@ -13,7 +13,7 @@ import (
 
 // @Tags Jails
 // @Summary List all Jails.
-// @Description Get the list of all Jails, including the information about them.
+// @Description Get the list of all Jails, including the information about them.<br>`AUTH`: Both users are allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} []HosterJailUtils.JailApi
@@ -44,7 +44,7 @@ func JailList(w http.ResponseWriter, r *http.Request) {
 
 // @Tags Jails
 // @Summary List all Jail templates.
-// @Description Get the list of all Jail templates.
+// @Description Get the list of all Jail templates.<br>`AUTH`: Only `rest` user is allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {array} string
@@ -76,7 +76,7 @@ func JailListTemplates(w http.ResponseWriter, r *http.Request) {
 
 // @Tags Jails
 // @Summary Get Jail info.
-// @Description Get Jail info.
+// @Description Get Jail info.<br>`AUTH`: Both users are allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} HosterJailUtils.JailApi
@@ -111,7 +111,7 @@ func JailInfo(w http.ResponseWriter, r *http.Request) {
 
 // @Tags Jails
 // @Summary Start a specific Jail.
-// @Description Start a specific Jail using it's name as a parameter.
+// @Description Start a specific Jail using it's name as a parameter.<br>`AUTH`: Both users are allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
@@ -141,7 +141,7 @@ func JailStart(w http.ResponseWriter, r *http.Request) {
 
 // @Tags Jails
 // @Summary Stop a specific Jail.
-// @Description Stop a specific Jail using it's name as a parameter.
+// @Description Stop a specific Jail using it's name as a parameter.<br>`AUTH`: Both users are allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
@@ -171,7 +171,7 @@ func JailStop(w http.ResponseWriter, r *http.Request) {
 
 // @Tags Jails
 // @Summary Destroy a specific Jail.
-// @Description Destroy a specific Jail using it's name as a parameter.<br>`DANGER` - destructive operation!
+// @Description Destroy a specific Jail using it's name as a parameter.<br>`DANGER` - destructive operation!<br>`AUTH`: Only `rest` user is allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
@@ -201,7 +201,7 @@ func JailDestroy(w http.ResponseWriter, r *http.Request) {
 
 // @Tags Jails
 // @Summary Deploy a new Jail.
-// @Description Deploy a new Jail.
+// @Description Deploy a new Jail using a set of defined parameters.<br>`AUTH`: Only `rest` user is allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
