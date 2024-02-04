@@ -81,14 +81,13 @@ func main() {
 	// Catch-all route for 404 errors
 	r.NotFoundHandler = r.NewRoute().HandlerFunc(handlers.NotFoundHandler).GetHandler()
 
+	logInternal.Info("The REST APIv2 is bound to :4000")
 	http.Handle("/", r)
 	srv := &http.Server{
 		Addr:         "0.0.0.0:4000",
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 	}
-
-	logInternal.Info("The REST APIv2 is bound to :4000")
 	err := srv.ListenAndServe()
 	if err != nil {
 		logInternal.Fatal("could not start the REST API server: " + err.Error())
