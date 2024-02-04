@@ -88,8 +88,8 @@ func main() {
 		ReadTimeout:  5 * time.Second,
 	}
 
-	err := srv.ListenAndServe()
 	logInternal.Info("The REST APIv2 is bound to :4000")
+	err := srv.ListenAndServe()
 	if err != nil {
 		logInternal.Fatal("could not start the REST API server: " + err.Error())
 	}
