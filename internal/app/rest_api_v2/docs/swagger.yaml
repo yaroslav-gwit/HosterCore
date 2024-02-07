@@ -215,8 +215,8 @@ paths:
       - Jails
   /jail/destroy/{jail_name}:
     delete:
-      description: 'Destroy a specific Jail using it''s name as a parameter.<br>`DANGER`
-        - destructive operation!<br>`AUTH`: Only `rest` user is allowed.'
+      description: '`DANGER` - destructive operation!<br><br>Destroy a specific Jail
+        using it''s name as a parameter.<br>`AUTH`: Only `rest` user is allowed.'
       parameters:
       - description: Jail Name
         in: path

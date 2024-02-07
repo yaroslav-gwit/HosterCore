@@ -171,7 +171,7 @@ func JailStop(w http.ResponseWriter, r *http.Request) {
 
 // @Tags Jails
 // @Summary Destroy a specific Jail.
-// @Description Destroy a specific Jail using it's name as a parameter.<br>`DANGER` - destructive operation!<br>`AUTH`: Only `rest` user is allowed.
+// @Description `DANGER` - destructive operation!<br><br>Destroy a specific Jail using it's name as a parameter.<br>`AUTH`: Only `rest` user is allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess

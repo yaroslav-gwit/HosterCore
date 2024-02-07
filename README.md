@@ -37,7 +37,7 @@ To avoid any frustrations, here is the list of things NOT currently supported:
 
 Coming soon (or at least at some point 😄):
 
-- Hyper Converged setup using `HAST` and `OpenZFS`
+- Hyper Converged setup using `HAST` and `OpenZFS` (sync vs. async replication)
 - Generally available WebUI for VM and Jail management
 - The ability to specify a `docker-compose.yaml` file location during the VM deployment (`hoster vm deploy --from-docker-compose compose.yaml`) - it will be automatically picked up by `docker` and executed in a background `tmux` session (you can easily check if the `docker` deployment was successful using the `tmux a` command later on, when you SSH into the VM)
 - Publicly available `Grafana` dashboards
@@ -47,6 +47,7 @@ Coming soon (or at least at some point 😄):
 - Basic integration with `Tailscale`, to allow the automated routing updates for the remote users and admins
 - `LazyHoster` (an interface similar to `k9s` or `lazygit`) - a CLI utility to control the whole fleet of machines over the `REST API` (for the WebUI haters 😎)
 - More VM and Jail templates
+- The ability to run `Hoster` in a Jail - this will allow to split a single hardware server into a multi-user virtualization platform, with the ability to apply a highly granular control of just how much resources each user can utilize within their own Jail
 
 ## Are there any plans to develop a WebUI?
 

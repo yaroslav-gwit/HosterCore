@@ -215,7 +215,7 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Destroy a specific Jail using it's name as a parameter.\u003cbr\u003e` + "`" + `DANGER` + "`" + ` - destructive operation!\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "description": "` + "`" + `DANGER` + "`" + ` - destructive operation!\u003cbr\u003e\u003cbr\u003eDestroy a specific Jail using it's name as a parameter.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
                 "produces": [
                     "application/json"
                 ],
