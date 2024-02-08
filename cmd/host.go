@@ -2,6 +2,8 @@ package cmd
 
 import (
 	FreeBSDOsInfo "HosterCore/internal/pkg/freebsd/info"
+	HosterCliJson "HosterCore/internal/pkg/hoster/cli_json"
+	HosterTables "HosterCore/internal/pkg/hoster/cli_tables"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -27,7 +29,13 @@ var (
 		Long:  `Host related operations.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
-			hostMain()
+
+			if jsonHostInfoOutput || jsonPrettyHostInfoOutput {
+				HosterCliJson.GenerateHostInfoJson(jsonPrettyHostInfoOutput)
+			} else {
+				HosterTables.GenerateHostInfoTable(false)
+			}
+			// hostMain()
 		},
 	}
 )

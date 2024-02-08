@@ -31,7 +31,7 @@ func init() {
 	if logStdOut == "false" && len(logFile) > 2 {
 		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
-			FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "DNS_SERVER: could not use this file for logging "+logFile+", falling back to STDOUT")
+			FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "REST API: could not use this file for logging "+logFile+", falling back to STDOUT")
 		} else {
 			logInternal.SetOutput(file)
 		}
@@ -67,7 +67,7 @@ func main() {
 	r.HandleFunc("/api/v2/host/info", handlers.HostInfo).Methods(http.MethodGet)
 	// Jails
 	r.HandleFunc("/api/v2/jail/all", handlers.JailList).Methods(http.MethodGet)
-	r.HandleFunc("/api/v2/jail/templates", handlers.JailListTemplates).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/jail/template/list", handlers.JailListTemplates).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/jail/info/{jail_name}", handlers.JailInfo).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/jail/start/{jail_name}", handlers.JailStart).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/jail/stop/{jail_name}", handlers.JailStop).Methods(http.MethodPost)

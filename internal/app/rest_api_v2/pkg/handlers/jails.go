@@ -49,7 +49,7 @@ func JailList(w http.ResponseWriter, r *http.Request) {
 // @Security BasicAuth
 // @Success 200 {array} string
 // @Failure 500 {object} SwaggerError
-// @Router /jail/templates [get]
+// @Router /jail/template/list [get]
 func JailListTemplates(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
