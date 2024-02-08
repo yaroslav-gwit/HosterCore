@@ -34,20 +34,24 @@ func GetSwapInfo() (r SwapInfo, e error) {
 	// Device              1K-blocks     Used     Avail       Capacity
 	// /dev/mmcsd0p3.eli   2097152        0       2097152     0%
 
-	var swapInfoList []string
-	reSplitSpace := regexp.MustCompile(`\s+`)
-	for _, v := range strings.Split(string(out), "\n") {
+	var tmp []string
+	for i, v := range strings.Split(string(out), "\n") {
+		if i == 0 {
+			continue
+		}
+
+		v = strings.TrimSpace(v)
 		if len(v) < 1 {
 			continue
 		}
-		for _, vv := range reSplitSpace.Split(v, -1) {
-			if len(vv) > 0 {
-				swapInfoList = append(swapInfoList, vv)
-			}
-		}
+
+		tmp = append(tmp, v)
 	}
 
-	r.SwapOverallBytes, err = strconv.ParseUint(swapInfoList[1], 10, 64)
+	reSplitSpace := regexp.MustCompile(`\s+`)
+	swapInfo := reSplitSpace.Split(tmp[len(tmp)-1], -1)
+
+	r.SwapOverallBytes, err = strconv.ParseUint(swapInfo[1], 10, 64)
 	if err != nil {
 		r.SwapOverallBytes = 0
 		r.SwapOverallHuman = "0B"
@@ -56,7 +60,7 @@ func GetSwapInfo() (r SwapInfo, e error) {
 		r.SwapOverallHuman = byteconversion.BytesToHuman(r.SwapOverallBytes)
 	}
 
-	r.SwapUsedBytes, err = strconv.ParseUint(swapInfoList[2], 10, 64)
+	r.SwapUsedBytes, err = strconv.ParseUint(swapInfo[2], 10, 64)
 	if err != nil {
 		r.SwapUsedBytes = 0
 		r.SwapUsedHuman = "0B"
@@ -65,7 +69,7 @@ func GetSwapInfo() (r SwapInfo, e error) {
 		r.SwapUsedHuman = byteconversion.BytesToHuman(r.SwapUsedBytes)
 	}
 
-	r.SwapFreeBytes, err = strconv.ParseUint(swapInfoList[3], 10, 64)
+	r.SwapFreeBytes, err = strconv.ParseUint(swapInfo[3], 10, 64)
 	if err != nil {
 		r.SwapFreeBytes = 0
 		r.SwapFreeHuman = "0B"

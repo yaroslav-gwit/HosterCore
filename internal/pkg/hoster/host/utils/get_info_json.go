@@ -10,7 +10,6 @@ import (
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	timeconversion "HosterCore/internal/pkg/time_conversion"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
-	"log"
 	"slices"
 	"sync"
 )
@@ -133,7 +132,7 @@ func GetHostInfo() (r HostInfo, e error) {
 		defer wg.Done()
 		info, err := FreeBSDOsInfo.GetSwapInfo()
 		if err != nil {
-			log.Fatal(err)
+			return
 		}
 		r.SwapInfo = info
 	}()
