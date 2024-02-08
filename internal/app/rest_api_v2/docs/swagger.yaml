@@ -153,6 +153,17 @@ definitions:
       uptime:
         type: string
     type: object
+  handlers.SnapshotInput:
+    properties:
+      jail_name:
+        type: string
+      snapshot_type:
+        type: string
+      snapshots_to_keep:
+        type: integer
+      vm_name:
+        type: string
+    type: object
   handlers.SwaggerError:
     properties:
       id:
@@ -441,7 +452,7 @@ paths:
       summary: Stop a specific Jail.
       tags:
       - Jails
-  /jail/templates:
+  /jail/template/list:
     get:
       description: 'Get the list of all Jail templates.<br>`AUTH`: Only `rest` user
         is allowed.'
@@ -463,4 +474,30 @@ paths:
       summary: List all Jail templates.
       tags:
       - Jails
+  /snapshot/take:
+    post:
+      description: 'Take a new snapshot.<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SnapshotInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Take a new snapshot.
+      tags:
+      - Snapshots
 swagger: "2.0"

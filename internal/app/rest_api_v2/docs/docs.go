@@ -399,7 +399,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/jail/templates": {
+        "/jail/template/list": {
             "get": {
                 "security": [
                     {
@@ -422,6 +422,48 @@ const docTemplate = `{
                             "items": {
                                 "type": "string"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/snapshot/take": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Take a new snapshot.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Snapshots"
+                ],
+                "summary": "Take a new snapshot.",
+                "parameters": [
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SnapshotInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
                         }
                     },
                     "500": {
@@ -664,6 +706,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uptime": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.SnapshotInput": {
+            "type": "object",
+            "properties": {
+                "jail_name": {
+                    "type": "string"
+                },
+                "snapshot_type": {
+                    "type": "string"
+                },
+                "snapshots_to_keep": {
+                    "type": "integer"
+                },
+                "vm_name": {
                     "type": "string"
                 }
             }
