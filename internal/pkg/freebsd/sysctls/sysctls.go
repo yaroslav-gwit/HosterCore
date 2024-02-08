@@ -143,7 +143,7 @@ func SysctlKernHostname() (string, error) {
 }
 
 // Sysctl which returns a kernel boot time.
-func SysctlKernBoottime() (uint64, error) {
+func SysctlKernBoottime() (int64, error) {
 	out, err := exec.Command("/sbin/sysctl", "-nq", "kern.boottime").CombinedOutput()
 	if err != nil {
 		errorString := strings.TrimSpace(string(out)) + "; " + err.Error()
@@ -151,7 +151,7 @@ func SysctlKernBoottime() (uint64, error) {
 	}
 
 	outValue := strings.TrimSpace(string(out))
-	result, err := strconv.ParseUint(outValue, 10, 64)
+	result, err := strconv.ParseInt(outValue, 10, 64)
 	if err != nil {
 		return 0, err
 	}

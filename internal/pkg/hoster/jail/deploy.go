@@ -1,6 +1,7 @@
 package HosterJail
 
 import (
+	FreeBSDOsInfo "HosterCore/internal/pkg/freebsd/info"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	HosterHost "HosterCore/internal/pkg/hoster/host"
 	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
@@ -59,7 +60,7 @@ func Deploy(input DeployInput) error {
 	}
 
 	if len(input.Release) < 1 {
-		input.Release, err = HosterHostUtils.GetMajorFreeBsdRelease()
+		input.Release, err = FreeBSDOsInfo.GetMajorReleaseVersion()
 		if err != nil {
 			return err
 		}
