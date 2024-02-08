@@ -15,13 +15,13 @@ import (
 )
 
 type HostInfo struct {
-	AllVms             int     `json:"all_vms"`
-	LiveVms            int     `json:"live_vms"`
-	BackupVms          int     `json:"backup_vms"`
-	OfflineVms         int     `json:"offline_vms"`
-	OfflineVmsProd     int     `json:"offline_vms_prod"`
-	VCPU2PCURatio      float64 `json:"vcpu_2_pcpu_ratio"`
-	VCPU2PCU           string
+	AllVms             int                    `json:"all_vms"`
+	LiveVms            int                    `json:"live_vms"`
+	BackupVms          int                    `json:"backup_vms"`
+	OfflineVms         int                    `json:"offline_vms"`
+	OfflineVmsProd     int                    `json:"offline_vms_prod"`
+	VCPU2PCURatio      float64                `json:"vcpu_2_pcpu_ratio"`
+	VCPU2PCU           string                 `json:"-"`
 	Hostname           string                 `json:"hostname"`
 	SystemUptime       string                 `json:"system_uptime"`
 	SystemMajorVersion string                 `json:"system_major_version"`
