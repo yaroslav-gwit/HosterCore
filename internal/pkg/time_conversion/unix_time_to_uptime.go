@@ -31,8 +31,8 @@ func UnixTimeToUptime(uptime int64) string {
 	return result
 }
 
-func KernBootToUptime(uptime int64) string {
-	unixTime := time.Unix(uptime, 0)
+func KernBootToUptime(uptime uint64) string {
+	unixTime := time.Unix(int64(uptime), 0)
 
 	timeSince := time.Since(unixTime).Seconds()
 	secondsModulus := int(timeSince) % 60.0

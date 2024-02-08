@@ -143,20 +143,48 @@ func SysctlKernHostname() (string, error) {
 }
 
 // Sysctl which returns a kernel boot time.
-func SysctlKernBoottime() (int64, error) {
+type BootTime struct {
+	Sec   uint64
+	USec  uint64
+	Human string
+}
+
+func SysctlKernBoottime() (r BootTime, e error) {
 	out, err := exec.Command("/sbin/sysctl", "-nq", "kern.boottime").CombinedOutput()
 	if err != nil {
-		errorString := strings.TrimSpace(string(out)) + "; " + err.Error()
-		return 0, errors.New(errorString)
+		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
+		return
 	}
+	// Example output
+	// { sec = 1704469832, usec = 847955 } Fri Jan  5 15:50:32 2024
 
+	reMatchSec := regexp.MustCompile(`{\s+sec\s+=\s+\d+`)
+	reMatchUSec := regexp.MustCompile(`usec\s+=\s+\d+`)
+	reMatchNumber := regexp.MustCompile(`\d+`)
+	reMatchCurly := regexp.MustCompile(`{.*?}`)
 	outValue := strings.TrimSpace(string(out))
-	result, err := strconv.ParseInt(outValue, 10, 64)
-	if err != nil {
-		return 0, err
-	}
 
-	return result, nil
+	secStr := reMatchSec.FindString(outValue)
+	secStr = reMatchNumber.FindString(secStr)
+	secInt, err := strconv.ParseUint(secStr, 10, 64)
+	if err != nil {
+		secInt = 0
+	}
+	r.Sec = secInt
+
+	usecStr := reMatchUSec.FindString(outValue)
+	usecStr = reMatchNumber.FindString(usecStr)
+	usecInt, err := strconv.ParseUint(usecStr, 10, 64)
+	if err != nil {
+		usecInt = 0
+	}
+	r.USec = usecInt
+
+	human := reMatchCurly.ReplaceAllString(outValue, "")
+	human = strings.TrimSpace(human)
+	r.Human = human
+
+	return
 }
 
 // Sysctl which returns a size of the OpenZFS Arc.
