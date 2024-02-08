@@ -63,6 +63,8 @@ func main() {
 	r.HandleFunc("/api/v2/health/auth/ha", handlers.HealthCheckHaAuth).Methods("GET")
 	r.HandleFunc("/api/v2/health/auth/any", handlers.HealthCheckAnyAuth).Methods("GET")
 	r.HandleFunc("/api/v2/health/auth/regular", handlers.HealthCheckRegularAuth).Methods("GET")
+	// Host
+	r.HandleFunc("/api/v2/host/info", handlers.JailList).Methods(http.MethodGet)
 	// Jails
 	r.HandleFunc("/api/v2/jail/all", handlers.JailList).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/jail/templates", handlers.JailListTemplates).Methods(http.MethodGet)

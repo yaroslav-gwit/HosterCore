@@ -132,6 +132,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/host/info": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get Host info.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Host"
+                ],
+                "summary": "Get Host info.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/HosterHostUtils.HostInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/all": {
             "get": {
                 "security": [
@@ -404,6 +435,136 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "FreeBSDOsInfo.ArcInfo": {
+            "type": "object",
+            "properties": {
+                "arc_used_bytes": {
+                    "type": "integer"
+                },
+                "arc_used_human": {
+                    "type": "string"
+                }
+            }
+        },
+        "FreeBSDOsInfo.CpuInfo": {
+            "type": "object",
+            "properties": {
+                "cpu_arch": {
+                    "type": "string"
+                },
+                "cpu_cores": {
+                    "type": "integer"
+                },
+                "cpu_model": {
+                    "type": "string"
+                },
+                "cpu_sockets": {
+                    "type": "integer"
+                },
+                "cpu_threads": {
+                    "type": "integer"
+                },
+                "overall_cpus": {
+                    "type": "integer"
+                }
+            }
+        },
+        "FreeBSDOsInfo.RamInfo": {
+            "type": "object",
+            "properties": {
+                "ram_free_bytes": {
+                    "type": "integer"
+                },
+                "ram_free_human": {
+                    "type": "string"
+                },
+                "ram_overall_bytes": {
+                    "type": "integer"
+                },
+                "ram_overall_human": {
+                    "type": "string"
+                },
+                "ram_used_bytes": {
+                    "type": "integer"
+                },
+                "ram_used_human": {
+                    "type": "string"
+                }
+            }
+        },
+        "FreeBSDOsInfo.SwapInfo": {
+            "type": "object",
+            "properties": {
+                "swap_free_bytes": {
+                    "type": "integer"
+                },
+                "swap_free_human": {
+                    "type": "string"
+                },
+                "swap_overall_bytes": {
+                    "type": "integer"
+                },
+                "swap_overall_human": {
+                    "type": "string"
+                },
+                "swap_used_bytes": {
+                    "type": "integer"
+                },
+                "swap_used_human": {
+                    "type": "string"
+                }
+            }
+        },
+        "HosterHostUtils.HostInfo": {
+            "type": "object",
+            "properties": {
+                "all_vms": {
+                    "type": "integer"
+                },
+                "arc_info": {
+                    "$ref": "#/definitions/FreeBSDOsInfo.ArcInfo"
+                },
+                "backup_vms": {
+                    "type": "integer"
+                },
+                "cpu_info": {
+                    "$ref": "#/definitions/FreeBSDOsInfo.CpuInfo"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "live_vms": {
+                    "type": "integer"
+                },
+                "offline_vms": {
+                    "type": "integer"
+                },
+                "offline_vms_prod": {
+                    "type": "integer"
+                },
+                "ram_info": {
+                    "$ref": "#/definitions/FreeBSDOsInfo.RamInfo"
+                },
+                "swap_info": {
+                    "$ref": "#/definitions/FreeBSDOsInfo.SwapInfo"
+                },
+                "system_major_version": {
+                    "type": "string"
+                },
+                "system_uptime": {
+                    "type": "string"
+                },
+                "vcpu_2_pcpu_ratio": {
+                    "type": "number"
+                },
+                "zpool_list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/zfsutils.ZpoolInfo"
+                    }
+                }
+            }
+        },
         "HosterJail.DeployInput": {
             "type": "object",
             "properties": {
@@ -523,6 +684,38 @@ const docTemplate = `{
             "properties": {
                 "message": {
                     "description": "success",
+                    "type": "string"
+                }
+            }
+        },
+        "zfsutils.ZpoolInfo": {
+            "type": "object",
+            "properties": {
+                "allocated_bytes": {
+                    "type": "integer"
+                },
+                "allocated_human": {
+                    "type": "string"
+                },
+                "fragmentation": {
+                    "type": "integer"
+                },
+                "free_bytes": {
+                    "type": "integer"
+                },
+                "free_human": {
+                    "type": "string"
+                },
+                "healthy": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "size_bytes": {
+                    "type": "integer"
+                },
+                "size_human": {
                     "type": "string"
                 }
             }

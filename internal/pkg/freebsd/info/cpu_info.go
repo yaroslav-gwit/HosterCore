@@ -1,8 +1,13 @@
+// Copyright 2023 Hoster Authors. All rights reserved.
+// Use of this source code is governed by an Apache License 2.0
+// license that can be found in the LICENSE file.
+
 package FreeBSDOsInfo
 
 import (
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	"errors"
+	"fmt"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -10,63 +15,65 @@ import (
 )
 
 type CpuInfo struct {
-	Model        string
-	Architecture string
-	Sockets      int
-	Cores        int
-	Threads      int
-	OverallCpus  int
+	Model        string `json:"cpu_model"`
+	Architecture string `json:"cpu_arch"`
+	Sockets      int    `json:"cpu_sockets"`
+	Cores        int    `json:"cpu_cores"`
+	Threads      int    `json:"cpu_threads"`
+	OverallCpus  int    `json:"overall_cpus"`
 }
 
 // Returns a structured CPU information for your FreeBSD system
-func GetCpuInfo() (CpuInfo, error) {
-	c := CpuInfo{}
+func GetCpuInfo() (r CpuInfo, e error) {
 	reMatchNumber := regexp.MustCompile(`\d+`)
-
 	dmesg, err := DmesgCpuGrep()
 	if err != nil {
-		return c, err
+		e = err
+		return
 	}
 
 	reMatchSockets := regexp.MustCompile(`\s+(\d+)\s+package`)
 	socketsString := reMatchSockets.FindString(dmesg[0])
 	socketsString = reMatchNumber.FindString(socketsString)
-	c.Sockets, err = strconv.Atoi(socketsString)
+	r.Sockets, err = strconv.Atoi(socketsString)
 	if err != nil {
-		return c, errors.New("socket err " + err.Error())
+		e = fmt.Errorf("socket err: %s", err.Error())
+		return
 	}
 
 	reMatchThreads := regexp.MustCompile(`x\s+(\d+)\s+(?:hardware\s+)?threads`)
 	threadsString := reMatchThreads.FindString(dmesg[0])
 	threadsString = reMatchNumber.FindString(threadsString)
-	c.Threads, err = strconv.Atoi(threadsString)
+	r.Threads, err = strconv.Atoi(threadsString)
 	if err != nil {
-		c.Threads = 1
-		// return c, err
+		r.Threads = 1
 	}
 
 	allCpus, err := FreeBSDsysctls.SysctlHwNcpu()
 	if err != nil {
-		return c, err
+		e = err
+		return
 	}
-	c.Cores = allCpus / (c.Threads * c.Sockets)
+	r.Cores = allCpus / (r.Threads * r.Sockets)
 
-	c.Model, err = FreeBSDsysctls.SysctlHwModel()
+	r.Model, err = FreeBSDsysctls.SysctlHwModel()
 	if err != nil {
-		return c, err
+		e = err
+		return
 	}
 
-	c.Architecture, err = FreeBSDsysctls.SysctlHwMachine()
+	r.Architecture, err = FreeBSDsysctls.SysctlHwMachine()
 	if err != nil {
-		return c, err
+		return r, err
 	}
 
-	c.OverallCpus, err = FreeBSDsysctls.SysctlHwNcpu()
+	r.OverallCpus, err = FreeBSDsysctls.SysctlHwNcpu()
 	if err != nil {
-		return c, err
+		e = err
+		return
 	}
 
-	return c, nil
+	return
 }
 
 // Returns a slice of strings from `dmesg.boot` split at a carriage return

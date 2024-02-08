@@ -1,3 +1,7 @@
+// Copyright 2023 Hoster Authors. All rights reserved.
+// Use of this source code is governed by an Apache License 2.0
+// license that can be found in the LICENSE file.
+
 package FreeBSDOsInfo
 
 import (
@@ -6,12 +10,12 @@ import (
 )
 
 type RamInfo struct {
-	RamFreeHuman    string
-	RamFreeBytes    uint64
-	RamUsedHuman    string
-	RamUsedBytes    uint64
-	RamOverallHuman string
-	RamOverallBytes uint64
+	RamFreeHuman    string `json:"ram_free_human"`
+	RamFreeBytes    uint64 `json:"ram_free_bytes"`
+	RamUsedHuman    string `json:"ram_used_human"`
+	RamUsedBytes    uint64 `json:"ram_used_bytes"`
+	RamOverallHuman string `json:"ram_overall_human"`
+	RamOverallBytes uint64 `json:"ram_overall_bytes"`
 }
 
 // Returns a structured RAM information for your FreeBSD system

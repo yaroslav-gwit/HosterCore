@@ -2,13 +2,14 @@ package FreeBSDsysctls
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
-// Sysctl which returns a number of CPUs on a current system (sockets X cores X threads)
+// Sysctl which returns a number of the available CPUs on a current system (sockets*cores*threads).
 func SysctlHwNcpu() (int, error) {
 	out, err := exec.Command("/sbin/sysctl", "-nq", "hw.ncpu").CombinedOutput()
 	if err != nil {
@@ -139,4 +140,39 @@ func SysctlKernHostname() (string, error) {
 	}
 
 	return result, nil
+}
+
+// Sysctl which returns a kernel boot time.
+func SysctlKernBoottime() (uint64, error) {
+	out, err := exec.Command("/sbin/sysctl", "-nq", "kern.boottime").CombinedOutput()
+	if err != nil {
+		errorString := strings.TrimSpace(string(out)) + "; " + err.Error()
+		return 0, errors.New(errorString)
+	}
+
+	outValue := strings.TrimSpace(string(out))
+	result, err := strconv.ParseUint(outValue, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return result, nil
+}
+
+// Sysctl which returns a size of the OpenZFS Arc.
+func SysctlKstatZfsMiscArcstatsSize() (r uint64, e error) {
+	out, err := exec.Command("/sbin/sysctl", "-nq", "kstat.zfs.misc.arcstats.size").CombinedOutput()
+	if err != nil {
+		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
+		return
+	}
+
+	outValue := strings.TrimSpace(string(out))
+	r, err = strconv.ParseUint(outValue, 10, 64)
+	if err != nil {
+		e = err
+		return
+	}
+
+	return
 }

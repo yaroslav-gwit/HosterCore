@@ -13,7 +13,7 @@ import (
 
 type MountPoint struct {
 	DsName     string
-	Mountpoint string
+	Mountpoint string // Example: /tank/vm-encrypted
 	Encrypted  bool
 }
 
