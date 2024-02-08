@@ -144,8 +144,8 @@ func SysctlKernHostname() (string, error) {
 
 // Sysctl which returns a kernel boot time.
 type BootTime struct {
-	Sec   uint64
-	USec  uint64
+	Sec   int64
+	USec  int64
 	Human string
 }
 
@@ -166,7 +166,7 @@ func SysctlKernBoottime() (r BootTime, e error) {
 
 	secStr := reMatchSec.FindString(outValue)
 	secStr = reMatchNumber.FindString(secStr)
-	secInt, err := strconv.ParseUint(secStr, 10, 64)
+	secInt, err := strconv.ParseInt(secStr, 10, 64)
 	if err != nil {
 		secInt = 0
 	}
@@ -174,7 +174,7 @@ func SysctlKernBoottime() (r BootTime, e error) {
 
 	usecStr := reMatchUSec.FindString(outValue)
 	usecStr = reMatchNumber.FindString(usecStr)
-	usecInt, err := strconv.ParseUint(usecStr, 10, 64)
+	usecInt, err := strconv.ParseInt(usecStr, 10, 64)
 	if err != nil {
 		usecInt = 0
 	}
