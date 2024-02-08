@@ -33,7 +33,6 @@ type HostInfo struct {
 }
 
 func GetHostInfo() (r HostInfo, e error) {
-	// var err error
 	var wg = &sync.WaitGroup{}
 	r.Hostname, _ = FreeBSDsysctls.SysctlKernHostname()
 
@@ -59,20 +58,17 @@ func GetHostInfo() (r HostInfo, e error) {
 			r.AllVms += 1
 			if slices.Contains(list, v.VmName) {
 				r.LiveVms += 1
-			} else {
+				cpusUsed = cpusUsed + (r.CpuInfo.Sockets * r.CpuInfo.Cores * r.CpuInfo.Threads)
+			} else if conf.ParentHost == r.Hostname {
 				r.OfflineVms += 1
 				if conf.LiveStatus == "prod" || conf.LiveStatus == "production" {
 					r.OfflineVmsProd += 1
 				}
-			}
-
-			if conf.ParentHost != r.Hostname {
+			} else {
 				r.BackupVms += 1
 			}
-
-			cpusUsed = cpusUsed + (r.CpuInfo.Sockets * r.CpuInfo.Cores * r.CpuInfo.Threads)
-			_, r.VCPU2PCURatio = GetPc2VcRatioLazy(cpusUsed)
 		}
+		_, r.VCPU2PCURatio = GetPc2VcRatioLazy(cpusUsed)
 	}()
 
 	wg.Add(1)
