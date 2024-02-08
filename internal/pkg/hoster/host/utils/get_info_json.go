@@ -77,7 +77,7 @@ func GetHostInfo() (r HostInfo, e error) {
 		if err != nil {
 			r.SystemUptime = "0s"
 		}
-		r.SystemUptime = timeconversion.KernBootToUptime(bootTime.USec)
+		r.SystemUptime = timeconversion.KernBootToUptime(bootTime.Sec)
 
 		ver, err := FreeBSDOsInfo.GetMajorReleaseVersion()
 		if err != nil {
