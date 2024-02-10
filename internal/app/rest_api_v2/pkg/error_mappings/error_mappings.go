@@ -11,6 +11,7 @@ const (
 	SnapTypeDoesntExist
 	JailDoesntExist
 	ResourceDoesntExist
+	SnapshotDoesntExist
 )
 
 var statusStrings = map[Status]string{
@@ -20,6 +21,7 @@ var statusStrings = map[Status]string{
 	SnapTypeDoesntExist: "snapshot type doesn't exist",
 	JailDoesntExist:     "jail doesn't exist",
 	ResourceDoesntExist: "resource doesn't exist",
+	SnapshotDoesntExist: "snapshot doesn't exist",
 }
 
 // String returns the string representation of the Status value.

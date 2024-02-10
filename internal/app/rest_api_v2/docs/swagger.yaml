@@ -155,14 +155,12 @@ definitions:
     type: object
   handlers.SnapshotInput:
     properties:
-      jail_name:
+      res_name:
         type: string
       snapshot_type:
         type: string
       snapshots_to_keep:
         type: integer
-      vm_name:
-        type: string
     type: object
   handlers.SwaggerError:
     properties:
@@ -523,9 +521,36 @@ paths:
       summary: List all snapshots for any given VM or a Jail.
       tags:
       - Snapshots
+  /snapshot/destroy/{snapshot_name}:
+    delete:
+      description: 'Destroy a snapshot for any given VM or a Jail.<br>`AUTH`: Only
+        `rest` user is allowed.'
+      parameters:
+      - description: Snapshot Name
+        in: path
+        name: res_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Destroy a snapshot for any given VM or a Jail.
+      tags:
+      - Snapshots
   /snapshot/take:
     post:
-      description: 'Take a new snapshot.<br>`AUTH`: Only `rest` user is allowed.'
+      description: 'Take a new VM or Jail snapshot, using the resource name (Jail
+        name or a VM name).<br>`AUTH`: Only `rest` user is allowed.'
       parameters:
       - description: Request payload
         in: body

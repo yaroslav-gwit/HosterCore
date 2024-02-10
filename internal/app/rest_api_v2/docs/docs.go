@@ -476,6 +476,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/snapshot/destroy/{snapshot_name}": {
+            "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Destroy a snapshot for any given VM or a Jail.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Snapshots"
+                ],
+                "summary": "Destroy a snapshot for any given VM or a Jail.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Snapshot Name",
+                        "name": "res_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/snapshot/take": {
             "post": {
                 "security": [
@@ -483,7 +523,7 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Take a new snapshot.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "description": "Take a new VM or Jail snapshot, using the resource name (Jail name or a VM name).\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
                 "produces": [
                     "application/json"
                 ],
@@ -756,7 +796,7 @@ const docTemplate = `{
         "handlers.SnapshotInput": {
             "type": "object",
             "properties": {
-                "jail_name": {
+                "res_name": {
                     "type": "string"
                 },
                 "snapshot_type": {
@@ -764,9 +804,6 @@ const docTemplate = `{
                 },
                 "snapshots_to_keep": {
                     "type": "integer"
-                },
-                "vm_name": {
-                    "type": "string"
                 }
             }
         },

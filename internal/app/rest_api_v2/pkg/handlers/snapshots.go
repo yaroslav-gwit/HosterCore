@@ -19,15 +19,14 @@ import (
 
 type SnapshotInput struct {
 	SnapshotsToKeep int    `json:"snapshots_to_keep"`
-	VmName          string `json:"vm_name"`
-	JailName        string `json:"jail_name"`
+	ResourceName    string `json:"res_name"`
 	SnapshotType    string `json:"snapshot_type"`
 	SnapshotDataset string `json:"-"`
 }
 
 // @Tags Snapshots
 // @Summary Take a new snapshot.
-// @Description Take a new snapshot.<br>`AUTH`: Only `rest` user is allowed.
+// @Description Take a new VM or Jail snapshot, using the resource name (Jail name or a VM name).<br>`AUTH`: Only `rest` user is allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
@@ -49,39 +48,30 @@ func SnapshotTake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(input.JailName) < 1 && len(input.VmName) < 1 {
-		ReportError(w, http.StatusInternalServerError, "please specify if you want to snapshot VM or a Jail")
+	jails, err := HosterJailUtils.ListAllSimple()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	if len(input.JailName) > 0 {
-		jails, err := HosterJailUtils.ListAllSimple()
-		if err != nil {
-			ReportError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-		for _, v := range jails {
-			if v.JailName == input.JailName {
-				input.SnapshotDataset = v.DsName + "/" + v.JailName
-			}
+	for _, v := range jails {
+		if v.JailName == input.ResourceName {
+			input.SnapshotDataset = v.DsName + "/" + v.JailName
 		}
 	}
 
-	if len(input.VmName) > 0 {
-		vms, err := HosterVmUtils.ListAllSimple()
-		if err != nil {
-			ReportError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-		for _, v := range vms {
-			if v.VmName == input.VmName {
-				input.SnapshotDataset = v.DsName + "/" + v.VmName
-			}
+	vms, err := HosterVmUtils.ListAllSimple()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	for _, v := range vms {
+		if v.VmName == input.ResourceName {
+			input.SnapshotDataset = v.DsName + "/" + v.VmName
 		}
 	}
 
 	if len(input.SnapshotDataset) < 1 {
-		ReportError(w, http.StatusInternalServerError, "resource is not found")
+		ReportError(w, http.StatusInternalServerError, ErrorMappings.ResourceDoesntExist.String())
 		return
 	}
 
@@ -162,6 +152,52 @@ func SnapshotList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags Snapshots
+// @Summary Destroy a snapshot for any given VM or a Jail.
+// @Description Destroy a snapshot for any given VM or a Jail.<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param res_name path string true "Snapshot Name"
+// @Router /snapshot/destroy/{snapshot_name} [delete]
+func SnapshotDestroy(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	snapshotName := vars["snapshot_name"]
+
+	snaps, err := zfsutils.SnapshotListWithDescriptions()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	snapFound := false
+	for _, v := range snaps {
+		if v.Name == snapshotName {
+			err = zfsutils.RemoveSnapshot(snapshotName)
+			if err != nil {
+				ReportError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+			snapFound = true
+		}
+	}
+	if !snapFound {
+		ReportError(w, http.StatusInternalServerError, ErrorMappings.SnapshotDoesntExist.String())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
