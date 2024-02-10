@@ -445,9 +445,18 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Jails"
+                    "Snapshots"
                 ],
                 "summary": "List all snapshots for any given VM or a Jail.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Name (Jail or VM)",
+                        "name": "res_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

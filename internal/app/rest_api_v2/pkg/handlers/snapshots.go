@@ -97,13 +97,14 @@ func SnapshotTake(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-// @Tags Jails
+// @Tags Snapshots
 // @Summary List all snapshots for any given VM or a Jail.
 // @Description List all snapshots for any given VM or a Jail.<br>`AUTH`: Both users are allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} []zfsutils.SnapshotInfo
 // @Failure 500 {object} SwaggerError
+// @Param res_name path string true "Resource Name (Jail or VM)"
 // @Router /snapshot/all/{res_name} [get]
 func SnapshotList(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckAnyUser(r) {

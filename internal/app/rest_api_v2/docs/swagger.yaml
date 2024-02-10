@@ -499,6 +499,12 @@ paths:
     get:
       description: 'List all snapshots for any given VM or a Jail.<br>`AUTH`: Both
         users are allowed.'
+      parameters:
+      - description: Resource Name (Jail or VM)
+        in: path
+        name: res_name
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -516,7 +522,7 @@ paths:
       - BasicAuth: []
       summary: List all snapshots for any given VM or a Jail.
       tags:
-      - Jails
+      - Snapshots
   /snapshot/take:
     post:
       description: 'Take a new snapshot.<br>`AUTH`: Only `rest` user is allowed.'
