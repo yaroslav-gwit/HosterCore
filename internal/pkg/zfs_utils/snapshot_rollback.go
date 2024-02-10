@@ -18,7 +18,7 @@ func RollbackSnapshot(snapshotName string) error {
 		return errors.New("not a snapshot, provide a correct snapshot name")
 	}
 
-	out, err := exec.Command("zfs", "destroy", "rollback", "-r", snapshotName).CombinedOutput()
+	out, err := exec.Command("zfs", "rollback", "-r", snapshotName).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
 	}
