@@ -20,6 +20,7 @@ type VmDisk struct {
 	DiskLocation string `json:"disk_location"`
 	DiskImage    string `json:"disk_image"`
 	Comment      string `json:"comment"`
+	DiskSize
 }
 
 type VmNetwork struct {

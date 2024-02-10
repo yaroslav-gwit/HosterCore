@@ -153,17 +153,6 @@ definitions:
       uptime:
         type: string
     type: object
-  HosterVmUtils.DiskInfoApi:
-    properties:
-      totalBytes:
-        type: integer
-      totalHuman:
-        type: string
-      usedBytes:
-        type: integer
-      usedHuman:
-        type: string
-    type: object
   HosterVmUtils.Virtio9P:
     properties:
       read_only:
@@ -193,10 +182,6 @@ definitions:
         type: string
       disable_xhci:
         type: boolean
-      disk_info:
-        items:
-          $ref: '#/definitions/HosterVmUtils.DiskInfoApi'
-        type: array
       disks:
         items:
           $ref: '#/definitions/HosterVmUtils.VmDisk'
@@ -261,6 +246,14 @@ definitions:
       disk_location:
         type: string
       disk_type:
+        type: string
+      total_bytes:
+        type: integer
+      total_human:
+        type: string
+      used_bytes:
+        type: integer
+      used_human:
         type: string
     type: object
   HosterVmUtils.VmNetwork:

@@ -12,24 +12,23 @@ import (
 	"slices"
 )
 
-type DiskInfoApi struct {
-	TotalBytes uint64
-	TotalHuman string
-	UsedBytes  uint64
-	UsedHuman  string
+type DiskSize struct {
+	TotalBytes uint64 `json:"total_bytes,omitempty"`
+	TotalHuman string `json:"total_human,omitempty"`
+	UsedBytes  uint64 `json:"used_bytes,omitempty"`
+	UsedHuman  string `json:"used_human,omitempty"`
 }
 
 type VmApi struct {
 	VmConfig
-	Name        string        `json:"name"`
-	Uptime      string        `json:"uptime"`
-	UptimeUnix  int64         `json:"uptime_unix"`
-	Running     bool          `json:"running"`
-	Backup      bool          `json:"backup"`
-	Production  bool          `json:"production"`
-	Encrypted   bool          `json:"encrypted"`
-	CurrentHost string        `json:"current_host"`
-	DiskInfo    []DiskInfoApi `json:"disk_info"`
+	Name        string `json:"name"`
+	Uptime      string `json:"uptime"`
+	UptimeUnix  int64  `json:"uptime_unix"`
+	Running     bool   `json:"running"`
+	Backup      bool   `json:"backup"`
+	Production  bool   `json:"production"`
+	Encrypted   bool   `json:"encrypted"`
+	CurrentHost string `json:"current_host"`
 }
 
 func ListJsonApi() (r []VmApi, e error) {
@@ -86,12 +85,13 @@ func ListJsonApi() (r []VmApi, e error) {
 			temp.Production = true
 		}
 
-		diskInfo, err := DiskInfo(v.Mountpoint + "/" + v.VmName + "/disk0.img")
-		if err != nil {
-			// fmt.Println(err)
-			continue
+		for ii, vv := range conf.Disks {
+			diskInfo, err := DiskInfo(v.Mountpoint + "/" + v.VmName + "/" + vv.DiskImage)
+			if err != nil {
+				continue
+			}
+			temp.Disks[ii].DiskSize = diskInfo
 		}
-		temp.DiskInfo = append(temp.DiskInfo, diskInfo)
 
 		r = append(r, temp)
 	}

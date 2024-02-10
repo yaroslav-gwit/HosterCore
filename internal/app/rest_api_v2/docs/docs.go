@@ -913,23 +913,6 @@ const docTemplate = `{
                 }
             }
         },
-        "HosterVmUtils.DiskInfoApi": {
-            "type": "object",
-            "properties": {
-                "totalBytes": {
-                    "type": "integer"
-                },
-                "totalHuman": {
-                    "type": "string"
-                },
-                "usedBytes": {
-                    "type": "integer"
-                },
-                "usedHuman": {
-                    "type": "string"
-                }
-            }
-        },
         "HosterVmUtils.Virtio9P": {
             "type": "object",
             "properties": {
@@ -973,12 +956,6 @@ const docTemplate = `{
                 },
                 "disable_xhci": {
                     "type": "boolean"
-                },
-                "disk_info": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/HosterVmUtils.DiskInfoApi"
-                    }
                 },
                 "disks": {
                     "type": "array",
@@ -1076,6 +1053,18 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "disk_type": {
+                    "type": "string"
+                },
+                "total_bytes": {
+                    "type": "integer"
+                },
+                "total_human": {
+                    "type": "string"
+                },
+                "used_bytes": {
+                    "type": "integer"
+                },
+                "used_human": {
                     "type": "string"
                 }
             }
