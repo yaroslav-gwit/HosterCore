@@ -17,14 +17,14 @@ import (
 )
 
 type DeployInput struct {
-	JailName  string
-	DsParent  string
-	Release   string
-	CpuLimit  int
-	RamLimit  string
-	IpAddress string
-	Network   string
-	DnsServer string
+	JailName  string `json:"jail_name"`
+	DsParent  string `json:"dataset_parent"`
+	Release   string `json:"release"`
+	CpuLimit  int    `json:"cpu_limit"`
+	RamLimit  string `json:"ram_limit"`
+	IpAddress string `json:"ip_address"`
+	Network   string `json:"network_name"`
+	DnsServer string `json:"dns_server"`
 }
 
 func Deploy(input DeployInput) error {

@@ -87,19 +87,19 @@ definitions:
     type: object
   HosterJail.DeployInput:
     properties:
-      cpuLimit:
+      cpu_limit:
         type: integer
-      dnsServer:
+      dataset_parent:
         type: string
-      dsParent:
+      dns_server:
         type: string
-      ipAddress:
+      ip_address:
         type: string
-      jailName:
+      jail_name:
         type: string
-      network:
+      network_name:
         type: string
-      ramLimit:
+      ram_limit:
         type: string
       release:
         type: string
@@ -175,6 +175,27 @@ definitions:
     properties:
       message:
         description: success
+        type: string
+    type: object
+  zfsutils.SnapshotInfo:
+    properties:
+      snapshot_clones:
+        items:
+          type: string
+        type: array
+      snapshot_dataset:
+        type: string
+      snapshot_description:
+        type: string
+      snapshot_locked:
+        type: boolean
+      snapshot_name:
+        type: string
+      snapshot_short_name:
+        type: string
+      snapshot_size_bytes:
+        type: integer
+      snapshot_size_human:
         type: string
     type: object
   zfsutils.ZpoolInfo:
@@ -472,6 +493,28 @@ paths:
       security:
       - BasicAuth: []
       summary: List all Jail templates.
+      tags:
+      - Jails
+  /snapshot/all/{res_name}:
+    get:
+      description: 'List all snapshots for any given VM or a Jail.<br>`AUTH`: Both
+        users are allowed.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/zfsutils.SnapshotInfo'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: List all snapshots for any given VM or a Jail.
       tags:
       - Jails
   /snapshot/take:

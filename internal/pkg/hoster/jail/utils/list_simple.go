@@ -12,8 +12,8 @@ import (
 )
 
 type JailListSimple struct {
-	JailName string
-	HosterZfs.MountPoint
+	JailName             string `json:"jail_name"`
+	HosterZfs.MountPoint `json:"mount_point"`
 }
 
 // Scans all Hoster-related ZFS datasets in search for Jail config files.

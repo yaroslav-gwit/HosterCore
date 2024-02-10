@@ -75,6 +75,7 @@ func main() {
 	r.HandleFunc("/api/v2/jail/deploy", handlers.JailDeploy).Methods(http.MethodPost)
 	// Snapshots
 	r.HandleFunc("/api/v2/snapshot/take", handlers.SnapshotTake).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/snapshot/all/{res_name}", handlers.SnapshotList).Methods(http.MethodGet)
 
 	// Swagger docs
 	r.PathPrefix("/api/v2/swagger/").Handler(httpSwagger.Handler(

@@ -426,6 +426,40 @@
                 }
             }
         },
+        "/snapshot/all/{res_name}": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "List all snapshots for any given VM or a Jail.\u003cbr\u003e`AUTH`: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "List all snapshots for any given VM or a Jail.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/zfsutils.SnapshotInfo"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/snapshot/take": {
             "post": {
                 "security": [
@@ -603,25 +637,25 @@
         "HosterJail.DeployInput": {
             "type": "object",
             "properties": {
-                "cpuLimit": {
+                "cpu_limit": {
                     "type": "integer"
                 },
-                "dnsServer": {
+                "dataset_parent": {
                     "type": "string"
                 },
-                "dsParent": {
+                "dns_server": {
                     "type": "string"
                 },
-                "ipAddress": {
+                "ip_address": {
                     "type": "string"
                 },
-                "jailName": {
+                "jail_name": {
                     "type": "string"
                 },
-                "network": {
+                "network_name": {
                     "type": "string"
                 },
-                "ramLimit": {
+                "ram_limit": {
                     "type": "string"
                 },
                 "release": {
@@ -736,6 +770,38 @@
             "properties": {
                 "message": {
                     "description": "success",
+                    "type": "string"
+                }
+            }
+        },
+        "zfsutils.SnapshotInfo": {
+            "type": "object",
+            "properties": {
+                "snapshot_clones": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "snapshot_dataset": {
+                    "type": "string"
+                },
+                "snapshot_description": {
+                    "type": "string"
+                },
+                "snapshot_locked": {
+                    "type": "boolean"
+                },
+                "snapshot_name": {
+                    "type": "string"
+                },
+                "snapshot_short_name": {
+                    "type": "string"
+                },
+                "snapshot_size_bytes": {
+                    "type": "integer"
+                },
+                "snapshot_size_human": {
                     "type": "string"
                 }
             }

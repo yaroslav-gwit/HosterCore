@@ -9,6 +9,8 @@ const (
 	HostNotFound
 	HostIsDisabled
 	SnapTypeDoesntExist
+	JailDoesntExist
+	ResourceDoesntExist
 )
 
 var statusStrings = map[Status]string{
@@ -16,6 +18,8 @@ var statusStrings = map[Status]string{
 	HostNotFound:        "host was not found in our database",
 	HostIsDisabled:      "host is disabled",
 	SnapTypeDoesntExist: "snapshot type doesn't exist",
+	JailDoesntExist:     "jail doesn't exist",
+	ResourceDoesntExist: "resource doesn't exist",
 }
 
 // String returns the string representation of the Status value.

@@ -12,17 +12,17 @@ import (
 )
 
 type JailListExtendedTable struct {
-	Name             string // Jail Name
-	Running          bool   // is Jail Online/Running
-	Status           string // status inside of the CLI table, e.g. 🟢🔒🔁
-	CPULimit         string // CPU limit, e.g. 50%
-	RAMLimit         string // RAM limit, e.g. 10G
-	MainIpAddress    string
-	Release          string
-	Uptime           string // Human readable uptime format, e.g. 20d 10h 19m 1s
-	StorageUsed      string
-	StorageAvailable string
-	Description      string
+	Name             string `json:"jail_name"` // Jail Name
+	Running          bool   `json:"running"`   // is Jail Online/Running
+	Status           string `json:"status"`    // status inside of the CLI table, e.g. 🟢🔒🔁
+	CPULimit         string `json:"cpu_limit"` // CPU limit, e.g. 50%
+	RAMLimit         string `json:"ram_limit"` // RAM limit, e.g. 10G
+	MainIpAddress    string `json:"main_ip_address"`
+	Release          string `json:"release"`
+	Uptime           string `json:"uptime"` // Human readable uptime format, e.g. 20d 10h 19m 1s
+	StorageUsed      string `json:"storage_used"`
+	StorageAvailable string `json:"storage_available"`
+	Description      string `json:"description"`
 }
 
 const JAIL_EMOJI_ONLINE = "🟢"
