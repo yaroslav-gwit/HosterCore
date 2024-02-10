@@ -89,6 +89,7 @@ func ListJsonApi() (r []VmApi, e error) {
 
 		diskInfo, err := DiskInfo(v.Mountpoint + "/" + v.VmName + "/disk0.img")
 		if err != nil {
+			fmt.Println(err)
 			continue
 		}
 		temp.DiskInfo = append(temp.DiskInfo, diskInfo)
