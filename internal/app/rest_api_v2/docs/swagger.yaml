@@ -553,6 +553,34 @@ paths:
       summary: Destroy a snapshot for any given VM or a Jail.
       tags:
       - Snapshots
+  /snapshot/rollback:
+    post:
+      description: 'Rollback to a previous snapshot.<br>`AUTH`: Only `rest` user is
+        allowed.<br><br>`NOTE`: You need to make sure that your VM or Jail is fully
+        shut down before running the rollback command.'
+      parameters:
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SnapshotName'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Rollback to a previous snapshot.
+      tags:
+      - Snapshots
   /snapshot/take:
     post:
       description: 'Take a new VM or Jail snapshot, using the resource name (Jail

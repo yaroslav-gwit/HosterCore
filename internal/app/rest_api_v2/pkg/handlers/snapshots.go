@@ -210,3 +210,54 @@ func SnapshotDestroy(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+// @Tags Snapshots
+// @Summary Rollback to a previous snapshot.
+// @Description Rollback to a previous snapshot.<br>`AUTH`: Only `rest` user is allowed.<br><br>`NOTE`: You need to make sure that your VM or Jail is fully shut down before running the rollback command.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body SnapshotName true "Request payload"
+// @Router /snapshot/rollback [post]
+func SnapshotRollback(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := SnapshotName{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
+		return
+	}
+
+	snaps, err := zfsutils.SnapshotListWithDescriptions()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	snapFound := false
+	for _, v := range snaps {
+		if v.Name == input.SnapshotName {
+			err = zfsutils.RollbackSnapshot(input.SnapshotName)
+			if err != nil {
+				ReportError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+			snapFound = true
+		}
+	}
+	if !snapFound {
+		ReportError(w, http.StatusInternalServerError, ErrorMappings.SnapshotDoesntExist.String())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}

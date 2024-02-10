@@ -511,6 +511,48 @@
                 }
             }
         },
+        "/snapshot/rollback": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Rollback to a previous snapshot.\u003cbr\u003e`AUTH`: Only `rest` user is allowed.\u003cbr\u003e\u003cbr\u003e`NOTE`: You need to make sure that your VM or Jail is fully shut down before running the rollback command.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Snapshots"
+                ],
+                "summary": "Rollback to a previous snapshot.",
+                "parameters": [
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SnapshotName"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/snapshot/take": {
             "post": {
                 "security": [

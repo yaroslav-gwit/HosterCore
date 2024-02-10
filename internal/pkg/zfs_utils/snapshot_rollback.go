@@ -12,13 +12,13 @@ import (
 	"strings"
 )
 
-func RemoveSnapshot(snapshotName string) error {
+func RollbackSnapshot(snapshotName string) error {
 	reMatchAt := regexp.MustCompile("@")
 	if !reMatchAt.MatchString(snapshotName) {
 		return errors.New("not a snapshot, provide a correct snapshot name")
 	}
 
-	out, err := exec.Command("zfs", "destroy", snapshotName).CombinedOutput()
+	out, err := exec.Command("zfs", "destroy", "rollback", "-r", snapshotName).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
 	}
