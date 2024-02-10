@@ -8,7 +8,6 @@ import (
 	FreeBSDps "HosterCore/internal/pkg/freebsd/ps"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	timeconversion "HosterCore/internal/pkg/time_conversion"
-	"fmt"
 	"regexp"
 	"slices"
 )
@@ -56,7 +55,7 @@ func ListJsonApi() (r []VmApi, e error) {
 		temp := VmApi{}
 		conf, err := GetVmConfig(v.Mountpoint + "/" + v.VmName)
 		if err != nil {
-			fmt.Println(err)
+			// fmt.Println(err)
 			continue
 		}
 
@@ -89,10 +88,12 @@ func ListJsonApi() (r []VmApi, e error) {
 
 		diskInfo, err := DiskInfo(v.Mountpoint + "/" + v.VmName + "/disk0.img")
 		if err != nil {
-			fmt.Println(err)
+			// fmt.Println(err)
 			continue
 		}
 		temp.DiskInfo = append(temp.DiskInfo, diskInfo)
+
+		r = append(r, temp)
 	}
 
 	return
