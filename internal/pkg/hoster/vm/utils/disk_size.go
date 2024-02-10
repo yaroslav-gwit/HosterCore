@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func DiskInfo(filePath string) (r DiskInfoApi, e error) {
+func DiskInfo(filePath string) (r DiskSize, e error) {
 	reSplitSpace := regexp.MustCompile(`\s+`)
 
 	// Total Disk Space
