@@ -12,16 +12,18 @@ const (
 	JailDoesntExist
 	ResourceDoesntExist
 	SnapshotDoesntExist
+	CouldNotParseYourInput
 )
 
 var statusStrings = map[Status]string{
-	VmDoesntExist:       "vm doesn't exist",
-	HostNotFound:        "host was not found in our database",
-	HostIsDisabled:      "host is disabled",
-	SnapTypeDoesntExist: "snapshot type doesn't exist",
-	JailDoesntExist:     "jail doesn't exist",
-	ResourceDoesntExist: "resource doesn't exist",
-	SnapshotDoesntExist: "snapshot doesn't exist",
+	VmDoesntExist:          "vm doesn't exist",
+	HostNotFound:           "host was not found in our database",
+	HostIsDisabled:         "host is disabled",
+	SnapTypeDoesntExist:    "snapshot type doesn't exist",
+	JailDoesntExist:        "jail doesn't exist",
+	ResourceDoesntExist:    "resource doesn't exist",
+	SnapshotDoesntExist:    "snapshot doesn't exist",
+	CouldNotParseYourInput: "could not parse your input",
 }
 
 // String returns the string representation of the Status value.

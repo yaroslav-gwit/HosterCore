@@ -156,6 +156,10 @@ func SnapshotList(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
+type SnapshotName struct {
+	SnapshotName string `json:"snapshot_name"`
+}
+
 // @Tags Snapshots
 // @Summary Destroy a snapshot for any given VM or a Jail.
 // @Description Destroy a snapshot for any given VM or a Jail.<br>`AUTH`: Only `rest` user is allowed.
@@ -163,8 +167,8 @@ func SnapshotList(w http.ResponseWriter, r *http.Request) {
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
-// @Param snapshot_name path string true "Snapshot Name"
-// @Router /snapshot/destroy/{snapshot_name} [delete]
+// @Param Input body SnapshotName true "Request payload"
+// @Router /snapshot/destroy [delete]
 func SnapshotDestroy(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
@@ -172,8 +176,13 @@ func SnapshotDestroy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	snapshotName := vars["snapshot_name"]
+	input := SnapshotName{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
+		return
+	}
 
 	snaps, err := zfsutils.SnapshotListWithDescriptions()
 	if err != nil {
@@ -183,8 +192,8 @@ func SnapshotDestroy(w http.ResponseWriter, r *http.Request) {
 
 	snapFound := false
 	for _, v := range snaps {
-		if v.Name == snapshotName {
-			err = zfsutils.RemoveSnapshot(snapshotName)
+		if v.Name == input.SnapshotName {
+			err = zfsutils.RemoveSnapshot(input.SnapshotName)
 			if err != nil {
 				ReportError(w, http.StatusInternalServerError, err.Error())
 				return

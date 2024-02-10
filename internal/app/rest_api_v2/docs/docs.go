@@ -476,7 +476,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/snapshot/destroy/{snapshot_name}": {
+        "/snapshot/destroy": {
             "delete": {
                 "security": [
                     {
@@ -493,11 +493,13 @@ const docTemplate = `{
                 "summary": "Destroy a snapshot for any given VM or a Jail.",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Snapshot Name",
-                        "name": "snapshot_name",
-                        "in": "path",
-                        "required": true
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SnapshotName"
+                        }
                     }
                 ],
                 "responses": {
@@ -804,6 +806,14 @@ const docTemplate = `{
                 },
                 "snapshots_to_keep": {
                     "type": "integer"
+                }
+            }
+        },
+        "handlers.SnapshotName": {
+            "type": "object",
+            "properties": {
+                "snapshot_name": {
+                    "type": "string"
                 }
             }
         },

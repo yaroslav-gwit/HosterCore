@@ -162,6 +162,11 @@ definitions:
       snapshots_to_keep:
         type: integer
     type: object
+  handlers.SnapshotName:
+    properties:
+      snapshot_name:
+        type: string
+    type: object
   handlers.SwaggerError:
     properties:
       id:
@@ -521,16 +526,17 @@ paths:
       summary: List all snapshots for any given VM or a Jail.
       tags:
       - Snapshots
-  /snapshot/destroy/{snapshot_name}:
+  /snapshot/destroy:
     delete:
       description: 'Destroy a snapshot for any given VM or a Jail.<br>`AUTH`: Only
         `rest` user is allowed.'
       parameters:
-      - description: Snapshot Name
-        in: path
-        name: snapshot_name
+      - description: Request payload
+        in: body
+        name: Input
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/handlers.SnapshotName'
       produces:
       - application/json
       responses:
