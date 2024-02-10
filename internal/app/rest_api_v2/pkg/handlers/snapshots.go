@@ -163,7 +163,7 @@ func SnapshotList(w http.ResponseWriter, r *http.Request) {
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
-// @Param res_name path string true "Snapshot Name"
+// @Param snapshot_name path string true "Snapshot Name"
 // @Router /snapshot/destroy/{snapshot_name} [delete]
 func SnapshotDestroy(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {

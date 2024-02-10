@@ -528,7 +528,7 @@ paths:
       parameters:
       - description: Snapshot Name
         in: path
-        name: res_name
+        name: snapshot_name
         required: true
         type: string
       produces:

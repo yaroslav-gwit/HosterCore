@@ -495,7 +495,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Snapshot Name",
-                        "name": "res_name",
+                        "name": "snapshot_name",
                         "in": "path",
                         "required": true
                     }
