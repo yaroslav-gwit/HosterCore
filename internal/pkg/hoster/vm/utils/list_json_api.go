@@ -8,6 +8,7 @@ import (
 	FreeBSDps "HosterCore/internal/pkg/freebsd/ps"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	timeconversion "HosterCore/internal/pkg/time_conversion"
+	"fmt"
 	"regexp"
 	"slices"
 )
@@ -55,6 +56,7 @@ func ListJsonApi() (r []VmApi, e error) {
 		temp := VmApi{}
 		conf, err := GetVmConfig(v.Mountpoint + "/" + v.VmName)
 		if err != nil {
+			fmt.Println(err)
 			continue
 		}
 
