@@ -44,7 +44,7 @@ func SnapshotTake(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
 	if err != nil {
-		ReportError(w, http.StatusInternalServerError, "could not parse your input")
+		ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
 		return
 	}
 

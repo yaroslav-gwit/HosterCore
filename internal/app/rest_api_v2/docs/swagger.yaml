@@ -180,6 +180,18 @@ definitions:
         description: success
         type: string
     type: object
+  handlers.VmStopInput:
+    properties:
+      force_cleanup:
+        description: Kill the VM supervisor directly (useful in the situations where
+          you want to destroy the VM, or roll it back to a previous snapshot)
+        type: boolean
+      force_stop:
+        description: Send a SIGKILL instead of a graceful SIGTERM
+        type: boolean
+      vm_name:
+        type: string
+    type: object
   zfsutils.SnapshotInfo:
     properties:
       snapshot_clones:
@@ -608,4 +620,31 @@ paths:
       summary: Take a new snapshot.
       tags:
       - Snapshots
+  /vm/stop:
+    post:
+      description: 'Stop a specific VM using it''s name as a parameter.<br>`AUTH`:
+        Both users are allowed.'
+      parameters:
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.VmStopInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Stop a specific VM.
+      tags:
+      - VMs
 swagger: "2.0"

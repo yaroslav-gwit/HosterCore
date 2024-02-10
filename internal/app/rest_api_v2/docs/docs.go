@@ -601,6 +601,48 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/vm/stop": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Stop a specific VM using it's name as a parameter.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Stop a specific VM.",
+                "parameters": [
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.VmStopInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -875,6 +917,22 @@ const docTemplate = `{
             "properties": {
                 "message": {
                     "description": "success",
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.VmStopInput": {
+            "type": "object",
+            "properties": {
+                "force_cleanup": {
+                    "description": "Kill the VM supervisor directly (useful in the situations where you want to destroy the VM, or roll it back to a previous snapshot)",
+                    "type": "boolean"
+                },
+                "force_stop": {
+                    "description": "Send a SIGKILL instead of a graceful SIGTERM",
+                    "type": "boolean"
+                },
+                "vm_name": {
                     "type": "string"
                 }
             }
