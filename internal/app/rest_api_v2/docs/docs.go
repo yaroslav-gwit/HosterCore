@@ -602,6 +602,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/vm/all": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get the list of all VMs, including the information about them.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "List all VMs.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/HosterVmUtils.VmApi"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/stop": {
             "post": {
                 "security": [
@@ -875,6 +909,207 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uptime": {
+                    "type": "string"
+                }
+            }
+        },
+        "HosterVmUtils.DiskInfoApi": {
+            "type": "object",
+            "properties": {
+                "totalBytes": {
+                    "type": "integer"
+                },
+                "totalHuman": {
+                    "type": "string"
+                },
+                "usedBytes": {
+                    "type": "integer"
+                },
+                "usedHuman": {
+                    "type": "string"
+                }
+            }
+        },
+        "HosterVmUtils.Virtio9P": {
+            "type": "object",
+            "properties": {
+                "read_only": {
+                    "type": "boolean"
+                },
+                "share_location": {
+                    "type": "string"
+                },
+                "share_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "HosterVmUtils.VmApi": {
+            "type": "object",
+            "properties": {
+                "9p_shares": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HosterVmUtils.Virtio9P"
+                    }
+                },
+                "backup": {
+                    "type": "boolean"
+                },
+                "cpu_cores": {
+                    "type": "integer"
+                },
+                "cpu_sockets": {
+                    "type": "integer"
+                },
+                "cpu_threads": {
+                    "type": "integer"
+                },
+                "current_host": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "disable_xhci": {
+                    "type": "boolean"
+                },
+                "disk_info": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HosterVmUtils.DiskInfoApi"
+                    }
+                },
+                "disks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HosterVmUtils.VmDisk"
+                    }
+                },
+                "encrypted": {
+                    "type": "boolean"
+                },
+                "include_hostwide_ssh_keys": {
+                    "type": "boolean"
+                },
+                "live_status": {
+                    "type": "string"
+                },
+                "loader": {
+                    "type": "string"
+                },
+                "memory": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "networks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HosterVmUtils.VmNetwork"
+                    }
+                },
+                "os_comment": {
+                    "type": "string"
+                },
+                "os_type": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "parent_host": {
+                    "type": "string"
+                },
+                "passthru": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "production": {
+                    "type": "boolean"
+                },
+                "running": {
+                    "type": "boolean"
+                },
+                "uptime": {
+                    "type": "string"
+                },
+                "uptime_unix": {
+                    "type": "integer"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "vga": {
+                    "type": "string"
+                },
+                "vm_ssh_keys": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HosterVmUtils.VmSshKey"
+                    }
+                },
+                "vnc_password": {
+                    "type": "string"
+                },
+                "vnc_port": {
+                    "type": "integer"
+                },
+                "vnc_resolution": {
+                    "type": "integer"
+                }
+            }
+        },
+        "HosterVmUtils.VmDisk": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "disk_image": {
+                    "type": "string"
+                },
+                "disk_location": {
+                    "type": "string"
+                },
+                "disk_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "HosterVmUtils.VmNetwork": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "ip_address": {
+                    "type": "string"
+                },
+                "network_adaptor_type": {
+                    "type": "string"
+                },
+                "network_bridge": {
+                    "type": "string"
+                },
+                "network_mac": {
+                    "type": "string"
+                }
+            }
+        },
+        "HosterVmUtils.VmSshKey": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "key_owner": {
+                    "type": "string"
+                },
+                "key_value": {
                     "type": "string"
                 }
             }

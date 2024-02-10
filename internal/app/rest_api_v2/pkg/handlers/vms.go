@@ -9,6 +9,7 @@ import (
 	ErrorMappings "HosterCore/internal/app/rest_api_v2/pkg/error_mappings"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	HosterVm "HosterCore/internal/pkg/hoster/vm"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"encoding/json"
 	"net/http"
 )
@@ -50,6 +51,37 @@ func VmStop(w http.ResponseWriter, r *http.Request) {
 	}
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
+// @Summary List all VMs.
+// @Description Get the list of all VMs, including the information about them.<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} []HosterVmUtils.VmApi
+// @Failure 500 {object} SwaggerError
+// @Router /vm/all [get]
+func VmList(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vms, err := HosterVmUtils.ListJsonApi()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := json.Marshal(vms)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }

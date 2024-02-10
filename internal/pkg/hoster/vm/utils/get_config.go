@@ -8,7 +8,10 @@ import (
 	FileExists "HosterCore/internal/pkg/file_exists"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
+	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -40,8 +43,8 @@ type Virtio9P struct {
 }
 
 type VmConfig struct {
-	CPUSockets             string      `json:"cpu_sockets"`
-	CPUCores               string      `json:"cpu_cores"`
+	CPUSockets             int         `json:"cpu_sockets"`
+	CPUCores               int         `json:"cpu_cores"`
 	CPUThreads             int         `json:"cpu_threads,omitempty"`
 	Memory                 string      `json:"memory"`
 	Loader                 string      `json:"loader"`
@@ -54,7 +57,7 @@ type VmConfig struct {
 	Disks                  []VmDisk    `json:"disks"`
 	IncludeHostwideSSHKeys bool        `json:"include_hostwide_ssh_keys"`
 	VmSshKeys              []VmSshKey  `json:"vm_ssh_keys"`
-	VncPort                string      `json:"vnc_port"`
+	VncPort                int         `json:"vnc_port"`
 	VncPassword            string      `json:"vnc_password"`
 	Description            string      `json:"description"`
 	UUID                   string      `json:"uuid,omitempty"`
@@ -84,6 +87,83 @@ func GetVmConfig(vmLocation string) (r VmConfig, e error) {
 	}
 
 	err = json.Unmarshal(data, &r)
+	if err != nil {
+		r, e = FixVmConfig(vmConfLocation)
+		return
+	}
+
+	return
+}
+
+// Function that helps us keep the backwards compatibility with a bit older JSON config formats (e.g. when a value changes type, cpu_cores was string -> now int).
+//
+// Usually executed inside of GetVmConfig to return a fixed struct.
+func FixVmConfig(vmConfLocation string) (r VmConfig, e error) {
+	if !FileExists.CheckUsingOsStat(vmConfLocation) {
+		e = errors.New("vm config file could not be found here: " + vmConfLocation)
+		return
+	}
+
+	oldConfig := make(map[string]any)
+	data, err := os.ReadFile(vmConfLocation)
+	if err != nil {
+		e = err
+		return
+	}
+
+	err = json.Unmarshal(data, &oldConfig)
+	if err != nil {
+		e = err
+		return
+	}
+
+	cpuSockets, exist := oldConfig["cpu_sockets"]
+	if exist && reflect.TypeOf(cpuSockets) == reflect.TypeOf("string") {
+		parsedInt, err := strconv.Atoi(fmt.Sprintf("%s", cpuSockets))
+		if err != nil {
+			e = err
+			return
+		}
+		oldConfig["cpu_sockets"] = parsedInt
+	}
+
+	cpuCores, exist := oldConfig["cpu_cores"]
+	if exist && reflect.TypeOf(cpuCores) == reflect.TypeOf("string") {
+		parsedInt, err := strconv.Atoi(fmt.Sprintf("%s", cpuCores))
+		if err != nil {
+			e = err
+			return
+		}
+		oldConfig["cpu_cores"] = parsedInt
+	}
+
+	cpuThreads, exist := oldConfig["cpu_threads"]
+	if exist && reflect.TypeOf(cpuThreads) == reflect.TypeOf("string") {
+		parsedInt, err := strconv.Atoi(fmt.Sprintf("%s", cpuThreads))
+		if err != nil {
+			e = err
+			return
+		}
+		oldConfig["cpu_threads"] = parsedInt
+	}
+
+	vncPort, exist := oldConfig["vnc_port"]
+	if exist && reflect.TypeOf(vncPort) == reflect.TypeOf("string") {
+		parsedInt, err := strconv.Atoi(fmt.Sprintf("%s", vncPort))
+		if err != nil {
+			e = err
+			return
+		}
+		oldConfig["vnc_port"] = parsedInt
+	}
+
+	m, err := json.Marshal(oldConfig)
+	if err != nil {
+		e = err
+		return
+	}
+
+	err = json.Unmarshal(m, &r)
 	if err != nil {
 		e = err
 		return
