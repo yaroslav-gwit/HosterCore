@@ -636,6 +636,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/vm/info/{vm_name}": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get the VM Info.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Get the VM Info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VM Name",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/HosterVmUtils.VmApi"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/stop": {
             "post": {
                 "security": [
@@ -1006,9 +1046,6 @@ const docTemplate = `{
                     "description": "LiveStatus         string      ` + "`" + `json:\"live_status\"` + "`" + `",
                     "type": "boolean"
                 },
-                "rctl_metrics": {
-                    "$ref": "#/definitions/rctl.RctMetrics"
-                },
                 "running": {
                     "type": "boolean"
                 },
@@ -1159,62 +1196,6 @@ const docTemplate = `{
                 },
                 "vm_name": {
                     "type": "string"
-                }
-            }
-        },
-        "rctl.RctMetrics": {
-            "type": "object",
-            "properties": {
-                "code_dump_size": {
-                    "type": "integer"
-                },
-                "cpu_time": {
-                    "type": "integer"
-                },
-                "data_size": {
-                    "type": "integer"
-                },
-                "max_proc": {
-                    "type": "integer"
-                },
-                "memory_locked": {
-                    "type": "integer"
-                },
-                "memory_use": {
-                    "type": "integer"
-                },
-                "nsemop": {
-                    "type": "integer"
-                },
-                "nthr": {
-                    "type": "integer"
-                },
-                "open_files": {
-                    "type": "integer"
-                },
-                "p_cpu": {
-                    "type": "integer"
-                },
-                "read_bps": {
-                    "type": "integer"
-                },
-                "read_iops": {
-                    "type": "integer"
-                },
-                "stack_size": {
-                    "type": "integer"
-                },
-                "vmemory_use": {
-                    "type": "integer"
-                },
-                "wall_clock": {
-                    "type": "integer"
-                },
-                "write_bps": {
-                    "type": "integer"
-                },
-                "write_iops": {
-                    "type": "integer"
                 }
             }
         },

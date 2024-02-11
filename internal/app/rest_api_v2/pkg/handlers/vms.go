@@ -12,6 +12,8 @@ import (
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"encoding/json"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type VmStopInput struct {
@@ -77,6 +79,41 @@ func VmList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	payload, err := json.Marshal(vms)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
+// @Summary Get the VM Info.
+// @Description Get the VM Info.<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} HosterVmUtils.VmApi
+// @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "VM Name"
+// @Router /vm/info/{vm_name} [get]
+func VmInfo(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+
+	info, err := HosterVmUtils.InfoJsonApi(vmName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := json.Marshal(info)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

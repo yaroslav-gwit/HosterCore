@@ -32,7 +32,6 @@ type VmApi struct {
 }
 
 func ListJsonApi() (r []VmApi, e error) {
-
 	ps, err := FreeBSDps.ProcessTimes()
 	if err != nil {
 		e = err
@@ -49,8 +48,8 @@ func ListJsonApi() (r []VmApi, e error) {
 		e = err
 		return
 	}
-	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 
+	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 	for _, v := range vms {
 		temp := VmApi{}
 		conf, err := GetVmConfig(v.Mountpoint + "/" + v.VmName)

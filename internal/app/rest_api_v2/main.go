@@ -67,6 +67,7 @@ func main() {
 	r.HandleFunc("/api/v2/host/info", handlers.HostInfo).Methods(http.MethodGet)
 	// VMs
 	r.HandleFunc("/api/v2/vm/all", handlers.VmList).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/vm/info/{vm_name}", handlers.VmInfo).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/stop", handlers.VmStop).Methods(http.MethodPost)
 	// Jails
 	r.HandleFunc("/api/v2/jail/all", handlers.JailList).Methods(http.MethodGet)
