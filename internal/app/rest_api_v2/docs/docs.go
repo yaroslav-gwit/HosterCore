@@ -1006,6 +1006,9 @@ const docTemplate = `{
                     "description": "LiveStatus         string      ` + "`" + `json:\"live_status\"` + "`" + `",
                     "type": "boolean"
                 },
+                "rctl_metrics": {
+                    "$ref": "#/definitions/rctl.RctMetrics"
+                },
                 "running": {
                     "type": "boolean"
                 },
@@ -1156,6 +1159,62 @@ const docTemplate = `{
                 },
                 "vm_name": {
                     "type": "string"
+                }
+            }
+        },
+        "rctl.RctMetrics": {
+            "type": "object",
+            "properties": {
+                "code_dump_size": {
+                    "type": "integer"
+                },
+                "cpu_time": {
+                    "type": "integer"
+                },
+                "data_size": {
+                    "type": "integer"
+                },
+                "max_proc": {
+                    "type": "integer"
+                },
+                "memory_locked": {
+                    "type": "integer"
+                },
+                "memory_use": {
+                    "type": "integer"
+                },
+                "nsemop": {
+                    "type": "integer"
+                },
+                "nthr": {
+                    "type": "integer"
+                },
+                "open_files": {
+                    "type": "integer"
+                },
+                "p_cpu": {
+                    "type": "integer"
+                },
+                "read_bps": {
+                    "type": "integer"
+                },
+                "read_iops": {
+                    "type": "integer"
+                },
+                "stack_size": {
+                    "type": "integer"
+                },
+                "vmemory_use": {
+                    "type": "integer"
+                },
+                "wall_clock": {
+                    "type": "integer"
+                },
+                "write_bps": {
+                    "type": "integer"
+                },
+                "write_iops": {
+                    "type": "integer"
                 }
             }
         },

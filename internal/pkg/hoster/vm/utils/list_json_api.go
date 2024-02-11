@@ -6,6 +6,7 @@ package HosterVmUtils
 
 import (
 	FreeBSDps "HosterCore/internal/pkg/freebsd/ps"
+	"HosterCore/internal/pkg/freebsd/rctl"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	timeconversion "HosterCore/internal/pkg/time_conversion"
 	"regexp"
@@ -21,16 +22,18 @@ type DiskSize struct {
 
 type VmApi struct {
 	VmConfig
-	Name        string `json:"name"`
-	Uptime      string `json:"uptime"`
-	UptimeUnix  int64  `json:"uptime_unix"`
-	Running     bool   `json:"running"`
-	Backup      bool   `json:"backup"`
-	Encrypted   bool   `json:"encrypted"`
-	CurrentHost string `json:"current_host"`
+	Name        string          `json:"name"`
+	Uptime      string          `json:"uptime"`
+	UptimeUnix  int64           `json:"uptime_unix"`
+	Running     bool            `json:"running"`
+	Backup      bool            `json:"backup"`
+	Encrypted   bool            `json:"encrypted"`
+	CurrentHost string          `json:"current_host"`
+	Metrics     rctl.RctMetrics `json:"rctl_metrics,omitempty"`
 }
 
 func ListJsonApi() (r []VmApi, e error) {
+
 	ps, err := FreeBSDps.ProcessTimes()
 	if err != nil {
 		e = err
@@ -68,9 +71,14 @@ func ListJsonApi() (r []VmApi, e error) {
 				// fmt.Println(vv.Command)
 				if reMatch.MatchString(vv.Command) {
 					// fmt.Println(vv.StartTime)
-					temp.UptimeUnix = vv.StartTime
-					temp.Uptime = timeconversion.ProcessUptimeToHuman(vv.StartTime)
+					temp.UptimeUnix = vv.ElapsedTime
+					temp.Uptime = timeconversion.ProcessUptimeToHuman(vv.ElapsedTime)
 					break
+				}
+
+				temp.Metrics, err = rctl.MetricsProcess(vv.PID)
+				if err != nil {
+					temp.Metrics = rctl.RctMetrics{}
 				}
 			}
 		} else {
