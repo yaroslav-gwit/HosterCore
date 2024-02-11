@@ -6,7 +6,6 @@ package HosterVmUtils
 
 import (
 	FreeBSDps "HosterCore/internal/pkg/freebsd/ps"
-	"HosterCore/internal/pkg/freebsd/rctl"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	timeconversion "HosterCore/internal/pkg/time_conversion"
 	"regexp"
@@ -22,14 +21,14 @@ type DiskSize struct {
 
 type VmApi struct {
 	VmConfig
-	Name        string          `json:"name"`
-	Uptime      string          `json:"uptime"`
-	UptimeUnix  int64           `json:"uptime_unix"`
-	Running     bool            `json:"running"`
-	Backup      bool            `json:"backup"`
-	Encrypted   bool            `json:"encrypted"`
-	CurrentHost string          `json:"current_host"`
-	Metrics     rctl.RctMetrics `json:"rctl_metrics,omitempty"`
+	Name        string `json:"name"`
+	Uptime      string `json:"uptime"`
+	UptimeUnix  int64  `json:"uptime_unix"`
+	Running     bool   `json:"running"`
+	Backup      bool   `json:"backup"`
+	Encrypted   bool   `json:"encrypted"`
+	CurrentHost string `json:"current_host"`
+	// Metrics     rctl.RctMetrics `json:"rctl_metrics,omitempty"`
 }
 
 func ListJsonApi() (r []VmApi, e error) {
@@ -76,10 +75,10 @@ func ListJsonApi() (r []VmApi, e error) {
 					break
 				}
 
-				temp.Metrics, err = rctl.MetricsProcess(vv.PID)
-				if err != nil {
-					temp.Metrics = rctl.RctMetrics{}
-				}
+				// temp.Metrics, err = rctl.MetricsProcess(vv.PID)
+				// if err != nil {
+				// 	temp.Metrics = rctl.RctMetrics{}
+				// }
 			}
 		} else {
 			temp.Uptime = "0s"
