@@ -8,7 +8,6 @@ import (
 	FreeBSDps "HosterCore/internal/pkg/freebsd/ps"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	timeconversion "HosterCore/internal/pkg/time_conversion"
-	"fmt"
 	"regexp"
 	"slices"
 )
@@ -67,9 +66,9 @@ func ListJsonApi() (r []VmApi, e error) {
 			temp.Running = true
 			reMatchVmProcess := regexp.MustCompile(`bhyve:\s+` + v.VmName + `($|\s+)`)
 			for _, vv := range ps {
-				fmt.Println(vv.Command)
+				// fmt.Println(vv.Command)
 				if reMatchVmProcess.MatchString(vv.Command) {
-					fmt.Println(vv.StartTime)
+					// fmt.Println(vv.StartTime)
 					temp.UptimeUnix = vv.StartTime
 					temp.Uptime = timeconversion.ProcessUptimeToHuman(vv.StartTime)
 					break
