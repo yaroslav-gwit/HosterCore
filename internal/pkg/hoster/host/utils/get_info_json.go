@@ -61,7 +61,7 @@ func GetHostInfo() (r HostInfo, e error) {
 				cpusUsed = cpusUsed + (r.CpuInfo.Sockets * r.CpuInfo.Cores * r.CpuInfo.Threads)
 			} else if conf.ParentHost == r.Hostname {
 				r.OfflineVms += 1
-				if conf.LiveStatus == "prod" || conf.LiveStatus == "production" {
+				if conf.Production {
 					r.OfflineVmsProd += 1
 				}
 			} else {

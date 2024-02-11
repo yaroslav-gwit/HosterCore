@@ -44,29 +44,30 @@ type Virtio9P struct {
 }
 
 type VmConfig struct {
-	CPUSockets             int         `json:"cpu_sockets"`
-	CPUCores               int         `json:"cpu_cores"`
-	CPUThreads             int         `json:"cpu_threads,omitempty"`
-	Memory                 string      `json:"memory"`
-	Loader                 string      `json:"loader"`
-	LiveStatus             string      `json:"live_status"`
-	OsType                 string      `json:"os_type"`
-	OsComment              string      `json:"os_comment"`
-	Owner                  string      `json:"owner"`
-	ParentHost             string      `json:"parent_host"`
-	Networks               []VmNetwork `json:"networks"`
-	Disks                  []VmDisk    `json:"disks"`
-	IncludeHostwideSSHKeys bool        `json:"include_hostwide_ssh_keys"`
-	VmSshKeys              []VmSshKey  `json:"vm_ssh_keys"`
-	VncPort                int         `json:"vnc_port"`
-	VncPassword            string      `json:"vnc_password"`
-	Description            string      `json:"description"`
-	UUID                   string      `json:"uuid,omitempty"`
-	VGA                    string      `json:"vga,omitempty"`
-	Passthru               []string    `json:"passthru,omitempty"`
-	DisableXHCI            bool        `json:"disable_xhci,omitempty"`
-	VncResolution          int         `json:"vnc_resolution,omitempty"`
-	Shares                 []Virtio9P  `json:"9p_shares,omitempty"`
+	// LiveStatus         string      `json:"live_status"`
+	Production         bool        `json:"production"`
+	CPUSockets         int         `json:"cpu_sockets"`
+	CPUCores           int         `json:"cpu_cores"`
+	CPUThreads         int         `json:"cpu_threads,omitempty"`
+	Memory             string      `json:"memory"`
+	Loader             string      `json:"loader"`
+	OsType             string      `json:"os_type"`
+	OsComment          string      `json:"os_comment"`
+	Owner              string      `json:"owner"`
+	ParentHost         string      `json:"parent_host"`
+	Networks           []VmNetwork `json:"networks"`
+	Disks              []VmDisk    `json:"disks"`
+	IncludeHostSSHKeys bool        `json:"include_host_ssh_keys"`
+	VmSshKeys          []VmSshKey  `json:"vm_ssh_keys"`
+	VncPort            int         `json:"vnc_port"`
+	VncPassword        string      `json:"vnc_password"`
+	Description        string      `json:"description"`
+	UUID               string      `json:"uuid,omitempty"`
+	VGA                string      `json:"vga,omitempty"`
+	Passthru           []string    `json:"passthru,omitempty"`
+	DisableXHCI        bool        `json:"disable_xhci,omitempty"`
+	VncResolution      int         `json:"vnc_resolution,omitempty"`
+	Shares             []Virtio9P  `json:"9p_shares,omitempty"`
 }
 
 // Reads and returns the vm_config.json as Go struct.
@@ -156,6 +157,18 @@ func FixVmConfig(vmConfLocation string) (r VmConfig, e error) {
 			return
 		}
 		oldConfig["vnc_port"] = parsedInt
+	}
+
+	prod, exist := oldConfig["live_status"]
+	if exist && reflect.TypeOf(prod) == reflect.TypeOf("string") {
+		parsed := fmt.Sprintf("%s", prod)
+		if err != nil {
+			e = err
+			return
+		}
+		if parsed == "production" || parsed == "prod" {
+			oldConfig["production"] = true
+		}
 	}
 
 	m, err := json.Marshal(oldConfig)

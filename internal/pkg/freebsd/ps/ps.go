@@ -27,7 +27,7 @@ func ProcessTimes() (r []ProcessTime, e error) {
 	reSplitSpace := regexp.MustCompile(`\s+`)
 	for _, v := range strings.Split(string(out), "\n") {
 		split := reSplitSpace.Split(v, -1)
-		if len(split) < 2 {
+		if len(split) < 1 {
 			continue
 		}
 

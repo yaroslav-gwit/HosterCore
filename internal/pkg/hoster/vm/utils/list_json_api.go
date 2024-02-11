@@ -27,7 +27,6 @@ type VmApi struct {
 	UptimeUnix  int64  `json:"uptime_unix"`
 	Running     bool   `json:"running"`
 	Backup      bool   `json:"backup"`
-	Production  bool   `json:"production"`
 	Encrypted   bool   `json:"encrypted"`
 	CurrentHost string `json:"current_host"`
 }
@@ -82,10 +81,6 @@ func ListJsonApi() (r []VmApi, e error) {
 		temp.CurrentHost = hostname
 		if hostname != conf.ParentHost {
 			temp.Backup = true
-		}
-
-		if conf.LiveStatus == "prod" || conf.LiveStatus == "production" {
-			temp.Production = true
 		}
 
 		for ii, vv := range conf.Disks {

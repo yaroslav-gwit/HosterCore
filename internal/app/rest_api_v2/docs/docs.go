@@ -966,11 +966,8 @@ const docTemplate = `{
                 "encrypted": {
                     "type": "boolean"
                 },
-                "include_hostwide_ssh_keys": {
+                "include_host_ssh_keys": {
                     "type": "boolean"
-                },
-                "live_status": {
-                    "type": "string"
                 },
                 "loader": {
                     "type": "string"
@@ -1006,6 +1003,7 @@ const docTemplate = `{
                     }
                 },
                 "production": {
+                    "description": "LiveStatus         string      ` + "`" + `json:\"live_status\"` + "`" + `",
                     "type": "boolean"
                 },
                 "running": {
