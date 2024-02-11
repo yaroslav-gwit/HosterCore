@@ -67,6 +67,7 @@ func ListJsonApi() (r []VmApi, e error) {
 			temp.Running = true
 			reMatchVmProcess := regexp.MustCompile(`bhyve:\s+` + v.VmName + `($|\s+)`)
 			for _, vv := range ps {
+				fmt.Println(vv.Command)
 				if reMatchVmProcess.MatchString(vv.Command) {
 					fmt.Println(vv.StartTime)
 					temp.UptimeUnix = vv.StartTime
