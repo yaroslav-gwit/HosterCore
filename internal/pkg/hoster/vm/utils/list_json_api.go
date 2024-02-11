@@ -65,7 +65,8 @@ func ListJsonApi() (r []VmApi, e error) {
 		if slices.Contains(liveVms, v.VmName) {
 			temp.Running = true
 			// reMatch := regexp.MustCompile(`bhyve:\s+` + v.VmName + `($|\s+)`)
-			reMatch := regexp.MustCompile(`bhyve:\s+` + v.VmName)
+			// reMatch := regexp.MustCompile(`bhyve:\s+` + v.VmName)
+			reMatch := regexp.MustCompile(`bhyve:`)
 			for _, vv := range ps {
 				// fmt.Println(vv.Command)
 				if reMatch.MatchString(vv.Command) {
