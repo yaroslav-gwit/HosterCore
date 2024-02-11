@@ -64,10 +64,11 @@ func ListJsonApi() (r []VmApi, e error) {
 
 		if slices.Contains(liveVms, v.VmName) {
 			temp.Running = true
-			reMatchVmProcess := regexp.MustCompile(`bhyve:\s+` + v.VmName + `($|\s+)`)
+			// reMatch := regexp.MustCompile(`bhyve:\s+` + v.VmName + `($|\s+)`)
+			reMatch := regexp.MustCompile(`bhyve:\s+` + v.VmName)
 			for _, vv := range ps {
 				// fmt.Println(vv.Command)
-				if reMatchVmProcess.MatchString(vv.Command) {
+				if reMatch.MatchString(vv.Command) {
 					fmt.Println(vv.StartTime)
 					temp.UptimeUnix = vv.StartTime
 					temp.Uptime = timeconversion.ProcessUptimeToHuman(vv.StartTime)
