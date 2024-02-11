@@ -36,7 +36,10 @@ func ProcessTimes() (r []ProcessTime, e error) {
 			continue
 		}
 
-		r = append(r, ProcessTime{StartTime: etime, Command: strings.TrimSpace(strings.Join(split[1:], " "))})
+		command := strings.TrimSpace(v)
+		command = strings.TrimPrefix(command, fmt.Sprintf("%d", etime))
+		command = strings.TrimSpace(command)
+		r = append(r, ProcessTime{StartTime: etime, Command: command})
 	}
 
 	return
