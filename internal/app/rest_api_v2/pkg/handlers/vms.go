@@ -122,3 +122,44 @@ func VmInfo(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+type VmCloneInput struct {
+	VmName       string `json:"vm_name"`
+	NewVmName    string `json:"new_vm_name"`
+	SnapshotName string `json:"snapshot_name"`
+}
+
+// @Tags VMs
+// @Summary Clone the VM.
+// @Description Clone the VM using it's name, and optionally specify the snapshot name to be used for cloning.<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body VmCloneInput true "Request payload"
+// @Router /vm/clone [post]
+func VmClone(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := VmCloneInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = HosterVmUtils.Clone(input.VmName, input.NewVmName, input.SnapshotName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
