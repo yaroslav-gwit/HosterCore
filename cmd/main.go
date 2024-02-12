@@ -109,6 +109,7 @@ func init() {
 
 	// VM cmd -> clone
 	vmCmd.AddCommand(vmCloneCmd)
+	vmCloneCmd.Flags().StringVarP(&vmCloneSnapshot, "snapshot", "s", "", "Specify a custom snapshot to be used as a clone source (latest one picked by default)")
 
 	// VM cmd -> list
 	vmCmd.AddCommand(vmListCmd)

@@ -168,7 +168,7 @@ func main() {
 			return fiberContext.JSON(fiber.Map{"error": err.Error()})
 		}
 
-		err := cmd.VmDestroy(vm.Name)
+		err := HosterVm.Destroy(vm.Name)
 		if err != nil {
 			tagCustomError = err.Error()
 			fiberContext.Status(fiber.StatusInternalServerError)

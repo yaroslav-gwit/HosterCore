@@ -2,9 +2,10 @@
 // Use of this source code is governed by an Apache License 2.0
 // license that can be found in the LICENSE file.
 
-package HosterVmUtils
+package HosterVm
 
 import (
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"fmt"
 	"os/exec"
@@ -12,13 +13,18 @@ import (
 )
 
 func Clone(vmName string, newVmName string, snapshotName string) error {
-	vms, err := ListAllSimple()
+	// If the logger was already set, ignore this
+	if !log.ConfigSet {
+		log.SetFileLocation(HosterVmUtils.VM_AUDIT_LOG_LOCATION)
+	}
+
+	vms, err := HosterVmUtils.ListAllSimple()
 	if err != nil {
 		return err
 	}
 
 	vmFound := false
-	vmInfo := VmListSimple{}
+	vmInfo := HosterVmUtils.VmListSimple{}
 	for _, v := range vms {
 		if v.VmName == vmName {
 			vmInfo = v
@@ -51,8 +57,11 @@ func Clone(vmName string, newVmName string, snapshotName string) error {
 
 	out, err := exec.Command("zfs", "clone", snapshotName, vmInfo.DsName+"/"+newVmName).CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
+		errValue := fmt.Sprintf("%s; %s", strings.TrimSpace(string(out)), err.Error())
+		log.Error("vm could not be cloned: " + vmName + "; error: " + errValue)
+		return fmt.Errorf(errValue)
 	}
 
+	log.Warn("vm has been cloned: " + vmName + "; cloned vm name: " + newVmName)
 	return nil
 }

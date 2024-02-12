@@ -72,17 +72,18 @@ func Destroy(jailName string) error {
 		errorValue := "could not remove the dataset " + jailDs + ": " + strings.TrimSpace(string(out)) + "; " + err.Error()
 		return fmt.Errorf("%s", errorValue)
 	}
-	log.Info("Jail dataset has been destroyed: " + jailDs)
+	log.Warn("Jail dataset has been destroyed: " + jailDs)
 	// EOF Remove the Jail dataset
 
 	// Remove the parent dataset if it exists
-	if len(parentDataset) > 1 {
+	reMatch := regexp.MustCompile(`deployment_`)
+	if len(parentDataset) > 1 && reMatch.MatchString(parentDataset) {
 		out, err := exec.Command("zfs", "destroy", parentDataset).CombinedOutput()
 		if err != nil {
 			errorValue := "FATAL: " + strings.TrimSpace(string(out)) + "; " + err.Error()
 			return fmt.Errorf("%s", errorValue)
 		}
-		log.Info("Jail parent dataset has been destroyed: " + parentDataset)
+		log.Warn("Jail parent dataset has been destroyed: " + parentDataset)
 	}
 	// EOF Remove the parent dataset if it exists
 

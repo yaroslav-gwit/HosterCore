@@ -153,7 +153,7 @@ func VmClone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = HosterVmUtils.Clone(input.VmName, input.NewVmName, input.SnapshotName)
+	err = HosterVm.Clone(input.VmName, input.NewVmName, input.SnapshotName)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -183,7 +183,7 @@ func VmDestroy(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	vmName := vars["vm_name"]
 
-	err := HosterVmUtils.Destroy(vmName)
+	err := HosterVm.Destroy(vmName)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

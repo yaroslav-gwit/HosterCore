@@ -45,6 +45,52 @@ var (
 )
 
 var (
+	vmCloneSnapshot string
+
+	vmCloneCmd = &cobra.Command{
+		Use:   "clone [existingVmName] [newVmName]",
+		Short: "Use OpenZFS to clone your VM",
+		Long:  `Use OpenZFS to clone your VM. You'll need to run "hoster vm cireset [newVmName]" in case the new VM has to be used as a separate machine.`,
+		Args:  cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			// err := executeVmClone(args[0], args[1])
+			err := HosterVm.Clone(args[0], args[1], vmCloneSnapshot)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+var (
+	vmDestroyCmd = &cobra.Command{
+		Use:   "destroy",
+		Short: "Destroy the VM",
+		Long:  `Destroy the VM and it's parent snapshot (uses zfs destroy)`,
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			// err := VmDestroy(args[0])
+			err := HosterVm.Destroy(args[0])
+			if err != nil {
+				emojlog.PrintLogMessage("Could not destroy the VM: "+err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+
+			err = ReloadDnsServer()
+			if err != nil {
+				emojlog.PrintLogMessage("Could not reload the DNS server: "+err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+var (
 	vmUnlockAllCmd = &cobra.Command{
 		Use:   "unlock-all",
 		Short: "Unlock all HA locked VMs",
