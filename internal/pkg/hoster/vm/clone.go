@@ -42,8 +42,12 @@ func Clone(vmName string, newVmName string, snapshotName string) error {
 
 	snapFound := false
 	if len(snapshotName) < 1 {
-		snapshotName = snaps[len(snaps)-1].Name
-		snapFound = true
+		for _, v := range snaps {
+			if vmInfo.DsName+"/"+vmName == v.Dataset {
+				snapFound = true
+				snapshotName = v.Name
+			}
+		}
 	} else {
 		for _, v := range snaps {
 			if v.Name == snapshotName {
