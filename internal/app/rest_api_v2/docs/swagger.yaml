@@ -316,6 +316,43 @@ definitions:
       vm_name:
         type: string
     type: object
+  rctl.RctMetrics:
+    properties:
+      code_dump_size:
+        type: integer
+      cpu_time:
+        type: integer
+      data_size:
+        type: integer
+      max_proc:
+        type: integer
+      memory_locked:
+        type: integer
+      memory_use:
+        type: integer
+      nsemop:
+        type: integer
+      nthr:
+        type: integer
+      open_files:
+        type: integer
+      p_cpu:
+        type: integer
+      read_bps:
+        type: integer
+      read_iops:
+        type: integer
+      stack_size:
+        type: integer
+      vmemory_use:
+        type: integer
+      wall_clock:
+        type: integer
+      write_bps:
+        type: integer
+      write_iops:
+        type: integer
+    type: object
   zfsutils.SnapshotInfo:
     properties:
       snapshot_clones:
@@ -634,6 +671,58 @@ paths:
       summary: List all Jail templates.
       tags:
       - Jails
+  /metrics/jail/{jail_name}:
+    get:
+      description: 'Get the RCTL metrics for a specific Jail.<br>`AUTH`: Only `rest`
+        user is allowed.'
+      parameters:
+      - description: Jail Name
+        in: path
+        name: jail_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rctl.RctMetrics'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get the RCTL metrics for a specific Jail.
+      tags:
+      - Metrics
+  /metrics/vm/{vm_name}:
+    get:
+      description: 'Get the RCTL metrics for a specific VM.<br>`AUTH`: Only `rest`
+        user is allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rctl.RctMetrics'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get the RCTL metrics for a specific VM.
+      tags:
+      - Metrics
   /snapshot/all/{res_name}:
     get:
       description: 'List all snapshots for any given VM or a Jail.<br>`AUTH`: Both

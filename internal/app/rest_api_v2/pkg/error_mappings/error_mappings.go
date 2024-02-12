@@ -14,6 +14,8 @@ const (
 	SnapshotDoesntExist
 	CouldNotParseYourInput
 	CouldNotStopYourResource
+	VmIsNotRunning
+	JailIsNotRunning
 )
 
 var statusStrings = map[Status]string{
@@ -26,6 +28,8 @@ var statusStrings = map[Status]string{
 	SnapshotDoesntExist:      "snapshot doesn't exist",
 	CouldNotParseYourInput:   "could not parse your input",
 	CouldNotStopYourResource: "could not stop your resource",
+	VmIsNotRunning:           "vm is not running",
+	JailIsNotRunning:         "jail is not running",
 }
 
 // String returns the string representation of the Status value.

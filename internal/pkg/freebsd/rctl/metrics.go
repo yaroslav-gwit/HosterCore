@@ -31,7 +31,7 @@ type RctMetrics struct {
 	WriteIoPs    uint64 `json:"write_iops"`
 }
 
-func MetricsProcess(pid int64) (r RctMetrics, e error) {
+func MetricsProcess(pid int) (r RctMetrics, e error) {
 	out, err := exec.Command("rctl", "-u", fmt.Sprintf("process:%d", pid)).CombinedOutput()
 	if err != nil {
 		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
