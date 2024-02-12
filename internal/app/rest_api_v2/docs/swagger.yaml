@@ -891,6 +891,32 @@ paths:
       summary: Clone the VM.
       tags:
       - VMs
+  /vm/destroy/{vm_name}:
+    delete:
+      description: 'Destroy the VM using it''s name.<br>`AUTH`: Only `rest` user is
+        allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Destroy the VM.
+      tags:
+      - VMs
   /vm/info/{vm_name}:
     get:
       description: 'Get the VM Info.<br>`AUTH`: Both users are allowed.'

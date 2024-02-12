@@ -70,6 +70,7 @@ func main() {
 	r.HandleFunc("/api/v2/vm/info/{vm_name}", handlers.VmInfo).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/stop", handlers.VmStop).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/clone", handlers.VmClone).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/vm/destroy/{vm_name}", handlers.VmDestroy).Methods(http.MethodDelete)
 	// Jails
 	r.HandleFunc("/api/v2/jail/all", handlers.JailList).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/jail/template/list", handlers.JailListTemplates).Methods(http.MethodGet)
