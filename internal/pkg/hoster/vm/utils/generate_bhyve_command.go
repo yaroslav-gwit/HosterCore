@@ -141,6 +141,10 @@ func GenerateBhyveStartCmd(vmName string, vmLocation string, restoreVmState bool
 		loaderCommand = loaderCommand + " -u " + vmName
 	}
 
+	for strings.Contains(r, "  ") {
+		r = strings.ReplaceAll(r, "  ", " ")
+	}
+
 	r = r + loaderCommand
 	return
 }
