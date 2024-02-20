@@ -12,15 +12,29 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"syscall"
+
+	"github.com/sirupsen/logrus"
 )
 
 func Start(vmName string, waitVnc bool, debugRun bool) error {
 	// If the logger was already set, ignore this
 	if !log.ConfigSet {
+		log.SetLevel(logrus.DebugLevel)
 		log.SetFileLocation(HosterVmUtils.VM_AUDIT_LOG_LOCATION)
 	}
 	// EOF If the logger was already set, ignore this
+
+	// VM is live check
+	live, err := HosterVmUtils.GetRunningVms()
+	if err != nil {
+		return err
+	}
+	if slices.Contains(live, vmName) {
+		return fmt.Errorf("vm is already running")
+	}
+	// EOF VM is live check
 
 	// Check if VM exists
 	vmInfo := HosterVmUtils.VmListSimple{}
