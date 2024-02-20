@@ -190,6 +190,48 @@
                 }
             }
         },
+        "/jail/clone": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Clone the Jail using it's name, and optionally specify the snapshot name to be used for cloning.\u003cbr\u003e`AUTH`: Only `rest` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Clone the Jail.",
+                "parameters": [
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JailCloneInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/deploy": {
             "post": {
                 "security": [
@@ -438,7 +480,8 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Metrics"
+                    "Metrics",
+                    "Jails"
                 ],
                 "summary": "Get the RCTL metrics for a specific Jail.",
                 "parameters": [
@@ -478,7 +521,8 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Metrics"
+                    "Metrics",
+                    "VMs"
                 ],
                 "summary": "Get the RCTL metrics for a specific VM.",
                 "parameters": [
@@ -831,6 +875,46 @@
                 }
             }
         },
+        "/vm/start/{vm_name}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Start a specific VM using it's name as a parameter.\u003cbr\u003e`AUTH`: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Start a specific VM.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VM Name",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/stop": {
             "post": {
                 "security": [
@@ -1100,6 +1184,12 @@
                 "startup_script": {
                     "type": "string"
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "timezone": {
                     "type": "string"
                 },
@@ -1204,6 +1294,12 @@
                 "running": {
                     "type": "boolean"
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "uptime": {
                     "type": "string"
                 },
@@ -1292,6 +1388,20 @@
                     "type": "string"
                 },
                 "key_value": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.JailCloneInput": {
+            "type": "object",
+            "properties": {
+                "jail_name": {
+                    "type": "string"
+                },
+                "new_jail_name": {
+                    "type": "string"
+                },
+                "snapshot_name": {
                     "type": "string"
                 }
             }

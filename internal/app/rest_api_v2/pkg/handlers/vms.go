@@ -123,12 +123,6 @@ func VmInfo(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-type VmCloneInput struct {
-	VmName       string `json:"vm_name"`
-	NewVmName    string `json:"new_vm_name"`
-	SnapshotName string `json:"snapshot_name"`
-}
-
 // @Tags VMs
 // @Summary Clone the VM.
 // @Description Clone the VM using it's name, and optionally specify the snapshot name to be used for cloning.<br>`AUTH`: Only `rest` user is allowed.
@@ -184,6 +178,36 @@ func VmDestroy(w http.ResponseWriter, r *http.Request) {
 	vmName := vars["vm_name"]
 
 	err := HosterVm.Destroy(vmName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
+// @Summary Start a specific VM.
+// @Description Start a specific VM using it's name as a parameter.<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "VM Name"
+// @Router /vm/start/{vm_name} [post]
+func VmStart(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+
+	err := HosterVm.Start(vmName, false, false)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

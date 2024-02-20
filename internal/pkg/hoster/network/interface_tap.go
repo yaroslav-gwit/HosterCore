@@ -68,3 +68,63 @@ func VmNetworkCleanup(vmName string) (r []Iface, e error) {
 
 	return
 }
+
+// This function creates a new TAP interface, sets the correct description for it,
+// and returns it's (TAP interface) name back to the caller.
+func CreateTapInterface(vmName string, networkName string) (r string, e error) {
+	// Check if the network exists
+	networks, err := GetNetworkConfig()
+	if err != nil {
+		e = err
+		return
+	}
+	networkFound := false
+	for _, v := range networks {
+		if v.NetworkName == networkName {
+			networkFound = true
+		}
+	}
+	if !networkFound {
+		e = fmt.Errorf("network with the name %s does not exist", networkName)
+		return
+	}
+	// EOF Check if the network exists
+
+	// Create new epair interface
+	out, err := exec.Command("ifconfig", "tap", "create").CombinedOutput()
+	if err != nil {
+		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
+		return
+	}
+	// EOF Create new epair interface
+
+	// Set newly created interface name as a return value
+	r = strings.TrimSpace(string(out))
+	// EOF Set newly created interface name as a return value
+
+	// Set a description for the new interface
+	out, err = exec.Command("ifconfig", r, "description", fmt.Sprintf("\"vm::%s iface::%s network::%s\"", vmName, r, networkName)).CombinedOutput()
+	if err != nil {
+		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
+		return
+	}
+	// EOF Set a description for the new interface
+
+	// Add the interface to the VM network bridge
+	out, err = exec.Command("ifconfig", "vm-"+networkName, "addm", r, "up").CombinedOutput()
+	if err != nil {
+		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
+		return
+	}
+	// EOF Add the interface to the VM network bridge
+
+	// Bring up the interface
+	out, err = exec.Command("ifconfig", r, "up").CombinedOutput()
+	if err != nil {
+		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
+		return
+	}
+	// EOF Bring up the interface
+
+	return
+}

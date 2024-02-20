@@ -20,7 +20,7 @@ func GetConfigFolders() (r []string) {
 	r = []string{
 		"/opt/hoster-core/config_files",
 		"/opt/hoster/config_files",
-		"/usr/local/hoster",
+		"/usr/local/etc/hoster",
 		"/etc/hoster",
 		"/root/hoster/config_files",
 	}

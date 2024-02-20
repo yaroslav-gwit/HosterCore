@@ -1,4 +1,4 @@
-// Copyright 2023 Hoster Authors. All rights reserved.
+// Copyright 2024 Hoster Authors. All rights reserved.
 // Use of this source code is governed by an Apache License 2.0
 // license that can be found in the LICENSE file.
 
@@ -61,6 +61,7 @@ type VmConfig struct {
 	VmSshKeys          []VmSshKey  `json:"vm_ssh_keys"`
 	VncPort            int         `json:"vnc_port"`
 	VncPassword        string      `json:"vnc_password"`
+	Tags               []string    `json:"tags"`
 	Description        string      `json:"description"`
 	UUID               string      `json:"uuid,omitempty"`
 	VGA                string      `json:"vga,omitempty"`

@@ -68,6 +68,7 @@ func main() {
 	// VMs
 	r.HandleFunc("/api/v2/vm/all", handlers.VmList).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/info/{vm_name}", handlers.VmInfo).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/vm/start/{vm_name}", handlers.VmStart).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/stop", handlers.VmStop).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/clone", handlers.VmClone).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/destroy/{vm_name}", handlers.VmDestroy).Methods(http.MethodDelete)
@@ -77,6 +78,7 @@ func main() {
 	r.HandleFunc("/api/v2/jail/info/{jail_name}", handlers.JailInfo).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/jail/start/{jail_name}", handlers.JailStart).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/jail/stop/{jail_name}", handlers.JailStop).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/jail/clone", handlers.JailClone).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/jail/destroy/{jail_name}", handlers.JailDestroy).Methods(http.MethodDelete)
 	r.HandleFunc("/api/v2/jail/deploy", handlers.JailDeploy).Methods(http.MethodPost)
 	// Snapshots

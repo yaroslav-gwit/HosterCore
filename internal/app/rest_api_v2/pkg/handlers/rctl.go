@@ -17,7 +17,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// @Tags Metrics
+// @Tags Metrics, VMs
 // @Summary Get the RCTL metrics for a specific VM.
 // @Description Get the RCTL metrics for a specific VM.<br>`AUTH`: Only `rest` user is allowed.
 // @Produce json
@@ -70,7 +70,7 @@ func VmMetrics(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-// @Tags Metrics
+// @Tags Metrics, Jails
 // @Summary Get the RCTL metrics for a specific Jail.
 // @Description Get the RCTL metrics for a specific Jail.<br>`AUTH`: Only `rest` user is allowed.
 // @Produce json

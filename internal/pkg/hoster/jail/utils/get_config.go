@@ -13,18 +13,19 @@ import (
 )
 
 type JailConfig struct {
-	CPULimitPercent  int    `json:"cpu_limit_percent"`
-	RAMLimit         string `json:"ram_limit"`
-	StartupScript    string `json:"startup_script"`
-	ShutdownScript   string `json:"shutdown_script"`
-	ConfigFileAppend string `json:"config_file_append"`
-	IPAddress        string `json:"ip_address"`
-	Network          string `json:"network"`
-	DnsServer        string `json:"dns_server"`
-	Timezone         string `json:"timezone"`
-	Parent           string `json:"parent"`
-	Production       bool   `json:"production"`
-	Description      string `json:"description"`
+	CPULimitPercent  int      `json:"cpu_limit_percent"`
+	RAMLimit         string   `json:"ram_limit"`
+	StartupScript    string   `json:"startup_script"`
+	ShutdownScript   string   `json:"shutdown_script"`
+	ConfigFileAppend string   `json:"config_file_append"`
+	IPAddress        string   `json:"ip_address"`
+	Network          string   `json:"network"`
+	DnsServer        string   `json:"dns_server"`
+	Timezone         string   `json:"timezone"`
+	Parent           string   `json:"parent"`
+	Production       bool     `json:"production"`
+	Tags             []string `json:"tags"`
+	Description      string   `json:"description"`
 }
 
 const jailConfFilename = "jail_config.json"

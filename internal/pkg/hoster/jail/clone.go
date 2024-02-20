@@ -1,10 +1,11 @@
-// Copyright 2024 Hoster Authors. All rights reserved.
+// Copyright 2023 Hoster Authors. All rights reserved.
 // Use of this source code is governed by an Apache License 2.0
 // license that can be found in the LICENSE file.
 
-package HosterVm
+package HosterJail
 
 import (
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"fmt"
@@ -12,27 +13,27 @@ import (
 	"strings"
 )
 
-func Clone(vmName string, newVmName string, snapshotName string) error {
+func Clone(jailName string, newJailName string, snapshotName string) error {
 	// If the logger was already set, ignore this
 	if !log.ConfigSet {
 		log.SetFileLocation(HosterVmUtils.VM_AUDIT_LOG_LOCATION)
 	}
 
-	vms, err := HosterVmUtils.ListAllSimple()
+	jails, err := HosterJailUtils.ListAllSimple()
 	if err != nil {
 		return err
 	}
 
-	vmFound := false
-	vmInfo := HosterVmUtils.VmListSimple{}
-	for _, v := range vms {
-		if v.VmName == vmName {
-			vmInfo = v
-			vmFound = true
+	jailFound := false
+	jailInfo := HosterJailUtils.JailListSimple{}
+	for _, v := range jails {
+		if v.JailName == jailName {
+			jailInfo = v
+			jailFound = true
 		}
 	}
-	if !vmFound {
-		return fmt.Errorf("vm doesn't exist")
+	if !jailFound {
+		return fmt.Errorf("jail doesn't exist")
 	}
 
 	snaps, err := zfsutils.SnapshotListAll()
@@ -43,7 +44,7 @@ func Clone(vmName string, newVmName string, snapshotName string) error {
 	snapFound := false
 	if len(snapshotName) < 1 {
 		for _, v := range snaps {
-			if vmInfo.DsName+"/"+vmName == v.Dataset {
+			if jailInfo.DsName+"/"+jailName == v.Dataset {
 				snapFound = true
 				snapshotName = v.Name
 			}
@@ -59,13 +60,13 @@ func Clone(vmName string, newVmName string, snapshotName string) error {
 		return fmt.Errorf("snapshot doesn't exist")
 	}
 
-	out, err := exec.Command("zfs", "clone", snapshotName, vmInfo.DsName+"/"+newVmName).CombinedOutput()
+	out, err := exec.Command("zfs", "clone", snapshotName, jailInfo.DsName+"/"+newJailName).CombinedOutput()
 	if err != nil {
 		errValue := fmt.Sprintf("%s; %s", strings.TrimSpace(string(out)), err.Error())
-		log.Error("vm could not be cloned: " + vmName + "; error: " + errValue)
+		log.Error("jail could not be cloned: " + jailName + "; error: " + errValue)
 		return fmt.Errorf(errValue)
 	}
 
-	log.Warn("vm has been cloned: " + vmName + "; cloned vm name: " + newVmName)
+	log.Warn("jail has been cloned: " + jailName + "; cloned jail name: " + newJailName)
 	return nil
 }

@@ -148,6 +148,10 @@ definitions:
         type: string
       startup_script:
         type: string
+      tags:
+        items:
+          type: string
+        type: array
       timezone:
         type: string
       uptime:
@@ -217,6 +221,10 @@ definitions:
         type: boolean
       running:
         type: boolean
+      tags:
+        items:
+          type: string
+        type: array
       uptime:
         type: string
       uptime_unix:
@@ -275,6 +283,15 @@ definitions:
       key_owner:
         type: string
       key_value:
+        type: string
+    type: object
+  handlers.JailCloneInput:
+    properties:
+      jail_name:
+        type: string
+      new_jail_name:
+        type: string
+      snapshot_name:
         type: string
     type: object
   handlers.SnapshotInput:
@@ -528,6 +545,33 @@ paths:
       summary: List all Jails.
       tags:
       - Jails
+  /jail/clone:
+    post:
+      description: 'Clone the Jail using it''s name, and optionally specify the snapshot
+        name to be used for cloning.<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.JailCloneInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Clone the Jail.
+      tags:
+      - Jails
   /jail/deploy:
     post:
       description: 'Deploy a new Jail using a set of defined parameters.<br>`AUTH`:
@@ -706,6 +750,7 @@ paths:
       summary: Get the RCTL metrics for a specific Jail.
       tags:
       - Metrics
+      - Jails
   /metrics/vm/{vm_name}:
     get:
       description: 'Get the RCTL metrics for a specific VM.<br>`AUTH`: Only `rest`
@@ -732,6 +777,7 @@ paths:
       summary: Get the RCTL metrics for a specific VM.
       tags:
       - Metrics
+      - VMs
   /snapshot/all/{res_name}:
     get:
       description: 'List all snapshots for any given VM or a Jail.<br>`AUTH`: Both
@@ -940,6 +986,32 @@ paths:
       security:
       - BasicAuth: []
       summary: Get the VM Info.
+      tags:
+      - VMs
+  /vm/start/{vm_name}:
+    post:
+      description: 'Start a specific VM using it''s name as a parameter.<br>`AUTH`:
+        Both users are allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Start a specific VM.
       tags:
       - VMs
   /vm/stop:

@@ -15,3 +15,15 @@ type SwaggerSuccess struct {
 type SwaggerStringList struct {
 	Message []string `json:"message"` // success
 }
+
+type JailCloneInput struct {
+	JailName     string `json:"jail_name"`
+	NewJailName  string `json:"new_jail_name"`
+	SnapshotName string `json:"snapshot_name"`
+}
+
+type VmCloneInput struct {
+	VmName       string `json:"vm_name"`
+	NewVmName    string `json:"new_vm_name"`
+	SnapshotName string `json:"snapshot_name"`
+}
