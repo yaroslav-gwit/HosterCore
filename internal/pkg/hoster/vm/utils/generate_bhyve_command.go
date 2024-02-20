@@ -38,8 +38,12 @@ func GenerateBhyveStartCmd(vmName string, vmLocation string, restoreVmState bool
 			e = err
 			return
 		}
+		if bhyvePci == 2 {
+			_ = 0
+		} else {
+			bhyvePci += 1
+		}
 		networkFinal = fmt.Sprintf("%s -s %d:%d,%s,%s,mac=%s", networkFinal, bhyvePci, bhyvePci2, v.NetworkAdaptorType, tap, v.NetworkMac)
-		bhyvePci += 1
 	}
 	r = r + networkFinal
 	// EOF Generate network config
@@ -47,13 +51,13 @@ func GenerateBhyveStartCmd(vmName string, vmLocation string, restoreVmState bool
 	// Generate disk config
 	var diskFinal string
 	for _, v := range conf.Disks {
-		bhyvePci = bhyvePci + 1
 		var diskImageLocation string
 		if v.DiskLocation == "internal" {
 			diskImageLocation = vmLocation + "/" + v.DiskImage
 		} else {
 			diskImageLocation = v.DiskImage
 		}
+		bhyvePci = bhyvePci + 1
 		diskFinal = fmt.Sprintf("%s -s %d:%d,%s,%s", diskFinal, bhyvePci, bhyvePci2, v.DiskType, diskImageLocation)
 	}
 	r = r + diskFinal
