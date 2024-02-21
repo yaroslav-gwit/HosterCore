@@ -45,7 +45,7 @@ func VmNetworkCleanup(vmName string) (r []Iface, e error) {
 
 	// New format network description
 	reMatchVmNew := regexp.MustCompile(`vm::` + vmName)
-	reFindTapNew := regexp.MustCompile(`iface::.*?\s+` + vmName)
+	reFindTapNew := regexp.MustCompile(`iface::.*?\s+`)
 	for _, v := range outSplit {
 		v = strings.TrimSpace(v)
 		if reMatchDescription.MatchString(v) && reMatchVmNew.MatchString(v) {
