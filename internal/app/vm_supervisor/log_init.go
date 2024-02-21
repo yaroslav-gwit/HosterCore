@@ -33,7 +33,7 @@ func init() {
 			log.SetOutput(file)
 		}
 
-		defer file.Close()
+		// defer file.Close()
 	} else {
 		FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "did not receive a log file path")
 	}
