@@ -62,7 +62,7 @@ func Start(vmName string, waitVnc bool, debugRun bool) error {
 	}
 	os.Setenv("VM_START", bhyveCmd)
 	os.Setenv("VM_NAME", vmName)
-	os.Setenv("LOG_FILE", vmLocation+"/vm_supervisor.log")
+	os.Setenv("LOG_FILE", vmLocation+"/"+HosterVmUtils.VM_LOG_NAME)
 	log.Debug("bhyve cmd: " + bhyveCmd)
 
 	binaryLoc := ""

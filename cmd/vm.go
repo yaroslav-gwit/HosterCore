@@ -24,6 +24,29 @@ var (
 )
 
 var (
+	vmStartCmdRestoreVmState bool
+	vmStartCmdWaitForVnc     bool
+	vmStartCmdDebug          bool
+
+	vmStartCmd = &cobra.Command{
+		Use:   "start [vmName]",
+		Short: "Start a particular VM using it's name",
+		Long:  `Start a particular VM using it's name`,
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			// err := VmStart(args[0], vmStartCmdRestoreVmState, vmStartCmdWaitForVnc, vmStartCmdDebug)
+			err := HosterVm.Start(args[0], vmStartCmdWaitForVnc, vmStartCmdDebug)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+var (
 	vmStopCmdForceStop bool
 	vmStopCmdCleanUp   bool
 	vmStopCmd          = &cobra.Command{

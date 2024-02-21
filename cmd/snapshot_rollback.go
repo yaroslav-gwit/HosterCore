@@ -21,6 +21,7 @@ var (
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := ZfsSnapshotRollback(args[0], args[1], snapshotRollbackForceStop, snapshotRollbackForceStart)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -77,7 +78,8 @@ func ZfsSnapshotRollback(vmName string, snapshotName string, forceStop bool, for
 	emojlog.PrintLogMessage("VM has been rolled back to: "+snapshotName, emojlog.Changed)
 
 	if forceStart {
-		err := VmStart(vmName, false, false, false)
+		// err := VmStart(vmName, false, false, false)
+		err := HosterVm.Start(vmName, false, false)
 		if err != nil {
 			return err
 		}

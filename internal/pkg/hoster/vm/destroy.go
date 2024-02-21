@@ -68,6 +68,7 @@ func Destroy(vmName string) error {
 		log.Error("vm could not be destroyed: " + vmName + "; error: " + errValue)
 		return fmt.Errorf(errValue)
 	}
+	log.Warn("vm destroyed: " + vmName + "; dataset: " + vmDataset + ";")
 
 	// Remove the parent dataset if it exists
 	reMatch := regexp.MustCompile(`deployment_`)
@@ -77,10 +78,9 @@ func Destroy(vmName string) error {
 			errorValue := "FATAL: " + strings.TrimSpace(string(out)) + "; " + err.Error()
 			return fmt.Errorf("%s", errorValue)
 		}
-		log.Warn("VM parent dataset has been destroyed: " + parentDataset)
+		log.Warn("parent snapshot destroyed: " + parentDataset)
 	}
 	// EOF Remove the parent dataset if it exists
 
-	log.Warn("vm has been destroyed: " + vmName + "; dataset: " + vmDataset)
 	return nil
 }

@@ -1,42 +1,44 @@
+// Copyright 2024 Hoster Authors. All rights reserved.
+// Use of this source code is governed by an Apache License 2.0
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
 	HosterNetwork "HosterCore/internal/pkg/hoster/network"
+	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"bufio"
 	"io"
 	"os"
 	"os/exec"
-	"path"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
-	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
-var logFileLocation string
 var vmName string
 
 func main() {
 	// Get env vars passed from "hoster vm start"
-	vmStartCommand := os.Getenv("VM_START")
 	vmName = os.Getenv("VM_NAME")
-	logFileLocation = os.Getenv("LOG_FILE")
+	vmStartCommand := os.Getenv("VM_START")
 
 	// Start the process
 	parts := strings.Fields(vmStartCommand)
 	for {
-		logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION STARTED: VM boot process has been initiated")
+		log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Info("SUPERVISED SESSION STARTED: VM boot process has been initiated")
 		hupCmd := exec.Command(parts[0], parts[1:]...)
 		stdout, err := hupCmd.StdoutPipe()
 		if err != nil {
-			logFileOutput(LOG_SUPERVISOR, "Failed to create stdout pipe: "+err.Error())
+			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("Failed to create stdout pipe: " + err.Error())
 			os.Exit(101)
 		}
 		stderr, err := hupCmd.StderrPipe()
 		if err != nil {
-			logFileOutput(LOG_SUPERVISOR, "Failed to create stderr pipe: "+err.Error())
+			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("Failed to create stderr pipe: " + err.Error())
 			os.Exit(102)
 		}
 
@@ -61,75 +63,71 @@ func main() {
 
 		processErr := <-done
 		if processErr != nil {
-			logFileOutput(LOG_SUPERVISOR, "VM child process ended with a non-zero exit code: "+processErr.Error())
+			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("VM child process ended with a non-zero exit code: " + processErr.Error())
 		}
 
 		processExitStatus, correctReturnType := processErr.(*exec.ExitError)
 		if correctReturnType {
 			exitCode := processExitStatus.ProcessState.ExitCode()
 			if exitCode == 1 || exitCode == 2 {
-				logFileOutput(LOG_SUPERVISOR, "Bhyve received a shutdown signal: "+strconv.Itoa(exitCode)+". Executing the shutdown sequence...")
-				logFileOutput(LOG_SUPERVISOR, "Shutting down -> Performing network cleanup")
-				// cmd.NetworkCleanup(vmName, true)
+				log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Infof("Bhyve received a shutdown signal: %d. Executing the shutdown sequence...", exitCode)
+
+				log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Info("Shutting down -> Performing network cleanup")
 				_, _ = HosterNetwork.VmNetworkCleanup(vmName)
-				logFileOutput(LOG_SUPERVISOR, "Shutting down -> Performing Bhyve cleanup")
-				// cmd.BhyvectlDestroy(vmName, true)
+				log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Info("Shutting down -> Performing Bhyve cleanup")
 				_ = HosterVmUtils.BhyveCtlDestroy(vmName)
-				logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. The VM has been shutdown.")
+
+				log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Info("SUPERVISED SESSION ENDED. The VM has been shutdown.")
 				os.Exit(0)
 			} else {
-				logFileOutput(LOG_SUPERVISOR, "Bhyve returned a panic exit code: "+strconv.Itoa(exitCode))
-				logFileOutput(LOG_SUPERVISOR, "Shutting down all VM related processes and performing system clean up")
-				// cmd.NetworkCleanup(vmName, true)
+				log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Errorf("Bhyve returned a panic exit code: %d. Shutting down all VM related processes and performing system clean up.", exitCode)
 				_, _ = HosterNetwork.VmNetworkCleanup(vmName)
-				// cmd.BhyvectlDestroy(vmName, true)
 				_ = HosterVmUtils.BhyveCtlDestroy(vmName)
-				logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. Unexpected exit code.")
+				log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("SUPERVISED SESSION ENDED. Unexpected exit code.")
 				os.Exit(101)
 			}
 		} else {
-			logFileOutput(LOG_SUPERVISOR, "Bhyve received a reboot signal. Executing the reboot sequence...")
-			logFileOutput(LOG_SUPERVISOR, "Rebooting -> Performing network cleanup")
-			// cmd.NetworkCleanup(vmName, true)
+			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Info("Bhyve received a reboot signal. Executing the reboot sequence...")
+
+			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Info("Rebooting -> Performing network cleanup")
 			_, _ = HosterNetwork.VmNetworkCleanup(vmName)
-			logFileOutput(LOG_SUPERVISOR, "Rebooting -> Performing Bhyve cleanup")
-			// cmd.BhyvectlDestroy(vmName, true)
+			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Info("Rebooting -> Performing Bhyve cleanup")
 			_ = HosterVmUtils.BhyveCtlDestroy(vmName)
-			logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. The VM will start back up in a moment.")
+
+			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Info("Rebooting -> Performing Bhyve cleanup")
 			restartVmProcess(vmName)
 			os.Exit(0)
 		}
-		logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. SOMETHING UNPREDICTED HAPPENED! THE PROCESS HAD TO EXIT!")
-		// cmd.NetworkCleanup(vmName, true)
+
+		log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("SUPERVISED SESSION ENDED. SOMETHING UNPREDICTED HAPPENED! THE PROCESS HAD TO EXIT!")
 		_, _ = HosterNetwork.VmNetworkCleanup(vmName)
-		// cmd.BhyvectlDestroy(vmName, true)
 		_ = HosterVmUtils.BhyveCtlDestroy(vmName)
 		os.Exit(1000)
 	}
 }
 
 func readAndLogOutput(reader *bufio.Reader, name string) {
-	reMatchProcessFailureLogLine1 := regexp.MustCompile(`read \|0: file already closed`)
+	reMatchProcessFailureLogLine1 := regexp.MustCompile(`read\s+\|0:\s+file\s+already\s+closed`) // match this result: "read |0: file already closed"
 	for {
 		line, err := reader.ReadString('\n')
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			logFileOutput(name, err.Error())
+			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error(name + "; " + err.Error())
 			os.Exit(100)
 		}
+
 		line = strings.TrimSpace(line)
 		if line != "" {
-			logFileOutput(name, line)
+			log.WithFields(logrus.Fields{"type": name}).Info(line)
 		}
 
-		if reMatchProcessFailureLogLine1.MatchString(strings.TrimSpace(line)) {
-			// cmd.NetworkCleanup(vmName, true)
+		// Match one of the error outputs, and kill the VM process if something has gone wrong. Aka "fail early" principle.
+		if reMatchProcessFailureLogLine1.MatchString(line) {
 			_, _ = HosterNetwork.VmNetworkCleanup(vmName)
-			// cmd.BhyvectlDestroy(vmName, true)
 			_ = HosterVmUtils.BhyveCtlDestroy(vmName)
-			logFileOutput(LOG_SUPERVISOR, "SUPERVISED SESSION ENDED. Observed a bhyve process failure.")
+			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("SUPERVISED SESSION ENDED. Bhyve process failure.")
 			os.Exit(1001)
 		}
 	}
@@ -138,7 +136,7 @@ func readAndLogOutput(reader *bufio.Reader, name string) {
 func startVmProcess(cmd *exec.Cmd, done chan error) {
 	err := cmd.Start()
 	if err != nil {
-		logFileOutput(LOG_SUPERVISOR, "Failed to start command: "+err.Error())
+		log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("Failed to start the VM using bhyve: " + err.Error())
 		os.Exit(100)
 	}
 	go func() {
@@ -147,36 +145,9 @@ func startVmProcess(cmd *exec.Cmd, done chan error) {
 }
 
 func restartVmProcess(vmName string) {
-	execPath, err := os.Executable()
+	err := HosterVm.Start(vmName, false, false)
 	if err != nil {
-		logFileOutput(LOG_SUPERVISOR, "Could not find the executable path: "+err.Error())
-		os.Exit(100)
-	}
-	execFile := path.Dir(execPath) + "/hoster"
-	out, err := exec.Command(execFile, "vm", "start", vmName).CombinedOutput()
-	if err != nil {
-		removeOutputReturns := strings.ReplaceAll(string(out), "\n", "_")
-		logFileOutput(LOG_SUPERVISOR, "Could not restart the VM: "+removeOutputReturns+"; "+err.Error())
-		os.Exit(100)
-	}
-}
-
-const LOG_SUPERVISOR = "supervisor"
-const LOG_SYS_OUT = "sys_stdout"
-const LOG_SYS_ERR = "sys_stderr"
-
-func logFileOutput(msgType string, msgString string) {
-	// Create or open the log file for writing
-	timeNow := time.Now().Format("2006-01-02 15:04:05")
-	logFile, err := os.OpenFile(logFileLocation, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0640)
-	if err != nil {
-		_ = exec.Command("logger", err.Error()).Run()
-	}
-	// log.SetOutput(logFile)
-	defer logFile.Close()
-	// Append the line to the file
-	_, err = logFile.WriteString(timeNow + " [" + msgType + "] " + msgString + "\n")
-	if err != nil {
-		_ = exec.Command("logger", err.Error()).Run()
+		log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("Failed to restart the VM: " + err.Error())
+		os.Exit(101)
 	}
 }

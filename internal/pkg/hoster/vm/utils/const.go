@@ -5,6 +5,7 @@
 package HosterVmUtils
 
 const VM_CONFIG_NAME = "vm_config.json"
+const VM_LOG_NAME = "vm_supervisor.log"
 const VM_AUDIT_LOG_LOCATION = "/var/log/hoster_audit_vm.log"
 
 const ERRTXT_VM_IS_RUNNING = "VM is already running"

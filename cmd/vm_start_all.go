@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	"fmt"
 	"time"
 
@@ -52,7 +53,8 @@ func vmStartAll(waitTime int) {
 		}
 
 		// Start the VM
-		VmStart(v, false, false, false)
+		// VmStart(v, false, false, false)
+		_ = HosterVm.Start(v, false, false)
 	}
 }
 

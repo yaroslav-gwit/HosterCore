@@ -32,7 +32,6 @@ const DNS_SRV4_CLOUD_FLARE = "1.1.1.1:53"
 var log = logrus.New()
 
 func init() {
-	logStdOut := os.Getenv("LOG_STDOUT")
 	logFile := os.Getenv("LOG_FILE")
 
 	// Log as JSON instead of the default ASCII/text formatter.
@@ -42,7 +41,7 @@ func init() {
 	log.SetOutput(os.Stdout)
 
 	// Log to file, but fallback to STDOUT if something goes wrong
-	if logStdOut == "false" && len(logFile) > 2 {
+	if len(logFile) > 2 {
 		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
 			FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "DNS_SERVER: could not use this file for logging "+logFile+", falling back to STDOUT")
@@ -52,7 +51,7 @@ func init() {
 	}
 
 	log.SetLevel(logrus.DebugLevel)
-	log.SetReportCaller(true)
+	// log.SetReportCaller(true)
 }
 
 func main() {
