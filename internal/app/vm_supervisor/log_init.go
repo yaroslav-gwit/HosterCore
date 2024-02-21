@@ -25,7 +25,7 @@ func init() {
 
 	// Log to file, but fallback to STDOUT if something goes wrong
 	if len(logFile) > 2 {
-		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0640)
 		if err != nil {
 			msg := "VM Supervisor: could not use this file for logging " + logFile + ", falling back to STDOUT"
 			FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, msg)
@@ -34,6 +34,8 @@ func init() {
 		}
 
 		defer file.Close()
+	} else {
+		FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "did not receive a log file path")
 	}
 
 	log.SetLevel(logrus.DebugLevel)
