@@ -54,9 +54,7 @@ func startSchedulerService() error {
 	if err != nil {
 		return err
 	}
-
 	os.Setenv("LOG_FILE", "/var/log/hoster_scheduler.log")
-	os.Setenv("LOG_STDOUT", "false")
 
 	execFile := path.Dir(execPath) + "/scheduler"
 	command := exec.Command(execFile)

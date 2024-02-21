@@ -118,9 +118,7 @@ func startDnsServer() error {
 	if err != nil {
 		return err
 	}
-
 	os.Setenv("LOG_FILE", "/var/log/hoster_dns.log")
-	os.Setenv("LOG_STDOUT", "false")
 
 	execFile := path.Dir(execPath) + "/dns_server"
 	command := exec.Command(execFile)
