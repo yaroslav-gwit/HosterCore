@@ -13,23 +13,6 @@ import (
 
 	"facette.io/natsort"
 	"github.com/aquasecurity/table"
-	"github.com/spf13/cobra"
-)
-
-var (
-	jsonOutputVm       bool
-	jsonPrettyOutputVm bool
-	tableUnixOutputVm  bool
-
-	vmListCmd = &cobra.Command{
-		Use:   "list",
-		Short: "VM list",
-		Long:  `VM list in the form of tables, json, or json pretty`,
-		Run: func(cmd *cobra.Command, args []string) {
-			checkInitFile()
-			vmListMain()
-		},
-	}
 )
 
 var allVmsUptime []string

@@ -10,66 +10,31 @@ import (
 
 	"HosterCore/cmd"
 	"HosterCore/internal/pkg/emojlog"
-	FreeBSDLogger "HosterCore/internal/pkg/freebsd/logger"
 	HosterHost "HosterCore/internal/pkg/hoster/host"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 
 	"github.com/miekg/dns"
-	"github.com/sirupsen/logrus"
 )
 
 // Global state vars
 var vmInfoList []VmInfoStruct
 var jailInfoList []JailInfoStruct
-
-// var logChannel chan LogMessage
 var upstreamServers []string
 
-// Hardcoded failover DNS servers (in case user's main DNS server fails)
-const DNS_SRV4_QUAD_NINE = "9.9.9.9:53"
-const DNS_SRV4_CLOUD_FLARE = "1.1.1.1:53"
-
-var log = logrus.New()
-
-func init() {
-	logFile := os.Getenv("LOG_FILE")
-
-	// Log as JSON instead of the default ASCII/text formatter.
-	// log.SetFormatter(&logrus.JSONFormatter{})
-
-	// Output to stdout instead of the default stderr
-	log.SetOutput(os.Stdout)
-
-	// Log to file, but fallback to STDOUT if something goes wrong
-	if len(logFile) > 2 {
-		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-		if err != nil {
-			FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "DNS_SERVER: could not use this file for logging "+logFile+", falling back to STDOUT")
-		} else {
-			log.SetOutput(file)
-		}
-	}
-
-	log.SetLevel(logrus.DebugLevel)
-	// log.SetReportCaller(true)
-}
-
 func main() {
-	// logFileOutput(LOG_SUPERVISOR, "Starting DNS server", logChannel)
 	log.Info("Starting the DNS Server")
+
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGHUP)
 	go func() {
 		for sig := range signals {
 			if sig == syscall.SIGHUP {
-				// logFileOutput(LOG_SUPERVISOR, "Received a reload signal: SIGHUP", logChannel)
 				log.Info("Received a reload signal: SIGHUP")
 				vmInfoList = getVmsInfo()
 				jailInfoList = getJailsInfo()
 				loadUpstreamDnsServers()
 			}
 			if sig == syscall.SIGKILL {
-				// logFileOutput(LOG_SUPERVISOR, "Received a stop signal: SIGKILL", logChannel)
 				log.Info("Received a reload signal: SIGKILL")
 				os.Exit(0)
 			}
@@ -84,7 +49,6 @@ func main() {
 	server := dns.Server{Addr: ":53", Net: "udp"}
 	server.Handler = dns.HandlerFunc(handleDNSRequest)
 
-	// logFileOutput(LOG_SUPERVISOR, "DNS server listening on :53", logChannel)
 	log.Info("DNS Server is listening on 0.0.0.0:53")
 	err := server.ListenAndServe()
 	if err != nil {
@@ -306,10 +270,10 @@ const (
 	LOG_DEV_DEBUG  = "dev_debug"
 )
 
-type LogMessage struct {
-	Type    string
-	Message string
-}
+// type LogMessage struct {
+// 	Type    string
+// 	Message string
+// }
 
 func IsPublicDomain(topLevelDomain string) bool {
 	for _, v := range publicDomainList {

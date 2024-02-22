@@ -2,6 +2,7 @@
 
 #_ CHECK IF USER IS ROOT _#
 if [ "$EUID" -ne 0 ]; then echo " 🚦 ERROR: Please run this script as root user!" && exit 1; fi
+#_ EOF CHECK IF USER IS ROOT _#
 
 #_ SET DEFAULT VARS _#
 NETWORK_NAME="${DEF_NETWORK_NAME:=internal}"
@@ -11,31 +12,53 @@ NETWORK_RANGE_START="${DEF_NETWORK_RANGE_START:=10.0.101.10}"
 NETWORK_RANGE_END="${DEF_NETWORK_RANGE_END:=10.0.101.200}"
 PUBLIC_INTERFACE="${DEF_PUBLIC_INTERFACE:=$(ifconfig | head -1 | awk '{ print $1 }' | sed s/://)}"
 UPSTREAM_DNS_SERVER="${DEF_UPSTREAM_DNS_SERVER:=1.1.1.2}"
+#_ EOF SET DEFAULT VARS _#
 
-#_ SET WORKING DIRECTORY _#
+#_ CREATE AND SET A WORKING DIRECTORY _#
 zfs create zroot/opt
+zfs set mountpoint=/opt zroot/opt
+zfs mount -a
+mkdir /opt/hoster-core
 HOSTER_WD="/opt/hoster-core/"
+#_ EOF CREATE AND SET A WORKING DIRECTORY _#
 
 #_ INSTALL THE REQUIRED PACKAGES _#
 pkg update
 pkg upgrade -y
 pkg install -y vim bash bash-completion pftop tmux qemu-tools git curl
 pkg install -y bhyve-firmware uefi-edk2-bhyve-csm edk2-bhyve openssl
-pkg install -y htop wget gtar unzip cdrkit-genisoimage go beadm
+pkg install -y htop wget gtar unzip cdrkit-genisoimage go121 beadm chrony
+#_ EOF INSTALL THE REQUIRED PACKAGES _#
 
 #_ OPTIONAL PACKAGES _#
 # (install for easier debugging)
 # pkg install -y nano micro bmon iftop mc fusefs-sshfs gnu-watch fping fish bhyve-rc grub2-bhyve
 
-if [[ -f /bin/bash ]]; then rm /bin/bash; fi
-ln "$(which bash)" /bin/bash
+# Enable Chrony as a main source of time, and disable the old `ntpd` and `ntpdate`
+service chronyd enable
+(
+    service ntpd stop
+    service ntpdate stop
+) || true
+(
+    service ntpd disable
+    service ntpdate disable
+) || true
+service chronyd start
+# EOF Enable Chrony as a main source of time, and disable the old `ntpd` and `ntpdate`
 
-#_ SET ENCRYPTED ZFS PASSWORD _#
+# Link bash into /bin/bash for better discover-ability
+if [[ -f /bin/bash ]]; then rm /bin/bash; fi
+ln -s "$(which bash)" /bin/bash
+# EOF Link bash into /bin/bash for better discover-ability
+
+#_ Set the ZFS encryption password _#
 if [ -z "${DEF_ZFS_ENCRYPTION_PASSWORD}" ]; then
     ZFS_RANDOM_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
 else
     ZFS_RANDOM_PASSWORD=${DEF_ZFS_ENCRYPTION_PASSWORD}
 fi
+#_ EOF Set the ZFS encryption password _#
 
 #_ GENERATE SSH KEYS _#
 if [[ ! -f /root/.ssh/id_rsa ]]; then
@@ -49,10 +72,12 @@ if [[ ! -f /root/.ssh/config ]]; then
 fi
 
 HOST_SSH_KEY=$(cat /root/.ssh/id_rsa.pub)
+#_ EOF GENERATE SSH KEYS _#
 
-#_ REGISTER IF REQUIRED DATASETS EXIST _#
+#_ REGISTER IF THE REQUIRED DATASETS EXIST _#
 ENCRYPTED_DS=$(zfs list | grep -c "zroot/vm-encrypted")
 UNENCRYPTED_DS=$(zfs list | grep -c "zroot/vm-unencrypted")
+#_ EOF REGISTER IF THE REQUIRED DATASETS EXIST _#
 
 #_ CREATE ZFS DATASETS IF THEY DON'T EXIST _#
 if [[ ${ENCRYPTED_DS} -lt 1 ]]; then
@@ -68,6 +93,7 @@ if [[ ${UNENCRYPTED_DS} -lt 1 ]]; then
     # zfs set primarycache=metadata zroot
     zfs create zroot/vm-unencrypted
 fi
+#_ EOF CREATE ZFS DATASETS IF THEY DON'T EXIST _#
 
 #_ BOOTLOADER OPTIMIZATIONS _#
 BOOTLOADER_FILE="/boot/loader.conf"
@@ -82,18 +108,17 @@ BOOTLOADER_FILE="/boot/loader.conf"
 CMD_LINE='vfs.zfs.arc.max=1073741824  # 1G ZFS ARC RAM Limit' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 CMD_LINE='pf_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 CMD_LINE='kern.racct.enable=1' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
-# Install a better/official Realtek driver to improve stability and performance
+# Install a better (official) Realtek driver to improve the stability and performance
 ifconfig re0 &>/dev/null && echo " 🔷 DEBUG: Realtek interface detected, installing realtek-re-kmod driver and enabling boot time optimizations for it"
 ifconfig re0 &>/dev/null && pkg install -y realtek-re-kmod
 ifconfig re0 &>/dev/null && CMD_LINE='if_re_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 ifconfig re0 &>/dev/null && CMD_LINE='if_re_name="/boot/modules/if_re.ko"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 ifconfig re0 &>/dev/null && CMD_LINE='# Disable the below if you are using Jumbo frames' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 ifconfig re0 &>/dev/null && CMD_LINE='hw.re.max_rx_mbuf_sz="2048"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
+#_ EOF BOOTLOADER OPTIMIZATIONS _#
 
 #_ PF CONFIG BLOCK IN rc.conf _#
 RC_CONF_FILE="/etc/rc.conf"
-## Deprecated values, will be removed in the next release
-# CMD_LINE='rtclocaltime="NO"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${RC_CONF_FILE}; fi
 ## Up-to-date values
 CMD_LINE='pf_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
 CMD_LINE='pf_rules="/etc/pf.conf"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
@@ -101,8 +126,9 @@ CMD_LINE='pflog_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) 
 CMD_LINE='pflog_logfile="/var/log/pflog"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
 CMD_LINE='pflog_flags=""' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
 CMD_LINE='gateway_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
+#_ EOF PF CONFIG BLOCK IN rc.conf _#
 
-#_ SET CORRECT PROFILE FILE _#
+# Set .profile for the `root` user
 cat <<'EOF' | cat >/root/.profile
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:~/bin:/opt/hoster-core; export PATH
 HOME=/root; export HOME
@@ -116,9 +142,6 @@ ENV=$HOME/.shrc; export ENV
 # Query terminal size; useful for serial lines.
 if [ -x /usr/bin/resizewin ] ; then /usr/bin/resizewin -z ; fi
 
-# Uncomment to display a random cookie on each login.
-# if [ -x /usr/bin/fortune ] ; then /usr/bin/fortune -s ; fi
-
 # Display Hoster version on login
 [ -z "$PS1" ] && true || echo "Hoster version: $(/opt/hoster-core/hoster version)"
 
@@ -131,6 +154,7 @@ alias jailsu="hoster jail list -u"
 # Enable bash completion
 [[ $PS1 && -f /usr/local/share/bash-completion/bash_completion.sh ]] && source /usr/local/share/bash-completion/bash_completion.sh
 EOF
+# EOF Set .profile for the `root` user
 
 #_ GENERATE MINIMAL REQUIRED CONFIG FILES _#
 mkdir -p ${HOSTER_WD}config_files/
@@ -149,6 +173,31 @@ cat <<EOF | cat >${HOSTER_WD}config_files/network_config.json
         "comment": "Internal Network"
     }
 ]
+EOF
+
+### REST API CONFIG ###
+API_RANDOM_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
+HA_RANDOM_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
+cat <<EOF | cat >${HOSTER_WD}config_files/restapi_config.json
+{
+    "bind": "0.0.0.0",
+    "port": 3000,
+    "protocol": "http",
+    "ha_mode": false,
+    "ha_debug": true,
+    "http_auth": [
+        {
+            "user": "admin",
+            "password": "${API_RANDOM_PASSWORD}",
+            "ha_user": false
+        },
+        {
+            "user": "ha_user",
+            "password": "${HA_RANDOM_PASSWORD}",
+            "ha_user": true
+        }
+     ]
+}
 EOF
 
 ### HOST CONFIG ###
@@ -170,6 +219,7 @@ cat <<EOF | cat >${HOSTER_WD}config_files/host_config.json
     ]
 }
 EOF
+#_ EOF GENERATE MINIMAL REQUIRED CONFIG FILES _#
 
 #_ COPY OVER PF CONFIG _#
 cat <<EOF | cat >/etc/pf.conf
@@ -178,18 +228,15 @@ table <private-ranges> { 10.0.0.0/8 100.64.0.0/10 127.0.0.0/8 169.254.0.0/16 172
 set skip on lo0
 scrub in all fragment reassemble max-mss 1440
 
-
 ### OUTBOUND NAT ###
 nat on { ${PUBLIC_INTERFACE} } from { ${NETWORK_SUBNET} } to any -> { ${PUBLIC_INTERFACE} }
 
-
 ### INBOUND NAT EXAMPLES ###
-# rdr pass on { ${PUBLIC_INTERFACE} } proto { tcp udp } from any to EXTERNAL_INTERFACE_IP_HERE port 80 -> 10.0.0.3 port 80  # HTTP NAT Forwarding
-# rdr pass on ${PUBLIC_INTERFACE} inet proto tcp from EXTERNAL_INTERFACE_IP_HERE to any port 80 -> EXTERNAL_INTERFACE_IP_HERE port 80  # HTTP NAT Reflection
+# rdr pass on { ${PUBLIC_INTERFACE} } proto { tcp } from any to EXTERNAL_INTERFACE_IP port 80 -> { VM or Jail name, or hardcoded IP address } port 80  # HTTP NAT Forwarding
+# rdr pass on { vm-${NETWORK_NAME} } proto { tcp } from any to EXTERNAL_INTERFACE_IP port 80 -> { VM or Jail name, or hardcoded IP address } port 80  # HTTP RDR Reflection 
 
 ### ANTISPOOF RULE ###
-antispoof quick for { ${PUBLIC_INTERFACE} }  # DISABLE IF USING ANY ADDITIONAL ROUTERS IN THE VM, LIKE OPNSENSE
-
+antispoof quick for { ${PUBLIC_INTERFACE} }  # COMMENT OUT IF YOU USE ANY VM-based ROUTERS, like OPNSense, pfSense, etc.
 
 ### FIREWALL RULES ###
 # block in quick log on egress from <private-ranges>
@@ -204,13 +251,13 @@ pass in quick inet proto { udp } from { ${NETWORK_SUBNET} } to { ${NETWORK_BR_AD
 block in quick inet from { ${NETWORK_SUBNET} } to <private-ranges>  # Block access from the internal network
 pass in quick inet proto { tcp udp icmp } from { ${NETWORK_SUBNET} } to any  # Together with the above rule allows access to only external resources
 
-
 ### INCOMING HOST RULES ###
 pass in quick on { ${PUBLIC_INTERFACE} } inet proto icmp all  # Allow PING from any IP to this host
 pass in quick on { ${PUBLIC_INTERFACE} } proto tcp to port 22 keep state  # Allow SSH from any IP to this host
 # pass in proto tcp to port 80 keep state  # Allow access to internal Traefik service
 # pass in proto tcp to port 443 keep state  # Allow access to internal Traefik service
 EOF
+#_ EOF COPY OVER PF CONFIG _#
 
 ## SSH Banner
 cat <<'EOF' | cat >/etc/motd.template
@@ -233,33 +280,29 @@ cat <<'EOF' | cat >/etc/motd.template
 EOF
 ## EOF SSH Banner
 
+# Download all Hoster-related binaries
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/hoster -O ${HOSTER_WD}hoster -q --show-progress
 chmod 0755 ${HOSTER_WD}hoster
-
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/vm_supervisor_service -O ${HOSTER_WD}vm_supervisor_service -q --show-progress
 chmod 0755 ${HOSTER_WD}vm_supervisor_service
-
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/self_update_service -O ${HOSTER_WD}self_update_service -q --show-progress
 chmod 0755 ${HOSTER_WD}self_update_service
-
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/node_exporter_custom -O ${HOSTER_WD}node_exporter_custom -q --show-progress
 chmod 0755 ${HOSTER_WD}node_exporter_custom
-
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/mbuffer -O ${HOSTER_WD}mbuffer -q --show-progress
 chmod 0755 ${HOSTER_WD}mbuffer
-
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/hoster_rest_api -O ${HOSTER_WD}hoster_rest_api -q --show-progress
 chmod 0755 ${HOSTER_WD}hoster_rest_api
-
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/ha_watchdog -O ${HOSTER_WD}ha_watchdog -q --show-progress
 chmod 0755 ${HOSTER_WD}ha_watchdog
-
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/dns_server -O ${HOSTER_WD}dns_server -q --show-progress
 chmod 0755 ${HOSTER_WD}dns_server
+# EOF Download all Hoster-related binaries
 
 # Enable basic bash completion
 ${HOSTER_WD}hoster completion bash >/usr/local/etc/bash_completion.d/hoster-completion.bash && echo " 🔷 DEBUG: Bash completion for Hoster has been enabled"
 chmod 0755 /usr/local/etc/bash_completion.d/hoster-completion.bash
+# EOF Enable basic bash completion
 
 #_ LET USER KNOW THE STATE OF DEPLOYMENT _#
 cat <<EOF | cat
@@ -281,6 +324,7 @@ cat <<EOF | cat
 │  hoster init                                                               │
 │                                                                            │
 ╰────────────────────────────────────────────────────────────────────────────╯
-${ZFS_RANDOM_PASSWORD}
+ !!! IMPORTANT !!! ZFS Encryption Password: ${ZFS_RANDOM_PASSWORD}
 
 EOF
+#_ EOF LET USER KNOW THE STATE OF DEPLOYMENT _#

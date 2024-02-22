@@ -5,33 +5,34 @@
 package HosterTables
 
 import (
-	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"fmt"
 	"os"
 
 	"github.com/aquasecurity/table"
 )
 
-func GenerateJailsTable(unixStyleTable bool) error {
-	jailList, err := HosterJailUtils.ListAllExtendedTable()
+func GenerateVMsTable(unix bool) error {
+	vms, err := HosterVmUtils.ListAllTable()
 	if err != nil {
 		return err
 	}
 
 	var t = table.New(os.Stdout)
 	t.SetAlignment(table.AlignRight, //ID
-		table.AlignLeft,   // Jail Name
-		table.AlignCenter, // Jail Status
-		table.AlignCenter, // CPU Limit
-		table.AlignCenter, // RAM Limit
-		table.AlignLeft,   // Main IP Address
-		table.AlignLeft,   // Release
-		table.AlignLeft,   // Uptime
-		table.AlignCenter, // Space Used/Available
+		table.AlignLeft,   // VM Name
+		table.AlignCenter, // VM Status
+		table.AlignCenter, // CPU Sockets
+		table.AlignCenter, // CPU Cores
+		table.AlignCenter, // RAM
+		table.AlignLeft,   // Main IP
+		table.AlignLeft,   // OS Comment
+		table.AlignLeft,   // VM Uptime
+		table.AlignCenter, // OS Disk Used
 		table.AlignLeft,   // Description
 	)
 
-	if unixStyleTable {
+	if unix {
 		t.SetDividers(table.Dividers{
 			ALL: " ",
 			NES: " ",
@@ -49,20 +50,21 @@ func GenerateJailsTable(unixStyleTable bool) error {
 		t.SetBorderTop(false)
 		t.SetBorderBottom(false)
 	} else {
-		t.SetHeaders("Hoster Jails")
-		t.SetHeaderColSpans(0, 10)
+		t.SetHeaders("Hoster VMs")
+		t.SetHeaderColSpans(0, 11)
 
 		t.AddHeaders(
 			"#",
-			"Jail\nName",
-			"Jail\nStatus",
-			"CPU\nLimit",
-			"RAM\nLimit",
+			"VM\nName",
+			"VM\nStatus",
+			"CPU\nSockets",
+			"CPU\nCores",
+			"VM\nMemory",
 			"Main IP\nAddress",
-			"FreeBSD\nRelease",
-			"Jail\nUptime",
-			"Storage\n(Used/Available)",
-			"Jail\nDescription",
+			"OS\nType",
+			"VM\nUptime",
+			"OS Disk\n(Used/Total)",
+			"VM\nDescription",
 		)
 
 		t.SetLineStyle(table.StyleBrightCyan)
@@ -70,18 +72,19 @@ func GenerateJailsTable(unixStyleTable bool) error {
 		t.SetHeaderStyle(table.StyleBold)
 	}
 
-	for i, v := range jailList {
+	for i, v := range vms {
 		t.AddRow(
 			fmt.Sprintf("%d", i+1),
-			v.Name,
-			v.Status,
-			v.CPULimit,
-			v.RAMLimit,
+			v.VmName,
+			v.VmStatus,
+			fmt.Sprintf("%d", v.CPUSockets),
+			fmt.Sprintf("%d", v.CPUCores),
+			v.VmMemory,
 			v.MainIpAddress,
-			v.Release,
-			v.Uptime,
-			v.StorageUsed+"/"+v.StorageAvailable,
-			v.Description,
+			v.OsType,
+			v.VmUptime,
+			v.DiskUsedTotal,
+			v.VmDescription,
 		)
 	}
 

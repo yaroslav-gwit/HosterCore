@@ -10,15 +10,16 @@ Whether you're managing a small home lab or a large-scale production, `Hoster` c
 
 Here are some of the features you'll be able to use:
 
-- PF firewall that works with every VM individually (on the IP or DNS name level)
-- Cloud friendly deployment options, with native support for NAT (with Hetzner as a main focus)
+- PF firewall that works with every VM or Jail individually (you can use the VM and/or Jail names in the PF config directly - no need to explicitly implement VLANs to isolate VMs/Jails from one another)
+- Native NAT management support using PF
+- Bare-metal cloud-friendly deployment options (tested using Hetzner bare-metal cloud)
 - Storage Dataset Encryption - your data is safe in the co-location, or on the bare-metal cloud
 - Instant VM deployments - a new VM can be deployed in less than 1 second
 - Cloud based VM images to avoid spending time with ISOs - it's very similar to `docker pull`, simply run `hoster image download debian12` and it'll be ready for use in minutes (depending on your internet connection speed)
 - CloudInit integration to help you forget about the manual VM configurations - simply deploy the VM, start it and it's immediately ready to be used (with the IP address configured, hostname set, and your own custom scripts executed upon first boot)
-- Built-in and easy to use OpenZFS replication (based on OpenZFS's send/receive), which gives you the ability to perform continuous asynchronous VM replication between 2 or more hosts, to ensure data safety and availability 🛡️
+- Built-in and easy to use OpenZFS replication (based on OpenZFS's send/receive features), which gives you the ability to perform continuous asynchronous VM replication between the two or more hosts, to ensure the data safety and availability 🛡️
 - RestAPI for ease of management, and to support the integration with 3rd party systems, or your own home-grown solutions
-- HA clustering using the underlying RestAPI with an automated VM failover, so you can avoid complex network configurations - it's all based on the HTTP protocol, which is easy to firewall and troubleshoot if there is a need for it
+- An automated HA failover using the underlying RestAPI, so you can avoid the complex network configurations - it's all based on the HTTP protocol, which is easy to firewall and troubleshoot if there is a need for it
 - PCI/GPU passthrough is supported, but considered experimental
 
 To avoid any frustrations, here is the list of things NOT currently supported:
@@ -29,10 +30,10 @@ To avoid any frustrations, here is the list of things NOT currently supported:
 - Very niche OSes are not supported due to some `bhyve`+`Hoster` limitations
 - Only UEFI booting is officially supported, with just few exceptions for BIOS based Linux VMs
 - Terraform is not supported - `Hoster` is too young to have any IaaC integrations at this point
-- Custom binary files location and custom config files location is not supported - everything must reside within `/opt/hoster-core` to work properly
+- Custom binary files location and custom config files location is not supported - everything must reside within `/opt/hoster-core` to work properly (there is some WIP to overcome this limitation, but it's not ready yet)
 - IPv6 is not supported yet (unless you want to manage it by hand, or sponsor us to speed up the IPv6 dev integration process)
 - Nested virtualization is not supported by `bhyve`
-- Code is not cross-platform - you can't run it on Illumos or any other BSD system, it only works on FreeBSD
+- Code is not cross-platform - you can't run it on Illumos or any other BSD system, it only works on FreeBSD (and possibly some FreeBSD derivatives, like GhostBSD, HardenedBSD, etc, but it needs testing)
 - `bhyve` doesn't support the live VM migration yet
 
 Coming soon (or at least at some point 😄):
@@ -44,14 +45,15 @@ Coming soon (or at least at some point 😄):
 - `Prometheus` integration - all VMs and Jails will be discovered and monitored automatically
 - Automated, full mesh `WireGuard` config generation based on your internal cluster topology, with the support for multi-tenancy and multiple cluster groups
 - `Tailscale` installation and configuration guide (specific to `Hoster`), which will provide an easy way to access and manage your cluster and it's resources
-- Basic integration with `Tailscale`, to allow the automated routing updates for the remote users and admins
 - `LazyHoster` (an interface similar to `k9s` or `lazygit`) - a CLI utility to control the whole fleet of machines over the `REST API` (for the WebUI haters 😎)
 - More VM and Jail templates
-- The ability to run `Hoster` in a Jail - this will allow to split a single hardware server into a multi-user virtualization platform, with the ability to apply a highly granular control of just how much resources each user can utilize within their own Jail
+- The ability to run `Hoster` in a Jail - this will allow to split a single hardware server into a multi-user isolated platform, with the ability to apply a highly granular control of just how much resources each user can utilize within their own, jailed, virtualization environment
 
 ## Are there any plans to develop a WebUI?
 
-Yes, part of the project roadmap includes the development of a WebUI. The WebUI will serve as a user-friendly interface to interact with the system and control multiple hoster nodes simultaneously.
+Yes.
+Part of the project roadmap includes the development of a WebUI.
+The WebUI will serve as a user-friendly interface to interact with the system and control multiple hoster nodes simultaneously.
 While currently not the highest priority due to time constraints, I am open to exploring this feature further with increased community engagement and potential investment.
 
 Our paying customers already have access to an early version of the WebUI, that looks like this:

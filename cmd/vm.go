@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterTables "HosterCore/internal/pkg/hoster/cli_tables"
 	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	"fmt"
 	"os"
@@ -36,7 +37,6 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			// err := VmStart(args[0], vmStartCmdRestoreVmState, vmStartCmdWaitForVnc, vmStartCmdDebug)
 			err := HosterVm.Start(args[0], vmStartCmdWaitForVnc, vmStartCmdDebug)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -57,7 +57,6 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			// err := VmStop(args[0], vmStopCmdForceStop, vmStopCmdCleanUp)
 			err := HosterVm.Stop(args[0], vmStopCmdForceStop, vmStopCmdCleanUp)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -78,7 +77,6 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			// err := executeVmClone(args[0], args[1])
 			err := HosterVm.Clone(args[0], args[1], vmCloneSnapshot)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -97,7 +95,6 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			// err := VmDestroy(args[0])
 			err := HosterVm.Destroy(args[0])
 			if err != nil {
 				emojlog.PrintLogMessage("Could not destroy the VM: "+err.Error(), emojlog.Error)
@@ -114,6 +111,27 @@ var (
 )
 
 var (
+	jsonOutputVm       bool
+	jsonPrettyOutputVm bool
+	tableUnixOutputVm  bool
+
+	vmListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "VM list",
+		Long:  `VM list in the form of tables, json, or json pretty`,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := HosterTables.GenerateVMsTable(tableUnixOutputVm)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+var (
 	vmUnlockAllCmd = &cobra.Command{
 		Use:   "unlock-all",
 		Short: "Unlock all HA locked VMs",
@@ -121,6 +139,7 @@ var (
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			UnlockAllVms()
 			emojlog.PrintLogMessage("All VMs have now been unlocked", emojlog.Debug)
 		},
