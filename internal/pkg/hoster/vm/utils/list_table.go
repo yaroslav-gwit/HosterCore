@@ -62,6 +62,8 @@ func ListAllTable() (r []ListTable, e error) {
 		} else {
 			l.DiskUsedTotal = "N/A"
 		}
+
+		r = append(r, l)
 	}
 
 	return
