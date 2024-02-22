@@ -26,7 +26,7 @@ func ListAllTable() (r []ListTable, e error) {
 
 	for _, v := range vms {
 		l := ListTable{}
-		v.Name = l.VmName
+		l.VmName = v.Name
 
 		if v.Running {
 			l.VmStatus = l.VmStatus + "🟢"
