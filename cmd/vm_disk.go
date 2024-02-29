@@ -74,9 +74,13 @@ func DiskExpandOffline(vmName string, diskImage string, expansionSize int) error
 		return errors.New("this is a backup")
 	}
 
+	if len(diskImage) < 1 {
+		diskImage = "disk0.img"
+	}
+
 	diskLocation := vmFolder + "/" + diskImage
 	if !diskImageExists(diskLocation) {
-		return errors.New("disk image doesn't exist")
+		return errors.New("disk image doesn't exist: " + diskLocation)
 	}
 
 	cmd := exec.Command("truncate", "-s", "+"+strconv.Itoa(expansionSize)+"G", diskLocation)
