@@ -44,6 +44,7 @@ func InfoJsonApi(vmName string) (r VmApi, e error) {
 		r.Name = v.VmName
 		r.VmConfig = conf
 		r.Encrypted = v.Encrypted
+		r.Simple = v
 
 		if slices.Contains(liveVms, v.VmName) {
 			r.Running = true

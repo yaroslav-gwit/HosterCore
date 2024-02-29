@@ -65,6 +65,7 @@ func DiskExpandOffline(vmName string, diskImage string, expansionSize int) error
 	if err != nil {
 		return err
 	}
+	// vmFolder := vm.Simple.MountPoint.Mountpoint + "/" + vm.Name
 	vmFolder := vm.Simple.Mountpoint + "/" + vm.Name
 
 	if vm.Running {
