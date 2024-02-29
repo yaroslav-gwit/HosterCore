@@ -2,26 +2,23 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
-	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
+	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
+	HosterHost "HosterCore/internal/pkg/hoster/host"
+	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
+	HosterNetwork "HosterCore/internal/pkg/hoster/network"
 	HosterVm "HosterCore/internal/pkg/hoster/vm"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"bufio"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
-	"math/rand"
-	"net"
 	"os"
 	"os/exec"
-	"path"
 	"regexp"
-	"strconv"
 	"strings"
 	"text/template"
 	"time"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -51,13 +48,13 @@ var (
 			}
 
 			if len(zfsDataset) < 1 {
-				hostCfg, err := GetHostConfig()
+				hostCfg, err := HosterHost.GetHostConfig()
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 					os.Exit(1)
 				}
 
-				zfsDataset = hostCfg.ActiveDatasets[0]
+				zfsDataset = hostCfg.ActiveZfsDatasets[0]
 			}
 
 			var err error
@@ -77,9 +74,9 @@ var (
 )
 
 type ConfigOutputStruct struct {
-	Cpus              string
+	Cpus              int
 	Ram               string
-	SshKeys           []VmSshKey
+	SshKeys           []HosterVmUtils.VmSshKey
 	RootPassword      string
 	GwitsuperPassword string
 	InstanceId        string
@@ -92,46 +89,47 @@ type ConfigOutputStruct struct {
 	NakedSubnet       string
 	Gateway           string
 	DnsServer         string
-	LiveStatus        string
+	Production        bool
 	OsType            string
 	OsComment         string
 	ParentHost        string
-	VncPort           string
+	VncPort           int
 	VncPassword       string
+	// LiveStatus        string
 }
 
 func deployVmMain(vmName string, networkName string, osType string, dsParent string, cpus int, ram string, startWhenReady bool) error {
-	vmNameError := checkVmNameInput(vmName)
+	vmNameError := HosterVmUtils.ValidateResName(vmName)
 	if vmNameError != nil {
 		return vmNameError
 	}
 
 	// Initialize values
-	c := ConfigOutputStruct{}
 	var err error
+	c := ConfigOutputStruct{}
 
 	// Set CPU cores and RAM
-	c.Cpus = strconv.Itoa(cpus)
+	c.Cpus = cpus
 	c.Ram = ram
 
 	// Generate and set the root and gwitsuper users password
-	c.RootPassword = generateRandomPassword(33, true, true)
+	c.RootPassword = HosterHostUtils.GenerateRandomPassword(33, true, true)
 	if err != nil {
 		return errors.New("could not generate random password for root user: " + err.Error())
 	}
-	c.GwitsuperPassword = generateRandomPassword(33, true, true)
+	c.GwitsuperPassword = HosterHostUtils.GenerateRandomPassword(33, true, true)
 	if err != nil {
 		return errors.New("could not generate random password for gwitsuper user: " + err.Error())
 	}
 
 	// Generate and set CI instance ID
-	c.InstanceId = generateRandomPassword(5, false, true)
+	c.InstanceId = HosterHostUtils.GenerateRandomPassword(5, false, true)
 	if err != nil {
 		return errors.New("could not generate random instance id: " + err.Error())
 	}
 
 	// Generate correct VM name
-	c.VmName, err = generateVmName(vmName)
+	c.VmName, err = HosterVmUtils.GenerateTestVmName(vmName)
 	if err != nil {
 		return errors.New("could not generate vm name: " + err.Error())
 	}
@@ -139,7 +137,7 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	emojlog.PrintLogMessage("Deploying new VM: "+c.VmName, emojlog.Info)
 
 	// Generate and set random MAC address
-	c.MacAddress, err = generateRandomMacAddress()
+	c.MacAddress, err = HosterVmUtils.GenerateMacAddress()
 	if err != nil {
 		return errors.New("could not generate vm name: " + err.Error())
 	}
@@ -148,26 +146,26 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 		c.IpAddress = deployIpAddress
 	} else {
 		// Generate and set random IP address (which is free in the pool of addresses)
-		c.IpAddress, err = generateNewIp(networkName)
+		c.IpAddress, err = HosterHostUtils.GenerateNewRandomIp(networkName)
 		if err != nil {
 			return errors.New("could not generate the IP: " + err.Error())
 		}
 	}
 
-	networkInfo, err := networkInfo()
+	networkInfo, err := HosterNetwork.GetNetworkConfig()
 	if err != nil {
 		return errors.New("could not read the network config")
 	}
 	if len(networkName) < 1 {
-		c.NetworkName = networkInfo[0].Name
+		c.NetworkName = networkInfo[0].NetworkName
 		c.Subnet = networkInfo[0].Subnet
 		c.NakedSubnet = strings.Split(networkInfo[0].Subnet, "/")[1]
 		c.Gateway = networkInfo[0].Gateway
 		c.NetworkComment = networkInfo[0].Comment
 	} else {
 		for _, v := range networkInfo {
-			if networkName == v.Name {
-				c.NetworkName = v.Name
+			if networkName == v.NetworkName {
+				c.NetworkName = v.NetworkName
 				c.Subnet = v.Subnet
 				c.NakedSubnet = strings.Split(v.Subnet, "/")[1]
 				c.Gateway = v.Gateway
@@ -187,49 +185,18 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 
 	reMatchTest := regexp.MustCompile(`.*test`)
 	if reMatchTest.MatchString(c.VmName) {
-		c.LiveStatus = "testing"
+		c.Production = false
 	} else {
-		c.LiveStatus = "production"
+		c.Production = true
 	}
 
 	emojlog.PrintLogMessage("OS type used: "+osType, emojlog.Debug)
 	c.OsType = osType
-	switch c.OsType {
-	case "debian11":
-		c.OsComment = "Debian 11"
-	case "debian12":
-		c.OsComment = "Debian 12"
-	case "ubuntu2004":
-		c.OsComment = "Ubuntu 20.04"
-	case "ubuntu2204":
-		c.OsComment = "Ubuntu 22.04"
-	case "almalinux8":
-		c.OsComment = "AlmaLinux 8"
-	case "rockylinux8":
-		c.OsComment = "RockyLinux 8"
-	case "freebsd13ufs":
-		c.OsComment = "FreeBSD 13 UFS"
-	case "freebsd13zfs":
-		c.OsComment = "FreeBSD 13 ZFS"
-	case "windows10":
-		c.OsComment = "Windows 10"
-	case "windows11":
-		c.OsComment = "Windows 11"
-	case "windows-srv19":
-		c.OsComment = "Windows Server 19"
-	case "windowssrv19":
-		c.OsComment = "Windows Server 19"
-	case "windows-srv22":
-		c.OsComment = "Windows Server 22"
-	case "windowssrv22":
-		c.OsComment = "Windows Server 22"
-	default:
-		c.OsComment = "Custom OS"
-	}
+	c.OsComment = HosterVmUtils.GenerateOsComment(c.OsType)
 
-	c.ParentHost = GetHostName()
-	c.VncPort = generateRandomVncPort()
-	c.VncPassword = generateRandomPassword(8, true, true)
+	c.ParentHost, _ = FreeBSDsysctls.SysctlKernHostname()
+	c.VncPassword = HosterHostUtils.GenerateRandomPassword(8, true, true)
+	c.VncPort, err = HosterVmUtils.GenerateVncPort()
 	if err != nil {
 		return errors.New("could not generate vnc port: " + err.Error())
 	}
@@ -284,15 +251,15 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	emojlog.PrintLogMessage("Writing CloudInit config files", emojlog.Debug)
 	newVmFolder := "/" + dsParent + "/" + c.VmName
 	vmConfigFileLocation := newVmFolder + "/vm_config.json"
-	vmConfig := VmConfigStruct{}
-	networkConfig := VmNetworkStruct{}
-	diskConfig := VmDiskStruct{}
-	diskConfigList := []VmDiskStruct{}
-	vmConfig.CPUSockets = "1"
+	vmConfig := HosterVmUtils.VmConfig{}
+	networkConfig := HosterVmUtils.VmNetwork{}
+	diskConfig := HosterVmUtils.VmDisk{}
+	diskConfigList := []HosterVmUtils.VmDisk{}
+	vmConfig.CPUSockets = 1
 	vmConfig.CPUCores = c.Cpus
 	vmConfig.Memory = c.Ram
 	vmConfig.Loader = "uefi"
-	vmConfig.LiveStatus = c.LiveStatus
+	vmConfig.Production = c.Production
 	vmConfig.OsType = c.OsType
 	vmConfig.OsComment = c.OsComment
 	vmConfig.Owner = "system"
@@ -317,13 +284,13 @@ func deployVmMain(vmName string, networkName string, osType string, dsParent str
 	diskConfigList = append(diskConfigList, diskConfig)
 	vmConfig.Disks = append(vmConfig.Disks, diskConfigList...)
 
-	vmConfig.IncludeHostwideSSHKeys = true
+	vmConfig.IncludeHostSSHKeys = true
 	vmConfig.VmSshKeys = c.SshKeys
 	vmConfig.VncPort = c.VncPort
 	vmConfig.VncPassword = c.VncPassword
 	vmConfig.Description = "-"
 
-	err = vmConfigFileWriter(vmConfig, vmConfigFileLocation)
+	err = HosterVmUtils.ConfigFileWriter(vmConfig, vmConfigFileLocation)
 	if err != nil {
 		return err
 	}
@@ -427,7 +394,7 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 		return errors.New("the ISO file you've specified doesn't exist")
 	}
 
-	vmNameError := checkVmNameInput(vmName)
+	vmNameError := HosterVmUtils.ValidateResName(vmName)
 	if vmNameError != nil {
 		return vmNameError
 	}
@@ -437,25 +404,25 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	var err error
 
 	// Set CPU cores and RAM
-	c.Cpus = strconv.Itoa(cpus)
+	c.Cpus = cpus
 	c.Ram = ram
 
 	// Generate and set the root and gwitsuper users password
-	c.RootPassword = generateRandomPassword(33, true, true)
-	c.GwitsuperPassword = generateRandomPassword(33, true, true)
+	c.RootPassword = HosterHostUtils.GenerateRandomPassword(33, true, true)
+	c.GwitsuperPassword = HosterHostUtils.GenerateRandomPassword(33, true, true)
 	// Generate and set CI instance ID
-	c.InstanceId = generateRandomPassword(5, false, true)
+	c.InstanceId = HosterHostUtils.GenerateRandomPassword(5, false, true)
 
 	// Generate correct VM name
-	c.VmName, err = generateVmName(vmName)
+	c.VmName, err = HosterVmUtils.GenerateTestVmName(vmName)
 	if err != nil {
-		return errors.New("could not generate vm name: " + err.Error())
+		return errors.New("could not set a vm name: " + err.Error())
 	}
 
 	emojlog.PrintLogMessage("Deploying new VM: "+c.VmName, emojlog.Info)
 
 	// Generate and set random MAC address
-	c.MacAddress, err = generateRandomMacAddress()
+	c.MacAddress, err = HosterVmUtils.GenerateMacAddress()
 	if err != nil {
 		return errors.New("could not generate vm name: " + err.Error())
 	}
@@ -464,26 +431,26 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 		c.IpAddress = deployIpAddress
 	} else {
 		// Generate and set random IP address (which is free in the pool of addresses)
-		c.IpAddress, err = generateNewIp(networkName)
+		c.IpAddress, err = HosterHostUtils.GenerateNewRandomIp(networkName)
 		if err != nil {
 			return errors.New("could not generate the IP: " + err.Error())
 		}
 	}
 
-	networkInfo, err := networkInfo()
+	netInfo, err := HosterNetwork.GetNetworkConfig()
 	if err != nil {
 		return errors.New("could not read the network config")
 	}
 	if len(networkName) < 1 {
-		c.NetworkName = networkInfo[0].Name
-		c.Subnet = networkInfo[0].Subnet
-		c.NakedSubnet = strings.Split(networkInfo[0].Subnet, "/")[1]
-		c.Gateway = networkInfo[0].Gateway
-		c.NetworkComment = networkInfo[0].Comment
+		c.NetworkName = netInfo[0].NetworkName
+		c.Subnet = netInfo[0].Subnet
+		c.NakedSubnet = strings.Split(netInfo[0].Subnet, "/")[1]
+		c.Gateway = netInfo[0].Gateway
+		c.NetworkComment = netInfo[0].Comment
 	} else {
-		for _, v := range networkInfo {
-			if networkName == v.Name {
-				c.NetworkName = v.Name
+		for _, v := range netInfo {
+			if networkName == v.NetworkName {
+				c.NetworkName = v.NetworkName
 				c.Subnet = v.Subnet
 				c.NakedSubnet = strings.Split(v.Subnet, "/")[1]
 				c.Gateway = v.Gateway
@@ -501,13 +468,13 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 		c.DnsServer = c.Gateway
 	}
 
-	c.LiveStatus = "testing"
+	c.Production = false
 	c.OsType = "custom"
-	c.OsComment = "Custom OS"
+	c.OsComment = HosterVmUtils.GenerateOsComment(c.OsType)
 
-	c.ParentHost = GetHostName()
-	c.VncPort = generateRandomVncPort()
-	c.VncPassword = generateRandomPassword(8, true, true)
+	c.ParentHost, _ = FreeBSDsysctls.SysctlKernHostname()
+	c.VncPassword = HosterHostUtils.GenerateRandomPassword(8, true, true)
+	c.VncPort, err = HosterVmUtils.GenerateVncPort()
 	if err != nil {
 		return errors.New("could not generate vnc port: " + err.Error())
 	}
@@ -563,16 +530,16 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	// Write config files
 	emojlog.PrintLogMessage("Writing CloudInit config files", emojlog.Debug)
 	newVmFolder := "/" + dsParent + "/" + c.VmName
-	vmConfigFileLocation := newVmFolder + "/vm_config.json"
-	vmConfig := VmConfigStruct{}
-	networkConfig := VmNetworkStruct{}
-	diskConfig := VmDiskStruct{}
-	diskConfigList := []VmDiskStruct{}
-	vmConfig.CPUSockets = "1"
+	vmConfigFileLocation := newVmFolder + "/" + HosterVmUtils.VM_CONFIG_NAME
+	vmConfig := HosterVmUtils.VmConfig{}
+	networkConfig := HosterVmUtils.VmNetwork{}
+	diskConfig := HosterVmUtils.VmDisk{}
+	diskConfigList := []HosterVmUtils.VmDisk{}
+	vmConfig.CPUSockets = 1
 	vmConfig.CPUCores = c.Cpus
 	vmConfig.Memory = c.Ram
 	vmConfig.Loader = "uefi"
-	vmConfig.LiveStatus = c.LiveStatus
+	vmConfig.Production = c.Production
 	vmConfig.OsType = c.OsType
 	vmConfig.OsComment = c.OsComment
 	vmConfig.Owner = "system"
@@ -606,13 +573,13 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	// Translate the temp diskConfig variable into the struct
 	vmConfig.Disks = append(vmConfig.Disks, diskConfigList...)
 
-	vmConfig.IncludeHostwideSSHKeys = true
+	vmConfig.IncludeHostSSHKeys = true
 	vmConfig.VmSshKeys = c.SshKeys
 	vmConfig.VncPort = c.VncPort
 	vmConfig.VncPassword = c.VncPassword
 	vmConfig.Description = "-"
 
-	err = vmConfigFileWriter(vmConfig, vmConfigFileLocation)
+	err = HosterVmUtils.ConfigFileWriter(vmConfig, vmConfigFileLocation)
 	if err != nil {
 		return err
 	}
@@ -763,392 +730,18 @@ ethernets:
       addresses: [{{ .DnsServer }}, ]
 `
 
-func checkVmNameInput(vmName string) (vmNameError error) {
-	vmNameMinLength := 5
-	vmNameMaxLength := 22
-	vmNameCantStartWith := "1234567890-_"
-	vmNameValidChars := "qwertyuiopasdfghjklzxcvbnm-QWERTYUIOPASDFGHJKLZXCVBNM_1234567890"
-
-	// Check if vmName uses valid characters
-	for _, v := range vmName {
-		valid := false
-		for _, vv := range vmNameValidChars {
-			if v == vv {
-				valid = true
-				break
-			}
-		}
-		if !valid {
-			vmNameError = errors.New("name cannot contain '" + string(v) + "' character")
-			return
-		}
-	}
-	// EOF Check if vmName uses valid characters
-
-	// Check if vmName starts with a valid character
-	for i, v := range vmName {
-		if i > 1 {
-			break
-		}
-		for _, vv := range vmNameCantStartWith {
-			if v == vv {
-				vmNameError = errors.New("name cannot start with a number, an underscore or a hyphen")
-				return
-			}
-		}
-	}
-	// EOF Check if vmName starts with a valid character
-
-	// Check vmName length
-	if len(vmName) < vmNameMinLength {
-		vmNameError = errors.New("name cannot contain less than " + strconv.Itoa(vmNameMinLength) + " characters")
-		return
-	} else if len(vmName) > vmNameMaxLength {
-		vmNameError = errors.New("name cannot contain more than " + strconv.Itoa(vmNameMaxLength) + " characters")
+func getSystemSshKeys() (r []HosterVmUtils.VmSshKey, e error) {
+	conf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		e = err
 		return
 	}
-	// EOF Check vmName length
+
+	for _, v := range conf.HostSSHKeys {
+		r = append(r, HosterVmUtils.VmSshKey{KeyValue: v.KeyValue, Comment: v.Comment, KeyOwner: "System"})
+	}
 
 	return
-}
-
-func generateNewIp(networkName string) (string, error) {
-	var existingIps []string
-
-	// Add existing VM IPs
-	for _, v := range getAllVms() {
-		networkNameFound := false
-		tempConfig := vmConfig(v)
-		for i, v := range tempConfig.Networks {
-			if v.NetworkBridge == networkName {
-				networkNameFound = true
-				existingIps = append(existingIps, tempConfig.Networks[i].IPAddress)
-			}
-		}
-		if !networkNameFound {
-			existingIps = append(existingIps, tempConfig.Networks[0].IPAddress)
-		}
-	}
-	// EOF Add existing VM IPs
-
-	// Add existing Jail IPs
-	jails, err := HosterJailUtils.ListAllExtendedTable()
-	if err != nil {
-		_ = 0
-	} else {
-		for _, v := range jails {
-			existingIps = append(existingIps, v.MainIpAddress)
-		}
-	}
-	// EOF Add existing Jail IPs
-
-	networks, err := networkInfo()
-	if err != nil {
-		return "", errors.New("could not read the config file: " + err.Error())
-	}
-
-	var subnet string
-	var rangeStart string
-	var rangeEnd string
-	networkNameFoundGlobal := false
-	for i, v := range networks {
-		if v.Name == networkName {
-			networkNameFoundGlobal = true
-			subnet = networks[i].Subnet
-			rangeStart = networks[i].RangeStart
-			rangeEnd = networks[i].RangeEnd
-		}
-	}
-	if !networkNameFoundGlobal {
-		subnet = networks[0].Subnet
-		rangeStart = networks[0].RangeStart
-		rangeEnd = networks[0].RangeEnd
-	}
-
-	var randomIp string
-	// var err error
-	randomIp, err = generateUniqueRandomIp(subnet)
-	if err != nil {
-		return "", errors.New("could not generate a random IP address: " + err.Error())
-	}
-
-	iteration := 0
-	for {
-		if slices.Contains(existingIps, randomIp) || !ipIsWithinRange(randomIp, subnet, rangeStart, rangeEnd) {
-			randomIp, err = generateUniqueRandomIp(subnet)
-			if err != nil {
-				return "", errors.New("could not generate a random IP address: " + err.Error())
-			}
-			iteration = iteration + 1
-			if iteration > 400 {
-				return "", errors.New("ran out of IP available addresses within this range")
-			}
-		} else {
-			break
-		}
-	}
-
-	return randomIp, nil
-}
-
-func generateUniqueRandomIp(subnet string) (string, error) {
-	// Set the seed for the random number generator
-	rand.Seed(time.Now().UnixNano())
-
-	// Parse the subnet IP and mask
-	ip, ipNet, err := net.ParseCIDR(subnet)
-	if err != nil {
-		return "", errors.New(err.Error())
-	}
-
-	// Calculate the size of the address space within the subnet
-	size, _ := ipNet.Mask.Size()
-	numHosts := (1 << (32 - size)) - 2
-
-	// Generate a random host address within the subnet
-	host := rand.Intn(numHosts) + 1
-	addr := ip.Mask(ipNet.Mask)
-	addr[0] |= byte(host >> 24)
-	addr[1] |= byte(host >> 16)
-	addr[2] |= byte(host >> 8)
-	addr[3] |= byte(host)
-
-	stringAddress := fmt.Sprintf("%v", addr)
-	return stringAddress, nil
-}
-
-func ipIsWithinRange(ipAddress string, subnet string, rangeStart string, rangeEnd string) bool {
-	// Parse the subnet IP and mask
-	_, ipNet, err := net.ParseCIDR(subnet)
-	if err != nil {
-		panic(err)
-	}
-
-	// Define the range of allowed host addresses
-	start := net.ParseIP(rangeStart).To4()
-	end := net.ParseIP(rangeEnd).To4()
-
-	// Parse the IP address to check
-	ip := net.ParseIP(ipAddress).To4()
-
-	// Check if the IP address is within the allowed range
-	if ipNet.Contains(ip) && bytesInRange(ip, start, end) {
-		return true
-	} else {
-		return false
-	}
-}
-
-func bytesInRange(ip, start, end []byte) bool {
-	for i := 0; i < len(ip); i++ {
-		if start[i] > end[i] {
-			log.Fatal("Make sure range start is lower than range end!")
-		} else if ip[i] < start[i] || ip[i] > end[i] {
-			return false
-		}
-	}
-	return true
-}
-
-type NetworkInfoSt struct {
-	Name            string `json:"network_name"`
-	Gateway         string `json:"network_gateway"`
-	Subnet          string `json:"network_subnet"`
-	RangeStart      string `json:"network_range_start"`
-	RangeEnd        string `json:"network_range_end"`
-	BridgeInterface string `json:"bridge_interface"`
-	ApplyBridgeAddr bool   `json:"apply_bridge_address"`
-	Comment         string `json:"comment"`
-}
-
-func networkInfo() ([]NetworkInfoSt, error) {
-	// JSON config file location
-	execPath, err := os.Executable()
-	if err != nil {
-		return []NetworkInfoSt{}, err
-	}
-	networkConfigFile := path.Dir(execPath) + "/config_files/network_config.json"
-
-	// Read the JSON file
-	data, err := os.ReadFile(networkConfigFile)
-	if err != nil {
-		return []NetworkInfoSt{}, err
-	}
-
-	// Unmarshal the JSON data into a slice of Network structs
-	var networks []NetworkInfoSt
-	err = json.Unmarshal(data, &networks)
-	if err != nil {
-		return []NetworkInfoSt{}, err
-	}
-
-	return networks, nil
-}
-
-func generateRandomMacAddress() (string, error) {
-	var existingMacs []string
-	for _, v := range getAllVms() {
-		tempConfig := vmConfig(v)
-		existingMacs = append(existingMacs, tempConfig.Networks[0].NetworkMac)
-	}
-
-	macStr := ""
-	for {
-		if slices.Contains(existingMacs, macStr) || len(macStr) < 1 {
-			// Generate a random MAC address
-			mac := make([]byte, 3)
-			_, err := rand.Read(mac)
-			if err != nil {
-				return "", err
-			}
-
-			// Format the MAC address as a string with the desired prefix
-			macStr = fmt.Sprintf("58:9c:fc:%02x:%02x:%02x", mac[0], mac[1], mac[2])
-		} else {
-			break
-		}
-	}
-
-	return macStr, nil
-}
-
-func generateVmName(vmName string) (string, error) {
-	reAllowed := regexp.MustCompile(`[^a-zA-Z0-9\-]`)
-	iter := 1
-	vms := getAllVms()
-	if reAllowed.MatchString(vmName) {
-		return "", errors.New("name can only include A-Z, dash (-), and/or numbers")
-	} else if string(vmName[len(vmName)-1]) == "-" {
-		return "", errors.New("name cannot end with a dash (-)")
-	} else if vmName == "test-vm" {
-		vmName = "test-vm-" + strconv.Itoa(iter)
-		for {
-			if slices.Contains(vms, vmName) {
-				iter = iter + 1
-				vmName = "test-vm-" + strconv.Itoa(iter)
-			} else {
-				break
-			}
-		}
-	} else if slices.Contains(vms, vmName) {
-		return "", errors.New("vm already exists")
-	}
-	return vmName, nil
-}
-
-// Generate a random password given the length and character types
-func generateRandomPassword(length int, caps, nums bool) string {
-	// Define the character set for the password
-	charset := "abcdefghijklmnopqrstuvwxyz"
-	capS := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	numS := "0123456789"
-	if caps {
-		charset = charset + capS
-	}
-	if nums {
-		charset = charset + numS
-	}
-
-	rand.Seed(time.Now().UnixNano())
-	result := ""
-	iter := 0
-	for {
-		pwByte := charset[rand.Intn(len(charset))]
-		result = result + string(pwByte)
-		iter = iter + 1
-		if iter > length {
-			break
-		}
-	}
-
-	return result
-}
-
-func generateRandomVncPort() string {
-	var existingPorts []string
-	startPort := 5900
-	endPort := 6300
-	for _, v := range getAllVms() {
-		tempConfig := vmConfig(v)
-		existingPorts = append(existingPorts, tempConfig.VncPort)
-	}
-	for {
-		if slices.Contains(existingPorts, strconv.Itoa(startPort)) {
-			startPort = startPort + 1
-			continue
-		} else if startPort > endPort {
-			startPort = 5900
-		} else {
-			break
-		}
-	}
-
-	return strconv.Itoa(startPort)
-}
-
-type HostConfigKey struct {
-	KeyValue string `json:"key_value"`
-	Comment  string `json:"comment"`
-}
-
-type HostConfig struct {
-	ImageServer    string          `json:"public_vm_image_server"`
-	BackupServers  []string        `json:"backup_servers"`
-	ActiveDatasets []string        `json:"active_datasets"`
-	DnsServers     []string        `json:"dns_servers,omitempty"`   // this is a new field, that might not be implemented on all of the nodes yet
-	HostDNSACLs    []string        `json:"host_dns_acls,omitempty"` // this field is deprecated, remains here for backwards compatibility, and will be removed at some point
-	HostSSHKeys    []HostConfigKey `json:"host_ssh_keys"`
-}
-
-func GetHostConfig() (HostConfig, error) {
-	hostConfig := HostConfig{}
-	execPath, err := os.Executable()
-	if err != nil {
-		return HostConfig{}, err
-	}
-	hostConfigFile := path.Dir(execPath) + "/config_files/host_config.json"
-	data, err := os.ReadFile(hostConfigFile)
-	if err != nil {
-		return HostConfig{}, err
-	}
-	err = json.Unmarshal(data, &hostConfig)
-	if err != nil {
-		return HostConfig{}, err
-	}
-	return hostConfig, nil
-}
-
-func getSystemSshKeys() ([]VmSshKey, error) {
-	sshKeys := []VmSshKey{}
-	hostConfig := HostConfig{}
-	// JSON config file location
-	execPath, err := os.Executable()
-	if err != nil {
-		return sshKeys, err
-	}
-	hostConfigFile := path.Dir(execPath) + "/config_files/host_config.json"
-
-	// Read the JSON file
-	data, err := os.ReadFile(hostConfigFile)
-	if err != nil {
-		return sshKeys, err
-	}
-
-	// Unmarshal the JSON data into a slice of Network structs
-	err = json.Unmarshal(data, &hostConfig)
-	if err != nil {
-		return sshKeys, err
-	}
-
-	for _, v := range hostConfig.HostSSHKeys {
-		tempKey := VmSshKey{}
-		tempKey.KeyValue = v.KeyValue
-		tempKey.Comment = v.Comment
-		tempKey.KeyOwner = "System"
-		sshKeys = append(sshKeys, tempKey)
-	}
-
-	return sshKeys, nil
 }
 
 func zfsDatasetClone(dsParent string, osType string, newVmName string) (bool, error) {
@@ -1163,7 +756,7 @@ func zfsDatasetClone(dsParent string, osType string, newVmName string) (bool, er
 
 	vmTemplate := dsParent + "/template-" + osType
 
-	snapName := "@deployment_" + newVmName + "_" + generateRandomPassword(8, false, true)
+	snapName := "@deployment_" + newVmName + "_" + HosterHostUtils.GenerateRandomPassword(8, false, true)
 	out, err := exec.Command("zfs", "snapshot", vmTemplate+snapName).CombinedOutput()
 	if err != nil {
 		return false, errors.New("could not execute zfs snapshot: " + string(out) + "; " + err.Error())
@@ -1184,27 +777,5 @@ func createCiIso(vmFolder string) error {
 	}
 
 	emojlog.PrintLogMessage("New CloudInit ISO has been created", emojlog.Info)
-	return nil
-}
-
-func vmConfigFileWriter(vmConfig VmConfigStruct, configLocation string) error {
-	vmFileJsonOutput, err := json.MarshalIndent(vmConfig, "", "   ")
-	if err != nil {
-		return err
-	}
-
-	// Open the file in write-only mode, truncating (overwriting) it if it already exists
-	file, err := os.OpenFile(configLocation, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	// Write data to the file
-	_, err = file.Write(vmFileJsonOutput)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }

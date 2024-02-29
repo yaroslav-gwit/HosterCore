@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"log"
 	"os"
 	"os/exec"
@@ -22,12 +23,24 @@ var (
 )
 
 func viewLog(vmName string) {
-	vmFolder := getVmFolder(vmName)
+	vmFolder := ""
+	vms, err := HosterVmUtils.ListAllSimple()
+	if err != nil {
+		log.Fatal("Can't open `tail -f` " + err.Error())
+	}
+
+	for _, v := range vms {
+		if v.VmName == vmName {
+			vmFolder = v.Mountpoint + "/" + vmName
+		}
+	}
+
 	tailCmd := exec.Command("tail", "-n", "35", "-f", vmFolder+"/vm_supervisor.log")
 	tailCmd.Stdin = os.Stdin
 	tailCmd.Stdout = os.Stdout
 	tailCmd.Stderr = os.Stderr
-	err := tailCmd.Run()
+
+	err = tailCmd.Run()
 	if err != nil {
 		log.Fatal("Can't open `tail -f` " + err.Error())
 	}

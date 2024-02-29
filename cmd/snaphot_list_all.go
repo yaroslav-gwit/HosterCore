@@ -3,10 +3,10 @@ package cmd
 import (
 	"HosterCore/internal/pkg/emojlog"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"fmt"
 	"os"
-	"regexp"
 	"strconv"
 
 	"github.com/aquasecurity/table"
@@ -86,7 +86,8 @@ func generateSnapshotAllTable() error {
 		t.SetHeaderStyle(table.StyleBold)
 	}
 
-	vmList := getAllVms()
+	// vmList := getAllVms()
+	vmList, _ := HosterVmUtils.ListAllSimple()
 	jailList, _ := HosterJailUtils.ListAllSimple()
 	snapList, err := zfsutils.SnapshotListWithDescriptions()
 	if err != nil {
@@ -94,17 +95,15 @@ func generateSnapshotAllTable() error {
 	}
 
 	for _, v := range vmList {
-		reMatch := regexp.MustCompile(`/` + v + `@`)
 		for _, vv := range snapList {
-			if reMatch.MatchString(vv.Name) {
+			if vv.Dataset == v.DsName+"/"+v.VmName {
 				ID = ID + 1
 				t.AddRow(
 					strconv.Itoa(ID),
-					v,
+					v.VmName,
 					"VM",
 					vv.Name,
 					vv.SizeHuman,
-					// fmt.Sprintf("%d", vv.SizeBytes),
 					fmt.Sprintf("%v", vv.Locked),
 					fmt.Sprintf("%d", len(vv.Clones)),
 					vv.Description,
@@ -115,8 +114,7 @@ func generateSnapshotAllTable() error {
 
 	for _, v := range jailList {
 		for _, vv := range snapList {
-			jaiDs := v.DsName + "/" + v.JailName
-			if jaiDs == vv.Dataset {
+			if vv.Dataset == v.DsName+"/"+v.JailName {
 				ID = ID + 1
 				t.AddRow(
 					strconv.Itoa(ID),
@@ -124,7 +122,6 @@ func generateSnapshotAllTable() error {
 					"Jail",
 					vv.Name,
 					vv.SizeHuman,
-					// fmt.Sprintf("%d", vv.SizeBytes),
 					fmt.Sprintf("%v", vv.Locked),
 					fmt.Sprintf("%d", len(vv.Clones)),
 					vv.Description,

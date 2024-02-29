@@ -21,13 +21,14 @@ type DiskSize struct {
 
 type VmApi struct {
 	VmConfig
-	Name        string `json:"name"`
-	Uptime      string `json:"uptime"`
-	UptimeUnix  int64  `json:"uptime_unix"`
-	Running     bool   `json:"running"`
-	Backup      bool   `json:"backup"`
-	Encrypted   bool   `json:"encrypted"`
-	CurrentHost string `json:"current_host"`
+	Simple      VmListSimple `json:"-"`
+	Name        string       `json:"name"`
+	Uptime      string       `json:"uptime"`
+	UptimeUnix  int64        `json:"uptime_unix"`
+	Running     bool         `json:"running"`
+	Backup      bool         `json:"backup"`
+	Encrypted   bool         `json:"encrypted"`
+	CurrentHost string       `json:"current_host"`
 	// Metrics     rctl.RctMetrics `json:"rctl_metrics,omitempty"`
 }
 

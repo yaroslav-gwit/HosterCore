@@ -19,6 +19,189 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/ha/jail-list": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Handle the HA enabled Jail list.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HA"
+                ],
+                "summary": "Handle the HA enabled Jail list.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/HandlersHA.HaJail"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/ha/ping": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Handle the HA node ping.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HA"
+                ],
+                "summary": "Handle the HA node ping.",
+                "parameters": [
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/RestApiConfig.HaNode"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/ha/register": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Handle the HA node registration.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HA"
+                ],
+                "summary": "Handle the HA node registration.",
+                "parameters": [
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/RestApiConfig.HaNode"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/ha/terminate": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Handle the HA graceful termination signal.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HA"
+                ],
+                "summary": "Handle the HA graceful termination signal.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/ha/vm-list": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Handle the HA enabled VM list.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "HA"
+                ],
+                "summary": "Handle the HA enabled VM list.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/HandlersHA.HaVm"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Simple function, that returns this REST API server health status.",
@@ -1046,6 +1229,46 @@ const docTemplate = `{
                 }
             }
         },
+        "HandlersHA.HaJail": {
+            "type": "object",
+            "properties": {
+                "current_host": {
+                    "type": "string"
+                },
+                "jail_name": {
+                    "type": "string"
+                },
+                "latest_snapshot": {
+                    "type": "string"
+                },
+                "live": {
+                    "type": "boolean"
+                },
+                "parent_host": {
+                    "type": "string"
+                }
+            }
+        },
+        "HandlersHA.HaVm": {
+            "type": "object",
+            "properties": {
+                "current_host": {
+                    "type": "string"
+                },
+                "latest_snapshot": {
+                    "type": "string"
+                },
+                "live": {
+                    "type": "boolean"
+                },
+                "parent_host": {
+                    "type": "string"
+                },
+                "vm_name": {
+                    "type": "string"
+                }
+            }
+        },
         "HosterHostUtils.HostInfo": {
             "type": "object",
             "properties": {
@@ -1201,6 +1424,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uptime": {
+                    "type": "string"
+                },
+                "uuid": {
                     "type": "string"
                 }
             }
@@ -1399,6 +1625,47 @@ const docTemplate = `{
                 }
             }
         },
+        "RestApiConfig.HaNode": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "backup_node": {
+                    "type": "boolean"
+                },
+                "failover_strategy": {
+                    "type": "string"
+                },
+                "failover_time": {
+                    "type": "integer"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "string"
+                },
+                "protocol": {
+                    "type": "string"
+                },
+                "registered": {
+                    "type": "boolean"
+                },
+                "startup_time": {
+                    "type": "integer"
+                },
+                "times_failed": {
+                    "type": "integer"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.JailCloneInput": {
             "type": "object",
             "properties": {
@@ -1560,6 +1827,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "snapshot_name": {
+                    "description": "Full snapshot path, or in other words it's full \"ZFS name\"",
                     "type": "string"
                 },
                 "snapshot_short_name": {

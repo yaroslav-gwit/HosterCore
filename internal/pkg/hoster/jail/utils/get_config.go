@@ -25,6 +25,7 @@ type JailConfig struct {
 	Parent           string   `json:"parent"`
 	Production       bool     `json:"production"`
 	Tags             []string `json:"tags"`
+	UUID             string   `json:"uuid,omitempty"`
 	Description      string   `json:"description"`
 }
 

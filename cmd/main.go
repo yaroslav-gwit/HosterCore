@@ -15,10 +15,10 @@ var rootCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		checkInitFile()
-		hostMain()
+		HosterTables.GenerateHostInfoTable(false)
 		printZfsDatasetInfo()
 		printNetworkInfoTable()
-		vmListMain()
+		HosterTables.GenerateVMsTable(false)
 		HosterTables.GenerateJailsTable(false)
 	},
 }
@@ -130,7 +130,8 @@ func init() {
 
 	// VM cmd -> start all
 	vmCmd.AddCommand(vmStartAllCmd)
-	vmStartAllCmd.Flags().IntVarP(&waitTime, "wait-time", "t", 5, "Set a static wait time between VM starts")
+	vmStartAllCmd.Flags().IntVarP(&waitTime, "wait-time", "t", 0, "Set a static wait time between each VM start")
+	vmStartAllCmd.Flags().BoolVarP(&prodOnly, "production-only", "p", false, "Only start all production VMs")
 
 	// VM cmd -> stop
 	vmCmd.AddCommand(vmStopCmd)
@@ -139,8 +140,8 @@ func init() {
 
 	// VM cmd -> stop all
 	vmCmd.AddCommand(vmStopAllCmd)
-	vmStopAllCmd.Flags().BoolVarP(&forceStopAll, "force", "f", false, "Use -SIGKILL signal to forcefully kill all of the VMs processes")
-	vmStopAllCmd.Flags().BoolVarP(&vmStopAllCmdCleanUp, "cleanup", "c", false, "Kill VM Supervisor as well as the VM itself (rarely needed)")
+	vmStopAllCmd.Flags().BoolVarP(&forceKill, "force", "f", false, "Use -SIGKILL signal to forcefully kill all of the VMs processes")
+	vmStopAllCmd.Flags().BoolVarP(&forceCleanUp, "cleanup", "c", false, "Kill VM Supervisor as well as the VM itself (rarely needed)")
 
 	// VM cmd -> show log
 	vmCmd.AddCommand(vmShowLogCmd)
@@ -252,12 +253,6 @@ func init() {
 	nodeExporterCmd.AddCommand(nodeExporterStopCmd)
 	nodeExporterCmd.AddCommand(nodeExporterStatusCmd)
 
-	// Traefik proxy command section
-	rootCmd.AddCommand(proxyTraefikCmd)
-	proxyTraefikCmd.AddCommand(proxyTraefikStartCmd)
-	proxyTraefikCmd.AddCommand(proxyTraefikStopCmd)
-	proxyTraefikCmd.AddCommand(proxyTraefikStatusCmd)
-
 	// Init command section
 	rootCmd.AddCommand(initCmd)
 
@@ -278,25 +273,10 @@ func init() {
 	vmCiIsoCmd.AddCommand(vmCiIsoMountCmd)
 	vmCiIsoCmd.AddCommand(vmCiIsoUnmountCmd)
 
-	// VM cmd -> change
-	rootCmd.AddCommand(changeCmd)
-	changeCmd.AddCommand(changeParentCmd)
-	// changeParentCmd.Flags().StringVarP(&changeParentVmName, "vm", "", "", "VM Name (mandatory flag)")
-	changeParentCmd.Flags().StringVarP(&changeParentNewParent, "new-parent", "p", "", "New parent name (optional, current hostname used by default)")
-
-	// VM cmd -> nebula
-	rootCmd.AddCommand(nebulaCmd)
-	nebulaCmd.AddCommand(nebulaInitCmd)
-	nebulaCmd.AddCommand(nebulaShowLogCmd)
-
-	nebulaCmd.AddCommand(nebulaServiceCmd)
-	nebulaServiceCmd.Flags().BoolVarP(&nebulaServiceStart, "start", "s", false, "Start Nebula service")
-	nebulaServiceCmd.Flags().BoolVarP(&nebulaServiceStop, "stop", "k", false, "Stop/kill Nebula service")
-	nebulaServiceCmd.Flags().BoolVarP(&nebulaServiceReload, "reload", "r", false, "Restart Nebula service")
-
-	nebulaCmd.AddCommand(nebulaUpdateCmd)
-	nebulaUpdateCmd.Flags().BoolVarP(&nebulaUpdateBinary, "binary", "b", false, "Download a fresh Nebula binary")
-	nebulaUpdateCmd.Flags().BoolVarP(&nebulaUpdateConfig, "config", "c", false, "Request Nebula Control Plane to generate new config, and then download it")
+	// VM cmd -> set -> parent
+	rootCmd.AddCommand(vmSetCmd)
+	vmSetCmd.AddCommand(vmSetCmdParent)
+	vmSetCmdParent.Flags().StringVarP(&vmSetNewParent, "new-parent", "p", "", "New parent name (optional, current hostname used by default)")
 
 	// DNS server commands
 	rootCmd.AddCommand(dnsCmd)

@@ -163,10 +163,10 @@ func FixVmConfig(vmConfLocation string) (r VmConfig, e error) {
 	prod, exist := oldConfig["live_status"]
 	if exist && reflect.TypeOf(prod) == reflect.TypeOf("string") {
 		parsed := fmt.Sprintf("%s", prod)
-		if err != nil {
-			e = err
-			return
-		}
+		// if err != nil {
+		// 	e = err
+		// 	return
+		// }
 		if parsed == "production" || parsed == "prod" {
 			oldConfig["production"] = true
 		}

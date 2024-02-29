@@ -291,13 +291,13 @@ func main() {
 	})
 
 	app.Post("/vm/stop-all", func(fiberContext *fiber.Ctx) error {
-		go cmd.VmStopAll(false, false)
+		go HosterVm.StopAll(false, false)
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.JSON(fiber.Map{"message": "process started"})
 	})
 
 	app.Post("/vm/stop-all-force", func(fiberContext *fiber.Ctx) error {
-		go cmd.VmStopAll(true, false)
+		go HosterVm.StopAll(true, false)
 		fiberContext.Status(fiber.StatusOK)
 		return fiberContext.JSON(fiber.Map{"message": "process started"})
 	})

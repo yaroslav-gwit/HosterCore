@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
 	"HosterCore/internal/pkg/emojlog"
 	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
 	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
-	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -216,31 +217,28 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			hostname, err := FreeBSDsysctls.SysctlKernHostname()
+			vms, err := HosterVmUtils.ListJsonApi()
 			if err != nil {
-				emojlog.PrintLogMessage("could not get a hostname: "+err.Error(), emojlog.Error)
+				emojlog.PrintLogMessage("could not get a list of VMs: "+err.Error(), emojlog.Error)
 				os.Exit(1)
 			}
-
-			for _, v := range getAllVms() {
-				if !VmLiveCheck(v) {
+			for _, v := range vms {
+				if !v.Running {
+					continue
+				}
+				if v.Backup {
 					continue
 				}
 
-				vmConf := vmConfig(v)
-				if vmConf.ParentHost != hostname {
-					continue
-				}
-
-				err := addSnapshotJob(v, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
+				err := addSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				} else {
-					emojlog.PrintLogMessage("A new background snapshot job has been added for a VM: "+v, emojlog.Changed)
+					emojlog.PrintLogMessage("A new background snapshot job has been added for a VM: "+v.Name, emojlog.Changed)
 				}
 			}
 
-			jails, err := HosterJailUtils.ListAllExtendedTable()
+			jails, err := HosterJailUtils.ListJsonApi()
 			if err != nil {
 				emojlog.PrintLogMessage("could not get a list of Jails: "+err.Error(), emojlog.Error)
 				os.Exit(1)
@@ -249,6 +247,10 @@ var (
 				if !v.Running {
 					continue
 				}
+				if v.Backup {
+					continue
+				}
+
 				err = addSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -260,54 +262,16 @@ var (
 	}
 )
 
-// Hardcoded code copy, to avoid circular imports
-// Will eliminate it at some point, after the refactoring is complete
-// And when it will be possible to import without the circular import issues
-var SockAddr = "/var/run/hoster_scheduler.sock"
-
-const (
-	JOB_TYPE_REPLICATION = "replication"
-	JOB_TYPE_SNAPSHOT    = "snapshot"
-)
-
-type ReplicationJob struct {
-	// ZfsDataset       string `json:"zfs_dataset"`
-	VmName           string `json:"vm_name"`
-	SshEndpoint      string `json:"ssh_endpoint"`
-	SshKey           string `json:"ssh_key"`
-	BufferSpeedLimit int    `json:"speed_limit"`
-	ProgressBytes    int    `json:"progress_bytes"`
-	ProgressPercent  int    `json:"progress_percent"`
-}
-
-type SnapshotJob struct {
-	// ZfsDataset      string `json:"zfs_dataset"`
-	VmName          string `json:"vm_name"`
-	SnapshotsToKeep int    `json:"snapshots_to_keep"`
-	SnapshotType    string `json:"snapshot_type"`
-}
-
-type Job struct {
-	JobDone       bool           `json:"job_done"`
-	JobNext       bool           `json:"job_next"`
-	JobInProgress bool           `json:"job_in_progress"`
-	JobFailed     bool           `json:"job_failed"`
-	JobError      string         `json:"job_error"`
-	JobType       string         `json:"job_type"`
-	Replication   ReplicationJob `json:"replication"`
-	Snapshot      SnapshotJob    `json:"snapshot"`
-}
-
 func addReplicationJob(vmName string, endpoint string, key string, speedLimit int) error {
-	c, err := net.Dial("unix", SockAddr)
+	c, err := net.Dial("unix", SchedulerUtils.SockAddr)
 	if err != nil {
 		return err
 	}
 
 	defer c.Close()
 
-	job := Job{}
-	job.JobType = JOB_TYPE_REPLICATION
+	job := SchedulerUtils.Job{}
+	job.JobType = SchedulerUtils.JOB_TYPE_REPLICATION
 	job.Replication.VmName = vmName
 	job.Replication.SshEndpoint = endpoint
 	job.Replication.SshKey = key
@@ -327,15 +291,15 @@ func addReplicationJob(vmName string, endpoint string, key string, speedLimit in
 }
 
 func addSnapshotJob(vmName string, snapshotsToKeep int, snapshotType string) error {
-	c, err := net.Dial("unix", SockAddr)
+	c, err := net.Dial("unix", SchedulerUtils.SockAddr)
 	if err != nil {
 		return err
 	}
 
 	defer c.Close()
 
-	job := Job{}
-	job.JobType = JOB_TYPE_SNAPSHOT
+	job := SchedulerUtils.Job{}
+	job.JobType = SchedulerUtils.JOB_TYPE_SNAPSHOT
 	job.Snapshot.VmName = vmName
 	job.Snapshot.SnapshotType = snapshotType
 	job.Snapshot.SnapshotsToKeep = snapshotsToKeep

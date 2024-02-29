@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"errors"
 	"os"
 	"os/exec"
@@ -28,12 +29,12 @@ var (
 
 // Destroys a snapshot for any given VM.
 // Don't use in loops, because it performs some costly checks.
-// Better come up with a sibling function that will ignore all of these, if the happy path is known beforehand.
+// TBD: come up with a sibling function that will ignore all of these, if the happy path is known beforehand.
 func ZfsSnapshotDestroy(vmName string, snapshotName string) error {
-	allVms := getAllVms()
+	vms, _ := HosterVmUtils.ListJsonApi()
 	vmFound := false
-	for _, v := range allVms {
-		if v == vmName {
+	for _, v := range vms {
+		if v.Name == vmName {
 			vmFound = true
 			break
 		}

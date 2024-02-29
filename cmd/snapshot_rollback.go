@@ -3,6 +3,7 @@ package cmd
 import (
 	"HosterCore/internal/pkg/emojlog"
 	HosterVm "HosterCore/internal/pkg/hoster/vm"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"errors"
 	"os"
 	"os/exec"
@@ -34,11 +35,13 @@ var (
 // Rolls back the VM to a previous ZFS snapshot, and destroys any newer snapshot, that has been taken after it.
 // Can take "force" parameter in, that will stop the VM automatically, using "stop --force".
 func ZfsSnapshotRollback(vmName string, snapshotName string, forceStop bool, forceStart bool) error {
-	allVms := getAllVms()
+	vms, _ := HosterVmUtils.ListJsonApi()
 	vmFound := false
-	for _, v := range allVms {
-		if v == vmName {
+	vmInfo := HosterVmUtils.VmApi{}
+	for _, v := range vms {
+		if v.Name == vmName {
 			vmFound = true
+			vmInfo = v
 			break
 		}
 	}
@@ -47,12 +50,11 @@ func ZfsSnapshotRollback(vmName string, snapshotName string, forceStop bool, for
 	}
 
 	if forceStop {
-		// err := VmStop(vmName, forceStop, true)
 		err := HosterVm.Stop(vmName, forceStop, true)
 		if err != nil {
 			return err
 		}
-	} else if VmLiveCheck(vmName) {
+	} else if vmInfo.Running {
 		return errors.New("VM is online, please make sure VM is turned off before trying again")
 	}
 

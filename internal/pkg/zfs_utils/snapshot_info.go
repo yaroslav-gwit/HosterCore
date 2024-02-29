@@ -14,7 +14,7 @@ import (
 )
 
 type SnapshotInfo struct {
-	Name        string   `json:"snapshot_name"`
+	Name        string   `json:"snapshot_name"` // Full snapshot path, or in other words it's full "ZFS name"
 	Dataset     string   `json:"snapshot_dataset"`
 	ShortName   string   `json:"snapshot_short_name"`
 	Locked      bool     `json:"snapshot_locked"`

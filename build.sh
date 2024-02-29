@@ -13,7 +13,7 @@ echo -e "${LIGHT_GREEN}=== Starting the build process ===${NC}"
 
 GIT_INFO=$(git describe --tags)
 DATE_INFO=$(date '+%Y-%m-%d_%H-%M-%S')
-VERSION=${GIT_INFO}_COMPILED_ON_${DATE_INFO} #; _=${VERSION}
+VERSION=${GIT_INFO}_COMPTIME_${DATE_INFO} #; _=${VERSION}
 # Set the RELEASE=true, to build the release version
 if test -z "${RELEASE}"; then
     echo -e "${GREEN}Building the DEV version of HosterCore${NC}"
@@ -62,11 +62,12 @@ cd node_exporter/
 go build -trimpath
 printf "${GREEN}Done${NC}\n"
 
-printf "Building the ${GREEN}hoster_rest_api${NC} module ... "
-cd ..
-cd rest_api/
-go build -trimpath
-printf "${GREEN}Done${NC}\n"
+# Legacy API v1
+# printf "Building the ${GREEN}hoster_rest_api${NC} module ... "
+# cd ..
+# cd rest_api/
+# go build -trimpath
+# printf "${GREEN}Done${NC}\n"
 
 printf "Building the ${GREEN}ha_watchdog${NC} module ... "
 cd ..

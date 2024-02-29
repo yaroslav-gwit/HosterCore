@@ -24,6 +24,7 @@ var (
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := VmZfsSnapshot(args[0], snapshotNewType, snapshotNewSnapsToKeep)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)

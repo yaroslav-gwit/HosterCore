@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"HosterCore/internal/pkg/byteconversion"
 	"HosterCore/internal/pkg/emojlog"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"errors"
 	"fmt"
@@ -14,7 +16,6 @@ import (
 
 	"github.com/aquasecurity/table"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -37,63 +38,6 @@ var (
 	}
 )
 
-// func generateSnapshotTable(vmName string) error {
-// 	info, err := GetSnapshotInfo(vmName, false)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	var ID = 0
-// 	var t = table.New(os.Stdout)
-// 	t.SetAlignment(table.AlignRight, //ID
-// 		table.AlignLeft,  // Snapshot Name
-// 		table.AlignRight, // Snapshot Size Human
-// 		table.AlignRight) // Snapshot Size Bytes
-
-// 	if snapshotListUnixStyleTable {
-// 		t.SetDividers(table.Dividers{
-// 			ALL: " ",
-// 			NES: " ",
-// 			NSW: " ",
-// 			NEW: " ",
-// 			ESW: " ",
-// 			NE:  " ",
-// 			NW:  " ",
-// 			SW:  " ",
-// 			ES:  " ",
-// 			EW:  " ",
-// 			NS:  " ",
-// 		})
-// 		t.SetRowLines(false)
-// 		t.SetBorderTop(false)
-// 		t.SetBorderBottom(false)
-// 	} else {
-// 		t.SetHeaders("ZFS Snapshots for: " + vmName)
-// 		t.SetHeaderColSpans(0, 4)
-
-// 		t.AddHeaders(
-// 			"#",
-// 			"Snapshot Name",
-// 			"Snapshot Size Human",
-// 			"Snapshot Size Bytes")
-
-// 		t.SetLineStyle(table.StyleBrightCyan)
-// 		t.SetDividers(table.UnicodeRoundedDividers)
-// 		t.SetHeaderStyle(table.StyleBold)
-// 	}
-
-// 	for _, vmSnap := range info {
-// 		ID = ID + 1
-// 		t.AddRow(strconv.Itoa(ID),
-// 			vmSnap.Name,
-// 			vmSnap.SizeHuman,
-// 			strconv.Itoa(int(vmSnap.SizeBytes)))
-// 	}
-
-// 	t.Render()
-// 	return nil
-// }
-
 type SnapshotInfo struct {
 	Name      string `json:"snapshot_name"`
 	SizeBytes uint64 `json:"snapshot_size_bytes"`
@@ -104,10 +48,10 @@ type SnapshotInfo struct {
 // like snapshot size in bytes, and human readable snapshot size
 func GetSnapshotInfo(vmName string, ignoreVmExistsCheck bool) ([]SnapshotInfo, error) {
 	if !ignoreVmExistsCheck {
-		vmList := getAllVms()
+		vmList, _ := HosterVmUtils.ListAllSimple()
 		vmExists := false
 		for _, v := range vmList {
-			if v == vmName {
+			if v.VmName == vmName {
 				vmExists = true
 			}
 		}
@@ -138,7 +82,7 @@ func GetSnapshotInfo(vmName string, ignoreVmExistsCheck bool) ([]SnapshotInfo, e
 		tempInfo := SnapshotInfo{}
 		tempInfo.Name = tempList[0]
 		tempInfo.SizeBytes, _ = strconv.ParseUint(tempList[1], 10, 64)
-		tempInfo.SizeHuman = ByteConversion(int(tempInfo.SizeBytes))
+		tempInfo.SizeHuman = byteconversion.BytesToHuman(tempInfo.SizeBytes)
 		snapshotInfo = append(snapshotInfo, tempInfo)
 	}
 
@@ -200,12 +144,14 @@ func generateSnapshotTableNew(vmName string) error {
 
 	resFound := false
 	resType := ""
-	vmList := getAllVms()
+	vms, _ := HosterVmUtils.ListAllSimple()
 	jails, _ := HosterJailUtils.ListAllSimple()
 
-	if slices.Contains(vmList, vmName) {
-		resFound = true
-		resType = "VM"
+	for _, v := range vms {
+		if v.VmName == vmName {
+			resFound = true
+			resType = "VM"
+		}
 	}
 	if !resFound {
 		for _, v := range jails {

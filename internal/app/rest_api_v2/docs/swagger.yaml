@@ -52,6 +52,32 @@ definitions:
       swap_used_human:
         type: string
     type: object
+  HandlersHA.HaJail:
+    properties:
+      current_host:
+        type: string
+      jail_name:
+        type: string
+      latest_snapshot:
+        type: string
+      live:
+        type: boolean
+      parent_host:
+        type: string
+    type: object
+  HandlersHA.HaVm:
+    properties:
+      current_host:
+        type: string
+      latest_snapshot:
+        type: string
+      live:
+        type: boolean
+      parent_host:
+        type: string
+      vm_name:
+        type: string
+    type: object
   HosterHostUtils.HostInfo:
     properties:
       all_vms:
@@ -155,6 +181,8 @@ definitions:
       timezone:
         type: string
       uptime:
+        type: string
+      uuid:
         type: string
     type: object
   HosterVmUtils.Virtio9P:
@@ -285,6 +313,33 @@ definitions:
       key_value:
         type: string
     type: object
+  RestApiConfig.HaNode:
+    properties:
+      address:
+        type: string
+      backup_node:
+        type: boolean
+      failover_strategy:
+        type: string
+      failover_time:
+        type: integer
+      hostname:
+        type: string
+      password:
+        type: string
+      port:
+        type: string
+      protocol:
+        type: string
+      registered:
+        type: boolean
+      startup_time:
+        type: integer
+      times_failed:
+        type: integer
+      user:
+        type: string
+    type: object
   handlers.JailCloneInput:
     properties:
       jail_name:
@@ -392,6 +447,7 @@ definitions:
       snapshot_locked:
         type: boolean
       snapshot_name:
+        description: Full snapshot path, or in other words it's full "ZFS name"
         type: string
       snapshot_short_name:
         type: string
@@ -433,6 +489,119 @@ info:
   title: Hoster Node REST API Docs
   version: "2.0"
 paths:
+  /ha/jail-list:
+    get:
+      description: Handle the HA enabled Jail list.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/HandlersHA.HaJail'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Handle the HA enabled Jail list.
+      tags:
+      - HA
+  /ha/ping:
+    post:
+      description: Handle the HA node ping.
+      parameters:
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/RestApiConfig.HaNode'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Handle the HA node ping.
+      tags:
+      - HA
+  /ha/register:
+    post:
+      description: Handle the HA node registration.
+      parameters:
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/RestApiConfig.HaNode'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Handle the HA node registration.
+      tags:
+      - HA
+  /ha/terminate:
+    post:
+      description: Handle the HA graceful termination signal.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Handle the HA graceful termination signal.
+      tags:
+      - HA
+  /ha/vm-list:
+    get:
+      description: Handle the HA enabled VM list.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/HandlersHA.HaVm'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Handle the HA enabled VM list.
+      tags:
+      - HA
   /health:
     get:
       description: Simple function, that returns this REST API server health status.

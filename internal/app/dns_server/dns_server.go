@@ -8,10 +8,8 @@ import (
 	"strings"
 	"syscall"
 
-	"HosterCore/cmd"
 	"HosterCore/internal/pkg/emojlog"
 	HosterHost "HosterCore/internal/pkg/hoster/host"
-	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 
 	"github.com/miekg/dns"
 )
@@ -88,16 +86,23 @@ func loadUpstreamDnsServers() {
 func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 	m := new(dns.Msg)
 	m.SetReply(r)
+
 	var logLine string
 	for _, q := range r.Question {
+		// Drop any IPv6 record requests
+		// TBD: add a config variable that controls this behavior
+		if q.Qtype == dns.TypeAAAA {
+			log.Info(fmt.Sprintf("IPv6 request was ignored: %s", q.Name))
+			continue
+		}
 		clientIP := w.RemoteAddr().String()
 
 		requestIsVmName := false
 		requestIsJailName := false
+		requestIsPublic := false
+
 		vmListIndex := 0
 		jailListIndex := 0
-
-		requestIsPublic := false
 		dnsNameSplit := strings.Split(q.Name, ".")
 
 		for i, v := range vmInfoList {
@@ -123,7 +128,6 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 		}
 
 		if len(dnsNameSplit) > 1 {
-			// go func() { logFileOutput(LOG_DNS_GLOBAL, dnsNameSplit[len(dnsNameSplit)-2], logChannel) }()
 			if IsPublicDomain(dnsNameSplit[len(dnsNameSplit)-2]) {
 				requestIsPublic = true
 			}
@@ -137,7 +141,6 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 			m.Answer = append(m.Answer, response.Answer...)
 			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
-			// go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
 			log.Info(logLine)
 		} else if requestIsVmName {
 			rr, err := dns.NewRR(q.Name + " IN A " + vmInfoList[vmListIndex].vmAddress)
@@ -147,7 +150,6 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 			m.Answer = append(m.Answer, rr)
 			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::VM"
-			// go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
 			log.Info(logLine)
 		} else if requestIsJailName {
 			rr, err := dns.NewRR(q.Name + " IN A " + jailInfoList[jailListIndex].JailAddress)
@@ -157,7 +159,6 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 			m.Answer = append(m.Answer, rr)
 			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::Jail"
-			// go func() { logFileOutput(LOG_DNS_LOCAL, logLine, logChannel) }()
 			log.Info(logLine)
 		} else {
 			response, server, err := queryExternalDNS(q)
@@ -167,7 +168,6 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 			m.Answer = append(m.Answer, response.Answer...)
 			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
-			// go func() { logFileOutput(LOG_DNS_GLOBAL, logLine, logChannel) }()
 			log.Info(logLine)
 		}
 	}
@@ -225,55 +225,6 @@ func parseAnswer(msg []dns.RR) string {
 	}
 	return result
 }
-
-type VmInfoStruct struct {
-	vmName    string
-	vmAddress string
-}
-
-func getVmsInfo() []VmInfoStruct {
-	vmInfoVar := []VmInfoStruct{}
-	allVms := cmd.GetAllVms()
-	for _, v := range allVms {
-		tempConfig := cmd.VmConfig(v)
-		tempInfo := VmInfoStruct{}
-		tempInfo.vmName = v
-		tempInfo.vmAddress = tempConfig.Networks[0].IPAddress
-		vmInfoVar = append(vmInfoVar, tempInfo)
-	}
-	return vmInfoVar
-}
-
-type JailInfoStruct struct {
-	JailName    string
-	JailAddress string
-}
-
-func getJailsInfo() (r []JailInfoStruct) {
-	jails, err := HosterJailUtils.ListAllExtendedTable()
-	if err != nil {
-		return
-	}
-
-	for _, v := range jails {
-		r = append(r, JailInfoStruct{JailName: v.Name, JailAddress: v.MainIpAddress})
-	}
-	return
-}
-
-const (
-	LOG_SUPERVISOR = "supervisor"
-	LOG_SYS_OUT    = "sys_stdout"
-	LOG_SYS_ERR    = "sys_stderr"
-	LOG_DNS_LOCAL  = "dns_locals"
-	LOG_DNS_GLOBAL = "dns_global"
-	LOG_DEV_DEBUG  = "dev_debug"
-)
-
-// type LogMessage struct {
-// 	Type    string
-// 	Message string
-// }
 
 func IsPublicDomain(topLevelDomain string) bool {
 	for _, v := range publicDomainList {

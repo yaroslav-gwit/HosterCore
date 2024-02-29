@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"errors"
 	"os"
 	"os/exec"
@@ -58,34 +59,81 @@ var (
 )
 
 func mountCiIso(vmName string) error {
-	vmConfigVar := vmConfig(vmName)
-	vmFolder := getVmFolder(vmName)
-	if vmConfigVar.Disks[1].DiskImage == "seed.iso" {
-		return errors.New("CloudInit ISO has already been mounted")
-	}
-
-	vmConfigVar.Disks[1].DiskImage = "seed.iso"
-	vmConfigVar.Disks[1].Comment = "CloudInit ISO file"
-	err := vmConfigFileWriter(vmConfigVar, vmFolder+"/vm_config.json")
+	vmConf, err := HosterVmUtils.InfoJsonApi(vmName)
 	if err != nil {
-		return nil
+		return err
 	}
 
-	if VmLiveCheck(vmName) {
-		emojlog.PrintLogMessage("Please don't forget to reboot the VM to apply changes", emojlog.Debug)
+	vmFolder := vmConf.Simple.Mountpoint + "/" + vmName
+	diskFound := false
+	for i, v := range vmConf.Disks {
+		if v.DiskImage == "seed.iso" {
+			return errors.New("CloudInit ISO has already been mounted")
+		}
+
+		if v.DiskImage == "seed-empty.iso" {
+			diskFound = true
+			vmConf.Disks[i].DiskImage = "seed.iso"
+			vmConf.Disks[i].Comment = "CloudInit ISO file"
+
+			err := HosterVmUtils.ConfigFileWriter(vmConf.VmConfig, vmFolder+"/"+HosterVmUtils.VM_CONFIG_NAME)
+			if err != nil {
+				return nil
+			}
+
+			if vmConf.Running {
+				emojlog.PrintLogMessage("Please don't forget to reboot the VM to apply changes", emojlog.Debug)
+			}
+			emojlog.PrintLogMessage("CloudInit ISO has been mounted", emojlog.Changed)
+
+			return nil
+		}
 	}
-	emojlog.PrintLogMessage("CloudInit ISO has been mounted", emojlog.Changed)
+
+	if !diskFound {
+		return errors.New("CloudInit ISO disk could not be found")
+	}
 	return nil
 }
 
 func unmountCiIso(vmName string) error {
 	fileContents := []byte("placeholder file for an empty CI ISO file")
-	vmFolder := getVmFolder(vmName)
-	vmConfigVar := vmConfig(vmName)
-	if vmConfigVar.Disks[1].DiskImage == "seed-empty.iso" {
-		return errors.New("CloudInit ISO has already been unmounted")
+
+	vmConf, err := HosterVmUtils.InfoJsonApi(vmName)
+	if err != nil {
+		return err
 	}
-	err := os.WriteFile(vmFolder+"/placeholder", fileContents, 0640)
+
+	diskFound := false
+	vmFolder := vmConf.Simple.Mountpoint + "/" + HosterVmUtils.VM_CONFIG_NAME
+	for i, v := range vmConf.Disks {
+		if v.DiskImage == "seed-empty.iso" {
+			return errors.New("CloudInit ISO has already been unmounted")
+		}
+
+		if v.DiskImage == "seed.iso" {
+			diskFound = true
+			vmConf.Disks[i].DiskImage = "seed-empty.iso"
+			vmConf.Disks[i].Comment = "An empty CloudInit ISO file"
+
+			err := HosterVmUtils.ConfigFileWriter(vmConf.VmConfig, vmFolder+"/"+HosterVmUtils.VM_CONFIG_NAME)
+			if err != nil {
+				return nil
+			}
+
+			if vmConf.Running {
+				emojlog.PrintLogMessage("Please don't forget to reboot the VM to apply changes", emojlog.Debug)
+			}
+			emojlog.PrintLogMessage("CloudInit ISO has been unmounted", emojlog.Changed)
+
+			return nil
+		}
+	}
+	if !diskFound {
+		return errors.New("CloudInit ISO disk could not be found")
+	}
+
+	err = os.WriteFile(vmFolder+"/placeholder", fileContents, 0640)
 	if err != nil {
 		return nil
 	}
@@ -97,16 +145,5 @@ func unmountCiIso(vmName string) error {
 	}
 	_ = os.Remove(vmFolder + "/placeholder")
 
-	vmConfigVar.Disks[1].DiskImage = "seed-empty.iso"
-	vmConfigVar.Disks[1].Comment = "An empty CloudInit ISO file"
-	err = vmConfigFileWriter(vmConfigVar, vmFolder+"/vm_config.json")
-	if err != nil {
-		return nil
-	}
-
-	if VmLiveCheck(vmName) {
-		emojlog.PrintLogMessage("Please don't forget to reboot the VM to apply changes", emojlog.Debug)
-	}
-	emojlog.PrintLogMessage("CloudInit ISO has been unmounted", emojlog.Changed)
 	return nil
 }

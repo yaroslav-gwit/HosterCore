@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"log"
 	"os"
 	"os/exec"
@@ -174,12 +175,16 @@ type UsedPptDevice struct {
 }
 
 func usedPptDevices() (usedPptDevices []UsedPptDevice) {
-	for _, vm := range getAllVms() {
-		config := vmConfig(vm)
-		for _, pptDev := range config.Passthru {
+	vms, err := HosterVmUtils.ListJsonApi()
+	if err != nil {
+		_ = 0
+	}
+
+	for _, v := range vms {
+		for _, pptDev := range v.Passthru {
 			usedPptDev := UsedPptDevice{}
 			usedPptDev.Dev = strings.TrimPrefix(pptDev, "-")
-			usedPptDev.VmName = vm
+			usedPptDev.VmName = v.Name
 			usedPptDevices = append(usedPptDevices, usedPptDev)
 		}
 	}

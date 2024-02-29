@@ -2,6 +2,7 @@ package main
 
 import (
 	"HosterCore/internal/app/rest_api_v2/pkg/handlers"
+	HandlersHA "HosterCore/internal/app/rest_api_v2/pkg/handlers_ha"
 	MiddlewareLogging "HosterCore/internal/app/rest_api_v2/pkg/middleware/logging"
 	FreeBSDLogger "HosterCore/internal/pkg/freebsd/logger"
 	"net/http"
@@ -90,6 +91,15 @@ func main() {
 	r.HandleFunc("/api/v2/metrics/vm/{vm_name}", handlers.VmMetrics).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/metrics/jail/{jail_name}", handlers.JailMetrics).Methods(http.MethodGet)
 
+	// HA
+	if restConf.HaMode {
+		r.HandleFunc("/api/v2/ha/ping", HandlersHA.HandlePing).Methods(http.MethodPost)
+		r.HandleFunc("/api/v2/ha/register", HandlersHA.HandleRegistration).Methods(http.MethodPost)
+		r.HandleFunc("/api/v2/ha/terminate", HandlersHA.HandleTerminate).Methods(http.MethodPost)
+		r.HandleFunc("/api/v2/ha/jail-list", HandlersHA.HandleJailList).Methods(http.MethodGet)
+		r.HandleFunc("/api/v2/ha/vm-list", HandlersHA.HandleVmList).Methods(http.MethodGet)
+	}
+
 	// Swagger docs
 	r.PathPrefix("/api/v2/swagger/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("/api/v2/swagger.json"), //The url pointing to API definition
@@ -109,9 +119,10 @@ func main() {
 	http.Handle("/", r)
 	srv := &http.Server{
 		Addr:         "0.0.0.0:4000",
-		WriteTimeout: 5 * time.Second,
-		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  3 * time.Second,
 	}
+
 	err := srv.ListenAndServe()
 	if err != nil {
 		logInternal.Fatal("could not start the REST API server: " + err.Error())

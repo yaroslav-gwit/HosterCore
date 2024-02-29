@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"HosterCore/internal/pkg/byteconversion"
+	HosterHost "HosterCore/internal/pkg/hoster/host"
 	"errors"
 	"log"
 	"os"
@@ -119,7 +121,7 @@ func printZfsDatasetInfo() {
 
 func getZfsDatasetInfo() ([]ZfsDatasetInfo, error) {
 	zfsDatasetInfo := []ZfsDatasetInfo{}
-	hostInfo, err := GetHostConfig()
+	hostInfo, err := HosterHost.GetHostConfig()
 	if err != nil {
 		return []ZfsDatasetInfo{}, err
 	}
@@ -137,14 +139,14 @@ func getZfsDatasetInfo() ([]ZfsDatasetInfo, error) {
 	reSplitSpace := regexp.MustCompile(`\s+`)
 	for _, v := range strings.Split(string(out), "\n") {
 		cmdSplitLine := reSplitSpace.Split(v, -1)
-		for _, vv := range hostInfo.ActiveDatasets {
+		for _, vv := range hostInfo.ActiveZfsDatasets {
 			if vv == cmdSplitLine[0] {
 				tempZfsDs := ZfsDatasetInfo{}
 				tempZfsDs.Name = cmdSplitLine[0]
 				tempZfsDs.SpaceUsed, _ = strconv.Atoi(cmdSplitLine[1])
-				tempZfsDs.SpaceUsedHuman = ByteConversion(tempZfsDs.SpaceUsed)
+				tempZfsDs.SpaceUsedHuman = byteconversion.BytesToHuman(uint64(tempZfsDs.SpaceUsed))
 				tempZfsDs.SpaceFree, _ = strconv.Atoi(cmdSplitLine[2])
-				tempZfsDs.SpaceFreeHuman = ByteConversion(tempZfsDs.SpaceFree)
+				tempZfsDs.SpaceFreeHuman = byteconversion.BytesToHuman(uint64(tempZfsDs.SpaceFree))
 				tempZfsDs.MountPoint = cmdSplitLine[4]
 				zfsDatasetInfo = append(zfsDatasetInfo, tempZfsDs)
 			}

@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "DEBUG: ha_watchdog service start-up").Run()
+	// _ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "DEBUG: ha_watchdog service start-up").Run()
+	log.Info("new service start-up")
 
 	var debugMode bool
 	debugModeEnv := os.Getenv("REST_API_HA_DEBUG")
@@ -19,9 +20,11 @@ func main() {
 	}
 
 	if debugMode {
-		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: ha_watchdog started in DEBUG mode").Run()
+		// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: ha_watchdog started in DEBUG mode").Run()
+		log.Info("started in DEBUG mode")
 	} else {
-		_ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: ha_watchdog started in PRODUCTION mode").Run()
+		// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PROD: ha_watchdog started in PRODUCTION mode").Run()
+		log.Info("started in PROD mode")
 	}
 
 	timesFailed := 0
@@ -36,7 +39,8 @@ func main() {
 				lastReachOut = time.Now().Unix()
 			}
 			if sig == syscall.SIGTERM || sig == syscall.SIGINT {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received SIGTERM, exiting").Run()
+				// _ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received SIGTERM, exiting").Run()
+				log.Info("received SIGTERM, executing a graceful exit")
 				os.Exit(0)
 			}
 		}
@@ -47,10 +51,12 @@ func main() {
 
 		if timesFailed >= timesFailedMax {
 			if debugMode {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "DEBUG: HOSTER_HA_REST process has failed, rebooting the system now").Run()
+				// _ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "DEBUG: HOSTER_HA_REST process has failed, rebooting the system now").Run()
+				log.Debug("RestAPI process has failed, rebooting the system now")
 				os.Exit(1)
 			} else {
-				_ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "FATAL: HOSTER_HA_REST process has failed, rebooting the system now").Run()
+				// _ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "FATAL: HOSTER_HA_REST process has failed, rebooting the system now").Run()
+				log.Warn("RestAPI process has failed, rebooting the system now")
 				cmd.LockAllVms()
 				_ = exec.Command("reboot").Run()
 			}
@@ -58,8 +64,10 @@ func main() {
 
 		if time.Now().Unix() > lastReachOut+5 {
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "ping failed, previous alive timestamp: "+strconv.Itoa(int(lastReachOut))).Run()
+			log.Debugf("ping failed, previous alive timestamp: %d", lastReachOut)
 			timesFailed += 1
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "pings missed so far: "+strconv.Itoa(timesFailed)+"; will terminate the system at: "+strconv.Itoa(timesFailedMax)).Run()
+			log.Debugf("pings missed so far: %d, may need to fence the system after this many failed pings: %d", lastReachOut, timesFailedMax)
 		} else {
 			timesFailed = 0
 		}

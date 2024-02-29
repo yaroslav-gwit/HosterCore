@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"encoding/json"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"errors"
 	"log"
 	"os"
@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -62,21 +61,17 @@ var (
 )
 
 func DiskExpandOffline(vmName string, diskImage string, expansionSize int) error {
-	allVms := getAllVms()
-	if slices.Contains(allVms, vmName) {
-		_ = 0
-	} else {
-		return errors.New("vm was not found")
+	vm, err := HosterVmUtils.InfoJsonApi(vmName)
+	if err != nil {
+		return err
 	}
+	vmFolder := vm.Simple.Mountpoint + "/" + vm.Name
 
-	vmFolder := getVmFolder(vmName)
-	vmConfigVar := vmConfig(vmName)
-	if VmLiveCheck(vmName) {
+	if vm.Running {
 		return errors.New("vm has to be offline, due to the data loss possibility of online expansion")
 	}
-
-	if vmConfigVar.ParentHost != GetHostName() {
-		return errors.New("this host isn't a parent of this vm, please make sure the vm is not a backup from another host")
+	if vm.Backup {
+		return errors.New("this is a backup")
 	}
 
 	diskLocation := vmFolder + "/" + diskImage
@@ -85,7 +80,7 @@ func DiskExpandOffline(vmName string, diskImage string, expansionSize int) error
 	}
 
 	cmd := exec.Command("truncate", "-s", "+"+strconv.Itoa(expansionSize)+"G", diskLocation)
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return errors.New("can't expand the drive: " + err.Error())
 	}
@@ -94,19 +89,17 @@ func DiskExpandOffline(vmName string, diskImage string, expansionSize int) error
 }
 
 func diskAddOffline(vmName string, imageSize int) error {
-	allVms := getAllVms()
-	if !slices.Contains(allVms, vmName) {
-		return errors.New("vm was not found")
+	vm, err := HosterVmUtils.InfoJsonApi(vmName)
+	if err != nil {
+		return err
 	}
+	vmFolder := vm.Simple.Mountpoint + "/" + vm.Name
 
-	vmFolder := getVmFolder(vmName)
-	vmConfigVar := vmConfig(vmName)
-	if VmLiveCheck(vmName) {
+	if vm.Running {
 		return errors.New("vm has to be offline, due to the data loss possibility of online expansion")
 	}
-
-	if vmConfigVar.ParentHost != GetHostName() {
-		return errors.New("this host isn't a parent of this vm, please make sure the vm is not a backup from another host")
+	if vm.Backup {
+		return errors.New("this vm is a backup")
 	}
 
 	diskIndex := 1
@@ -122,27 +115,14 @@ func diskAddOffline(vmName string, imageSize int) error {
 		}
 	}
 
-	var diskConfig VmDiskStruct
+	var diskConfig HosterVmUtils.VmDisk
 	diskConfig.DiskType = "nvme"
 	diskConfig.DiskLocation = "internal"
 	diskConfig.DiskImage = diskImage
 	diskConfig.Comment = "Additional disk image"
-	vmConfigVar.Disks = append(vmConfigVar.Disks, diskConfig)
+	vm.VmConfig.Disks = append(vm.VmConfig.Disks, diskConfig)
 
-	jsonOutput, err := json.MarshalIndent(vmConfigVar, "", "   ")
-	if err != nil {
-		return err
-	}
-
-	// Open the file in write-only mode, truncating it if it already exists
-	file, err := os.OpenFile(vmFolder+"/vm_config.json", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	// Write data to the file
-	_, err = file.Write(jsonOutput)
+	err = HosterVmUtils.ConfigFileWriter(vm.VmConfig, vmFolder+"/"+HosterVmUtils.VM_CONFIG_NAME)
 	if err != nil {
 		return err
 	}

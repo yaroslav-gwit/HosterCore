@@ -3,6 +3,7 @@ package HosterHostUtils
 import (
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterNetwork "HosterCore/internal/pkg/hoster/network"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"errors"
 	"fmt"
 	"log"
@@ -16,21 +17,20 @@ import (
 func GenerateNewRandomIp(networkName string) (string, error) {
 	var existingIps []string
 
-	// TO DO
 	// Add existing VM IPs
-	// for _, v := range getAllVms() {
-	// 	networkNameFound := false
-	// 	tempConfig := vmConfig(v)
-	// 	for i, v := range tempConfig.Networks {
-	// 		if v.NetworkBridge == networkName {
-	// 			networkNameFound = true
-	// 			existingIps = append(existingIps, tempConfig.Networks[i].IPAddress)
-	// 		}
-	// 	}
-	// 	if !networkNameFound {
-	// 		existingIps = append(existingIps, tempConfig.Networks[0].IPAddress)
-	// 	}
-	// }
+	vms, err := HosterVmUtils.ListJsonApi()
+	if err != nil {
+		return "", err
+	}
+
+	for _, v := range vms {
+		// tempConfig := vmConfig(v)
+		for _, v := range v.Networks {
+			if v.NetworkBridge == networkName {
+				existingIps = append(existingIps, v.IPAddress)
+			}
+		}
+	}
 	// EOF Add existing VM IPs
 
 	// Add existing Jail IPs

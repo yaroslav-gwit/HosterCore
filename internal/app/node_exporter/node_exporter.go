@@ -1,7 +1,7 @@
 package main
 
 import (
-	"HosterCore/cmd"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"fmt"
 	"io"
 	"log"
@@ -187,7 +187,23 @@ type VmNumbers struct {
 
 func getVmNumbers() string {
 	vmNumbers := VmNumbers{}
-	vmNumbers.all, vmNumbers.online, vmNumbers.backup, vmNumbers.offlineProduction = cmd.VmNumbersOverview()
+	vms, err := HosterVmUtils.ListJsonApi()
+	if err != nil {
+		return ""
+	}
+
+	for _, v := range vms {
+		vmNumbers.all += 1
+		if v.Running {
+			vmNumbers.online += 1
+		}
+		if v.Backup {
+			vmNumbers.backup += 1
+		}
+		if v.Production && !v.Running {
+			vmNumbers.offlineProduction += 1
+		}
+	}
 
 	result := "# HELP HosterCore related FreeBSD metrics.\n"
 	result = result + "# TYPE hoster gauge\n"

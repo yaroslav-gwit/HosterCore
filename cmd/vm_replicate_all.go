@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"log"
 	"os"
 	"strings"
@@ -49,12 +50,12 @@ func replicateAllProdVms(replicationEndpoint string, endpointSshPort int, sshKey
 		}
 	}
 
-	allVms := getAllVms()
+	allVms, _ := HosterVmUtils.ListJsonApi()
 	if len(filteredVmList) > 0 {
 		for _, v := range filteredVmList {
 			vmFound := false
 			for _, vv := range allVms {
-				if vv == v {
+				if vv.Name == v {
 					vmFound = true
 				}
 			}
@@ -69,17 +70,17 @@ func replicateAllProdVms(replicationEndpoint string, endpointSshPort int, sshKey
 		}
 	} else {
 		for _, v := range allVms {
-			vmConfigVar := vmConfig(v)
-			if vmConfigVar.ParentHost != GetHostName() {
+			if v.Backup {
 				continue
 			}
-			if !VmLiveCheck(v) {
+			if !v.Running {
 				continue
 			}
-			if strings.ToLower(vmConfigVar.LiveStatus) == "prod" || strings.ToLower(vmConfigVar.LiveStatus) == "production" {
-				err := replicateVm(v, replicationEndpoint, endpointSshPort, sshKeyLocation, replicateAllSpeedLimit, replicateAllScriptName)
+
+			if v.Production {
+				err := replicateVm(v.Name, replicationEndpoint, endpointSshPort, sshKeyLocation, replicateAllSpeedLimit, replicateAllScriptName)
 				if err != nil {
-					emojlog.PrintLogMessage("Replication failed for a VM: "+v+" || Exact error: "+err.Error(), emojlog.Error)
+					emojlog.PrintLogMessage("Replication failed for a VM: "+v.Name+" || Exact error: "+err.Error(), emojlog.Error)
 				}
 			}
 		}

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"errors"
 	"log"
 	"os"
@@ -9,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -29,9 +29,11 @@ var (
 )
 
 func connectToSerialConsole(vmName string) error {
-	if !slices.Contains(getAllVms(), vmName) {
-		return errors.New("vm was not found")
-	} else if !VmLiveCheck(vmName) {
+	vmInfo, err := HosterVmUtils.InfoJsonApi(vmName)
+	if err != nil {
+		return err
+	}
+	if !vmInfo.Running {
 		return errors.New("vm is offline")
 	}
 

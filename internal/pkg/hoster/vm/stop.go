@@ -48,7 +48,7 @@ func Stop(vmName string, forceKill bool, forceCleanup bool) error {
 	}
 	// EOF Check if the VM is running block
 
-	err = SendShutdownSignalToVm(vmName, forceKill, forceCleanup)
+	err = SendShutdownSignal(vmName, forceKill, forceCleanup)
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,10 @@ func Stop(vmName string, forceKill bool, forceCleanup bool) error {
 	return nil
 }
 
-func SendShutdownSignalToVm(vmName string, forceKill bool, forceCleanup bool) error {
+// Send a specific shutdown signal to your VM.
+//
+// It's cheap to call, but expects you to check if the VM exists and running in the first place.
+func SendShutdownSignal(vmName string, forceKill bool, forceCleanup bool) error {
 	// Pre-init vars
 	vmPid := -1
 	supervisorPid := -1

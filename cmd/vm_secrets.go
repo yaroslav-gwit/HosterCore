@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"regexp"
@@ -32,16 +34,23 @@ var (
 
 func vmSecretsTableOutput(vmName string) error {
 	vmFound := false
-	for _, vm := range getAllVms() {
-		if vm == vmName {
+	vmConf := HosterVmUtils.VmApi{}
+
+	vms, err := HosterVmUtils.ListJsonApi()
+	if err != nil {
+		return err
+	}
+
+	for _, v := range vms {
+		if v.Name == vmName {
 			vmFound = true
+			vmConf = v
 		}
 	}
 	if !vmFound {
 		return errors.New(VM_DOESNT_EXIST_STRING)
 	}
 
-	vmConfigVar := vmConfig(vmName)
 	var t = table.New(os.Stdout)
 	t.SetAlignment(table.AlignRight, //ID
 		table.AlignLeft, // Secret Type
@@ -78,7 +87,7 @@ func vmSecretsTableOutput(vmName string) error {
 		t.SetHeaderStyle(table.StyleBold)
 	}
 
-	userSecrets, err := readCiUserSecrets(vmName)
+	userSecrets, err := readCiUserSecrets(vmConf.Simple.Mountpoint + "/" + vmName)
 	if err != nil {
 		return err
 	}
@@ -94,7 +103,7 @@ func vmSecretsTableOutput(vmName string) error {
 		}
 	}
 
-	t.AddRow("1", "VNC Access", "VNC Port: "+vmConfigVar.VncPort+" || VNC Password: "+vmConfigVar.VncPassword)
+	t.AddRow("1", "VNC Access", fmt.Sprintf("VNC Port: %d || VNC Password: %s", vmConf.VncPort, vmConf.VncPassword))
 	t.AddRow("2", "root/administrator password", rootPassword)
 	t.AddRow("3", "gwitsuper password", gwitSuperPassword)
 	t.Render()
@@ -107,14 +116,16 @@ type UserSecrets struct {
 	password string
 }
 
-func readCiUserSecrets(vmName string) ([]UserSecrets, error) {
-	ciUserDataFilePath := getVmFolder(vmName) + "/cloud-init-files/user-data"
+func readCiUserSecrets(vmFolder string) (r []UserSecrets, e error) {
+	vmFolder = strings.TrimSuffix(vmFolder, "/")
+
+	ciUserDataFilePath := vmFolder + "/cloud-init-files/user-data"
 	dat, err := os.ReadFile(ciUserDataFilePath)
 	if err != nil {
-		return []UserSecrets{}, err
+		e = err
+		return
 	}
 
-	userSecrets := []UserSecrets{}
 	reRootPasswordMatch := regexp.MustCompile(`^root:.*`)
 	reGwitsuperPasswordMatch := regexp.MustCompile(`^gwitsuper:.*`)
 	reTrim := regexp.MustCompile(`root:|gwitsuper:`)
@@ -127,15 +138,15 @@ func readCiUserSecrets(vmName string) ([]UserSecrets, error) {
 			userSecret := UserSecrets{}
 			userSecret.username = "root"
 			userSecret.password = reTrim.ReplaceAllString(v, "")
-			userSecrets = append(userSecrets, userSecret)
+			r = append(r, userSecret)
 		}
 		if reGwitsuperPasswordMatch.MatchString(v) {
 			userSecret := UserSecrets{}
 			userSecret.username = "gwitsuper"
 			userSecret.password = reTrim.ReplaceAllString(v, "")
-			userSecrets = append(userSecrets, userSecret)
+			r = append(r, userSecret)
 		}
 	}
 
-	return userSecrets, nil
+	return
 }

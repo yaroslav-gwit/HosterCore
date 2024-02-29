@@ -1,7 +1,9 @@
 package cmd
 
 import (
-	"log"
+	"HosterCore/internal/pkg/emojlog"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -16,17 +18,27 @@ var (
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
-			manuallyEditConfig(args[0])
+
+			err := manuallyEditConfig(args[0])
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
 		},
 	}
 )
 
-func manuallyEditConfig(vmName string) {
-	vmFolder := getVmFolder(vmName)
+func manuallyEditConfig(vmName string) error {
+	vmInfo, err := HosterVmUtils.InfoJsonApi(vmName)
+	if err != nil {
+		return fmt.Errorf("can't open your editor: %s", err.Error())
+	}
+
+	vmFolder := vmInfo.Simple.Mountpoint + "/" + vmInfo.Name
 	textEditor := os.Getenv("EDITOR")
 
 	if len(textEditor) < 1 {
-		textEditor = "micro"
+		textEditor = "vi"
 	}
 
 	tailCmd := exec.Command(textEditor, vmFolder+"/vm_config.json")
@@ -34,8 +46,10 @@ func manuallyEditConfig(vmName string) {
 	tailCmd.Stdout = os.Stdout
 	tailCmd.Stderr = os.Stderr
 
-	err := tailCmd.Run()
+	err = tailCmd.Run()
 	if err != nil {
-		log.Fatal("Can't open your editor: " + err.Error())
+		return fmt.Errorf("can't open your editor: %s", err.Error())
 	}
+
+	return nil
 }

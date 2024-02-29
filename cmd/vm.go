@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	HosterTables "HosterCore/internal/pkg/hoster/cli_tables"
 	HosterVm "HosterCore/internal/pkg/hoster/vm"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"fmt"
 	"os"
 	"regexp"
@@ -60,6 +62,46 @@ var (
 			err := HosterVm.Stop(args[0], vmStopCmdForceStop, vmStopCmdCleanUp)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+var (
+	forceKill    bool
+	forceCleanUp bool
+
+	vmStopAllCmd = &cobra.Command{
+		Use:   "stop-all",
+		Short: "Stop all VMs deployed on this system",
+		Long:  `Stop all VMs deployed on this system`,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := HosterVm.StopAll(forceKill, forceCleanUp)
+			if err != nil {
+				emojlog.PrintLogMessage("Could not execute start-all: "+err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+var (
+	waitTime int
+	prodOnly bool
+
+	vmStartAllCmd = &cobra.Command{
+		Use:   "start-all",
+		Short: "Start all VMs deployed on this system",
+		Long:  `Start all VMs deployed on this system`,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := HosterVm.StartAll(prodOnly, waitTime)
+			if err != nil {
+				emojlog.PrintLogMessage("Could not execute start-all: "+err.Error(), emojlog.Error)
 				os.Exit(1)
 			}
 		},
@@ -146,28 +188,38 @@ var (
 	}
 )
 
-func LockAllVms() {
-	allVms := GetAllVms()
+func LockAllVms() error {
+	vms, err := HosterVmUtils.ListJsonApi()
+	if err != nil {
+		return err
+	}
 
 	timeNow := time.Now().Format("2006-01-02_15-04-05")
 	haLockedString := fmt.Sprintf("__HA_LOCKED_%s__", timeNow)
 
-	for _, vm := range allVms {
-		vmConfig := VmConfig(vm)
-		if IsVmInProduction(vmConfig.LiveStatus) && vmConfig.ParentHost == GetHostName() {
-			ReplaceParent(vm, haLockedString, true)
+	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
+	for _, v := range vms {
+		if v.Production && v.CurrentHost == hostname {
+			_ = HosterVm.ChangeParent(vmName, haLockedString, true)
 		}
 	}
+
+	return nil
 }
 
-func UnlockAllVms() {
-	allVms := GetAllVms()
+func UnlockAllVms() error {
 	reHaLockedString := regexp.MustCompile(`__HA_LOCKED_.*`)
+	vms, err := HosterVmUtils.ListJsonApi()
+	if err != nil {
+		return err
+	}
 
-	for _, vm := range allVms {
-		vmConfig := VmConfig(vm)
-		if IsVmInProduction(vmConfig.LiveStatus) && reHaLockedString.MatchString(vmConfig.ParentHost) {
-			ReplaceParent(vm, GetHostName(), true)
+	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
+	for _, v := range vms {
+		if v.Production && reHaLockedString.MatchString(v.CurrentHost) {
+			_ = HosterVm.ChangeParent(vmName, hostname, true)
 		}
 	}
+
+	return nil
 }

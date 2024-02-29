@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	HosterHost "HosterCore/internal/pkg/hoster/host"
 	"archive/zip"
 	"encoding/json"
 	"errors"
@@ -10,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path"
 	"time"
 
 	"facette.io/natsort"
@@ -53,13 +53,13 @@ var (
 			}
 
 			if len(imageDataset) < 1 {
-				hostCfg, err := GetHostConfig()
+				hostCfg, err := HosterHost.GetHostConfig()
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 					os.Exit(1)
 				}
 
-				imageDataset = hostCfg.ActiveDatasets[0]
+				imageDataset = hostCfg.ActiveZfsDatasets[0]
 			}
 
 			err = imageUnzip(imageDataset, args[0])
@@ -74,26 +74,13 @@ var (
 func imageUnzip(imageDataset string, imageOsType string) error {
 	emojlog.PrintLogMessage("Initiating image 'unzip' process", emojlog.Info)
 
-	// Host config read/parse
-	hostConfig := HostConfig{}
-	// JSON config file location
-	execPath, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	hostConfigFile := path.Dir(execPath) + "/config_files/host_config.json"
-	// Read the JSON file
-	data, err := os.ReadFile(hostConfigFile)
-	if err != nil {
-		return err
-	}
-	// Unmarshal the JSON data into a slice of Network structs
-	err = json.Unmarshal(data, &hostConfig)
+	// Load host config
+	hostConfig, err := HosterHost.GetHostConfig()
 	if err != nil {
 		return err
 	}
 
-	if !slices.Contains(hostConfig.ActiveDatasets, imageDataset) {
+	if !slices.Contains(hostConfig.ActiveZfsDatasets, imageDataset) {
 		return errors.New("dataset is not being used for VMs or doesn't exist")
 	}
 
@@ -185,21 +172,9 @@ func imageUnzip(imageDataset string, imageOsType string) error {
 
 func imageDownload(osType string) error {
 	emojlog.PrintLogMessage("Initiating image download process for the OS/distribution: "+osType, emojlog.Info)
-	// Host config read/parse
-	hostConfig := HostConfig{}
-	// JSON config file location
-	execPath, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	hostConfigFile := path.Dir(execPath) + "/config_files/host_config.json"
-	// Read the JSON file
-	data, err := os.ReadFile(hostConfigFile)
-	if err != nil {
-		return err
-	}
-	// Unmarshal the JSON data into a slice of Network structs
-	err = json.Unmarshal(data, &hostConfig)
+
+	// Load host config
+	hostConfig, err := HosterHost.GetHostConfig()
 	if err != nil {
 		return err
 	}
@@ -263,21 +238,8 @@ func imageDownload(osType string) error {
 }
 
 func listAvailableImages() error {
-	// Host config read/parse
-	hostConfig := HostConfig{}
-	// JSON config file location
-	execPath, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	hostConfigFile := path.Dir(execPath) + "/config_files/host_config.json"
-	// Read the JSON file
-	data, err := os.ReadFile(hostConfigFile)
-	if err != nil {
-		return err
-	}
-	// Unmarshal the JSON data into a slice of Network structs
-	err = json.Unmarshal(data, &hostConfig)
+	// Load host config
+	hostConfig, err := HosterHost.GetHostConfig()
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"HosterCore/internal/pkg/emojlog"
 	FreeBSDOsInfo "HosterCore/internal/pkg/freebsd/info"
+	HosterNetwork "HosterCore/internal/pkg/hoster/network"
 	"errors"
 	"os"
 	"os/exec"
@@ -52,16 +53,6 @@ var (
 				emojlog.PrintLogMessage("Started the internal DNS server", emojlog.Changed)
 			}
 
-			// Try to start Nebula if it's config file exists
-			_, err = readNebulaClusterConfig()
-			if err == nil {
-				err := startNebulaService()
-				if err != nil {
-					emojlog.PrintLogMessage("Could not start Nebula service: "+err.Error(), emojlog.Error)
-					err = nil
-				}
-			}
-
 			err = applyPfSettings()
 			if err != nil {
 				emojlog.PrintLogMessage("Could not reload pf: "+err.Error(), emojlog.Error)
@@ -72,15 +63,6 @@ var (
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				err = nil
-			}
-
-			// Start Traefik on `init` if it's config file exists
-			if FileExists("/opt/traefik/traefik.yaml") {
-				err := startTraefik()
-				if err != nil {
-					emojlog.PrintLogMessage("Could not start Traefik reverse proxy service: "+err.Error(), emojlog.Error)
-					err = nil
-				}
 			}
 
 			// Start Node_Exporter_Custom
@@ -233,7 +215,7 @@ func applySysctls() error {
 }
 
 func loadNetworkConfig() error {
-	networkInfoVar, err := networkInfo()
+	networkInfoVar, err := HosterNetwork.GetNetworkConfig()
 	if err != nil {
 		return err
 	}
@@ -257,17 +239,17 @@ func loadNetworkConfig() error {
 	}
 
 	for _, v := range networkInfoVar {
-		if slices.Contains(loadedInterfaceList, v.Name) {
-			emojlog.PrintLogMessage("Interface is up-to-date: vm-"+v.Name, emojlog.Debug)
+		if slices.Contains(loadedInterfaceList, v.NetworkName) {
+			emojlog.PrintLogMessage("Interface is up-to-date: vm-"+v.NetworkName, emojlog.Debug)
 		} else {
-			stdout, stderr := exec.Command("ifconfig", "bridge", "create", "name", "vm-"+v.Name).CombinedOutput()
+			stdout, stderr := exec.Command("ifconfig", "bridge", "create", "name", "vm-"+v.NetworkName).CombinedOutput()
 			if stderr != nil {
 				return errors.New("error running ifconfig bridge create: " + string(stdout) + " " + stderr.Error())
 			}
-			emojlog.PrintLogMessage("Created a network bridge for VM use: vm-"+v.Name, emojlog.Changed)
+			emojlog.PrintLogMessage("Created a network bridge for VM use: vm-"+v.NetworkName, emojlog.Changed)
 
 			if v.BridgeInterface != "None" {
-				stdout, stderr := exec.Command("ifconfig", "vm-"+v.Name, "addm", v.BridgeInterface).CombinedOutput()
+				stdout, stderr := exec.Command("ifconfig", "vm-"+v.NetworkName, "addm", v.BridgeInterface).CombinedOutput()
 				if stderr != nil {
 					return errors.New("error running ifconfig bridge create: " + string(stdout) + " " + stderr.Error())
 				}
@@ -276,11 +258,11 @@ func loadNetworkConfig() error {
 
 			if v.ApplyBridgeAddr {
 				subnet := strings.Split(v.Subnet, "/")[1]
-				stdout, stderr := exec.Command("ifconfig", "vm-"+v.Name, "inet", v.Gateway+"/"+subnet).CombinedOutput()
+				stdout, stderr := exec.Command("ifconfig", "vm-"+v.NetworkName, "inet", v.Gateway+"/"+subnet).CombinedOutput()
 				if stderr != nil {
 					return errors.New("error running ifconfig bridge create: " + string(stdout) + " " + stderr.Error())
 				}
-				emojlog.PrintLogMessage("Added IP address for vm-"+v.Name+" - "+v.Gateway+"/"+subnet, emojlog.Changed)
+				emojlog.PrintLogMessage("Added IP address for vm-"+v.NetworkName+" - "+v.Gateway+"/"+subnet, emojlog.Changed)
 			}
 		}
 	}

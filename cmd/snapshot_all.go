@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
+
 	"github.com/spf13/cobra"
 )
 
@@ -20,9 +22,11 @@ var (
 )
 
 func snapshotAllRunningVms() {
-	for _, vm := range getAllVms() {
-		if VmLiveCheck(vm) {
-			VmZfsSnapshot(vm, snapshotAllCmdType, snapshotsAllCmdToKeep)
+	vms, _ := HosterVmUtils.ListJsonApi()
+
+	for _, v := range vms {
+		if v.Running {
+			VmZfsSnapshot(v.Name, snapshotAllCmdType, snapshotsAllCmdToKeep)
 		}
 	}
 }

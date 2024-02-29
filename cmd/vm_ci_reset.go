@@ -2,6 +2,10 @@ package cmd
 
 import (
 	"HosterCore/internal/pkg/emojlog"
+	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
+	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
+	HosterNetwork "HosterCore/internal/pkg/hoster/network"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"bufio"
 	"errors"
 	"os"
@@ -11,7 +15,6 @@ import (
 	"text/template"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -37,30 +40,29 @@ var (
 )
 
 func CiReset(oldVmName string, newVmName string) error {
-	if !slices.Contains(getAllVms(), oldVmName) {
-		return errors.New("vm doesn't exist")
+	// Initialize values
+	var err error
+	c := ConfigOutputStruct{}
+	vmConf, err := HosterVmUtils.InfoJsonApi(oldVmName)
+	if err != nil {
+		return err
 	}
-	if VmLiveCheck(oldVmName) {
+	if vmConf.Running {
 		return errors.New("vm has to be stopped")
 	}
 
-	// Initialize values
-	c := ConfigOutputStruct{}
-	vmConfigVar := vmConfig(oldVmName)
-	var err error
-
 	// Collect the required information
-	c.RootPassword = generateRandomPassword(33, true, true)
+	c.RootPassword = HosterHostUtils.GenerateRandomPassword(33, true, true)
 	if err != nil {
 		return errors.New("could not generate random password for root user: " + err.Error())
 	}
 
-	c.GwitsuperPassword = generateRandomPassword(33, true, true)
+	c.GwitsuperPassword = HosterHostUtils.GenerateRandomPassword(33, true, true)
 	if err != nil {
 		return errors.New("could not generate random password for gwitsuper user: " + err.Error())
 	}
 
-	c.InstanceId = generateRandomPassword(5, false, true)
+	c.InstanceId = HosterHostUtils.GenerateRandomPassword(5, false, true)
 	if err != nil {
 		return errors.New("could not generate random instance id: " + err.Error())
 	}
@@ -71,7 +73,7 @@ func CiReset(oldVmName string, newVmName string) error {
 		c.VmName = oldVmName
 	}
 
-	c.MacAddress, err = generateRandomMacAddress()
+	c.MacAddress, err = HosterVmUtils.GenerateMacAddress()
 	if err != nil {
 		return errors.New("could not generate vm name: " + err.Error())
 	}
@@ -80,26 +82,26 @@ func CiReset(oldVmName string, newVmName string) error {
 		c.IpAddress = ciResetIpAddress
 	} else {
 		// Generate and set random IP address (which is free in the pool of addresses)
-		c.IpAddress, err = generateNewIp(networkName)
+		c.IpAddress, err = HosterHostUtils.GenerateNewRandomIp(networkName)
 		if err != nil {
 			return errors.New("could not generate the IP: " + err.Error())
 		}
 	}
 
-	networkInfo, err := networkInfo()
+	networkInfo, err := HosterNetwork.GetNetworkConfig()
 	if err != nil {
 		return errors.New("could not read the network config")
 	}
 	if len(ciResetNetworkName) < 1 {
-		c.NetworkName = networkInfo[0].Name
+		c.NetworkName = networkInfo[0].NetworkName
 		c.Subnet = networkInfo[0].Subnet
 		c.NakedSubnet = strings.Split(networkInfo[0].Subnet, "/")[1]
 		c.Gateway = networkInfo[0].Gateway
 		c.NetworkComment = networkInfo[0].Comment
 	} else {
 		for _, v := range networkInfo {
-			if ciResetNetworkName == v.Name {
-				c.NetworkName = v.Name
+			if ciResetNetworkName == v.NetworkName {
+				c.NetworkName = v.NetworkName
 				c.Subnet = v.Subnet
 				c.NakedSubnet = strings.Split(v.Subnet, "/")[1]
 				c.Gateway = v.Gateway
@@ -117,15 +119,15 @@ func CiReset(oldVmName string, newVmName string) error {
 		c.DnsServer = c.Gateway
 	}
 
-	c.Cpus = vmConfigVar.CPUCores
-	c.Ram = vmConfigVar.Memory
-	c.LiveStatus = vmConfigVar.LiveStatus
-	c.OsType = vmConfigVar.OsType
-	c.OsComment = vmConfigVar.OsComment
-	c.ParentHost = GetHostName()
+	c.Cpus = vmConf.VmConfig.CPUCores
+	c.Ram = vmConf.VmConfig.Memory
+	c.Production = vmConf.Production
+	c.OsType = vmConf.OsType
+	c.OsComment = vmConf.OsComment
+	c.ParentHost, _ = FreeBSDsysctls.SysctlKernHostname()
 
-	c.VncPort = generateRandomVncPort()
-	c.VncPassword = generateRandomPassword(8, true, true)
+	c.VncPassword = HosterHostUtils.GenerateRandomPassword(8, true, true)
+	c.VncPort, err = HosterVmUtils.GenerateVncPort()
 	if err != nil {
 		return errors.New("could not generate vnc port: " + err.Error())
 	}
@@ -193,17 +195,17 @@ func CiReset(oldVmName string, newVmName string) error {
 	// Write config files
 	newVmFolder := "/" + newDsName
 
-	vmConfigVar.Networks[0].NetworkBridge = c.NetworkName
-	vmConfigVar.Networks[0].NetworkMac = c.MacAddress
-	vmConfigVar.Networks[0].IPAddress = c.IpAddress
-	vmConfigVar.Networks[0].Comment = c.NetworkComment
-	vmConfigVar.ParentHost = c.ParentHost
-	vmConfigVar.VncPort = c.VncPort
-	vmConfigVar.VncPassword = c.VncPassword
-	vmConfigVar.VmSshKeys = c.SshKeys
+	vmConf.Networks[0].NetworkBridge = c.NetworkName
+	vmConf.Networks[0].NetworkMac = c.MacAddress
+	vmConf.Networks[0].IPAddress = c.IpAddress
+	vmConf.Networks[0].Comment = c.NetworkComment
+	vmConf.ParentHost = c.ParentHost
+	vmConf.VncPort = c.VncPort
+	vmConf.VncPassword = c.VncPassword
+	vmConf.VmSshKeys = c.SshKeys
 
-	vmConfigFileLocation := newVmFolder + "/vm_config.json"
-	err = vmConfigFileWriter(vmConfigVar, vmConfigFileLocation)
+	vmConfigFileLocation := newVmFolder + "/" + HosterVmUtils.VM_CONFIG_NAME
+	err = HosterVmUtils.ConfigFileWriter(vmConf.VmConfig, vmConfigFileLocation)
 	if err != nil {
 		return err
 	}

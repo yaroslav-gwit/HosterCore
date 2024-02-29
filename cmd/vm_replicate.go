@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"HosterCore/internal/pkg/byteconversion"
 	"HosterCore/internal/pkg/emojlog"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"bufio"
 	"errors"
 	"fmt"
@@ -45,16 +47,16 @@ var (
 )
 
 func replicateVm(vmName string, replicationEndpoint string, endpointSshPort int, sshKeyLocation string, speedLimit int, scriptName string) error {
-	if !slices.Contains(getAllVms(), vmName) {
-		return errors.New("vm does not exist")
+	vmInfo, err := HosterVmUtils.InfoJsonApi(vmName)
+	if err != nil {
+		return err
 	}
 
-	vmConfigVar := vmConfig(vmName)
-	if vmConfigVar.ParentHost != GetHostName() {
+	if vmInfo.Backup {
 		return errors.New("this vm is a child of another host")
 	}
 
-	_, err := checkSshConnection(replicationEndpoint, endpointSshPort, sshKeyLocation)
+	_, err = checkSshConnection(replicationEndpoint, endpointSshPort, sshKeyLocation)
 	if err != nil {
 		return err
 	}
@@ -241,7 +243,7 @@ func sendInitialSnapshot(endpointDataset string, snapshotToSend string, replicat
 		if reMatchSize.MatchString(v) {
 			tempInt, _ := strconv.Atoi(reMatchWhitespace.Split(v, -1)[1])
 			snapshotSize = int(tempInt)
-			emojlog.PrintLogMessage("Snapshot size: "+ByteConversion(snapshotSize), emojlog.Debug)
+			emojlog.PrintLogMessage("Snapshot size: "+byteconversion.BytesToHuman(uint64(snapshotSize)), emojlog.Debug)
 		}
 	}
 
@@ -325,7 +327,7 @@ func sendIncrementalSnapshot(endpointDataset string, prevSnap string, incrementa
 		if reMatchSize.MatchString(v) {
 			tempInt, _ := strconv.Atoi(reMatchWhitespace.Split(v, -1)[1])
 			snapshotSize = int(tempInt)
-			emojlog.PrintLogMessage("Snapshot size: "+ByteConversion(snapshotSize), emojlog.Debug)
+			emojlog.PrintLogMessage("Snapshot size: "+byteconversion.BytesToHuman(uint64(snapshotSize)), emojlog.Debug)
 		}
 	}
 

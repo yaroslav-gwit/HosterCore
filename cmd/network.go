@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	HosterNetwork "HosterCore/internal/pkg/hoster/network"
 	"fmt"
 	"os"
 	"strconv"
@@ -36,7 +37,7 @@ var (
 )
 
 func printNetworkInfoTable() {
-	netInfo, err := networkInfo()
+	netInfo, err := HosterNetwork.GetNetworkConfig()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -98,7 +99,7 @@ func printNetworkInfoTable() {
 
 		t.AddRow(
 			strconv.Itoa(ID),
-			v.Name,
+			v.NetworkName,
 			v.Gateway,
 			v.Subnet,
 			v.RangeStart+" - "+v.RangeEnd,
