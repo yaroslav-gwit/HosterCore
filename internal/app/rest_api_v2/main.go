@@ -13,7 +13,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-var log *MiddlewareLogging.Log
+// var log *MiddlewareLogging.Log
 
 // @title Hoster Node REST API Docs
 // @version 2.0
@@ -26,7 +26,7 @@ func main() {
 	r := mux.NewRouter()
 
 	// Middleware -> Logging
-	log = MiddlewareLogging.Configure(logrus.DebugLevel)
+	log := MiddlewareLogging.Configure(logrus.DebugLevel)
 	handlers.SetLogConfig(log)
 	r.Use(log.LogResponses)
 
