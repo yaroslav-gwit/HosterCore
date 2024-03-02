@@ -12,9 +12,10 @@ import (
 )
 
 // Log Init
-var internalLog = logrus.New() // internal HA log to hoster_ha.log, the variable name was set to this in order to avoid any conflicts with the global RestAPI logger
+var internalLog *logrus.Logger
 
 func init() {
+	var internalLog = logrus.New() // internal HA log to hoster_ha.log, the variable name was set to this in order to avoid any conflicts with the global RestAPI logger
 	logFile := HA_LOG_LOCATION
 
 	// Log as JSON instead of the default ASCII/text formatter.
