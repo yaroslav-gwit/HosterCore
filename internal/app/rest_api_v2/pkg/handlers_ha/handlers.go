@@ -34,7 +34,7 @@ func HandleRegistration(w http.ResponseWriter, r *http.Request) {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: handleHaRegistration(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: handleHaRegistration() %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: handleHaRegistration() %s", errorValue)
 		}
 	}()
 
@@ -78,7 +78,7 @@ func HandlePing(w http.ResponseWriter, r *http.Request) {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: handleHaPing(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: handleHaPing() %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: handleHaPing() %s", errorValue)
 		}
 	}()
 
@@ -126,14 +126,14 @@ func HandleTerminate(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		service := cmd.ApiProcessServiceInfo()
 		// _ = exec.Command("logger", "-t", "HOSTER_HA_WATCHDOG", "INFO: received a remote terminating call").Run()
-		intLog.Warn("received a remote terminating call: TERMINATING WATCHDOG")
+		internalLog.Warn("received a remote terminating call: TERMINATING WATCHDOG")
 		_ = exec.Command("kill", "-SIGTERM", strconv.Itoa(service.HaWatchDogPid)).Run()
 	}()
 
 	go func() {
 		time.Sleep(1500 * time.Millisecond)
 		// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: received a remote terminating call").Run()
-		intLog.Warn("received a remote terminating call: TERMINATING REST API SERVICE")
+		internalLog.Warn("received a remote terminating call: TERMINATING REST API SERVICE")
 		os.Exit(0)
 	}()
 
@@ -163,7 +163,7 @@ func HandleVmList(w http.ResponseWriter, r *http.Request) {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: haVmsList(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: handleHaVmList(): %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: handleHaVmList(): %s", errorValue)
 		}
 	}()
 
@@ -238,7 +238,7 @@ func HandleJailList(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
-			intLog.Warnf("PANIC AVOIDED: handleHaJailList(): %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: handleHaJailList(): %s", errorValue)
 		}
 	}()
 

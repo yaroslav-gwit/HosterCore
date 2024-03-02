@@ -26,7 +26,7 @@ func trackCandidatesOnline() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: trackCandidatesOnline(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: trackCandidatesOnline() %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: trackCandidatesOnline() %s", errorValue)
 		}
 	}()
 
@@ -45,7 +45,7 @@ func trackCandidatesOnline() {
 
 		if clusterInitialized && candidatesRegistered < 2 {
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "EMERG: candidatesRegistered has gone below 2, initiating self fencing").Run()
-			intLog.Warn("number of manager nodes (candidatesRegistered) has gone below 2, initiating self fencing")
+			internalLog.Warn("number of manager nodes (candidatesRegistered) has gone below 2, initiating self fencing")
 			os.Exit(0)
 		}
 
@@ -58,7 +58,7 @@ func trackManager() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: trackManager(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: trackManager() %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: trackManager() %s", errorValue)
 		}
 	}()
 
@@ -89,13 +89,13 @@ func trackManager() {
 			if filteredCandidates[0].NodeInfo.Hostname == myHostname {
 				if !iAmManager {
 					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: becoming a new cluster manager").Run()
-					intLog.Info("becoming a new cluster manager")
+					internalLog.Info("becoming a new cluster manager")
 					iAmManager = true
 				}
 			} else {
 				if iAmManager {
 					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: stepping down as a cluster manager").Run()
-					intLog.Warn("stepping down as a cluster manager")
+					internalLog.Warn("stepping down as a cluster manager")
 					iAmManager = false
 				}
 			}
@@ -110,7 +110,7 @@ func registerNode() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: registerNode(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: registerNode() %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: registerNode() %s", errorValue)
 		}
 	}()
 
@@ -142,7 +142,7 @@ func registerNode() {
 			}
 			if !configFound {
 				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC: registerNode(): could not configure the API server correctly").Run()
-				intLog.Warn("registerNode(): could not configure the API server correctly")
+				internalLog.Warn("registerNode(): could not configure the API server correctly")
 				os.Exit(1)
 			}
 
@@ -158,7 +158,7 @@ func registerNode() {
 			req, err := http.NewRequest("POST", url, payload)
 			if err != nil {
 				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: could not form the /register request: "+err.Error()).Run()
-				intLog.Error("could not form the /register request: " + err.Error())
+				internalLog.Error("could not form the /register request: " + err.Error())
 				time.Sleep(time.Second * 10)
 				continue
 			}
@@ -171,12 +171,12 @@ func registerNode() {
 			res, err := http.DefaultClient.Do(req)
 			if err != nil {
 				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: could not join the candidate: "+err.Error()).Run()
-				intLog.Error("could not join the other candidate: " + err.Error())
+				internalLog.Error("could not join the other candidate: " + err.Error())
 				time.Sleep(time.Second * 30)
 				continue
 			} else {
 				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "SUCCESS: joined the candidate: "+v.Hostname).Run()
-				intLog.Info("joined the candidate " + v.Hostname)
+				internalLog.Info("joined the candidate " + v.Hostname)
 				haConf.Candidates[i].Registered = true
 				haConf.Candidates[i].StartupTime = haConf.StartupTime
 				req.Body.Close()
@@ -191,7 +191,7 @@ func sendPing() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: sendPing(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: sendPing() %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: sendPing() %s", errorValue)
 		}
 	}()
 
@@ -215,7 +215,7 @@ func sendPing() {
 					if r != nil {
 						errorValue := fmt.Sprintf("%s", r)
 						// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: sendPingMainGoRoutine(): "+errorValue).Run()
-						intLog.Warnf("PANIC AVOIDED: sendPingMainGoRoutine() %s", errorValue)
+						internalLog.Warnf("PANIC AVOIDED: sendPingMainGoRoutine() %s", errorValue)
 					}
 					wg.Done()
 				}()
@@ -227,7 +227,7 @@ func sendPing() {
 				jsonPayload, err := json.Marshal(host)
 				if err != nil {
 					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERR: pingGoRoutineJSONPAYLOAD(): "+err.Error()).Run()
-					intLog.Error("could not form a JSON payload pingGoRoutine(): " + err.Error())
+					internalLog.Error("could not form a JSON payload pingGoRoutine(): " + err.Error())
 					return
 				}
 
@@ -236,7 +236,7 @@ func sendPing() {
 				req, err := http.NewRequest("POST", url, payload)
 				if err != nil {
 					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERR: pingGoRoutineREQ(): "+err.Error()).Run()
-					intLog.Error("pingGoRoutineRequest(): " + err.Error())
+					internalLog.Error("pingGoRoutineRequest(): " + err.Error())
 					return
 				}
 
@@ -247,7 +247,7 @@ func sendPing() {
 				resp, err := http.DefaultClient.Do(req)
 				if err != nil {
 					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: failed to ping the candidate node: "+err.Error()).Run()
-					intLog.Warn("failed to ping the candidate node: " + err.Error())
+					internalLog.Warn("failed to ping the candidate node: " + err.Error())
 					haConf.Candidates[i].TimesFailed += 1
 					if haConf.Candidates[i].TimesFailed >= 3 {
 						haConf.Candidates[i].Registered = false
@@ -273,7 +273,7 @@ func removeOfflineNodes() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: removeOfflineNodes(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: removeOfflineNodes() %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: removeOfflineNodes() %s", errorValue)
 		}
 	}()
 
@@ -285,7 +285,7 @@ func removeOfflineNodes() {
 					failoverHostVms(v)
 					modifyHostsDb(ModifyHostsDb{data: v, remove: true}, &hostsDbLock)
 					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has gone offline: "+v.NodeInfo.Hostname).Run()
-					intLog.Warnf("host has gone offline %s", v.NodeInfo.Hostname)
+					internalLog.Warnf("host has gone offline %s", v.NodeInfo.Hostname)
 				}
 			}
 		}
@@ -298,7 +298,7 @@ func failoverHostVms(haNode HosterHaNode) {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: failoverHostVms(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: failoverHostVms() %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: failoverHostVms() %s", errorValue)
 		}
 	}()
 
@@ -329,7 +329,7 @@ func failoverHostVms(haNode HosterHaNode) {
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: line 345: "+err.Error()).Run()
-			intLog.Error("line 333: " + err.Error())
+			internalLog.Error("line 333: " + err.Error())
 			continue
 		}
 
@@ -339,7 +339,7 @@ func failoverHostVms(haNode HosterHaNode) {
 		err = json.Unmarshal(body, &haVmsTemp)
 		if err != nil {
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: line 354: "+err.Error()).Run()
-			intLog.Error("line 343: " + err.Error())
+			internalLog.Error("line 343: " + err.Error())
 			continue
 		}
 
@@ -370,7 +370,7 @@ func failoverHostVms(haNode HosterHaNode) {
 	for _, v := range uniqueHaVms {
 		if restConf.HaDebug {
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: MOVING VM: "+v.VmName+" FROM offline parent: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
-			intLog.Warnf("failing over a VM ::%s:: from an offline host ::%s:: to ::%s::", v.VmName, v.ParentHost, v.CurrentHost)
+			internalLog.Warnf("failing over a VM ::%s:: from an offline host ::%s:: to ::%s::", v.VmName, v.ParentHost, v.CurrentHost)
 			continue
 		}
 
@@ -378,7 +378,7 @@ func failoverHostVms(haNode HosterHaNode) {
 			if vv.NodeInfo.Hostname == v.CurrentHost {
 				time.Sleep(1500 * time.Millisecond)
 				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: MOVING VM: "+v.VmName+" FROM offline parent: "+v.ParentHost+" TO: "+v.CurrentHost).Run()
-				intLog.Warnf("failing over a VM ::%s:: from an offline host ::%s:: to ::%s::", v.VmName, v.ParentHost, v.CurrentHost)
+				internalLog.Warnf("failing over a VM ::%s:: from an offline host ::%s:: to ::%s::", v.VmName, v.ParentHost, v.CurrentHost)
 
 				auth := vv.NodeInfo.User + ":" + vv.NodeInfo.Password
 				authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
@@ -395,7 +395,7 @@ func failoverHostVms(haNode HosterHaNode) {
 					if res.StatusCode != 200 {
 						_ = err
 						// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: CIRESET FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
-						intLog.Errorf("cireset call failed for the VM ::%s:: on host ::%s::", v.VmName, v.CurrentHost)
+						internalLog.Errorf("cireset call failed for the VM ::%s:: on host ::%s::", v.VmName, v.CurrentHost)
 						continue
 					}
 					req.Body.Close()
@@ -411,7 +411,7 @@ func failoverHostVms(haNode HosterHaNode) {
 					if res.StatusCode != 200 {
 						_ = err
 						// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: CHANGE PARENT FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
-						intLog.Errorf("change parent call failed for the VM ::%s:: on host ::%s::", v.VmName, v.CurrentHost)
+						internalLog.Errorf("change parent call failed for the VM ::%s:: on host ::%s::", v.VmName, v.CurrentHost)
 						continue
 					}
 					req.Body.Close()
@@ -429,7 +429,7 @@ func failoverHostVms(haNode HosterHaNode) {
 				if res.StatusCode != 200 {
 					_ = err
 					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: VM START FAILED FOR THE VM: "+v.VmName+" ON: "+v.CurrentHost).Run()
-					intLog.Errorf("start call failed for the VM ::%s:: on host ::%s::", v.VmName, v.CurrentHost)
+					internalLog.Errorf("start call failed for the VM ::%s:: on host ::%s::", v.VmName, v.CurrentHost)
 					continue
 				}
 			}
@@ -442,7 +442,7 @@ func modifyHostsDb(input ModifyHostsDb, dbLock *sync.RWMutex) {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: modifyHostsDb(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: modifyHostsDb() %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: modifyHostsDb() %s", errorValue)
 		}
 		// dbLock.Unlock()
 	}()
@@ -462,11 +462,11 @@ func modifyHostsDb(input ModifyHostsDb, dbLock *sync.RWMutex) {
 
 		if !hostFound {
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: registered a new node: "+input.data.NodeInfo.Hostname).Run()
-			intLog.Infof("registered a new node: %s", input.data.NodeInfo.Hostname)
+			internalLog.Infof("registered a new node: %s", input.data.NodeInfo.Hostname)
 			haHostsDb = append(haHostsDb, input.data)
 		} else {
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: Updated last ping time and network address for "+msg.NodeInfo.Hostname).Run()
-			intLog.Debugf("updated last ping time for: %s", input.data.NodeInfo.Hostname)
+			internalLog.Debugf("updated last ping time for: %s", input.data.NodeInfo.Hostname)
 			haHostsDb[hostIndex].NodeInfo.Address = input.data.NodeInfo.Address
 			if input.data.NodeInfo.StartupTime > 0 {
 				haHostsDb[hostIndex].NodeInfo.StartupTime = input.data.NodeInfo.StartupTime
@@ -484,7 +484,7 @@ func modifyHostsDb(input ModifyHostsDb, dbLock *sync.RWMutex) {
 				haHostsDb[len(haHostsDb)-1] = HosterHaNode{}
 				haHostsDb = haHostsDb[0 : len(haHostsDb)-1]
 				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has been removed from the cluster: "+input.data.NodeInfo.Hostname).Run()
-				intLog.Warnf("removed the node from the cluster: %s", input.data.NodeInfo.Hostname)
+				internalLog.Warnf("removed the node from the cluster: %s", input.data.NodeInfo.Hostname)
 			}
 		}
 		return
@@ -496,7 +496,7 @@ func readHostsDb(dbLock *sync.RWMutex) (db []HosterHaNode) {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: readHostsDb(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: readHostsDb() %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: readHostsDb() %s", errorValue)
 		}
 		// dbLock.RUnlock()
 	}()
@@ -513,7 +513,7 @@ func TerminateOtherMembers() {
 		if r := recover(); r != nil {
 			errorValue := fmt.Sprintf("%s", r)
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: terminateOtherMembers(): "+errorValue).Run()
-			intLog.Warnf("PANIC AVOIDED: TerminateOtherMembers() %s", errorValue)
+			internalLog.Warnf("PANIC AVOIDED: TerminateOtherMembers() %s", errorValue)
 		}
 	}()
 
@@ -525,7 +525,7 @@ func TerminateOtherMembers() {
 	}
 	if !candidateFound {
 		// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: not a candidate node, use one of the candidates to gracefully stop the RestAPI across the whole cluster").Run()
-		intLog.Errorf("not a candidate node! use one of the candidates to gracefully stop the RestAPI across the whole cluster")
+		internalLog.Errorf("not a candidate node! use one of the candidates to gracefully stop the RestAPI across the whole cluster")
 		return
 	}
 
@@ -540,19 +540,19 @@ func TerminateOtherMembers() {
 				if r := recover(); r != nil {
 					errorValue := fmt.Sprintf("%s", r)
 					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "PANIC AVOIDED: terminateOtherMembers()->GR: "+errorValue).Run()
-					intLog.Warnf("PANIC AVOIDED: 544 %s", errorValue)
+					internalLog.Warnf("PANIC AVOIDED: 544 %s", errorValue)
 				}
 				wg.Done()
 			}()
 
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: sending a shutdown signal to: "+node.NodeInfo.Hostname).Run()
-			intLog.Infof("sending a shutdown signal to: %s", node.NodeInfo.Hostname)
+			internalLog.Infof("sending a shutdown signal to: %s", node.NodeInfo.Hostname)
 			url := node.NodeInfo.Protocol + "://" + node.NodeInfo.Address + ":" + node.NodeInfo.Port + "/api/v2/ha/terminate"
 
 			req, err := http.NewRequest("POST", url, nil)
 			if err != nil {
 				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "ERROR: could not form the /terminate request: "+err.Error()).Run()
-				intLog.Errorf("could not form the /terminate request: %s", err.Error())
+				internalLog.Errorf("could not form the /terminate request: %s", err.Error())
 				return
 			}
 
@@ -563,7 +563,7 @@ func TerminateOtherMembers() {
 
 			if err != nil {
 				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: could not notify the member: "+node.NodeInfo.Hostname+". Error: "+err.Error()).Run()
-				intLog.Errorf("could not notify the node about termination ::%s::, exact error ::%s::", node.NodeInfo.Hostname, err.Error())
+				internalLog.Errorf("could not notify the node about termination ::%s::, exact error ::%s::", node.NodeInfo.Hostname, err.Error())
 			}
 		}(v)
 	}
