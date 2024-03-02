@@ -51,7 +51,7 @@ func Configure(level logrus.Level) *Log {
 	}
 
 	l.SetLevel(level)
-	l.SetReportCaller(false)
+	// l.SetReportCaller(false)
 
 	return l
 }
