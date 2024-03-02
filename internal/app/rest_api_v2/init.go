@@ -3,16 +3,18 @@ package main
 import (
 	"HosterCore/cmd"
 	RestApiConfig "HosterCore/internal/app/rest_api_v2/pkg/config"
+	MiddlewareLogging "HosterCore/internal/app/rest_api_v2/pkg/middleware/logging"
+	FreeBSDLogger "HosterCore/internal/pkg/freebsd/logger"
 	"os"
 	"os/exec"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
-const timesFailedMax = 3
-
-var timesFailed = 0
+// RestAPI Conf Init
 var restConf RestApiConfig.RestApiConfig
 
 func init() {
@@ -21,6 +23,14 @@ func init() {
 	if err != nil {
 		logInternal.Panicf("could not read the API config: %s", err.Error())
 	}
+}
+
+// HA Init
+const timesFailedMax = 3
+
+var timesFailed = 0
+
+func init() {
 
 	if !restConf.HaMode {
 		return
@@ -73,4 +83,31 @@ func pingWatchdog() {
 			}
 		}
 	}
+}
+
+// Log Init
+var logInternal = logrus.New()
+var log *MiddlewareLogging.Log
+
+func init() {
+	logStdOut := os.Getenv("LOG_STDOUT")
+	logFile := os.Getenv("LOG_FILE")
+
+	// Log as JSON instead of the default ASCII/text formatter.
+	logInternal.SetFormatter(&logrus.JSONFormatter{})
+
+	// Output to stdout instead of the default stderr
+	logInternal.SetOutput(os.Stdout)
+
+	// Log to file, but fallback to STDOUT if something goes wrong
+	if logStdOut == "false" && len(logFile) > 2 {
+		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "REST API: could not use this file for logging "+logFile+", falling back to STDOUT")
+		} else {
+			logInternal.SetOutput(file)
+		}
+	}
+
+	logInternal.SetLevel(logrus.DebugLevel)
 }
