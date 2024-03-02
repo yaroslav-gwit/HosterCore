@@ -1102,6 +1102,33 @@ paths:
       - VMs
   /vm/clone:
     post:
+      description: 'Clone the VM using it''s name, and optionally specify the snapshot
+        name to be used for cloning.<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.VmCloneInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Clone the VM.
+      tags:
+      - VMs
+  /vm/deploy:
+    post:
       description: 'Deploy a new VM.<br>`AUTH`: Only `rest` user is allowed.'
       parameters:
       - description: Request payload
