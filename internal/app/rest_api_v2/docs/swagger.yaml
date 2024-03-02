@@ -185,6 +185,27 @@ definitions:
       uuid:
         type: string
     type: object
+  HosterVm.VmDeployInput:
+    properties:
+      custom_dns_server:
+        type: string
+      ip_address:
+        type: string
+      network_name:
+        type: string
+      os_type:
+        type: string
+      ram:
+        type: string
+      start_when_ready:
+        type: boolean
+      target_dataset:
+        type: string
+      vcpus:
+        type: integer
+      vm_name:
+        type: string
+    type: object
   HosterVmUtils.Virtio9P:
     properties:
       read_only:
@@ -1081,15 +1102,14 @@ paths:
       - VMs
   /vm/clone:
     post:
-      description: 'Clone the VM using it''s name, and optionally specify the snapshot
-        name to be used for cloning.<br>`AUTH`: Only `rest` user is allowed.'
+      description: 'Deploy a new VM.<br>`AUTH`: Only `rest` user is allowed.'
       parameters:
       - description: Request payload
         in: body
         name: Input
         required: true
         schema:
-          $ref: '#/definitions/handlers.VmCloneInput'
+          $ref: '#/definitions/HosterVm.VmDeployInput'
       produces:
       - application/json
       responses:
@@ -1103,7 +1123,7 @@ paths:
             $ref: '#/definitions/handlers.SwaggerError'
       security:
       - BasicAuth: []
-      summary: Clone the VM.
+      summary: Deploy the new VM.
       tags:
       - VMs
   /vm/destroy/{vm_name}:

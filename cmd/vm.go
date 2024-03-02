@@ -200,7 +200,7 @@ func LockAllVms() error {
 	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 	for _, v := range vms {
 		if v.Production && v.CurrentHost == hostname {
-			_ = HosterVm.ChangeParent(vmName, haLockedString, true)
+			_ = HosterVm.ChangeParent(v.Name, haLockedString, true)
 		}
 	}
 
@@ -217,7 +217,7 @@ func UnlockAllVms() error {
 	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 	for _, v := range vms {
 		if v.Production && reHaLockedString.MatchString(v.CurrentHost) {
-			_ = HosterVm.ChangeParent(vmName, hostname, true)
+			_ = HosterVm.ChangeParent(v.Name, hostname, true)
 		}
 	}
 

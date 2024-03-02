@@ -18,10 +18,10 @@ import (
 )
 
 var (
-	newVmName          string
-	ciResetNetworkName string
-	ciResetIpAddress   string
-	ciResetDnsServer   string
+	ciResetCmdNewVmName   string
+	ciResetCmdNetworkName string
+	ciResetCmdIpAddress   string
+	ciResetCmdDnsServer   string
 
 	vmCiResetCmd = &cobra.Command{
 		Use:   "cireset [vmName]",
@@ -30,7 +30,8 @@ var (
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
-			err := CiReset(args[0], newVmName)
+
+			err := CiReset(args[0], ciResetCmdNewVmName)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
@@ -53,19 +54,8 @@ func CiReset(oldVmName string, newVmName string) error {
 
 	// Collect the required information
 	c.RootPassword = HosterHostUtils.GenerateRandomPassword(33, true, true)
-	if err != nil {
-		return errors.New("could not generate random password for root user: " + err.Error())
-	}
-
 	c.GwitsuperPassword = HosterHostUtils.GenerateRandomPassword(33, true, true)
-	if err != nil {
-		return errors.New("could not generate random password for gwitsuper user: " + err.Error())
-	}
-
 	c.InstanceId = HosterHostUtils.GenerateRandomPassword(5, false, true)
-	if err != nil {
-		return errors.New("could not generate random instance id: " + err.Error())
-	}
 
 	if len(newVmName) > 0 {
 		c.VmName = newVmName
@@ -78,11 +68,11 @@ func CiReset(oldVmName string, newVmName string) error {
 		return errors.New("could not generate vm name: " + err.Error())
 	}
 
-	if len(ciResetIpAddress) > 1 {
-		c.IpAddress = ciResetIpAddress
+	if len(ciResetCmdIpAddress) > 1 {
+		c.IpAddress = ciResetCmdIpAddress
 	} else {
 		// Generate and set random IP address (which is free in the pool of addresses)
-		c.IpAddress, err = HosterHostUtils.GenerateNewRandomIp(networkName)
+		c.IpAddress, err = HosterHostUtils.GenerateNewRandomIp(ciResetCmdNetworkName)
 		if err != nil {
 			return errors.New("could not generate the IP: " + err.Error())
 		}
@@ -92,7 +82,7 @@ func CiReset(oldVmName string, newVmName string) error {
 	if err != nil {
 		return errors.New("could not read the network config")
 	}
-	if len(ciResetNetworkName) < 1 {
+	if len(ciResetCmdNetworkName) < 1 {
 		c.NetworkName = networkInfo[0].NetworkName
 		c.Subnet = networkInfo[0].Subnet
 		c.NakedSubnet = strings.Split(networkInfo[0].Subnet, "/")[1]
@@ -100,7 +90,7 @@ func CiReset(oldVmName string, newVmName string) error {
 		c.NetworkComment = networkInfo[0].Comment
 	} else {
 		for _, v := range networkInfo {
-			if ciResetNetworkName == v.NetworkName {
+			if ciResetCmdNetworkName == v.NetworkName {
 				c.NetworkName = v.NetworkName
 				c.Subnet = v.Subnet
 				c.NakedSubnet = strings.Split(v.Subnet, "/")[1]
@@ -113,8 +103,8 @@ func CiReset(oldVmName string, newVmName string) error {
 		}
 	}
 
-	if len(deployDnsServer) > 1 {
-		c.DnsServer = deployDnsServer
+	if len(ciResetCmdDnsServer) > 1 {
+		c.DnsServer = ciResetCmdDnsServer
 	} else {
 		c.DnsServer = c.Gateway
 	}

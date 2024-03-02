@@ -1,15 +1,13 @@
 package cmd
 
 import (
-	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
+	SchedulerClient "HosterCore/internal/app/scheduler/client"
 	"HosterCore/internal/pkg/emojlog"
 	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
 	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
-	"encoding/json"
 	"fmt"
-	"net"
 	"os"
 	"os/exec"
 	"path"
@@ -171,7 +169,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			err := addReplicationJob(args[0], schedulerReplicateEndpoint, schedulerReplicateKey, schedulerReplicateSpeedLimit)
+			err := SchedulerClient.AddReplicationJob(args[0], schedulerReplicateEndpoint, schedulerReplicateKey, schedulerReplicateSpeedLimit)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
@@ -194,7 +192,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			err := addSnapshotJob(args[0], schedulerSnapshotToKeep, schedulerSnapshotType)
+			err := SchedulerClient.AddSnapshotJob(args[0], schedulerSnapshotToKeep, schedulerSnapshotType)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
@@ -230,7 +228,7 @@ var (
 					continue
 				}
 
-				err := addSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
+				err := SchedulerClient.AddSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				} else {
@@ -251,7 +249,7 @@ var (
 					continue
 				}
 
-				err = addSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
+				err = SchedulerClient.AddSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				} else {
@@ -261,61 +259,6 @@ var (
 		},
 	}
 )
-
-func addReplicationJob(vmName string, endpoint string, key string, speedLimit int) error {
-	c, err := net.Dial("unix", SchedulerUtils.SockAddr)
-	if err != nil {
-		return err
-	}
-
-	defer c.Close()
-
-	job := SchedulerUtils.Job{}
-	job.JobType = SchedulerUtils.JOB_TYPE_REPLICATION
-	job.Replication.VmName = vmName
-	job.Replication.SshEndpoint = endpoint
-	job.Replication.SshKey = key
-	job.Replication.BufferSpeedLimit = speedLimit
-
-	jsonJob, err := json.Marshal(job)
-	if err != nil {
-		return err
-	}
-
-	_, err = c.Write(jsonJob)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func addSnapshotJob(vmName string, snapshotsToKeep int, snapshotType string) error {
-	c, err := net.Dial("unix", SchedulerUtils.SockAddr)
-	if err != nil {
-		return err
-	}
-
-	defer c.Close()
-
-	job := SchedulerUtils.Job{}
-	job.JobType = SchedulerUtils.JOB_TYPE_SNAPSHOT
-	job.Snapshot.VmName = vmName
-	job.Snapshot.SnapshotType = snapshotType
-	job.Snapshot.SnapshotsToKeep = snapshotsToKeep
-
-	jsonJob, err := json.Marshal(job)
-	if err != nil {
-		return err
-	}
-
-	_, err = c.Write(jsonJob)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 var (
 	schedulerShowLogCmd = &cobra.Command{

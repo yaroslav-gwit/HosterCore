@@ -57,6 +57,8 @@ func InfoJsonApi(jailName string) (r JailApi, e error) {
 		r.Name = v.JailName
 		r.JailConfig = jailConfig
 		r.CurrentHost = hostname
+		r.Simple = v
+
 		if jailConfig.Parent == hostname {
 			for _, vv := range onlineJails {
 				if v.JailName == vv.Name {

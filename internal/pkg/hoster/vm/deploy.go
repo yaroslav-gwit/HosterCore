@@ -1,128 +1,56 @@
-package cmd
+// Copyright 2024 Hoster Authors. All rights reserved.
+// Use of this source code is governed by an Apache License 2.0
+// license that can be found in the LICENSE file.
+
+package HosterVm
 
 import (
-	"HosterCore/internal/pkg/emojlog"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	HosterHost "HosterCore/internal/pkg/hoster/host"
 	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
 	HosterNetwork "HosterCore/internal/pkg/hoster/network"
-	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"bufio"
 	"errors"
+	"html/template"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
-	"text/template"
 	"time"
-
-	"github.com/spf13/cobra"
 )
 
-var (
-	vmDeployCmdStartWhenReady bool
-	vmDeployCmdCpus           int
-	vmDeployCmdVmName         string
-	vmDeployCmdNetworkName    string
-	vmDeployCmdIpAddress      string
-	vmDeployCmdDnsServer      string
-	vmDeployCmdOsType         string
-	vmDeployCmdZfsDataset     string
-	vmDeployCmdRam            string
-	vmDeployCmdFromIso        string
-	// vmDeployCmdIsoFilePath    string
-
-	vmDeployCmd = &cobra.Command{
-		Use:   "deploy",
-		Short: "Deploy a new VM",
-		Long:  `Deploy a new VM, using the pre-defined templates or ISO files`,
-		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			checkInitFile()
-
-			if len(vmDeployCmdZfsDataset) < 1 {
-				hostCfg, err := HosterHost.GetHostConfig()
-				if err != nil {
-					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-					os.Exit(1)
-				}
-
-				vmDeployCmdZfsDataset = hostCfg.ActiveZfsDatasets[0]
-			}
-
-			var err error
-			if len(vmDeployCmdFromIso) > 1 {
-				// err = deployVmFromIso(vmDeployCmdVmName, vmDeployCmdNetworkName, vmDeployCmdOsType, vmDeployCmdZfsDataset, vmDeployCmdCpus, vmDeployCmdRam, vmDeployCmdStartWhenReady, vmDeployCmdIsoFilePath)
-				err = deployVmFromIso(vmDeployCmdVmName, vmDeployCmdNetworkName, vmDeployCmdOsType, vmDeployCmdZfsDataset, vmDeployCmdCpus, vmDeployCmdRam, vmDeployCmdStartWhenReady, vmDeployCmdFromIso)
-			} else {
-				input := HosterVm.VmDeployInput{}
-
-				input.CustomDnsServer = vmDeployCmdDnsServer
-				input.IpAddress = vmDeployCmdIpAddress
-				input.NetworkName = vmDeployCmdNetworkName
-				input.OsType = vmDeployCmdOsType
-				input.RAM = vmDeployCmdRam
-				input.StartWhenRdy = vmDeployCmdStartWhenReady
-				input.TargetDataset = vmDeployCmdZfsDataset
-				input.VCpus = vmDeployCmdCpus
-				input.VmName = vmDeployCmdVmName
-
-				err = HosterVm.Deploy(input)
-			}
-
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-		},
-	}
-)
-
-type ConfigOutputStruct struct {
-	Cpus              int
-	Ram               string
-	SshKeys           []HosterVmUtils.VmSshKey
-	RootPassword      string
-	GwitsuperPassword string
-	InstanceId        string
-	VmName            string
-	NetworkName       string
-	NetworkComment    string
-	MacAddress        string
-	IpAddress         string
-	Subnet            string
-	NakedSubnet       string
-	Gateway           string
-	DnsServer         string
-	Production        bool
-	OsType            string
-	OsComment         string
-	ParentHost        string
-	VncPort           int
-	VncPassword       string
+type VmDeployInput struct {
+	StartWhenRdy    bool   `json:"start_when_ready"`
+	VCpus           int    `json:"vcpus"`
+	VmName          string `json:"vm_name"`
+	RAM             string `json:"ram"`
+	NetworkName     string `json:"network_name"`
+	IpAddress       string `json:"ip_address"`
+	CustomDnsServer string `json:"custom_dns_server"`
+	OsType          string `json:"os_type"`
+	TargetDataset   string `json:"target_dataset"`
 }
 
-func deployVmFromIso(vmName string, networkName string, osType string, dsParent string, cpus int, ram string, startWhenReady bool, isoPath string) error {
-	if len(isoPath) < 1 {
-		return errors.New("please, specify which ISO file will be used for the installation")
+// Deploy a new VM. Returns an error if something went wrong.
+func Deploy(input VmDeployInput) error {
+	var err error
+
+	// If the logger was already set, ignore this
+	if !log.ConfigSet {
+		log.SetFileLocation(HosterVmUtils.VM_AUDIT_LOG_LOCATION)
 	}
 
-	if !FileExists(isoPath) {
-		return errors.New("the ISO file you've specified doesn't exist")
-	}
-
-	vmNameError := HosterVmUtils.ValidateResName(vmName)
-	if vmNameError != nil {
-		return vmNameError
+	err = HosterVmUtils.ValidateResName(input.VmName)
+	if err != nil {
+		return err
 	}
 
 	// Initialize values
-	c := ConfigOutputStruct{}
-	var err error
-
+	c := ConfigOutput{}
 	// Set CPU cores and RAM
-	c.Cpus = cpus
-	c.Ram = ram
+	c.Cpus = input.VCpus
+	c.Ram = input.RAM
 
 	// Generate and set the root and gwitsuper users password
 	c.RootPassword = HosterHostUtils.GenerateRandomPassword(33, true, true)
@@ -131,12 +59,12 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	c.InstanceId = HosterHostUtils.GenerateRandomPassword(5, false, true)
 
 	// Generate correct VM name
-	c.VmName, err = HosterVmUtils.GenerateTestVmName(vmName)
+	c.VmName, err = HosterVmUtils.GenerateTestVmName(input.VmName)
 	if err != nil {
-		return errors.New("could not set a vm name: " + err.Error())
+		return errors.New("could not generate vm name: " + err.Error())
 	}
 
-	emojlog.PrintLogMessage("Deploying new VM: "+c.VmName, emojlog.Info)
+	// emojlog.PrintLogMessage("Deploying new VM: "+c.VmName, emojlog.Info)
 
 	// Generate and set random MAC address
 	c.MacAddress, err = HosterVmUtils.GenerateMacAddress()
@@ -144,29 +72,29 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 		return errors.New("could not generate vm name: " + err.Error())
 	}
 
-	if len(vmDeployCmdIpAddress) > 1 {
-		c.IpAddress = vmDeployCmdIpAddress
+	if len(input.IpAddress) > 1 {
+		c.IpAddress = input.IpAddress
 	} else {
 		// Generate and set random IP address (which is free in the pool of addresses)
-		c.IpAddress, err = HosterHostUtils.GenerateNewRandomIp(networkName)
+		c.IpAddress, err = HosterHostUtils.GenerateNewRandomIp(input.NetworkName)
 		if err != nil {
 			return errors.New("could not generate the IP: " + err.Error())
 		}
 	}
 
-	netInfo, err := HosterNetwork.GetNetworkConfig()
+	networkInfo, err := HosterNetwork.GetNetworkConfig()
 	if err != nil {
 		return errors.New("could not read the network config")
 	}
-	if len(networkName) < 1 {
-		c.NetworkName = netInfo[0].NetworkName
-		c.Subnet = netInfo[0].Subnet
-		c.NakedSubnet = strings.Split(netInfo[0].Subnet, "/")[1]
-		c.Gateway = netInfo[0].Gateway
-		c.NetworkComment = netInfo[0].Comment
+	if len(input.NetworkName) < 1 {
+		c.NetworkName = networkInfo[0].NetworkName
+		c.Subnet = networkInfo[0].Subnet
+		c.NakedSubnet = strings.Split(networkInfo[0].Subnet, "/")[1]
+		c.Gateway = networkInfo[0].Gateway
+		c.NetworkComment = networkInfo[0].Comment
 	} else {
-		for _, v := range netInfo {
-			if networkName == v.NetworkName {
+		for _, v := range networkInfo {
+			if input.NetworkName == v.NetworkName {
 				c.NetworkName = v.NetworkName
 				c.Subnet = v.Subnet
 				c.NakedSubnet = strings.Split(v.Subnet, "/")[1]
@@ -179,16 +107,21 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 		}
 	}
 
-	if len(vmDeployCmdDnsServer) > 1 {
-		c.DnsServer = vmDeployCmdDnsServer
+	if len(input.CustomDnsServer) > 1 {
+		c.DnsServer = input.CustomDnsServer
 	} else {
 		c.DnsServer = c.Gateway
 	}
 
-	if len(osType) < 1 {
-		c.OsType = "custom"
+	reMatchTest := regexp.MustCompile(`.*test`)
+	if reMatchTest.MatchString(c.VmName) {
+		c.Production = false
+	} else {
+		c.Production = true
 	}
-	c.Production = false
+
+	// emojlog.PrintLogMessage("OS type used: "+ , emojlog.Debug)
+	c.OsType = input.OsType
 	c.OsComment = HosterVmUtils.GenerateOsComment(c.OsType)
 
 	c.ParentHost, _ = FreeBSDsysctls.SysctlKernHostname()
@@ -204,7 +137,7 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	}
 
 	// Generate template ciUserDataTemplate
-	tmpl, err := template.New("ciUserDataTemplate").Parse(ciUserDataTemplate)
+	tmpl, err := template.New("ciUserDataTemplate").Parse(HosterVmUtils.CiUserDataTemplate)
 	if err != nil {
 		return errors.New("could not generate ciUserDataTemplate: " + err.Error())
 	}
@@ -213,9 +146,10 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	if err := tmpl.Execute(&ciUserData, c); err != nil {
 		return errors.New("could not generate ciUserDataTemplate: " + err.Error())
 	}
+	// fmt.Println(ciUserData.String())
 
 	// Generate template ciNetworkConfigTemplate
-	tmpl, err = template.New("ciNetworkConfigTemplate").Parse(ciNetworkConfigTemplate)
+	tmpl, err = template.New("ciNetworkConfigTemplate").Parse(HosterVmUtils.CiNetworkConfigTemplate)
 	if err != nil {
 		return errors.New("could not generate ciNetworkConfigTemplate: " + err.Error())
 	}
@@ -224,9 +158,10 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	if err := tmpl.Execute(&ciNetworkConfig, c); err != nil {
 		return errors.New("could not generate ciNetworkConfigTemplate: " + err.Error())
 	}
+	// fmt.Println(ciNetworkConfig.String())
 
 	// Generate template ciMetaDataTemplate
-	tmpl, err = template.New("ciMetaDataTemplate").Parse(ciMetaDataTemplate)
+	tmpl, err = template.New("ciMetaDataTemplate").Parse(HosterVmUtils.CiMetaDataTemplate)
 	if err != nil {
 		return errors.New("could not generate ciMetaDataTemplate: " + err.Error())
 	}
@@ -235,21 +170,17 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	if err := tmpl.Execute(&ciMetaData, c); err != nil {
 		return errors.New("could not generate ciMetaDataTemplate: " + err.Error())
 	}
+	// fmt.Println(ciMetaData.String())
 
-	// Move this into a separate function with the proper error handling
-	zfsCreateOutput, zfsCreateErr := exec.Command("zfs", "create", dsParent+"/"+c.VmName).CombinedOutput()
-	if zfsCreateErr != nil {
-		return errors.New(strings.TrimSpace(string(zfsCreateOutput)) + zfsCreateErr.Error())
+	zfsCloneResult, err := zfsDatasetClone(input.TargetDataset, input.OsType, c.VmName)
+	if err != nil || !zfsCloneResult {
+		return err
 	}
-	osDiskLocation := "/" + dsParent + "/" + c.VmName + "/disk0.img"
-	_ = exec.Command("touch", osDiskLocation).Run()
-	_ = exec.Command("truncate", "-s", "+10G", osDiskLocation).Run()
-	emojlog.PrintLogMessage("Created a new VM dataset: "+dsParent+"/"+c.VmName, emojlog.Debug)
 
 	// Write config files
-	emojlog.PrintLogMessage("Writing CloudInit config files", emojlog.Debug)
-	newVmFolder := "/" + dsParent + "/" + c.VmName
-	vmConfigFileLocation := newVmFolder + "/" + HosterVmUtils.VM_CONFIG_NAME
+	// emojlog.PrintLogMessage("Writing CloudInit config files", emojlog.Debug)
+	newVmFolder := "/" + input.TargetDataset + "/" + c.VmName
+	vmConfigFileLocation := newVmFolder + "/vm_config.json"
 	vmConfig := HosterVmUtils.VmConfig{}
 	networkConfig := HosterVmUtils.VmNetwork{}
 	diskConfig := HosterVmUtils.VmDisk{}
@@ -271,25 +202,16 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	networkConfig.Comment = c.NetworkComment
 	vmConfig.Networks = append(vmConfig.Networks, networkConfig)
 
-	// Add system disk
 	diskConfig.DiskType = "nvme"
 	diskConfig.DiskLocation = "internal"
 	diskConfig.DiskImage = "disk0.img"
 	diskConfig.Comment = "OS Disk"
 	diskConfigList = append(diskConfigList, diskConfig)
-	// Add CloudInit ISO
 	diskConfig.DiskType = "ahci-cd"
 	diskConfig.DiskLocation = "internal"
 	diskConfig.DiskImage = "seed.iso"
 	diskConfig.Comment = "CloudInit ISO"
 	diskConfigList = append(diskConfigList, diskConfig)
-	// Add the installation ISO
-	diskConfig.DiskType = "ahci-cd"
-	diskConfig.DiskLocation = "external"
-	diskConfig.DiskImage = isoPath
-	diskConfig.Comment = "Installation ISO"
-	diskConfigList = append(diskConfigList, diskConfig)
-	// Translate the temp diskConfig variable into the struct
 	vmConfig.Disks = append(vmConfig.Disks, diskConfigList...)
 
 	vmConfig.IncludeHostSSHKeys = true
@@ -375,16 +297,16 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 		return errors.New(err.Error())
 	}
 
-	err = ReloadDnsServer()
+	err = HosterHostUtils.ReloadDns()
 	if err != nil {
 		return err
 	}
 
 	// Start the VM when all of the above is complete
-	if startWhenReady {
+	if input.StartWhenRdy {
 		time.Sleep(time.Second * 1)
-		// err := VmStart(c.VmName, false, true, true)
-		err := HosterVm.Start(vmName, true, false)
+		// err := VmStart(c.VmName, false, false, false)
+		err := Start(input.VmName, false, false)
 		if err != nil {
 			return err
 		}
@@ -393,61 +315,29 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	return nil
 }
 
-const ciUserDataTemplate = `#cloud-config
-
-users:
-  - default
-  - name: root
-    lock_passwd: false
-    ssh_pwauth: true
-    disable_root: false
-    ssh_authorized_keys:
-	  {{- range .SshKeys}}
-      - {{ .KeyValue }}
-	  {{- end }}
-
-  - name: gwitsuper
-    sudo: ALL=(ALL) NOPASSWD:ALL
-    groups: wheel
-    ssh_pwauth: true
-    lock_passwd: false
-    ssh_authorized_keys:
-	  {{- range .SshKeys}}
-      - {{ .KeyValue }}
-	  {{- end }}
-
-chpasswd:
-  list: |
-    root:{{ .RootPassword }}
-    gwitsuper:{{ .GwitsuperPassword }}
-  expire: False
-
-package_update: false
-package_upgrade: false
-`
-
-const ciMetaDataTemplate = `instance-id: iid-{{ .InstanceId }}
-local-hostname: {{ .VmName }}
-`
-
-const ciNetworkConfigTemplate = `version: 2
-ethernets:
-  interface0:
-    match:
-      macaddress: "{{ .MacAddress }}"
-
-    {{- if not (or (eq .OsType "freebsd13ufs") (eq .OsType "freebsd13zfs")) }} 
-    set-name: eth0
-	{{- end }}
-    addresses:
-    - {{ .IpAddress }}/{{ .NakedSubnet }}
- 
-    gateway4: {{ .Gateway }}
- 
-    nameservers:
-      search: [ {{ .ParentHost }}.internal.lan, ]
-      addresses: [{{ .DnsServer }}, ]
-`
+type ConfigOutput struct {
+	Cpus              int
+	Ram               string
+	SshKeys           []HosterVmUtils.VmSshKey
+	RootPassword      string
+	GwitsuperPassword string
+	InstanceId        string
+	VmName            string
+	NetworkName       string
+	NetworkComment    string
+	MacAddress        string
+	IpAddress         string
+	Subnet            string
+	NakedSubnet       string
+	Gateway           string
+	DnsServer         string
+	Production        bool
+	OsType            string
+	OsComment         string
+	ParentHost        string
+	VncPort           int
+	VncPassword       string
+}
 
 func getSystemSshKeys() (r []HosterVmUtils.VmSshKey, e error) {
 	conf, err := HosterHost.GetHostConfig()
@@ -463,6 +353,31 @@ func getSystemSshKeys() (r []HosterVmUtils.VmSshKey, e error) {
 	return
 }
 
+func zfsDatasetClone(dsParent string, osType string, newVmName string) (bool, error) {
+	vmTemplateExist := "/" + dsParent + "/template-" + osType + "/disk0.img"
+	_, err := os.Stat(vmTemplateExist)
+
+	if os.IsNotExist(err) {
+		return false, errors.New("template dataset/disk image " + vmTemplateExist + " does not exist")
+	} else if err != nil {
+		return false, errors.New("error checking folder: " + err.Error())
+	}
+
+	vmTemplate := dsParent + "/template-" + osType
+
+	snapName := "@deployment_" + newVmName + "_" + HosterHostUtils.GenerateRandomPassword(8, false, true)
+	out, err := exec.Command("zfs", "snapshot", vmTemplate+snapName).CombinedOutput()
+	if err != nil {
+		return false, errors.New("could not execute zfs snapshot: " + string(out) + "; " + err.Error())
+	}
+
+	out, err = exec.Command("zfs", "clone", vmTemplate+snapName, dsParent+"/"+newVmName).CombinedOutput()
+	if err != nil {
+		return false, errors.New("could not execute zfs clone: " + string(out) + "; " + err.Error())
+	}
+	return true, nil
+}
+
 func createCiIso(vmFolder string) error {
 	ciFolder := vmFolder + "/cloud-init-files/"
 	out, err := exec.Command("genisoimage", "-output", vmFolder+"/seed.iso", "-volid", "cidata", "-joliet", "-rock", ciFolder+"user-data", ciFolder+"meta-data", ciFolder+"network-config").CombinedOutput()
@@ -470,6 +385,6 @@ func createCiIso(vmFolder string) error {
 		return errors.New("there was a problem generating an ISO: " + string(out) + "; " + err.Error())
 	}
 
-	emojlog.PrintLogMessage("New CloudInit ISO has been created", emojlog.Info)
+	// emojlog.PrintLogMessage("New CloudInit ISO has been created", emojlog.Info)
 	return nil
 }

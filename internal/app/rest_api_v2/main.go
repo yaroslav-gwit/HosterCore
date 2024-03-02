@@ -23,7 +23,7 @@ func init() {
 	logFile := os.Getenv("LOG_FILE")
 
 	// Log as JSON instead of the default ASCII/text formatter.
-	// log.SetFormatter(&logrus.JSONFormatter{})
+	log.SetFormatter(&logrus.JSONFormatter{})
 
 	// Output to stdout instead of the default stderr
 	logInternal.SetOutput(os.Stdout)
@@ -39,10 +39,7 @@ func init() {
 	}
 
 	logInternal.SetLevel(logrus.DebugLevel)
-	// logInternal.SetReportCaller(true)
 }
-
-// var log *MiddlewareLogging.Log
 
 // @title Hoster Node REST API Docs
 // @version 2.0
@@ -72,6 +69,7 @@ func main() {
 	r.HandleFunc("/api/v2/vm/start/{vm_name}", handlers.VmStart).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/stop", handlers.VmStop).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/clone", handlers.VmClone).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/vm/deploy", handlers.VmDeploy).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/destroy/{vm_name}", handlers.VmDestroy).Methods(http.MethodDelete)
 	// Jails
 	r.HandleFunc("/api/v2/jail/all", handlers.JailList).Methods(http.MethodGet)

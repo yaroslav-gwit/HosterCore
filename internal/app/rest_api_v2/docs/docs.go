@@ -950,14 +950,14 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Clone the VM using it's name, and optionally specify the snapshot name to be used for cloning.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "description": "Deploy a new VM.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "VMs"
                 ],
-                "summary": "Clone the VM.",
+                "summary": "Deploy the new VM.",
                 "parameters": [
                     {
                         "description": "Request payload",
@@ -965,7 +965,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.VmCloneInput"
+                            "$ref": "#/definitions/HosterVm.VmDeployInput"
                         }
                     }
                 ],
@@ -1427,6 +1427,38 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "HosterVm.VmDeployInput": {
+            "type": "object",
+            "properties": {
+                "custom_dns_server": {
+                    "type": "string"
+                },
+                "ip_address": {
+                    "type": "string"
+                },
+                "network_name": {
+                    "type": "string"
+                },
+                "os_type": {
+                    "type": "string"
+                },
+                "ram": {
+                    "type": "string"
+                },
+                "start_when_ready": {
+                    "type": "boolean"
+                },
+                "target_dataset": {
+                    "type": "string"
+                },
+                "vcpus": {
+                    "type": "integer"
+                },
+                "vm_name": {
                     "type": "string"
                 }
             }

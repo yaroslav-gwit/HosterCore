@@ -43,6 +43,8 @@ func ListJsonApi() (r []JailApi, e error) {
 		jailStruct.Name = v.JailName
 		jailStruct.JailConfig = jailConfig
 		jailStruct.CurrentHost = hostname
+		jailStruct.Simple = v
+
 		if jailConfig.Parent == hostname {
 			for _, vv := range onlineJails {
 				if v.JailName == vv.Name {
