@@ -13,6 +13,8 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
+var log *MiddlewareLogging.Log
+
 // @title Hoster Node REST API Docs
 // @version 2.0
 // @description REST API documentation for the `Hoster` nodes. This HTTP endpoint is located directly on the `Hoster` node.<br>Please, take some extra care with the things you execute here, because many of them can be destructive and non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).

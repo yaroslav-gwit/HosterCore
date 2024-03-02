@@ -3,7 +3,6 @@ package main
 import (
 	"HosterCore/cmd"
 	RestApiConfig "HosterCore/internal/app/rest_api_v2/pkg/config"
-	MiddlewareLogging "HosterCore/internal/app/rest_api_v2/pkg/middleware/logging"
 	FreeBSDLogger "HosterCore/internal/pkg/freebsd/logger"
 	"os"
 	"os/exec"
@@ -87,7 +86,6 @@ func pingWatchdog() {
 
 // Log Init
 var logInternal = logrus.New()
-var log *MiddlewareLogging.Log
 
 func init() {
 	logStdOut := os.Getenv("LOG_STDOUT")
