@@ -23,11 +23,11 @@ var log *MiddlewareLogging.Log
 // @BasePath /api/v2
 func main() {
 	// log = MiddlewareLogging.Configure(logrus.DebugLevel)
-	r := mux.NewRouter()
 
 	// Middleware -> Logging
 	log = MiddlewareLogging.Configure(logrus.DebugLevel)
 	handlers.SetLogConfig(log)
+	r := mux.NewRouter()
 	r.Use(log.LogResponses)
 
 	// Health checks
