@@ -17,6 +17,9 @@ var (
 	warningString      = "You've entered an incorrect PIN too many times.\n\n Try again in %vs."
 	incorrectPinString = "Incorrect PIN entered"
 	sessionInfoString  = "Logged in as %v (automatic logout in %v seconds)"
+	firewallInfoString = "Firewall status (%v)\n!! Be careful, your VMs will lose access to the network !!"
+	activeString       = "ACTIVE"
+	inactiveString     = "INACTIVE"
 )
 
 func MakeWarningTring(timeout int) string {
@@ -25,6 +28,14 @@ func MakeWarningTring(timeout int) string {
 
 func MakeSessionInfoText(user_name string, time int) string {
 	return fmt.Sprintf(sessionInfoString, user_name, time)
+}
+
+func MakeFirewallInfoText(active bool) string {
+	status := inactiveString
+	if active {
+		status = activeString
+	}
+	return fmt.Sprintf(firewallInfoString, status)
 }
 
 func GetWaitText() *text.Widget {

@@ -75,13 +75,18 @@ func New() error {
 	var err error
 
 	styles := gowid.Palette{
-		"body":               gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("black"), gowid.NewUrwidColor("light gray"), gowid.StyleBold),
-		"background":         gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("blue")),
-		"warning_background": gowid.MakeStyledPaletteEntry(gowid.ColorNone, gowid.NewUrwidColor("dark red"), gowid.StyleBold),
-		"info_text":          gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("white"), gowid.ColorNone, gowid.StyleBold),
-		"warning_text":       gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("dark red"), gowid.ColorNone, gowid.StyleBold),
-		"edit":               gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("dark blue")),
-		"banner":             gowid.MakePaletteEntry(gowid.ColorWhite, gowid.MakeRGBColor("#60d")),
+		"body":                         gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("black"), gowid.NewUrwidColor("light gray"), gowid.StyleBold),
+		"background":                   gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("light blue")),
+		"warning_background":           gowid.MakeStyledPaletteEntry(gowid.ColorNone, gowid.NewUrwidColor("dark red"), gowid.StyleBold),
+		"firewall_active_background":   gowid.MakeStyledPaletteEntry(gowid.ColorNone, gowid.NewUrwidColor("dark green"), gowid.StyleBold),
+		"firewall_inactive_background": gowid.MakeStyledPaletteEntry(gowid.ColorNone, gowid.NewUrwidColor("dark red"), gowid.StyleBold),
+		"info_text":                    gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("white"), gowid.ColorNone, gowid.StyleBold),
+		"warning_text":                 gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("dark red"), gowid.ColorNone, gowid.StyleBold),
+		"edit":                         gowid.MakePaletteEntry(gowid.NewUrwidColor("white"), gowid.NewUrwidColor("dark blue")),
+		"progress normal":              gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("black"), gowid.NewUrwidColor("light gray"), gowid.StyleBold),
+		"progress complete":            gowid.MakeStyleMod(gowid.MakePaletteRef("progress normal"), gowid.MakeBackground(gowid.NewUrwidColor("light green"))),
+		"red":                          gowid.MakePaletteEntry(gowid.ColorRed, gowid.ColorBlack),
+		"invred":                       gowid.MakePaletteEntry(gowid.ColorBlack, gowid.ColorRed),
 	}
 
 	host_config, err = host.GetHostConfig()
