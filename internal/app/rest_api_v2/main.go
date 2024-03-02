@@ -22,12 +22,12 @@ var log *MiddlewareLogging.Log
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @BasePath /api/v2
 func main() {
+	r := mux.NewRouter()
 	// log = MiddlewareLogging.Configure(logrus.DebugLevel)
 
 	// Middleware -> Logging
 	log = MiddlewareLogging.Configure(logrus.DebugLevel)
 	handlers.SetLogConfig(log)
-	r := mux.NewRouter()
 	r.Use(log.LogResponses)
 
 	// Health checks
