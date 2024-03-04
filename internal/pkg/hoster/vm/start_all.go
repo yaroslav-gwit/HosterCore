@@ -53,6 +53,9 @@ func StartAll(prodOnly bool, waitTime int) error {
 		if prodOnly && !v.Production {
 			continue
 		}
+		if v.Backup {
+			continue
+		}
 
 		if startId > 0 {
 			time.Sleep(time.Duration(waitTime * int(time.Second)))

@@ -37,14 +37,14 @@ func Start(vmName string, waitVnc bool, debugRun bool) error {
 	// EOF VM is live check
 
 	// Check if VM exists
-	vmInfo := HosterVmUtils.VmListSimple{}
-	vms, err := HosterVmUtils.ListAllSimple()
+	vmInfo := HosterVmUtils.VmApi{}
+	vms, err := HosterVmUtils.ListJsonApi()
 	if err != nil {
 		return err
 	}
 	found := false
 	for _, v := range vms {
-		if v.VmName == vmName {
+		if v.Name == vmName {
 			vmInfo = v
 			found = true
 		}
@@ -54,8 +54,14 @@ func Start(vmName string, waitVnc bool, debugRun bool) error {
 	}
 	// EOF Check if VM exists
 
+	// Check if VM is a backup
+	if vmInfo.Backup {
+		return fmt.Errorf("cannot start a backup VM on this system (change the parent host first or execute cireset)")
+	}
+	// EOF Check if VM is a backup
+
 	log.Info("starting the vm: " + vmName)
-	vmLocation := vmInfo.Mountpoint + "/" + vmName
+	vmLocation := vmInfo.Simple.Mountpoint + "/" + vmName
 	bhyveCmd, err := HosterVmUtils.GenerateBhyveStartCmd(vmName, vmLocation, false, waitVnc)
 	if err != nil {
 		return err
