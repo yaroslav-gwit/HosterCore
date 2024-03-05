@@ -15,7 +15,6 @@ import (
 	"html/template"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -59,9 +58,13 @@ func Deploy(input VmDeployInput) error {
 	c.InstanceId = HosterHostUtils.GenerateRandomPassword(5, false, true)
 
 	// Generate correct VM name
-	c.VmName, err = HosterVmUtils.GenerateTestVmName(input.VmName)
-	if err != nil {
-		return errors.New("could not generate vm name: " + err.Error())
+	if len(input.VmName) < 1 || input.VmName == "test-vm" {
+		c.VmName, err = HosterVmUtils.GenerateTestVmName(input.VmName)
+		if err != nil {
+			return errors.New("could not generate vm name: " + err.Error())
+		}
+	} else {
+		c.VmName = input.VmName
 	}
 
 	// emojlog.PrintLogMessage("Deploying new VM: "+c.VmName, emojlog.Info)
@@ -113,8 +116,7 @@ func Deploy(input VmDeployInput) error {
 		c.DnsServer = c.Gateway
 	}
 
-	reMatchTest := regexp.MustCompile(`.*test`)
-	if reMatchTest.MatchString(c.VmName) {
+	if strings.Contains(c.VmName, "test") {
 		c.Production = false
 	} else {
 		c.Production = true
@@ -180,7 +182,7 @@ func Deploy(input VmDeployInput) error {
 	// Write config files
 	// emojlog.PrintLogMessage("Writing CloudInit config files", emojlog.Debug)
 	newVmFolder := "/" + input.TargetDataset + "/" + c.VmName
-	vmConfigFileLocation := newVmFolder + "/vm_config.json"
+	vmConfigFileLocation := newVmFolder + "/" + HosterVmUtils.VM_CONFIG_NAME
 	vmConfig := HosterVmUtils.VmConfig{}
 	networkConfig := HosterVmUtils.VmNetwork{}
 	diskConfig := HosterVmUtils.VmDisk{}
