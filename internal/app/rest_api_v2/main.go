@@ -17,7 +17,7 @@ var log *MiddlewareLogging.Log
 
 // @title Hoster Node REST API Docs
 // @version 2.0
-// @description REST API documentation for the `Hoster` nodes. This HTTP endpoint is located directly on the `Hoster` node.<br>Please, take some extra care with the things you execute here, because many of them can be destructive and non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).
+// @description `NOTE!` This REST API HTTP endpoint is located directly on the `Hoster` node.<br><br>The API should ideally be integrated into another system (e.g. a user-accessible back-end server), and not interacted with directly.<br><br>Please, take an extra care with the things you execute here, because some of them may be disruptive or non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @BasePath /api/v2

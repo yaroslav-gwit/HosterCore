@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "REST API documentation for the `Hoster` nodes. This HTTP endpoint is located directly on the `Hoster` node.\u003cbr\u003ePlease, take some extra care with the things you execute here, because many of them can be destructive and non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).",
+        "description": "`NOTE!` This REST API HTTP endpoint is located directly on the `Hoster` node.\u003cbr\u003e\u003cbr\u003eThe API should ideally be integrated into another system (e.g. a user-accessible back-end server), and not interacted with directly.\u003cbr\u003e\u003cbr\u003ePlease, take an extra care with the things you execute here, because some of them may be disruptive or non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).",
         "title": "Hoster Node REST API Docs",
         "contact": {},
         "license": {

@@ -17,6 +17,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type VmDeployInput struct {
@@ -220,6 +222,7 @@ func Deploy(input VmDeployInput) error {
 	vmConfig.VmSshKeys = c.SshKeys
 	vmConfig.VncPort = c.VncPort
 	vmConfig.VncPassword = c.VncPassword
+	vmConfig.UUID = uuid.New().String()
 	vmConfig.Description = "-"
 
 	err = HosterVmUtils.ConfigFileWriter(vmConfig, vmConfigFileLocation)

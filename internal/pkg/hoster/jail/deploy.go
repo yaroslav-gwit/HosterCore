@@ -14,6 +14,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type DeployInput struct {
@@ -213,6 +215,7 @@ func generateJailDeployConfig(cpuLimit int, ramLimit string, ipAddress string, n
 	r.Timezone = "Europe/London"
 	r.Parent, _ = FreeBSDsysctls.SysctlKernHostname()
 	r.Production = prod
+	r.UUID = uuid.New().String()
 	r.Description = "-"
 
 	return
