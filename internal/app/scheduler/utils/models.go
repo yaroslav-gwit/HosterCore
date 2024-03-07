@@ -6,7 +6,7 @@ package SchedulerUtils
 
 type ReplicationJob struct {
 	ZfsDataset         string `json:"zfs_dataset,omitempty"`
-	VmName             string `json:"vm_name,omitempty"`
+	ResName            string `json:"res_name,omitempty"`
 	SshEndpoint        string `json:"ssh_endpoint,omitempty"`
 	SshKey             string `json:"ssh_key,omitempty"`
 	BufferSpeedLimit   int    `json:"speed_limit,omitempty"`
@@ -18,7 +18,7 @@ type ReplicationJob struct {
 
 type SnapshotJob struct {
 	ZfsDataset      string `json:"zfs_dataset,omitempty"`
-	VmName          string `json:"vm_name,omitempty"`
+	ResName         string `json:"res_name,omitempty"`
 	SnapshotsToKeep int    `json:"snapshots_to_keep,omitempty"`
 	SnapshotType    string `json:"snapshot_type,omitempty"`
 }

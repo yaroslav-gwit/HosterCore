@@ -7,6 +7,7 @@ import (
 	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -101,6 +102,19 @@ func statusSchedulerService() error {
 	for _, v := range pids {
 		if reMatchScheduler.MatchString(v.ProcessCmd) {
 			fmt.Println(" 🟢 Scheduler is running as PID " + strconv.Itoa(v.ProcessId))
+			fmt.Println()
+
+			resp, err := SchedulerClient.GetJobList()
+			if err != nil {
+				fmt.Println("ERROR: " + err.Error())
+			}
+
+			out, err := json.MarshalIndent(resp, "", "   ")
+			if err != nil {
+				fmt.Println("ERROR: " + err.Error())
+			}
+			fmt.Println(string(out))
+
 			return nil
 		}
 	}
