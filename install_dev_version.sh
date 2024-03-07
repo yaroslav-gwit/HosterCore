@@ -51,9 +51,10 @@ if [[ $1 == 6 || ${BUILD_ALL} == yes ]]; then
 fi
 
 # 7
-if [[ $1 == 7 || ${BUILD_ALL} == yes ]]; then
-    cp -v internal/app/rest_api/rest_api /opt/hoster-core/hoster_rest_api 2>/dev/null || echo -e "${ERROR_TEXT} hoster_rest_api binary is in use"
-fi
+# TEMPORARILY DISABLED DUE TO v2 MIGRATION
+# if [[ $1 == 7 || ${BUILD_ALL} == yes ]]; then
+#     cp -v internal/app/rest_api/rest_api /opt/hoster-core/hoster_rest_api 2>/dev/null || echo -e "${ERROR_TEXT} hoster_rest_api binary is in use"
+# fi
 
 # 8
 if [[ $1 == 8 || ${BUILD_ALL} == yes ]]; then

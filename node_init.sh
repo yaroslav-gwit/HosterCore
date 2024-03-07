@@ -105,7 +105,8 @@ BOOTLOADER_FILE="/boot/loader.conf"
 # CMD_LINE='vfs.zfs.vdev.cache.size="5M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 # CMD_LINE='virtio_blk_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
 ## Up-to-date values
-CMD_LINE='vfs.zfs.arc.max=1073741824  # 1G ZFS ARC RAM Limit' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
+CMD_LINE='# vfs.zfs.arc.max=367001600  # 350MB -> Min possible ZFS ARC Limit on FreeBSD' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
+CMD_LINE='vfs.zfs.arc.max=1073741824  # 1G ZFS ARC Limit' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 CMD_LINE='pf_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 CMD_LINE='kern.racct.enable=1' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 # Install a better (official) Realtek driver to improve the stability and performance

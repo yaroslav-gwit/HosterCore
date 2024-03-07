@@ -4,6 +4,7 @@ import (
 	"HosterCore/internal/app/rest_api_v2/pkg/handlers"
 	HandlersHA "HosterCore/internal/app/rest_api_v2/pkg/handlers_ha"
 	MiddlewareLogging "HosterCore/internal/app/rest_api_v2/pkg/middleware/logging"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -87,12 +88,13 @@ func main() {
 	// Catch-all route for 404 errors
 	r.NotFoundHandler = r.NewRoute().HandlerFunc(handlers.NotFoundHandler).GetHandler()
 
-	logInternal.Info("The REST APIv2 is bound to :4000")
+	bindAddress := fmt.Sprintf("%s:%d", restConf.BindToAddress, restConf.Port)
+	logInternal.Info("The REST APIv2 is bound to " + bindAddress)
 	http.Handle("/", r)
 	srv := &http.Server{
-		Addr:         "0.0.0.0:4000",
+		Addr:         bindAddress,
 		WriteTimeout: 10 * time.Second,
-		ReadTimeout:  3 * time.Second,
+		ReadTimeout:  5 * time.Second,
 	}
 
 	err := srv.ListenAndServe()
