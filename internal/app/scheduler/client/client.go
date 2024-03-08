@@ -50,7 +50,7 @@ func AddReplicationJob(vmName string, endpoint string, key string, speedLimit in
 	job.Replication.ResName = vmName
 	job.Replication.SshEndpoint = endpoint
 	job.Replication.SshKey = key
-	job.Replication.BufferSpeedLimit = speedLimit
+	job.Replication.SpeedLimit = speedLimit
 
 	jsonJob, err := json.Marshal(job)
 	if err != nil {

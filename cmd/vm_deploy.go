@@ -103,6 +103,10 @@ type ConfigOutputStruct struct {
 }
 
 func deployVmFromIso(vmName string, networkName string, osType string, dsParent string, cpus int, ram string, startWhenReady bool, isoPath string) error {
+	// Initialize values
+	c := ConfigOutputStruct{}
+	var err error
+
 	if len(isoPath) < 1 {
 		return errors.New("please, specify which ISO file will be used for the installation")
 	}
@@ -111,14 +115,10 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 		return errors.New("the ISO file you've specified doesn't exist")
 	}
 
-	vmNameError := HosterVmUtils.ValidateResName(vmName)
-	if vmNameError != nil {
-		return vmNameError
+	err = HosterVmUtils.ValidateResName(vmName)
+	if err != nil {
+		return err
 	}
-
-	// Initialize values
-	c := ConfigOutputStruct{}
-	var err error
 
 	// Set CPU cores and RAM
 	c.Cpus = cpus
@@ -130,10 +130,14 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	// Generate and set CI instance ID
 	c.InstanceId = HosterHostUtils.GenerateRandomPassword(5, false, true)
 
-	// Generate correct VM name
-	c.VmName, err = HosterVmUtils.GenerateTestVmName(vmName)
-	if err != nil {
-		return errors.New("could not set a vm name: " + err.Error())
+	if len(vmName) < 1 || vmName == "test-vm" {
+		// Generate a test VM name
+		c.VmName, err = HosterVmUtils.GenerateTestVmName(vmName)
+		if err != nil {
+			return errors.New("could not set generate a test vm name: " + err.Error())
+		}
+	} else {
+		c.VmName = vmName
 	}
 
 	emojlog.PrintLogMessage("Deploying new VM: "+c.VmName, emojlog.Info)
@@ -141,7 +145,7 @@ func deployVmFromIso(vmName string, networkName string, osType string, dsParent 
 	// Generate and set random MAC address
 	c.MacAddress, err = HosterVmUtils.GenerateMacAddress()
 	if err != nil {
-		return errors.New("could not generate vm name: " + err.Error())
+		return errors.New("could not generate a random MAC address: " + err.Error())
 	}
 
 	if len(vmDeployCmdIpAddress) > 1 {

@@ -20,7 +20,7 @@ var (
 )
 
 func main() {
-	log.Info("Starting the Scheduler service")
+	log.Info("starting the scheduler service")
 	var wg sync.WaitGroup
 
 	wg.Add(1)
@@ -162,18 +162,14 @@ func removeDoneJobs(m *sync.RWMutex) error {
 			jobs = jobs[0 : len(jobs)-1]
 
 			if v.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
-				logLine := "replication -> removed the old job for: " + v.Replication.ResName
-				log.Info(logLine)
+				log.Infof("replication -> removed the old job for: %s", v.Replication.ResName)
 			}
 			if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
-				logLine := "snapshot -> removed the old job for: " + v.Snapshot.ResName
-				log.Info(logLine)
+				log.Infof("snapshot -> removed the old job for: %s", v.Snapshot.ResName)
 			}
-
 			return nil
 		}
 	}
-
 	return nil
 }
 
@@ -232,17 +228,17 @@ func executeJobs(m *sync.RWMutex) error {
 		if !v.JobDone {
 			jobs[i].JobInProgress = true
 
+			// Replication Jobs
 			if v.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
-				// replicate
 				logLine := "replication -> started a new job for: " + v.Replication.ResName
 				log.Info(logLine)
 				break
 			}
+			// EOF Replication Jobs
 
+			// Snapshot Jobs
 			if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
-				// snapshot
-				logLine := "snapshot -> started a new job for: " + v.Snapshot.ResName
-				log.Info(logLine)
+				log.Infof("snapshot -> started a new job for: %s", v.Snapshot.ResName)
 
 				dataset, err := zfsutils.FindResourceDataset(v.Snapshot.ResName)
 				if err != nil {
@@ -264,6 +260,7 @@ func executeJobs(m *sync.RWMutex) error {
 
 				break
 			}
+			// EOF Snapshot Jobs
 		}
 	}
 
@@ -276,4 +273,15 @@ func getJobs(m *sync.RWMutex) (r []SchedulerUtils.Job) {
 	r = append(r, jobs...)
 
 	return
+}
+
+func updateJob(m *sync.RWMutex, job SchedulerUtils.Job) {
+	m.Lock()
+	defer m.Unlock()
+
+	for i := range jobs {
+		if jobs[i].JobId == job.JobId {
+			jobs[i] = job
+		}
+	}
 }

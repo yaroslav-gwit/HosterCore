@@ -14,7 +14,7 @@ import (
 )
 
 type SnapshotInfo struct {
-	Name        string   `json:"snapshot_name"` // Full snapshot path, or in other words it's full "ZFS name"
+	Name        string   `json:"snapshot_name"` // Full snapshot path, or in other words it's full "ZFS name", e.g. zroot/vm-encrypted/test-vm-0107@replication_2023-08-14_16-49-08
 	Dataset     string   `json:"snapshot_dataset"`
 	ShortName   string   `json:"snapshot_short_name"`
 	Locked      bool     `json:"snapshot_locked"`
@@ -36,9 +36,9 @@ func SnapshotListAll() ([]SnapshotInfo, error) {
 	}
 
 	// Example output
-	// NAME                                                                                  USED  USERREFS  CLONES
-	// zroot/vm-encrypted/test-vm-0107@hourly_2023-11-29_19-33-00                         2584576  0         zroot/vm-encrypted/cloneMe2,zroot/vm-encrypted/cloneMe1
-	// zroot/vm-encrypted/test-vm-0106@custom_2023-08-14_15-53-25                               0  0         -
+	// NAME                                                              USED    USERREFS   CLONES
+	// zroot/vm-encrypted/test-vm-0107@hourly_2023-11-29_19-33-00     2584576    0          zroot/vm-encrypted/cloneMe2,zroot/vm-encrypted/cloneMe1
+	// zroot/vm-encrypted/test-vm-0106@custom_2023-08-14_15-53-25           0    0          -
 	nameIndex := -1
 	usedIndex := -1
 	userRefsIndex := -1
