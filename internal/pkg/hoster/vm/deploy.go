@@ -12,10 +12,10 @@ import (
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"bufio"
 	"errors"
-	"html/template"
 	"os"
 	"os/exec"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/google/uuid"
