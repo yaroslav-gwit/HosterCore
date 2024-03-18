@@ -60,6 +60,7 @@ func init() {
 	schedulerCmd.AddCommand(schedulerReplicateCmd)
 	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateEndpoint, "endpoint", "e", "", "SSH endpoint to send the replicated data to")
 	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateKey, "key", "k", "", "SSH key location")
+	schedulerReplicateCmd.Flags().IntVarP(&schedulerReplicatePort, "port", "p", 22, "Endpoint SSH port")
 	schedulerReplicateCmd.Flags().IntVarP(&schedulerReplicateSpeedLimit, "speed-limit", "s", 50, "Replication speed limit")
 	// Host Scheduler -> Snapshot
 	schedulerCmd.AddCommand(schedulerSnapshotCmd)

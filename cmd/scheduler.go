@@ -2,6 +2,7 @@ package cmd
 
 import (
 	SchedulerClient "HosterCore/internal/app/scheduler/client"
+	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
 	"HosterCore/internal/pkg/emojlog"
 	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
 	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
@@ -171,19 +172,32 @@ func stopSchedulerService() error {
 }
 
 var (
-	schedulerReplicateEndpoint   string
 	schedulerReplicateKey        string
+	schedulerReplicateEndpoint   string
+	schedulerReplicatePort       int
 	schedulerReplicateSpeedLimit int
 
 	schedulerReplicateCmd = &cobra.Command{
 		Use:   "replicate [VM or Jail name]",
-		Short: "Use the Scheduling Service to start the VM replication",
-		Long:  `Use the Scheduling Service to start the VM replication in the background mode.`,
+		Short: "Use the Scheduling Service to start the resource replication",
+		Long:  `Use the Scheduling Service to start the resource replication in the background mode.`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			err := SchedulerClient.AddReplicationJob(args[0], schedulerReplicateEndpoint, schedulerReplicateKey, schedulerReplicateSpeedLimit)
+			// err := SchedulerClient.AddReplicationJob(args[0], schedulerReplicateEndpoint, schedulerReplicateKey, schedulerReplicateSpeedLimit)
+			// if err != nil {
+			// 	emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+			// 	os.Exit(1)
+			// }
+
+			job := SchedulerUtils.ReplicationJob{}
+			job.SshKey = schedulerReplicateKey
+			job.SshEndpoint = schedulerReplicateEndpoint
+			job.SshPort = schedulerReplicatePort
+			job.SpeedLimit = schedulerReplicateSpeedLimit
+
+			err := SchedulerClient.Replicate(job)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
