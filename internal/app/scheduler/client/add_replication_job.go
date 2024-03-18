@@ -73,6 +73,6 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		return err
 	}
 
-	fmt.Println(jsonOut)
+	fmt.Println(string(jsonOut))
 	return nil
 }
