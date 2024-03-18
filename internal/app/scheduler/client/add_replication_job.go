@@ -59,6 +59,9 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		if i == 0 {
 			continue
 		}
+		if len(strings.TrimSpace(v)) < 1 {
+			continue
+		}
 
 		split := reSplitSpace.Split(v, -1)
 		if len(split) > 1 {
