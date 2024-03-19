@@ -129,14 +129,18 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 
 	for _, v := range localSnaps {
 		if !slices.Contains(remoteDs, v) {
-			toReplicate = append(toReplicate, v)
+			if strings.Contains(v, "@") {
+				toReplicate = append(toReplicate, v)
+			}
 		} else {
 			commonSnaps = append(commonSnaps, v)
 		}
 	}
 	for _, v := range remoteDs {
 		if !slices.Contains(localSnaps, v) {
-			toRemove = append(toRemove, v)
+			if strings.Contains(v, "@") {
+				toRemove = append(toRemove, v)
+			}
 		} else {
 			commonSnaps = append(commonSnaps, v)
 		}
@@ -152,8 +156,16 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		return fmt.Errorf("could not find any common snapshots, remote resource must have a conflicting name with our local one")
 	}
 
-	fmt.Printf("%s: %v\n", "To Remove", toRemove)
-	fmt.Printf("%s: %v\n", "To Replicate", toReplicate)
-	fmt.Printf("%s: %v\n", "Common", commonSnaps)
+	// fmt.Printf("%s: %v\n", "To Remove", toRemove)
+	// fmt.Printf("%s: %v\n", "To Replicate", toReplicate)
+	// fmt.Printf("%s: %v\n", "Common", commonSnaps)
+
+	var replicateCmds []string
+	if len(remoteDs) < 1 {
+		cmd := fmt.Sprintf("zfs send -v -p %s | ssh %s zfs receive %s", toReplicate[0], job.SshEndpoint, localDs)
+		replicateCmds = append(replicateCmds, cmd)
+	}
+
+	fmt.Println(replicateCmds)
 	return nil
 }
