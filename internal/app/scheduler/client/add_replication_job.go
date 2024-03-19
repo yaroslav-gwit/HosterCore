@@ -117,7 +117,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	}
 
 	for _, v := range snaps {
-		if strings.Contains(v.Dataset, localDs) {
+		if v.Dataset == localDs {
 			localSnaps = append(localSnaps, v.Name)
 		}
 	}
