@@ -192,6 +192,7 @@ var (
 			// }
 
 			job := SchedulerUtils.ReplicationJob{}
+			job.ResName = args[0]
 			job.SshKey = schedulerReplicateKey
 			job.SshEndpoint = schedulerReplicateEndpoint
 			job.SshPort = schedulerReplicatePort
