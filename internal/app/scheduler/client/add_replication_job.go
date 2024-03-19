@@ -132,8 +132,6 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 			if strings.Contains(v, "@") {
 				toReplicate = append(toReplicate, v)
 			}
-		} else {
-			commonSnaps = append(commonSnaps, v)
 		}
 	}
 	for _, v := range remoteDs {
@@ -163,6 +161,18 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	var replicateCmds []string
 	if len(remoteDs) < 1 {
 		cmd := fmt.Sprintf("zfs send -v -p %s | ssh -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], job.SshKey, job.SshPort, job.SshEndpoint, localDs)
+		replicateCmds = append(replicateCmds, cmd)
+
+		fmt.Println(replicateCmds)
+		return nil
+	}
+
+	toReplicate = append(toReplicate, commonSnaps[len(commonSnaps)-1])
+	for i, v := range toReplicate {
+		if i >= len(toReplicate)-1 {
+			break
+		}
+		cmd := fmt.Sprintf("zfs send -v -i -p %s %s", v, toReplicate[i+1])
 		replicateCmds = append(replicateCmds, cmd)
 	}
 
