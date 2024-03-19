@@ -96,7 +96,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		}
 
 		split := reSplitSpace.Split(v, -1)
-		if split[0] == localDs || split[0] == localDs+"@" {
+		if split[0] == localDs || strings.Contains(split[0], localDs+"@") {
 			if len(split) > 1 {
 				remoteDs = append(remoteDs, RemoteDs{Name: strings.TrimSpace(split[0]), MountPoint: strings.TrimSpace(split[1])})
 			} else {
