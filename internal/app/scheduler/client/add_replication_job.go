@@ -8,11 +8,13 @@ import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
+	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"encoding/json"
 	"fmt"
 	"net"
 	"os/exec"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -86,7 +88,10 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	}
 
 	reSplitSpace := regexp.MustCompile(`\s+`)
-	remoteDs := []RemoteDs{}
+	var remoteDs []string
+	var toRemove []string
+	var localSnaps []string
+	var toReplicate []string
 	for i, v := range strings.Split(string(out), "\n") {
 		if i == 0 {
 			continue
@@ -97,19 +102,44 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 
 		split := reSplitSpace.Split(v, -1)
 		if split[0] == localDs || strings.Contains(split[0], localDs+"@") {
-			if len(split) > 1 {
-				remoteDs = append(remoteDs, RemoteDs{Name: strings.TrimSpace(split[0]), MountPoint: strings.TrimSpace(split[1])})
-			} else {
-				remoteDs = append(remoteDs, RemoteDs{Name: strings.TrimSpace(split[0])})
-			}
+			// if len(split) > 1 {
+			// 	remoteDs = append(remoteDs, RemoteDs{Name: strings.TrimSpace(split[0]), MountPoint: strings.TrimSpace(split[1])})
+			// } else {
+			// 	remoteDs = append(remoteDs, RemoteDs{Name: strings.TrimSpace(split[0])})
+			// }
+			remoteDs = append(remoteDs, split[0])
 		}
 	}
 
-	jsonOut, err := json.MarshalIndent(remoteDs, "", "   ")
+	snaps, err := zfsutils.SnapshotListAll()
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(string(jsonOut))
+	for _, v := range snaps {
+		if strings.Contains(v.Dataset, localDs) {
+			localSnaps = append(localSnaps, v.Name)
+		}
+	}
+
+	for _, v := range localSnaps {
+		if !slices.Contains(remoteDs, v) {
+			toReplicate = append(toReplicate, v)
+		}
+	}
+	for _, v := range remoteDs {
+		if !slices.Contains(localSnaps, v) {
+			toRemove = append(toRemove, v)
+		}
+	}
+
+	// jsonOut, err := json.MarshalIndent(remoteDs, "", "   ")
+	// if err != nil {
+	// 	return err
+	// }
+
+	// fmt.Println(string(jsonOut))
+	fmt.Printf("%s: %v\n", "To Remove", toRemove)
+	fmt.Printf("%s: %v\n", "To Replicate", toReplicate)
 	return nil
 }
