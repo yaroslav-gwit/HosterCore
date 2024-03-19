@@ -154,5 +154,6 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 
 	fmt.Printf("%s: %v\n", "To Remove", toRemove)
 	fmt.Printf("%s: %v\n", "To Replicate", toReplicate)
+	fmt.Printf("%s: %v\n", "Common", commonSnaps)
 	return nil
 }
