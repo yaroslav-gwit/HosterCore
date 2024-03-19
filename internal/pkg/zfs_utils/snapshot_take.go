@@ -26,7 +26,7 @@ func TakeScheduledSnapshot(dataset string, snapshotType string, keep int) (snaps
 		return
 	}
 
-	timeNow := time.Now().Format("2006-01-02_15-04-05.000")
+	timeNow := time.Now().Format("20060102_150405_000000")
 	snapshotName = dataset + "@" + snapshotType + "_" + timeNow
 
 	out, err := exec.Command("zfs", "snapshot", snapshotName).CombinedOutput()
