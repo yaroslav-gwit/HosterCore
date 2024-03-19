@@ -162,7 +162,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 
 	var replicateCmds []string
 	if len(remoteDs) < 1 {
-		cmd := fmt.Sprintf("zfs send -v -p %s | ssh %s zfs receive %s", toReplicate[0], job.SshEndpoint, localDs)
+		cmd := fmt.Sprintf("zfs send -v -p %s | ssh -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 		replicateCmds = append(replicateCmds, cmd)
 	}
 
