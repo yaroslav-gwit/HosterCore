@@ -6,6 +6,8 @@ package SchedulerClient
 
 import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -48,13 +50,43 @@ type RemoteDs struct {
 }
 
 func Replicate(job SchedulerUtils.ReplicationJob) error {
+	localDs := ""
+	if len(job.ResName) < 1 {
+		return fmt.Errorf("resource name cannot be empty")
+	}
+
+	vms, err := HosterVmUtils.ListAllSimple()
+	if err != nil {
+		return err
+	}
+	jails, err := HosterJailUtils.ListAllSimple()
+	if err != nil {
+		return err
+	}
+
+	for _, v := range vms {
+		if v.VmName == job.ResName {
+			localDs = v.DsName + "/" + v.VmName
+		}
+	}
+	if len(localDs) < 1 {
+		for _, v := range jails {
+			if v.JailName == job.ResName {
+				localDs = v.DsName + "/" + v.JailName
+			}
+		}
+	}
+	if len(localDs) < 1 {
+		return fmt.Errorf("could not find resource specified")
+	}
+
 	out, err := exec.Command("ssh", "-oBatchMode=yes", "-i", job.SshKey, fmt.Sprintf("-p%d", job.SshPort), job.SshEndpoint, "zfs", "list", "-t", "all", "-o", "name,mountpoint").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("could not a list of remote ZFS snapshots: %s; %s", strings.TrimSpace(string(out)), err.Error())
 	}
 
 	reSplitSpace := regexp.MustCompile(`\s+`)
-	ds := []RemoteDs{}
+	remoteDs := []RemoteDs{}
 	for i, v := range strings.Split(string(out), "\n") {
 		if i == 0 {
 			continue
@@ -64,14 +96,16 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		}
 
 		split := reSplitSpace.Split(v, -1)
-		if len(split) > 1 {
-			ds = append(ds, RemoteDs{Name: strings.TrimSpace(split[0]), MountPoint: strings.TrimSpace(split[1])})
-		} else {
-			ds = append(ds, RemoteDs{Name: strings.TrimSpace(split[0])})
+		if split[0] == localDs || split[0] == localDs+"@" {
+			if len(split) > 1 {
+				remoteDs = append(remoteDs, RemoteDs{Name: strings.TrimSpace(split[0]), MountPoint: strings.TrimSpace(split[1])})
+			} else {
+				remoteDs = append(remoteDs, RemoteDs{Name: strings.TrimSpace(split[0])})
+			}
 		}
 	}
 
-	jsonOut, err := json.MarshalIndent(ds, "", "   ")
+	jsonOut, err := json.MarshalIndent(remoteDs, "", "   ")
 	if err != nil {
 		return err
 	}
