@@ -167,7 +167,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 
 	// Send initial snapshot
 	if len(remoteDs) < 1 {
-		cmd := fmt.Sprintf("zfs send -vP %s | ssh -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], job.SshKey, job.SshPort, job.SshEndpoint, localDs)
+		cmd := fmt.Sprintf("zfs send -P -v %s | ssh -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 		replicateCmds = append(replicateCmds, cmd)
 
 		for _, v := range replicateCmds {
@@ -182,7 +182,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		if i >= len(toReplicate)-1 {
 			break
 		}
-		cmd := fmt.Sprintf("zfs send -viP %s %s | ssh -i %s -p%d %s", v, toReplicate[i+1], job.SshKey, job.SshPort, localDs)
+		cmd := fmt.Sprintf("zfs send -P -vi %s %s | ssh -i %s -p%d %s %s", v, toReplicate[i+1], job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 		replicateCmds = append(replicateCmds, cmd)
 	}
 
