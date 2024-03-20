@@ -187,6 +187,10 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		return nil
 	}
 
+	fmt.Println()
+	fmt.Println("To Replicate Slice (before shift)")
+	fmt.Println(toReplicate)
+
 	// Prepend the first common snapshot to the replication list
 	var tmp []string
 	tmp = append(tmp, commonSnaps[len(commonSnaps)-1])
@@ -195,7 +199,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 
 	// Send incremental snapshots
 	fmt.Println()
-	fmt.Println("To Replicate Slice")
+	fmt.Println("To Replicate Slice (after shift)")
 	fmt.Println(toReplicate)
 	for i, v := range toReplicate {
 		if i+1 >= len(toReplicate) {
