@@ -159,23 +159,35 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	// fmt.Printf("%s: %v\n", "Common", commonSnaps)
 
 	var replicateCmds []string
+	// Remove the old snaps first
+	for _, v := range toRemove {
+		cmd := fmt.Sprintf("ssh -oBatchMode=yes -i %s -p%d %s zfs destroy %s", job.SshKey, job.SshPort, job.SshEndpoint, v)
+		replicateCmds = append(replicateCmds, cmd)
+	}
+
+	// Send initial snapshot
 	if len(remoteDs) < 1 {
 		cmd := fmt.Sprintf("zfs send -vP %s | ssh -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 		replicateCmds = append(replicateCmds, cmd)
 
-		fmt.Println(replicateCmds)
+		for _, v := range replicateCmds {
+			fmt.Println(v)
+		}
 		return nil
 	}
 
+	// Send incremental snapshots
 	toReplicate = append(toReplicate, commonSnaps[len(commonSnaps)-1])
 	for i, v := range toReplicate {
 		if i >= len(toReplicate)-1 {
 			break
 		}
-		cmd := fmt.Sprintf("zfs send -viP %s %s", v, toReplicate[i+1])
+		cmd := fmt.Sprintf("zfs send -viP %s %s | ssh -i %s -p%d %s", v, toReplicate[i+1], job.SshKey, job.SshPort, localDs)
 		replicateCmds = append(replicateCmds, cmd)
 	}
 
-	fmt.Println(replicateCmds)
+	for _, v := range replicateCmds {
+		fmt.Println(v)
+	}
 	return nil
 }
