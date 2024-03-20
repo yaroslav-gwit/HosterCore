@@ -22,6 +22,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/oklog/ulid/v2"
 )
 
 func AddReplicationJob(vmName string, endpoint string, key string, speedLimit int) error {
@@ -211,46 +213,56 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		// }
 	}
 
-	cmd := exec.Command("bash", "-c", replicateCmds[0])
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
-
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-
 	reMatchSize := regexp.MustCompile(`^size.*`)
 	reMatchSpace := regexp.MustCompile(`\s+`)
 	reMatchTime := regexp.MustCompile(`.*\d\d:\d\d:\d\d.*`)
-
-	// read stderr output line by line and update the progress bar, parsing the line sting
-	scanner := bufio.NewScanner(stderr)
-	errLines := []string{}
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		if reMatchSize.MatchString(line) {
-			temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
-			if err != nil {
-				return err
-			}
-			emojlog.PrintLogMessage("Snapshot size: "+byteconversion.BytesToHuman(temp), emojlog.Debug)
-		} else if reMatchTime.MatchString(line) {
-			temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("Copied so far: %d\n", temp)
-		} else {
-			errLines = append(errLines, line)
+	for _, v := range replicateCmds {
+		replFile := "/tmp/" + ulid.Make().String()
+		err := os.WriteFile(replFile, []byte(v), 0600)
+		if err != nil {
+			return err
 		}
-	}
 
-	// wait for command to finish
-	if err := cmd.Wait(); err != nil {
-		return fmt.Errorf("%v", errLines)
+		cmd := exec.Command("sh", replFile)
+		stderr, err := cmd.StderrPipe()
+		if err != nil {
+			return err
+		}
+
+		if err := cmd.Start(); err != nil {
+			return err
+		}
+
+		// read stderr output line by line and update the progress bar, parsing the line sting
+		scanner := bufio.NewScanner(stderr)
+		errLines := []string{}
+		for scanner.Scan() {
+			line := scanner.Text()
+			if reMatchSize.MatchString(line) {
+				temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
+				if err != nil {
+					return err
+				}
+				emojlog.PrintLogMessage("Snapshot size: "+byteconversion.BytesToHuman(temp), emojlog.Debug)
+			} else if reMatchTime.MatchString(line) {
+				temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
+				if err != nil {
+					return err
+				}
+				fmt.Printf("Copied so far: %d\n", temp)
+			} else {
+				errLines = append(errLines, line)
+			}
+		}
+
+		// wait for command to finish
+		err = cmd.Wait()
+		if err != nil {
+			os.Remove(replFile)
+			return fmt.Errorf("%v", errLines)
+		}
+
+		_ = os.Remove(replFile)
 	}
 
 	return nil
