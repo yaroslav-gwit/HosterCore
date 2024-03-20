@@ -124,10 +124,11 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		return fmt.Errorf("remote dataset exists")
 	}
 
-	_, _, err = zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_REPLICATION, 5)
+	rsName, _, err := zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_REPLICATION, 5)
 	if err != nil {
 		return err
 	}
+	fmt.Println("Took a new snapshot: " + rsName)
 
 	snaps, err := zfsutils.SnapshotListAll()
 	if err != nil {
@@ -212,12 +213,14 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		replicateCmds = append(replicateCmds, cmd)
 	}
 
+	fmt.Println("Remote Snaps to remove")
 	for _, v := range removeCmds {
-		fmt.Println("Remote Snaps to remove")
 		fmt.Println(v)
 	}
+
+	fmt.Println()
+	fmt.Println("Snaps to replicate")
 	for _, v := range replicateCmds {
-		fmt.Println("Snaps to replicate")
 		fmt.Println(v)
 	}
 	return nil
