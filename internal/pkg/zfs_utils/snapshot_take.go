@@ -18,7 +18,7 @@ import (
 //
 // Useful for scheduling the automated snapshot jobs.
 func TakeScheduledSnapshot(dataset string, snapshotType string, keep int) (snapshotName string, removedSnapshots []string, e error) {
-	snapshotTypes := []string{"replication", "custom", "frequent", "hourly", "daily", "weekly", "monthly", "yearly"}
+	snapshotTypes := []string{TYPE_REPLICATION, TYPE_CUSTOM, TYPE_FREQUENT, TYPE_HOURLY, TYPE_DAILY, TYPE_WEEKLY, TYPE_MONTHLY, TYPE_YEARLY}
 	if slices.Contains(snapshotTypes, snapshotType) {
 		_ = 0
 	} else {

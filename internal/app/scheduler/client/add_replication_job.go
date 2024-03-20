@@ -7,14 +7,17 @@ package SchedulerClient
 import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
+	HosterLocations "HosterCore/internal/pkg/hoster/locations"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 	"os/exec"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -55,6 +58,11 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	localDs := ""
 	if len(job.ResName) < 1 {
 		return fmt.Errorf("resource name cannot be empty")
+	}
+
+	mbufferBinary, err := HosterLocations.LocateBinary(HosterLocations.MBUFFER_BINARY_NAME)
+	if err != nil {
+		return err
 	}
 
 	vms, err := HosterVmUtils.ListAllSimple()
@@ -116,6 +124,11 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		return fmt.Errorf("remote dataset exists")
 	}
 
+	_, _, err = zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_REPLICATION, 5)
+	if err != nil {
+		return err
+	}
+
 	snaps, err := zfsutils.SnapshotListAll()
 	if err != nil {
 		return err
@@ -159,15 +172,19 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	// fmt.Printf("%s: %v\n", "Common", commonSnaps)
 
 	var replicateCmds []string
+	var removeCmds []string
 	// Remove the old snaps first
 	for _, v := range toRemove {
 		cmd := fmt.Sprintf("ssh -oBatchMode=yes -i %s -p%d %s zfs destroy %s", job.SshKey, job.SshPort, job.SshEndpoint, v)
-		replicateCmds = append(replicateCmds, cmd)
+		removeCmds = append(removeCmds, cmd)
 	}
 
 	// Send initial snapshot
 	if len(remoteDs) < 1 {
-		cmd := fmt.Sprintf("zfs send -P -v %s | ssh -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], job.SshKey, job.SshPort, job.SshEndpoint, localDs)
+		if job.SpeedLimit > 0 {
+			os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
+		}
+		cmd := fmt.Sprintf("zfs send -P -v %s | %s | ssh -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 		replicateCmds = append(replicateCmds, cmd)
 
 		for _, v := range replicateCmds {
@@ -187,11 +204,20 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		if i >= len(toReplicate)-1 {
 			break
 		}
-		cmd := fmt.Sprintf("zfs send -P -vi %s %s | ssh -i %s -p%d %s zfs receive %s", v, toReplicate[i+1], job.SshKey, job.SshPort, job.SshEndpoint, localDs)
+
+		if job.SpeedLimit > 0 {
+			os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
+		}
+		cmd := fmt.Sprintf("zfs send -P -vi %s %s | %s | ssh -i %s -p%d %s zfs -F receive %s", v, toReplicate[i+1], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 		replicateCmds = append(replicateCmds, cmd)
 	}
 
+	for _, v := range removeCmds {
+		fmt.Println("Remote Snaps to remove")
+		fmt.Println(v)
+	}
 	for _, v := range replicateCmds {
+		fmt.Println("Snaps to replicate")
 		fmt.Println(v)
 	}
 	return nil

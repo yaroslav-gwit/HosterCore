@@ -4,6 +4,11 @@
 
 package HosterLocations
 
+import (
+	FileExists "HosterCore/internal/pkg/file_exists"
+	"fmt"
+)
+
 func GetBinaryFolders() (r []string) {
 	r = []string{
 		"/opt/hoster-core",
@@ -23,6 +28,22 @@ func GetConfigFolders() (r []string) {
 		"/usr/local/etc/hoster",
 		"/etc/hoster",
 		"/root/hoster/config_files",
+	}
+
+	return
+}
+
+func LocateBinary(binaryName string) (r string, e error) {
+	for _, v := range GetBinaryFolders() {
+		if FileExists.CheckUsingOsStat(v + "/" + binaryName) {
+			r = v + "/" + binaryName
+			return
+		}
+	}
+
+	if len(r) < 1 {
+		e = fmt.Errorf("could not locate the binary %s", binaryName)
+		return
 	}
 
 	return
