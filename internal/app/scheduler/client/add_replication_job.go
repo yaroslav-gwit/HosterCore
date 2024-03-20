@@ -195,6 +195,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	var tmp []string
 	tmp = append(tmp, commonSnaps[len(commonSnaps)-1])
 	tmp = append(tmp, toReplicate...)
+	toReplicate = []string{}
 	copy(toReplicate, tmp)
 
 	// Send incremental snapshots
