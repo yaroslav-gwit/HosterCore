@@ -124,6 +124,9 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println()
+	fmt.Println("All snaps")
+	fmt.Println(snaps)
 
 	for _, v := range snaps {
 		if v.Dataset == localDs {
@@ -191,6 +194,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	copy(toReplicate, tmp)
 
 	// Send incremental snapshots
+	fmt.Println()
 	fmt.Println("To Replicate Slice")
 	fmt.Println(toReplicate)
 	for i, v := range toReplicate {
