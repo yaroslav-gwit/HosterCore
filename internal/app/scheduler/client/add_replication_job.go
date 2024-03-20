@@ -6,10 +6,13 @@ package SchedulerClient
 
 import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
+	"HosterCore/internal/pkg/byteconversion"
+	"HosterCore/internal/pkg/emojlog"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterLocations "HosterCore/internal/pkg/hoster/locations"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -151,12 +154,6 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		}
 	}
 
-	// jsonOut, err := json.MarshalIndent(remoteDs, "", "   ")
-	// if err != nil {
-	// 	return err
-	// }
-
-	// fmt.Println(string(jsonOut))
 	if len(remoteDs) > 1 && len(commonSnaps) < 1 {
 		return fmt.Errorf("could not find any common snapshots, remote resource must have a conflicting name with our local one")
 	}
@@ -180,50 +177,81 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		}
 		cmd := fmt.Sprintf("zfs send -P -v %s | %s | ssh -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 		replicateCmds = append(replicateCmds, cmd)
+	} else {
+		// Prepend the first common snapshot to the replication list
+		var tmp []string
+		tmp = append(tmp, commonSnaps[len(commonSnaps)-1])
+		tmp = append(tmp, toReplicate...)
+		toReplicate = []string{}
+		toReplicate = append(toReplicate, tmp...)
 
-		for _, v := range replicateCmds {
-			fmt.Println(v)
-		}
-		return nil
-	}
+		// Send incremental snapshots
+		for i, v := range toReplicate {
+			if i+1 >= len(toReplicate) {
+				break
+			}
 
-	// fmt.Println()
-	// fmt.Println("To Replicate Slice (before shift)")
-	// fmt.Println(toReplicate)
-
-	// Prepend the first common snapshot to the replication list
-	var tmp []string
-	tmp = append(tmp, commonSnaps[len(commonSnaps)-1])
-	tmp = append(tmp, toReplicate...)
-	toReplicate = []string{}
-	toReplicate = append(toReplicate, tmp...)
-
-	// Send incremental snapshots
-	// fmt.Println()
-	// fmt.Println("To Replicate Slice (after shift)")
-	// fmt.Println(toReplicate)
-	for i, v := range toReplicate {
-		if i+1 >= len(toReplicate) {
-			break
+			if job.SpeedLimit > 0 {
+				os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
+			}
+			cmd := fmt.Sprintf("zfs send -P -vi %s %s | %s | ssh -i %s -p%d %s zfs receive -F %s", v, toReplicate[i+1], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
+			replicateCmds = append(replicateCmds, cmd)
 		}
 
-		if job.SpeedLimit > 0 {
-			os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
+		// fmt.Println()
+		// fmt.Println("Remote Snaps to remove")
+		// for _, v := range removeCmds {
+		// 	fmt.Println(v)
+		// }
+
+		// fmt.Println()
+		// fmt.Println("Snaps to replicate")
+		// for _, v := range replicateCmds {
+		// 	fmt.Println(v)
+		// }
+	}
+
+	cmd := exec.Command("sh", "-c", "'"+replicateCmds[0]+"'")
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	reMatchSize := regexp.MustCompile(`^size.*`)
+	reMatchSpace := regexp.MustCompile(`\s+`)
+	reMatchTime := regexp.MustCompile(`.*\d\d:\d\d:\d\d.*`)
+
+	// read stderr output line by line and update the progress bar, parsing the line sting
+	scanner := bufio.NewScanner(stderr)
+	errLines := []string{}
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if reMatchSize.MatchString(line) {
+			temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
+			if err != nil {
+				return err
+			}
+			emojlog.PrintLogMessage("Snapshot size: "+byteconversion.BytesToHuman(temp), emojlog.Debug)
+		} else if reMatchTime.MatchString(line) {
+			temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Copied so far: %d\n", temp)
+		} else {
+			errLines = append(errLines, line)
 		}
-		cmd := fmt.Sprintf("zfs send -P -vi %s %s | %s | ssh -i %s -p%d %s zfs receive -F %s", v, toReplicate[i+1], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
-		replicateCmds = append(replicateCmds, cmd)
 	}
 
-	fmt.Println()
-	fmt.Println("Remote Snaps to remove")
-	for _, v := range removeCmds {
-		fmt.Println(v)
+	// wait for command to finish
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf("%v", errLines)
 	}
 
-	fmt.Println()
-	fmt.Println("Snaps to replicate")
-	for _, v := range replicateCmds {
-		fmt.Println(v)
-	}
 	return nil
 }
