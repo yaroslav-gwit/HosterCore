@@ -191,6 +191,8 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	copy(toReplicate, tmp)
 
 	// Send incremental snapshots
+	fmt.Println("To Replicate Slice")
+	fmt.Println(toReplicate)
 	for i, v := range toReplicate {
 		if i+1 >= len(toReplicate) {
 			break
