@@ -211,7 +211,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		// }
 	}
 
-	cmd := exec.Command("sh", "-c", "'"+replicateCmds[0]+"'")
+	cmd := exec.Command("sh", "-lic", "\""+replicateCmds[0]+"\"")
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return err
