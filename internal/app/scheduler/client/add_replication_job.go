@@ -222,6 +222,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		if err != nil {
 			return err
 		}
+		defer os.Remove(replFile)
 
 		cmd := exec.Command("sh", replFile)
 		stderr, err := cmd.StderrPipe()
@@ -258,11 +259,8 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		// wait for command to finish
 		err = cmd.Wait()
 		if err != nil {
-			os.Remove(replFile)
 			return fmt.Errorf("%v", errLines)
 		}
-
-		_ = os.Remove(replFile)
 	}
 
 	return nil
