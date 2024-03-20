@@ -49,11 +49,6 @@ func AddReplicationJob(vmName string, endpoint string, key string, speedLimit in
 	return nil
 }
 
-type RemoteDs struct {
-	Name       string // normal ZFS name, aka zroot/vm-encrypted/test-vm-1, or zroot/vm-encrypted/test-vm-1@clone_test-vm-100_2023-11-29_19-55-58.222
-	MountPoint string // ZFS mountpoint, e.g. /zroot/vm-encrypted/test-vm-1
-}
-
 func Replicate(job SchedulerUtils.ReplicationJob) error {
 	localDs := ""
 	if len(job.ResName) < 1 {
@@ -90,6 +85,12 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		return fmt.Errorf("could not find resource specified")
 	}
 
+	rsName, _, err := zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_REPLICATION, 5)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Took a new snapshot: " + rsName)
+
 	out, err := exec.Command("ssh", "-oBatchMode=yes", "-i", job.SshKey, fmt.Sprintf("-p%d", job.SshPort), job.SshEndpoint, "zfs", "list", "-t", "all", "-o", "name,mountpoint").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("could not a list of remote ZFS snapshots: %s; %s", strings.TrimSpace(string(out)), err.Error())
@@ -111,11 +112,6 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 
 		split := reSplitSpace.Split(v, -1)
 		if split[0] == localDs || strings.Contains(split[0], localDs+"@") {
-			// if len(split) > 1 {
-			// 	remoteDs = append(remoteDs, RemoteDs{Name: strings.TrimSpace(split[0]), MountPoint: strings.TrimSpace(split[1])})
-			// } else {
-			// 	remoteDs = append(remoteDs, RemoteDs{Name: strings.TrimSpace(split[0])})
-			// }
 			remoteDs = append(remoteDs, split[0])
 		}
 	}
@@ -123,12 +119,6 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	if len(remoteDs) == 1 {
 		return fmt.Errorf("remote dataset exists")
 	}
-
-	rsName, _, err := zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_REPLICATION, 5)
-	if err != nil {
-		return err
-	}
-	fmt.Println("Took a new snapshot: " + rsName)
 
 	snaps, err := zfsutils.SnapshotListAll()
 	if err != nil {
@@ -202,7 +192,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 
 	// Send incremental snapshots
 	for i, v := range toReplicate {
-		if i >= len(toReplicate)-1 {
+		if i+1 >= len(toReplicate) {
 			break
 		}
 
@@ -213,6 +203,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		replicateCmds = append(replicateCmds, cmd)
 	}
 
+	fmt.Println()
 	fmt.Println("Remote Snaps to remove")
 	for _, v := range removeCmds {
 		fmt.Println(v)
