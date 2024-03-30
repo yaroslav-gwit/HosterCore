@@ -198,7 +198,8 @@ var (
 			job.SshPort = schedulerReplicatePort
 			job.SpeedLimit = schedulerReplicateSpeedLimit
 
-			err := SchedulerClient.Replicate(job)
+			// err := SchedulerClient.Replicate(job)
+			err := SchedulerClient.AddReplicationJob(job)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
