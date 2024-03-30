@@ -144,7 +144,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 
 	customSnapExists := false
 	for _, v := range localSnaps {
-		if strings.Contains(v, "custom") {
+		if strings.Contains(v, "@custom") {
 			customSnapExists = true
 		}
 	}
@@ -161,9 +161,9 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 			return
 		}
 
+		localSnaps = []string{}
 		for _, v := range snaps {
 			if v.Dataset == localDs {
-				localSnaps = []string{}
 				localSnaps = append(localSnaps, v.Name)
 			}
 		}
@@ -194,9 +194,11 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 	var replicateCmds []string
 	var removeCmds []string
 	// Remove the old snaps first
-	for _, v := range toRemove {
-		cmd := fmt.Sprintf("ssh -oStrictHostKeyChecking=accept-new -oBatchMode=yes -i %s -p%d %s zfs destroy %s", job.SshKey, job.SshPort, job.SshEndpoint, v)
-		removeCmds = append(removeCmds, cmd)
+	if len(commonSnaps) > 1 {
+		for _, v := range toRemove {
+			cmd := fmt.Sprintf("ssh -oStrictHostKeyChecking=accept-new -oBatchMode=yes -i %s -p%d %s zfs destroy %s", job.SshKey, job.SshPort, job.SshEndpoint, v)
+			removeCmds = append(removeCmds, cmd)
+		}
 	}
 
 	// Send initial snapshot
