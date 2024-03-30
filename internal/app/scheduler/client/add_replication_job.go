@@ -6,13 +6,10 @@ package SchedulerClient
 
 import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
-	"HosterCore/internal/pkg/byteconversion"
-	"HosterCore/internal/pkg/emojlog"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterLocations "HosterCore/internal/pkg/hoster/locations"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -22,24 +19,23 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-
-	"github.com/oklog/ulid/v2"
 )
 
-func AddReplicationJob(vmName string, endpoint string, key string, speedLimit int) error {
+func AddReplicationJob(replJob SchedulerUtils.ReplicationJob) error {
 	c, err := net.Dial("unix", SchedulerUtils.SockAddr)
 	if err != nil {
 		return err
 	}
-
 	defer c.Close()
 
 	job := SchedulerUtils.Job{}
+	output, err := Replicate(replJob)
+	if err != nil {
+		return err
+	}
+
 	job.JobType = SchedulerUtils.JOB_TYPE_REPLICATION
-	job.Replication.ResName = vmName
-	job.Replication.SshEndpoint = endpoint
-	job.Replication.SshKey = key
-	job.Replication.SpeedLimit = speedLimit
+	job.Replication = output
 
 	jsonJob, err := json.Marshal(job)
 	if err != nil {
@@ -54,24 +50,28 @@ func AddReplicationJob(vmName string, endpoint string, key string, speedLimit in
 	return nil
 }
 
-func Replicate(job SchedulerUtils.ReplicationJob) error {
+func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJob, e error) {
 	localDs := ""
 	if len(job.ResName) < 1 {
-		return fmt.Errorf("resource name cannot be empty")
+		e = fmt.Errorf("resource name cannot be empty")
+		return
 	}
 
 	mbufferBinary, err := HosterLocations.LocateBinary(HosterLocations.MBUFFER_BINARY_NAME)
 	if err != nil {
-		return err
+		e = err
+		return
 	}
 
 	vms, err := HosterVmUtils.ListAllSimple()
 	if err != nil {
-		return err
+		e = err
+		return
 	}
 	jails, err := HosterJailUtils.ListAllSimple()
 	if err != nil {
-		return err
+		e = err
+		return
 	}
 
 	for _, v := range vms {
@@ -87,18 +87,21 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		}
 	}
 	if len(localDs) < 1 {
-		return fmt.Errorf("could not find resource specified")
+		e = fmt.Errorf("could not find resource specified")
+		return
 	}
 
 	rsName, _, err := zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_REPLICATION, 5)
 	if err != nil {
-		return err
+		e = err
+		return
 	}
 	fmt.Println("Took a new snapshot: " + rsName)
 
-	out, err := exec.Command("ssh", "-oBatchMode=yes", "-i", job.SshKey, fmt.Sprintf("-p%d", job.SshPort), job.SshEndpoint, "zfs", "list", "-t", "all", "-o", "name,mountpoint").CombinedOutput()
+	out, err := exec.Command("ssh", "-oStrictHostKeyChecking=accept-new", "-oBatchMode=yes", "-i", job.SshKey, fmt.Sprintf("-p%d", job.SshPort), job.SshEndpoint, "zfs", "list", "-t", "all", "-o", "name,mountpoint").CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("could not a list of remote ZFS snapshots: %s; %s", strings.TrimSpace(string(out)), err.Error())
+		e = fmt.Errorf("could not a list of remote ZFS snapshots: %s; %s", strings.TrimSpace(string(out)), err.Error())
+		return
 	}
 
 	reSplitSpace := regexp.MustCompile(`\s+`)
@@ -122,20 +125,39 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	}
 
 	if len(remoteDs) == 1 {
-		return fmt.Errorf("remote dataset exists")
+		e = fmt.Errorf("remote dataset exists")
+		return
 	}
 
 	snaps, err := zfsutils.SnapshotListAll()
 	if err != nil {
-		return err
+		e = err
+		return
 	}
-	// fmt.Println()
-	// fmt.Println("All snaps")
-	// fmt.Println(snaps)
 
 	for _, v := range snaps {
 		if v.Dataset == localDs {
 			localSnaps = append(localSnaps, v.Name)
+		}
+	}
+
+	if len(localSnaps) < 1 {
+		_, _, err := zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_CUSTOM, 5)
+		if err != nil {
+			e = err
+			return
+		}
+
+		snaps, err = zfsutils.SnapshotListAll()
+		if err != nil {
+			e = err
+			return
+		}
+
+		for _, v := range snaps {
+			if v.Dataset == localDs {
+				localSnaps = append(localSnaps, v.Name)
+			}
 		}
 	}
 
@@ -157,18 +179,15 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 	}
 
 	if len(remoteDs) > 1 && len(commonSnaps) < 1 {
-		return fmt.Errorf("could not find any common snapshots, remote resource must have a conflicting name with our local one")
+		e = fmt.Errorf("could not find any common snapshots, remote resource must have a conflicting name with our local one")
+		return
 	}
-
-	// fmt.Printf("%s: %v\n", "To Remove", toRemove)
-	// fmt.Printf("%s: %v\n", "To Replicate", toReplicate)
-	// fmt.Printf("%s: %v\n", "Common", commonSnaps)
 
 	var replicateCmds []string
 	var removeCmds []string
 	// Remove the old snaps first
 	for _, v := range toRemove {
-		cmd := fmt.Sprintf("ssh -oBatchMode=yes -i %s -p%d %s zfs destroy %s", job.SshKey, job.SshPort, job.SshEndpoint, v)
+		cmd := fmt.Sprintf("ssh -oStrictHostKeyChecking=accept-new -oBatchMode=yes -i %s -p%d %s zfs destroy %s", job.SshKey, job.SshPort, job.SshEndpoint, v)
 		removeCmds = append(removeCmds, cmd)
 	}
 
@@ -177,7 +196,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 		if job.SpeedLimit > 0 {
 			os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
 		}
-		cmd := fmt.Sprintf("zfs send -P -v %s | %s | ssh -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
+		cmd := fmt.Sprintf("zfs send -P -v %s | %s | ssh -oStrictHostKeyChecking=accept-new -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 		replicateCmds = append(replicateCmds, cmd)
 	} else {
 		// Prepend the first common snapshot to the replication list
@@ -196,72 +215,62 @@ func Replicate(job SchedulerUtils.ReplicationJob) error {
 			if job.SpeedLimit > 0 {
 				os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
 			}
-			cmd := fmt.Sprintf("zfs send -P -vi %s %s | %s | ssh -i %s -p%d %s zfs receive -F %s", v, toReplicate[i+1], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
+			cmd := fmt.Sprintf("zfs send -P -vi %s %s | %s | ssh -oStrictHostKeyChecking=accept-new -i %s -p%d %s zfs receive -F %s", v, toReplicate[i+1], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 			replicateCmds = append(replicateCmds, cmd)
 		}
-
-		// fmt.Println()
-		// fmt.Println("Remote Snaps to remove")
-		// for _, v := range removeCmds {
-		// 	fmt.Println(v)
-		// }
-
-		// fmt.Println()
-		// fmt.Println("Snaps to replicate")
-		// for _, v := range replicateCmds {
-		// 	fmt.Println(v)
-		// }
 	}
 
-	reMatchSize := regexp.MustCompile(`^size.*`)
-	reMatchSpace := regexp.MustCompile(`\s+`)
-	reMatchTime := regexp.MustCompile(`.*\d\d:\d\d:\d\d.*`)
-	for _, v := range replicateCmds {
-		replFile := "/tmp/" + ulid.Make().String()
-		err := os.WriteFile(replFile, []byte(v), 0600)
-		if err != nil {
-			return err
-		}
-		defer os.Remove(replFile)
+	r.ScriptsRemove = append(r.ScriptsRemove, removeCmds...)
+	r.ScriptsReplicate = append(r.ScriptsReplicate, replicateCmds...)
 
-		cmd := exec.Command("sh", replFile)
-		stderr, err := cmd.StderrPipe()
-		if err != nil {
-			return err
-		}
+	// reMatchSize := regexp.MustCompile(`^size.*`)
+	// reMatchSpace := regexp.MustCompile(`\s+`)
+	// reMatchTime := regexp.MustCompile(`.*\d\d:\d\d:\d\d.*`)
+	// for _, v := range replicateCmds {
+	// 	replFile := "/tmp/" + ulid.Make().String()
+	// 	err := os.WriteFile(replFile, []byte(v), 0600)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	defer os.Remove(replFile)
 
-		if err := cmd.Start(); err != nil {
-			return err
-		}
+	// 	cmd := exec.Command("sh", replFile)
+	// 	stderr, err := cmd.StderrPipe()
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-		// read stderr output line by line and update the progress bar, parsing the line sting
-		scanner := bufio.NewScanner(stderr)
-		errLines := []string{}
-		for scanner.Scan() {
-			line := scanner.Text()
-			if reMatchSize.MatchString(line) {
-				temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
-				if err != nil {
-					return err
-				}
-				emojlog.PrintLogMessage("Snapshot size: "+byteconversion.BytesToHuman(temp), emojlog.Debug)
-			} else if reMatchTime.MatchString(line) {
-				temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
-				if err != nil {
-					return err
-				}
-				fmt.Printf("Copied so far: %d\n", temp)
-			} else {
-				errLines = append(errLines, line)
-			}
-		}
+	// 	if err := cmd.Start(); err != nil {
+	// 		return err
+	// 	}
 
-		// wait for command to finish
-		err = cmd.Wait()
-		if err != nil {
-			return fmt.Errorf("%v", errLines)
-		}
-	}
+	// 	scanner := bufio.NewScanner(stderr)
+	// 	errLines := []string{}
+	// 	for scanner.Scan() {
+	// 		line := scanner.Text()
+	// 		if reMatchSize.MatchString(line) {
+	// 			temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 			emojlog.PrintLogMessage("Snapshot size: "+byteconversion.BytesToHuman(temp), emojlog.Debug)
+	// 		} else if reMatchTime.MatchString(line) {
+	// 			temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 			fmt.Printf("Copied so far: %d\n", temp)
+	// 		} else {
+	// 			errLines = append(errLines, line)
+	// 		}
+	// 	}
 
-	return nil
+	// 	// Wait for command to finish
+	// 	err = cmd.Wait()
+	// 	if err != nil {
+	// 		return fmt.Errorf("%v", errLines)
+	// 	}
+	// }
+
+	return
 }

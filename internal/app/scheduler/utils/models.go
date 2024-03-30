@@ -5,19 +5,22 @@
 package SchedulerUtils
 
 type ReplicationJob struct {
-	SshPort            int    `json:"ssh_port,omitempty"`
-	SpeedLimit         int    `json:"speed_limit,omitempty"`
-	ProgressDoneSnaps  int    `json:"done_snaps,omitempty"`
-	ProgressTotalSnaps int    `json:"total_snaps,omitempty"`
-	ProgressBytesDone  uint64 `json:"progress_bytes_done,omitempty"`
-	ProgressBytesTotal uint64 `json:"progress_bytes_total,omitempty"`
-	ZfsDataset         string `json:"zfs_dataset,omitempty"`
-	ResName            string `json:"res_name,omitempty"`
-	SshEndpoint        string `json:"ssh_endpoint,omitempty"`
-	SshKey             string `json:"ssh_key,omitempty"`
+	SshPort            int      `json:"ssh_port,omitempty"`
+	SpeedLimit         int      `json:"speed_limit,omitempty"`
+	ProgressDoneSnaps  int      `json:"done_snaps,omitempty"`
+	ProgressTotalSnaps int      `json:"total_snaps,omitempty"`
+	ProgressBytesDone  uint64   `json:"progress_bytes_done,omitempty"`
+	ProgressBytesTotal uint64   `json:"progress_bytes_total,omitempty"`
+	ZfsDataset         string   `json:"zfs_dataset,omitempty"`
+	ResName            string   `json:"res_name,omitempty"`
+	SshEndpoint        string   `json:"ssh_endpoint,omitempty"`
+	SshKey             string   `json:"ssh_key,omitempty"`
+	ScriptsRemove      []string `json:"scripts_remove"`
+	ScriptsReplicate   []string `json:"scripts_replicate"`
 }
 
 type SnapshotJob struct {
+	TakeImmediately bool   `json:"take_immediately,omitempty"`
 	SnapshotsToKeep int    `json:"snapshots_to_keep,omitempty"`
 	ZfsDataset      string `json:"zfs_dataset,omitempty"`
 	ResName         string `json:"res_name,omitempty"`

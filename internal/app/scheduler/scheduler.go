@@ -19,6 +19,8 @@ var (
 	jobsMutex sync.RWMutex
 )
 
+var replicatedVm string
+
 func main() {
 	log.Info("starting the scheduler service")
 	var wg sync.WaitGroup
@@ -38,8 +40,26 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for {
-			executeJobs(&jobsMutex)
-			time.Sleep(SchedulerUtils.SLEEP_EXECUTE_JOBS * time.Second)
+			executeSnapshotJobs(&jobsMutex)
+			time.Sleep(SchedulerUtils.SLEEP_EXECUTE_SNAPSHOTS * time.Second)
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			executeReplicationJobs(&jobsMutex)
+			time.Sleep(SchedulerUtils.SLEEP_EXECUTE_REPL * time.Second)
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			executeImmediateSnapshot(&jobsMutex)
+			time.Sleep(SchedulerUtils.SLEEP_EXECUTE_IMMEDIATE_SNAPSHOTS * time.Millisecond)
 		}
 	}()
 
@@ -146,7 +166,7 @@ func addJob(job SchedulerUtils.Job, m *sync.RWMutex) error {
 	return nil
 }
 
-// Runs every 17 seconds and removes the old/completed jobs
+// Runs every 25 seconds and removes the old/completed jobs
 func removeDoneJobs(m *sync.RWMutex) error {
 	m.Lock()
 	defer m.Unlock()

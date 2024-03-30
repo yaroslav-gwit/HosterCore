@@ -82,7 +82,7 @@ func SendShutdownSignal(vmName string, forceKill bool, forceCleanup bool) error 
 
 	// If there was no error, and PID list has more than one item - find a correct bhyve process send a respective kill signal to it
 	if err == nil && len(pids) > 0 {
-		reMatchVm := regexp.MustCompile(`bhyve:\s+` + vmName + `$`)
+		reMatchVm := regexp.MustCompile(`bhyve:\s+` + vmName + `($|\s+)`)
 		reMatchSupervisor := regexp.MustCompile(`/vm_supervisor_service for ` + vmName + `$`)
 		for _, v := range pids {
 			if reMatchVm.MatchString(v.ProcessCmd) {
