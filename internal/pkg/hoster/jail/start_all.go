@@ -5,6 +5,7 @@
 package HosterJail
 
 import (
+	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterNetwork "HosterCore/internal/pkg/hoster/network"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 // Has it's own logging configured.
 func StartAll() error {
 	// If the logger was already set, ignore this
+	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 	if !log.ConfigSet {
 		log.SetFileLocation(HosterJailUtils.JAIL_AUDIT_LOG_LOCATION)
 	}
@@ -57,6 +59,10 @@ func StartAll() error {
 		jailConfig, err := HosterJailUtils.GetJailConfig(jailDsFolder)
 		if err != nil {
 			log.Error(err.Error())
+			continue
+		}
+
+		if hostname != jailConfig.Parent {
 			continue
 		}
 

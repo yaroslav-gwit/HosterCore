@@ -74,6 +74,11 @@ func Start(jailName string) error {
 		return err
 	}
 
+	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
+	if hostname != jailConfig.Parent {
+		return fmt.Errorf("jail is a backup from another host, cannot start")
+	}
+
 	ifaces, err := HosterNetwork.CreateEpairInterface(jailName, jailConfig.Network)
 	if err != nil {
 		log.ErrorToFile(err.Error())

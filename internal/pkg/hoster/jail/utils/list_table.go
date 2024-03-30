@@ -14,6 +14,7 @@ import (
 type JailListExtendedTable struct {
 	Name             string `json:"jail_name"` // Jail Name
 	Running          bool   `json:"running"`   // is Jail Online/Running
+	Backup           bool   `json:"backup"`
 	Status           string `json:"status"`    // status inside of the CLI table, e.g. 🟢🔒🔁
 	CPULimit         string `json:"cpu_limit"` // CPU limit, e.g. 50%
 	RAMLimit         string `json:"ram_limit"` // RAM limit, e.g. 10G
@@ -71,12 +72,15 @@ func ListAllExtendedTable() (r []JailListExtendedTable, e error) {
 			}
 		} else {
 			jailStruct.Status += JAIL_EMOJI_BACKUP
+			jailStruct.Backup = true
 		}
 
 		if jailStruct.Running {
 			jailStruct.Status += JAIL_EMOJI_ONLINE
 		} else {
-			jailStruct.Status += JAIL_EMOJI_OFFLINE
+			if !jailStruct.Backup {
+				jailStruct.Status += JAIL_EMOJI_OFFLINE
+			}
 		}
 
 		if v.MountPoint.Encrypted {

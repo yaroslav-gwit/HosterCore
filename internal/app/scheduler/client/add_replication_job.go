@@ -142,8 +142,14 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 		}
 	}
 
-	if len(localSnaps) < 1 {
-		_, _, err := zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_CUSTOM, 5)
+	customSnapExists := false
+	for _, v := range localSnaps {
+		if strings.Contains(v, "custom") {
+			customSnapExists = true
+		}
+	}
+	if !customSnapExists {
+		_, _, err := zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_CUSTOM, 5000)
 		if err != nil {
 			e = err
 			return
@@ -157,6 +163,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 
 		for _, v := range snaps {
 			if v.Dataset == localDs {
+				localSnaps = []string{}
 				localSnaps = append(localSnaps, v.Name)
 			}
 		}
