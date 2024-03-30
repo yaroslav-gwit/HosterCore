@@ -86,12 +86,16 @@ func Replicate(job SchedulerUtils.Job, wg *sync.WaitGroup) error {
 		destroyFile := "/tmp/" + ulid.Make().String()
 		err := os.WriteFile(destroyFile, []byte(v), 0600)
 		if err != nil {
+			job.JobError = err.Error()
+			updateJob(&jobsMutex, job)
 			return err
 		}
 		scriptsToRemove = append(scriptsToRemove, destroyFile)
 
 		out, err := exec.Command("sh", destroyFile).CombinedOutput()
 		if err != nil {
+			job.JobError = err.Error()
+			updateJob(&jobsMutex, job)
 			return fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
 		}
 	}
@@ -100,6 +104,8 @@ func Replicate(job SchedulerUtils.Job, wg *sync.WaitGroup) error {
 		replFile := "/tmp/" + ulid.Make().String()
 		err := os.WriteFile(replFile, []byte(v), 0600)
 		if err != nil {
+			job.JobError = err.Error()
+			updateJob(&jobsMutex, job)
 			return err
 		}
 		scriptsToRemove = append(scriptsToRemove, replFile)
@@ -107,10 +113,14 @@ func Replicate(job SchedulerUtils.Job, wg *sync.WaitGroup) error {
 		cmd := exec.Command("sh", replFile)
 		stderr, err := cmd.StderrPipe()
 		if err != nil {
+			job.JobError = err.Error()
+			updateJob(&jobsMutex, job)
 			return err
 		}
 
 		if err := cmd.Start(); err != nil {
+			job.JobError = err.Error()
+			updateJob(&jobsMutex, job)
 			return err
 		}
 
@@ -121,6 +131,8 @@ func Replicate(job SchedulerUtils.Job, wg *sync.WaitGroup) error {
 			if reMatchSize.MatchString(line) {
 				temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
 				if err != nil {
+					job.JobError = err.Error()
+					updateJob(&jobsMutex, job)
 					return err
 				}
 				// emojlog.PrintLogMessage("Snapshot size: "+byteconversion.BytesToHuman(temp), emojlog.Debug)
@@ -129,6 +141,8 @@ func Replicate(job SchedulerUtils.Job, wg *sync.WaitGroup) error {
 			} else if reMatchTime.MatchString(line) {
 				temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
 				if err != nil {
+					job.JobError = err.Error()
+					updateJob(&jobsMutex, job)
 					return err
 				}
 				job.Replication.ProgressBytesDone = temp
