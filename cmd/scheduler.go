@@ -222,7 +222,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			err := SchedulerClient.AddSnapshotJob(args[0], schedulerSnapshotToKeep, schedulerSnapshotType)
+			err := SchedulerClient.AddSnapshotJob(args[0], schedulerSnapshotToKeep, schedulerSnapshotType, false)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
@@ -258,7 +258,7 @@ var (
 					continue
 				}
 
-				err := SchedulerClient.AddSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
+				err := SchedulerClient.AddSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType, false)
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				} else {
@@ -279,7 +279,7 @@ var (
 					continue
 				}
 
-				err = SchedulerClient.AddSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
+				err = SchedulerClient.AddSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType, false)
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				} else {

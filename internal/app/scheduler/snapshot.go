@@ -18,6 +18,12 @@ func executeSnapshotJobs(m *sync.RWMutex) error {
 		if v.Snapshot.ResName == replicatedVm {
 			continue
 		}
+		// if v.Replication.ResName == snapShottedVM {
+		// 	continue
+		// }
+		if snapshotMap[v.Snapshot.ResName] {
+			continue
+		}
 		if v.Snapshot.TakeImmediately {
 			continue
 		}
@@ -56,6 +62,8 @@ func executeSnapshotJobs(m *sync.RWMutex) error {
 				jobs[i].JobError = err.Error()
 			}
 
+			// snapShottedVM = jobs[i].Snapshot.ResName
+			snapshotMap[jobs[i].Snapshot.ResName] = true
 			newSnap, removedSnaps, err := zfsutils.TakeScheduledSnapshot(dataset, v.Snapshot.SnapshotType, v.Snapshot.SnapshotsToKeep)
 			if err != nil {
 				log.Infof("snapshot job jailed: %v", err)
@@ -66,6 +74,7 @@ func executeSnapshotJobs(m *sync.RWMutex) error {
 				log.Infof("old snapshots removed: %v", removedSnaps)
 				jobs[i].JobDone = true
 			}
+			snapshotMap[jobs[i].Snapshot.ResName] = false
 
 			break
 		}
@@ -79,10 +88,18 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 	defer m.Unlock()
 
 	for i, v := range jobs {
-		if v.JobType != SchedulerUtils.JOB_TYPE_SNAPSHOT {
+		if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT || v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_DESTROY {
+			_ = 0
+		} else {
 			continue
 		}
 		if v.Snapshot.ResName == replicatedVm {
+			continue
+		}
+		// if v.Replication.ResName == snapShottedVM {
+		// 	continue
+		// }
+		if snapshotMap[v.Snapshot.ResName] {
 			continue
 		}
 		if !v.Snapshot.TakeImmediately {
@@ -123,16 +140,29 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 				jobs[i].JobError = err.Error()
 			}
 
-			newSnap, removedSnaps, err := zfsutils.TakeScheduledSnapshot(dataset, v.Snapshot.SnapshotType, v.Snapshot.SnapshotsToKeep)
-			if err != nil {
-				log.Infof("immediate snapshot job jailed: %v", err)
-				jobs[i].JobFailed = true
-				jobs[i].JobError = err.Error()
-			} else {
-				log.Infof("new immediate snapshot taken: %s", newSnap)
-				log.Infof("old immediate snapshots removed: %v", removedSnaps)
-				jobs[i].JobDone = true
+			// snapShottedVM = jobs[i].Snapshot.ResName
+			snapshotMap[jobs[i].Snapshot.ResName] = true
+			if v.JobType != SchedulerUtils.JOB_TYPE_SNAPSHOT {
+				newSnap, removedSnaps, err := zfsutils.TakeScheduledSnapshot(dataset, v.Snapshot.SnapshotType, v.Snapshot.SnapshotsToKeep)
+				if err != nil {
+					log.Infof("immediate snapshot job jailed: %v", err)
+					jobs[i].JobFailed = true
+					jobs[i].JobError = err.Error()
+				} else {
+					log.Infof("new immediate snapshot taken: %s", newSnap)
+					log.Infof("old immediate snapshots removed: %v", removedSnaps)
+					jobs[i].JobDone = true
+				}
+			} else if v.JobType != SchedulerUtils.JOB_TYPE_SNAPSHOT_DESTROY {
+				err = zfsutils.RemoveSnapshot(jobs[i].Snapshot.SnapshotName)
+				if err != nil {
+					log.Infof("snapshot destroy job jailed: %v", err)
+					jobs[i].JobFailed = true
+					jobs[i].JobError = err.Error()
+				}
 			}
+			// snapShottedVM = ""
+			snapshotMap[jobs[i].Snapshot.ResName] = false
 
 			break
 		}

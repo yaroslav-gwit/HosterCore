@@ -10,7 +10,7 @@ import (
 	"net"
 )
 
-func AddSnapshotJob(vmName string, snapshotsToKeep int, snapshotType string) error {
+func AddSnapshotJob(vmName string, snapshotsToKeep int, snapshotType string, takeImmediately bool) error {
 	c, err := net.Dial("unix", SchedulerUtils.SockAddr)
 	if err != nil {
 		return err
@@ -23,6 +23,7 @@ func AddSnapshotJob(vmName string, snapshotsToKeep int, snapshotType string) err
 	job.Snapshot.ResName = vmName
 	job.Snapshot.SnapshotType = snapshotType
 	job.Snapshot.SnapshotsToKeep = snapshotsToKeep
+	job.Snapshot.TakeImmediately = takeImmediately
 
 	jsonJob, err := json.Marshal(job)
 	if err != nil {

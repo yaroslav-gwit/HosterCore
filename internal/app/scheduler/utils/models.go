@@ -25,7 +25,13 @@ type SnapshotJob struct {
 	ZfsDataset      string `json:"zfs_dataset,omitempty"`
 	ResName         string `json:"res_name,omitempty"`
 	SnapshotType    string `json:"snapshot_type,omitempty"`
+	SnapshotName    string `json:"snapshot_name,omitempty"` // only used in the snapshot destroy jobs
 }
+
+// type SnapshotDestroyJob struct {
+// 	ZfsDataset string `json:"zfs_dataset,omitempty"`
+// 	ResName    string `json:"res_name,omitempty"`
+// }
 
 type Job struct {
 	JobDone         bool           `json:"job_done,omitempty"`
@@ -39,4 +45,5 @@ type Job struct {
 	JobType         string         `json:"job_type,omitempty"`
 	Replication     ReplicationJob `json:"replication,omitempty"`
 	Snapshot        SnapshotJob    `json:"snapshot,omitempty"`
+	// SnapshotDestroy        SnapshotDestroyJob    `json:"snapshot_destroy,omitempty"`
 }

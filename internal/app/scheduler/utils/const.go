@@ -6,6 +6,7 @@ package SchedulerUtils
 
 const SockAddr = "/var/run/hoster_scheduler.sock"
 
+const JOB_TYPE_SNAPSHOT_DESTROY = "snapshot_destroy"
 const JOB_TYPE_REPLICATION = "replication"
 const JOB_TYPE_SNAPSHOT = "snapshot"
 const JOB_TYPE_INFO = "info"

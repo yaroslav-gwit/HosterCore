@@ -27,6 +27,9 @@ func executeReplicationJobs(m *sync.RWMutex) error {
 		if v.JobType != SchedulerUtils.JOB_TYPE_REPLICATION {
 			continue
 		}
+		if snapshotMap[v.Replication.ResName] {
+			continue
+		}
 
 		if v.JobDone && !v.JobDoneLogged {
 			logLine := "replication -> done for: " + v.Replication.ResName
