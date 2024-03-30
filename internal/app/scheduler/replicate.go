@@ -60,12 +60,14 @@ func executeReplicationJobs(m *sync.RWMutex) error {
 				logLine := "replication -> started a new job for: " + v.Replication.ResName
 				log.Info(logLine)
 
-				err := Replicate(jobs[i], m)
-				if err != nil {
-					jobs[i].JobFailed = true
-					jobs[i].JobError = err.Error()
-				}
-				// break
+				go func(input SchedulerUtils.Job) {
+					err := Replicate(input, m)
+					if err != nil {
+						input.JobFailed = true
+						input.JobError = err.Error()
+						updateJob(m, input)
+					}
+				}(jobs[i])
 			}
 		}
 	}
@@ -102,7 +104,7 @@ func Replicate(job SchedulerUtils.Job, m *sync.RWMutex) error {
 		}
 	}
 
-	for _, v := range job.Replication.ScriptsReplicate {
+	for i, v := range job.Replication.ScriptsReplicate {
 		replFile := "/tmp/" + ulid.Make().String()
 		err := os.WriteFile(replFile, []byte(v), 0600)
 		if err != nil {
@@ -119,6 +121,9 @@ func Replicate(job SchedulerUtils.Job, m *sync.RWMutex) error {
 		if err := cmd.Start(); err != nil {
 			return err
 		}
+
+		job.Replication.ProgressTotalSnaps = len(job.Replication.ScriptsReplicate)
+		updateJob(m, job)
 
 		scanner := bufio.NewScanner(stderr)
 		errLines := []string{}
@@ -150,6 +155,9 @@ func Replicate(job SchedulerUtils.Job, m *sync.RWMutex) error {
 		if err != nil {
 			return fmt.Errorf("%v", errLines)
 		}
+
+		job.Replication.ProgressDoneSnaps = i + 1
+		updateJob(m, job)
 	}
 
 	return nil
