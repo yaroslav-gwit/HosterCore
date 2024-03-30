@@ -59,7 +59,13 @@ func executeReplicationJobs(m *sync.RWMutex) error {
 			if v.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
 				logLine := "replication -> started a new job for: " + v.Replication.ResName
 				log.Info(logLine)
-				break
+
+				err := Replicate(jobs[i], m)
+				if err != nil {
+					jobs[i].JobFailed = true
+					jobs[i].JobError = err.Error()
+				}
+				// break
 			}
 		}
 	}
@@ -67,7 +73,7 @@ func executeReplicationJobs(m *sync.RWMutex) error {
 	return nil
 }
 
-func Replicate(job SchedulerUtils.Job, wg *sync.WaitGroup) error {
+func Replicate(job SchedulerUtils.Job, m *sync.RWMutex) error {
 	replicatedVm = job.Replication.ResName
 	scriptsToRemove := []string{}
 	defer func() {
@@ -86,16 +92,12 @@ func Replicate(job SchedulerUtils.Job, wg *sync.WaitGroup) error {
 		destroyFile := "/tmp/" + ulid.Make().String()
 		err := os.WriteFile(destroyFile, []byte(v), 0600)
 		if err != nil {
-			job.JobError = err.Error()
-			updateJob(&jobsMutex, job)
 			return err
 		}
 		scriptsToRemove = append(scriptsToRemove, destroyFile)
 
 		out, err := exec.Command("sh", destroyFile).CombinedOutput()
 		if err != nil {
-			job.JobError = err.Error()
-			updateJob(&jobsMutex, job)
 			return fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
 		}
 	}
@@ -104,8 +106,6 @@ func Replicate(job SchedulerUtils.Job, wg *sync.WaitGroup) error {
 		replFile := "/tmp/" + ulid.Make().String()
 		err := os.WriteFile(replFile, []byte(v), 0600)
 		if err != nil {
-			job.JobError = err.Error()
-			updateJob(&jobsMutex, job)
 			return err
 		}
 		scriptsToRemove = append(scriptsToRemove, replFile)
@@ -113,14 +113,10 @@ func Replicate(job SchedulerUtils.Job, wg *sync.WaitGroup) error {
 		cmd := exec.Command("sh", replFile)
 		stderr, err := cmd.StderrPipe()
 		if err != nil {
-			job.JobError = err.Error()
-			updateJob(&jobsMutex, job)
 			return err
 		}
 
 		if err := cmd.Start(); err != nil {
-			job.JobError = err.Error()
-			updateJob(&jobsMutex, job)
 			return err
 		}
 
@@ -131,22 +127,18 @@ func Replicate(job SchedulerUtils.Job, wg *sync.WaitGroup) error {
 			if reMatchSize.MatchString(line) {
 				temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
 				if err != nil {
-					job.JobError = err.Error()
-					updateJob(&jobsMutex, job)
 					return err
 				}
 				// emojlog.PrintLogMessage("Snapshot size: "+byteconversion.BytesToHuman(temp), emojlog.Debug)
 				job.Replication.ProgressBytesTotal = temp
-				updateJob(&jobsMutex, job)
+				updateJob(m, job)
 			} else if reMatchTime.MatchString(line) {
 				temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
 				if err != nil {
-					job.JobError = err.Error()
-					updateJob(&jobsMutex, job)
 					return err
 				}
 				job.Replication.ProgressBytesDone = temp
-				updateJob(&jobsMutex, job)
+				updateJob(m, job)
 				// fmt.Printf("Copied so far: %d\n", temp)
 			} else {
 				errLines = append(errLines, line)
