@@ -6,7 +6,7 @@ import (
 	"HosterCore/internal/pkg/emojlog"
 	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
 	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
-	"encoding/json"
+	HosterTables "HosterCore/internal/pkg/hoster/cli_tables"
 	"fmt"
 	"os"
 	"os/exec"
@@ -85,6 +85,25 @@ var (
 	}
 )
 
+var (
+	schedulerListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "Show a list of scheduled jobs",
+		Long:  "Show a list of scheduled, completed, and in-progress jobs.",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			// err := statusSchedulerService()
+			err := HosterTables.GenerateJobsTable(false)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
 func statusSchedulerService() error {
 	pids, err := FreeBSDPgrep.Pgrep("scheduler")
 	if err != nil {
@@ -103,16 +122,16 @@ func statusSchedulerService() error {
 			fmt.Println(" 🟢 Scheduler is running as PID " + strconv.Itoa(v.ProcessId))
 			fmt.Println()
 
-			resp, err := SchedulerClient.GetJobList()
-			if err != nil {
-				fmt.Println("ERROR: " + err.Error())
-			}
+			// resp, err := SchedulerClient.GetJobList()
+			// if err != nil {
+			// 	fmt.Println("ERROR: " + err.Error())
+			// }
 
-			out, err := json.MarshalIndent(resp, "", "   ")
-			if err != nil {
-				fmt.Println("ERROR: " + err.Error())
-			}
-			fmt.Println(string(out))
+			// out, err := json.MarshalIndent(resp, "", "   ")
+			// if err != nil {
+			// 	fmt.Println("ERROR: " + err.Error())
+			// }
+			// fmt.Println(string(out))
 
 			return nil
 		}

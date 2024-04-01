@@ -19,7 +19,8 @@ func GenerateJailsTable(unixStyleTable bool) error {
 	}
 
 	var t = table.New(os.Stdout)
-	t.SetAlignment(table.AlignRight, //ID
+	t.SetAlignment(
+		table.AlignRight,  // ID
 		table.AlignLeft,   // Jail Name
 		table.AlignCenter, // Jail Status
 		table.AlignCenter, // CPU Limit

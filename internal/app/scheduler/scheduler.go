@@ -173,7 +173,7 @@ func removeDoneJobs(m *sync.RWMutex) error {
 	m.Lock()
 	defer m.Unlock()
 
-	if len(jobs) < 30 {
+	if len(jobs) < 50 {
 		return nil
 	}
 
@@ -189,9 +189,11 @@ func removeDoneJobs(m *sync.RWMutex) error {
 			if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
 				log.Infof("snapshot -> removed the old job for: %s", v.Snapshot.ResName)
 			}
+
 			return nil
 		}
 	}
+
 	return nil
 }
 

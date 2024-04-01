@@ -52,6 +52,8 @@ func init() {
 	schedulerCmd.AddCommand(schedulerStartCmd)
 	// Host Scheduler -> Status
 	schedulerCmd.AddCommand(schedulerStatusCmd)
+	// Host Scheduler -> List
+	schedulerCmd.AddCommand(schedulerListCmd)
 	// Host Scheduler -> Show Log
 	schedulerCmd.AddCommand(schedulerShowLogCmd)
 	// Host Scheduler -> Stop
