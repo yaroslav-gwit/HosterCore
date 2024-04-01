@@ -219,9 +219,9 @@ func init() {
 	snapshotListAllCmd.Flags().BoolVarP(&snapshotListAllUnixStyleTable, "unix", "u", false, "Output the table using `Unix` style for further processing")
 
 	// Snapshot cmd -> snapshot all
-	snapshotCmd.AddCommand(snapshotAllCmd)
-	snapshotAllCmd.Flags().StringVarP(&snapshotAllCmdType, "stype", "t", "custom", "Snapshot type")
-	snapshotAllCmd.Flags().IntVarP(&snapshotsAllCmdToKeep, "keep", "k", 5, "Number of snapshots to keep for this specific snapshot type")
+	// snapshotCmd.AddCommand(snapshotAllCmd)
+	// snapshotAllCmd.Flags().StringVarP(&snapshotAllCmdType, "stype", "t", "custom", "Snapshot type")
+	// snapshotAllCmd.Flags().IntVarP(&snapshotsAllCmdToKeep, "keep", "k", 5, "Number of snapshots to keep for this specific snapshot type")
 
 	// Snapshot cmd -> snapshot destroy
 	snapshotCmd.AddCommand(snapshotDestroyCmd)

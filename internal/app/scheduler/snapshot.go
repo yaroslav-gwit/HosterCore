@@ -88,7 +88,7 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 	defer m.Unlock()
 
 	for i, v := range jobs {
-		if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT || v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_DESTROY {
+		if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT || v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_DESTROY || v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK {
 			_ = 0
 		} else {
 			continue
@@ -157,6 +157,13 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 				err = zfsutils.RemoveSnapshot(jobs[i].Snapshot.SnapshotName)
 				if err != nil {
 					log.Infof("snapshot destroy job jailed: %v", err)
+					jobs[i].JobFailed = true
+					jobs[i].JobError = err.Error()
+				}
+			} else if v.JobType != SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK {
+				err = zfsutils.RollbackSnapshot(jobs[i].Snapshot.SnapshotName)
+				if err != nil {
+					log.Infof("snapshot rollback job jailed: %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 				}

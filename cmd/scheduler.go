@@ -6,8 +6,6 @@ import (
 	"HosterCore/internal/pkg/emojlog"
 	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
 	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
-	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
-	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -245,47 +243,53 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			vms, err := HosterVmUtils.ListJsonApi()
+			err := SchedulerClient.AddSnapshotAllJob(schedulerSnapshotAllToKeep, schedulerSnapshotAllType)
 			if err != nil {
-				emojlog.PrintLogMessage("could not get a list of VMs: "+err.Error(), emojlog.Error)
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
 			}
-			for _, v := range vms {
-				if !v.Running {
-					continue
-				}
-				if v.Backup {
-					continue
-				}
 
-				err := SchedulerClient.AddSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType, false)
-				if err != nil {
-					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				} else {
-					emojlog.PrintLogMessage("A new background snapshot job has been added for a VM: "+v.Name, emojlog.Changed)
-				}
-			}
+			// vms, err := HosterVmUtils.ListJsonApi()
+			// if err != nil {
+			// 	emojlog.PrintLogMessage("could not get a list of VMs: "+err.Error(), emojlog.Error)
+			// 	os.Exit(1)
+			// }
+			// for _, v := range vms {
+			// 	if !v.Running {
+			// 		continue
+			// 	}
+			// 	if v.Backup {
+			// 		continue
+			// 	}
 
-			jails, err := HosterJailUtils.ListJsonApi()
-			if err != nil {
-				emojlog.PrintLogMessage("could not get a list of Jails: "+err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-			for _, v := range jails {
-				if !v.Running {
-					continue
-				}
-				if v.Backup {
-					continue
-				}
+			// 	err := SchedulerClient.AddSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType, false)
+			// 	if err != nil {
+			// 		emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+			// 	} else {
+			// 		emojlog.PrintLogMessage("A new background snapshot job has been added for a VM: "+v.Name, emojlog.Changed)
+			// 	}
+			// }
 
-				err = SchedulerClient.AddSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType, false)
-				if err != nil {
-					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				} else {
-					emojlog.PrintLogMessage("A new background snapshot job has been added for a Jail: "+v.Name, emojlog.Changed)
-				}
-			}
+			// jails, err := HosterJailUtils.ListJsonApi()
+			// if err != nil {
+			// 	emojlog.PrintLogMessage("could not get a list of Jails: "+err.Error(), emojlog.Error)
+			// 	os.Exit(1)
+			// }
+			// for _, v := range jails {
+			// 	if !v.Running {
+			// 		continue
+			// 	}
+			// 	if v.Backup {
+			// 		continue
+			// 	}
+
+			// 	err = SchedulerClient.AddSnapshotJob(v.Name, schedulerSnapshotAllToKeep, schedulerSnapshotAllType, false)
+			// 	if err != nil {
+			// 		emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+			// 	} else {
+			// 		emojlog.PrintLogMessage("A new background snapshot job has been added for a Jail: "+v.Name, emojlog.Changed)
+			// 	}
+			// }
 		},
 	}
 )

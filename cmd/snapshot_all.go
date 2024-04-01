@@ -1,32 +1,26 @@
 package cmd
 
-import (
-	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
+// var (
+// 	snapshotAllCmdType    string
+// 	snapshotsAllCmdToKeep int
 
-	"github.com/spf13/cobra"
-)
+// 	snapshotAllCmd = &cobra.Command{
+// 		Use:   "all",
+// 		Short: "Snapshot all running VMs on this system",
+// 		Long:  `Snapshot all running VMs on this system.`,
+// 		Run: func(cmd *cobra.Command, args []string) {
+// 			checkInitFile()
+// 			snapshotAllRunningVms()
+// 		},
+// 	}
+// )
 
-var (
-	snapshotAllCmdType    string
-	snapshotsAllCmdToKeep int
+// func snapshotAllRunningVms() {
+// 	vms, _ := HosterVmUtils.ListJsonApi()
 
-	snapshotAllCmd = &cobra.Command{
-		Use:   "all",
-		Short: "Snapshot all running VMs on this system",
-		Long:  `Snapshot all running VMs on this system.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			checkInitFile()
-			snapshotAllRunningVms()
-		},
-	}
-)
-
-func snapshotAllRunningVms() {
-	vms, _ := HosterVmUtils.ListJsonApi()
-
-	for _, v := range vms {
-		if v.Running {
-			VmZfsSnapshot(v.Name, snapshotAllCmdType, snapshotsAllCmdToKeep)
-		}
-	}
-}
+// 	for _, v := range vms {
+// 		if v.Running {
+// 			VmZfsSnapshot(v.Name, snapshotAllCmdType, snapshotsAllCmdToKeep)
+// 		}
+// 	}
+// }

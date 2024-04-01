@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	SchedulerClient "HosterCore/internal/app/scheduler/client"
 	"HosterCore/internal/pkg/emojlog"
 	"errors"
 	"os"
@@ -25,7 +26,8 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			err := VmZfsSnapshot(args[0], snapshotNewType, snapshotNewSnapsToKeep)
+			// err := VmZfsSnapshot(args[0], snapshotNewType, snapshotNewSnapsToKeep)
+			err := SchedulerClient.AddSnapshotJob(args[0], snapshotNewSnapsToKeep, snapshotNewType, true)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
