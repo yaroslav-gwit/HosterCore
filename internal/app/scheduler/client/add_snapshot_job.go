@@ -84,12 +84,6 @@ func AddSnapshotAllJob(snapshotsToKeep int, snapshotType string) error {
 	}
 	// Get all running resoruces
 
-	c, err := net.Dial("unix", SchedulerUtils.SockAddr)
-	if err != nil {
-		return err
-	}
-	defer c.Close()
-
 	job := SchedulerUtils.Job{}
 	job.JobType = SchedulerUtils.JOB_TYPE_SNAPSHOT
 	job.Snapshot.SnapshotsToKeep = snapshotsToKeep
@@ -100,16 +94,26 @@ func AddSnapshotAllJob(snapshotsToKeep int, snapshotType string) error {
 			continue
 		}
 
+		c, err := net.Dial("unix", SchedulerUtils.SockAddr)
+		if err != nil {
+			c.Close()
+			return err
+		}
+
 		job.Snapshot.ResName = vms[i].Name
 		jsonJob, err := json.Marshal(job)
 		if err != nil {
+			c.Close()
 			return err
 		}
 
 		_, err = c.Write(jsonJob)
 		if err != nil {
+			c.Close()
 			return err
 		}
+
+		c.Close()
 	}
 
 	for i := range jails {
@@ -117,14 +121,22 @@ func AddSnapshotAllJob(snapshotsToKeep int, snapshotType string) error {
 			continue
 		}
 
+		c, err := net.Dial("unix", SchedulerUtils.SockAddr)
+		if err != nil {
+			c.Close()
+			return err
+		}
+
 		job.Snapshot.ResName = jails[i].Name
 		jsonJob, err := json.Marshal(job)
 		if err != nil {
+			c.Close()
 			return err
 		}
 
 		_, err = c.Write(jsonJob)
 		if err != nil {
+			c.Close()
 			return err
 		}
 	}
