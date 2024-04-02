@@ -9,6 +9,7 @@ import (
 	"HosterCore/internal/pkg/byteconversion"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/aquasecurity/table"
 )
@@ -97,6 +98,12 @@ func GenerateJobsTable(unix bool) error {
 		bytesDone := byteconversion.BytesToHuman(v.Replication.ProgressBytesDone)
 		bytesTotal := byteconversion.BytesToHuman(v.Replication.ProgressBytesTotal)
 
+		// Convert Unix time into RFC3339, like so: 2014-07-16T20:55:46Z
+		unixTimeUTC := time.Unix(v.TimeAdded, 0)
+		timeAdded := unixTimeUTC.Format(time.RFC3339)
+		unixTimeUTC = time.Unix(v.TimeFinished, 0)
+		TimeFinished := unixTimeUTC.Format(time.RFC3339)
+
 		t.AddRow(
 			fmt.Sprintf("%d", i+1),
 			resName,
@@ -104,8 +111,8 @@ func GenerateJobsTable(unix bool) error {
 			v.JobId,
 			v.JobType,
 			jobStatus,
-			fmt.Sprintf("%d", v.TimeAdded),
-			fmt.Sprintf("%d", v.TimeFinished),
+			timeAdded,
+			TimeFinished,
 			fmt.Sprintf("%d/%d", v.Replication.ProgressDoneSnaps, v.Replication.ProgressTotalSnaps),
 			fmt.Sprintf("%s/%s", bytesDone, bytesTotal),
 		)
