@@ -26,10 +26,12 @@ func GenerateJobsTable(unix bool) error {
 		table.AlignLeft,   // Resource Name
 		table.AlignCenter, // Resource Type
 		table.AlignLeft,   // Job ULID
-		table.AlignCenter, // Job Status
 		table.AlignCenter, // Job Type
-		table.AlignCenter, // Replication:  snapshots transferred / total snapshots to transfer
-		table.AlignLeft,   // Replication: bytes transferred / total amount of bytes
+		table.AlignCenter, // Job Status
+		table.AlignCenter, // Time Added
+		table.AlignCenter, // Time Finished
+		table.AlignCenter, // Replication Snapshots
+		table.AlignCenter, // Replication Bytes
 	)
 
 	if unix {
@@ -101,8 +103,11 @@ func GenerateJobsTable(unix bool) error {
 		// Convert Unix time into RFC3339, like so: 2014-07-16T20:55:46Z
 		unixTimeUTC := time.Unix(v.TimeAdded, 0)
 		timeAdded := unixTimeUTC.Format(time.RFC3339)
-		unixTimeUTC = time.Unix(v.TimeFinished, 0)
-		TimeFinished := unixTimeUTC.Format(time.RFC3339)
+		timeFinished := "-"
+		if v.TimeFinished > 0 {
+			unixTimeUTC = time.Unix(v.TimeFinished, 0)
+			timeFinished = unixTimeUTC.Format(time.RFC3339)
+		}
 
 		t.AddRow(
 			fmt.Sprintf("%d", i+1),
@@ -112,7 +117,7 @@ func GenerateJobsTable(unix bool) error {
 			v.JobType,
 			jobStatus,
 			timeAdded,
-			TimeFinished,
+			timeFinished,
 			fmt.Sprintf("%d/%d", v.Replication.ProgressDoneSnaps, v.Replication.ProgressTotalSnaps),
 			fmt.Sprintf("%s/%s", bytesDone, bytesTotal),
 		)
