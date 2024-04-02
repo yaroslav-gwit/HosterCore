@@ -50,7 +50,7 @@ func GenerateJobsTable(unix bool) error {
 		t.SetBorderBottom(false)
 	} else {
 		t.SetHeaders("Scheduler Jobs")
-		t.SetHeaderColSpans(0, 8)
+		t.SetHeaderColSpans(0, 10)
 
 		t.AddHeaders(
 			"#",

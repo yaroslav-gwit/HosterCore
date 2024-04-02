@@ -6,6 +6,7 @@ import (
 	"HosterCore/internal/pkg/emojlog"
 	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
 	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
+	HosterCliJson "HosterCore/internal/pkg/hoster/cli_json"
 	HosterTables "HosterCore/internal/pkg/hoster/cli_tables"
 	"fmt"
 	"os"
@@ -86,6 +87,10 @@ var (
 )
 
 var (
+	schedulerListUnix       bool
+	schedulerListJson       bool
+	schedulerListJsonPretty bool
+
 	schedulerListCmd = &cobra.Command{
 		Use:   "list",
 		Short: "Show a list of scheduled jobs",
@@ -94,11 +99,19 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			// err := statusSchedulerService()
-			err := HosterTables.GenerateJobsTable(false)
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
+			if schedulerListJson {
+				// err := HosterTables.GenerateJobsTable(schedulerListJson)
+				err := HosterCliJson.GenerateSchedulerJson(schedulerListJsonPretty)
+				if err != nil {
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
+				}
+			} else {
+				err := HosterTables.GenerateJobsTable(schedulerListJson)
+				if err != nil {
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
+				}
 			}
 		},
 	}
