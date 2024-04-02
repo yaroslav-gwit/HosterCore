@@ -99,15 +99,14 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			if schedulerListJson {
-				// err := HosterTables.GenerateJobsTable(schedulerListJson)
+			if schedulerListJson || schedulerListJsonPretty {
 				err := HosterCliJson.GenerateSchedulerJson(schedulerListJsonPretty)
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 					os.Exit(1)
 				}
 			} else {
-				err := HosterTables.GenerateJobsTable(schedulerListJson)
+				err := HosterTables.GenerateJobsTable(schedulerListUnix)
 				if err != nil {
 					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 					os.Exit(1)
