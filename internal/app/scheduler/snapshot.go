@@ -144,7 +144,7 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 
 			// snapShottedVM = jobs[i].Snapshot.ResName
 			snapshotMap[jobs[i].Snapshot.ResName] = true
-			if v.JobType != SchedulerUtils.JOB_TYPE_SNAPSHOT {
+			if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
 				newSnap, removedSnaps, err := zfsutils.TakeScheduledSnapshot(dataset, v.Snapshot.SnapshotType, v.Snapshot.SnapshotsToKeep)
 				if err != nil {
 					log.Infof("immediate snapshot job jailed: %v", err)
@@ -155,14 +155,14 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 					log.Infof("old immediate snapshots removed: %v", removedSnaps)
 					jobs[i].JobDone = true
 				}
-			} else if v.JobType != SchedulerUtils.JOB_TYPE_SNAPSHOT_DESTROY {
+			} else if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_DESTROY {
 				err = zfsutils.RemoveSnapshot(jobs[i].Snapshot.SnapshotName)
 				if err != nil {
 					log.Infof("snapshot destroy job jailed: %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 				}
-			} else if v.JobType != SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK {
+			} else if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK {
 				err = zfsutils.RollbackSnapshot(jobs[i].Snapshot.SnapshotName)
 				if err != nil {
 					log.Infof("snapshot rollback job jailed: %v", err)
