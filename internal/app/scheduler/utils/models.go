@@ -43,6 +43,9 @@ type Job struct {
 	JobId           string         `json:"job_id,omitempty"`
 	JobError        string         `json:"job_error,omitempty"`
 	JobType         string         `json:"job_type,omitempty"`
+	ResType         string         `json:"res_type,omitempty"`
+	TimeAdded       int64          `json:"time_added,omitempty"`
+	TimeFinished    int64          `json:"time_finished,omitempty"`
 	Replication     ReplicationJob `json:"replication,omitempty"`
 	Snapshot        SnapshotJob    `json:"snapshot,omitempty"`
 	// SnapshotDestroy        SnapshotDestroyJob    `json:"snapshot_destroy,omitempty"`

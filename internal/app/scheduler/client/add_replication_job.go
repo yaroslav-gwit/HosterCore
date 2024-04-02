@@ -29,7 +29,7 @@ func AddReplicationJob(replJob SchedulerUtils.ReplicationJob) error {
 	defer c.Close()
 
 	job := SchedulerUtils.Job{}
-	output, err := Replicate(replJob)
+	output, resType, err := Replicate(replJob)
 	if err != nil {
 		return err
 	}
@@ -37,6 +37,7 @@ func AddReplicationJob(replJob SchedulerUtils.ReplicationJob) error {
 	job.JobType = SchedulerUtils.JOB_TYPE_REPLICATION
 	job.Replication = output
 	job.Replication.ResName = replJob.ResName
+	job.ResType = resType
 
 	jsonJob, err := json.Marshal(job)
 	if err != nil {
@@ -51,7 +52,7 @@ func AddReplicationJob(replJob SchedulerUtils.ReplicationJob) error {
 	return nil
 }
 
-func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJob, e error) {
+func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJob, resType string, e error) {
 	localDs := ""
 	if len(job.ResName) < 1 {
 		e = fmt.Errorf("resource name cannot be empty")
@@ -78,12 +79,14 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 	for _, v := range vms {
 		if v.VmName == job.ResName {
 			localDs = v.DsName + "/" + v.VmName
+			resType = "VM"
 		}
 	}
 	if len(localDs) < 1 {
 		for _, v := range jails {
 			if v.JailName == job.ResName {
 				localDs = v.DsName + "/" + v.JailName
+				resType = "Jail"
 			}
 		}
 	}

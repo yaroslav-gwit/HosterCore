@@ -6,6 +6,7 @@ package HosterTables
 
 import (
 	SchedulerClient "HosterCore/internal/app/scheduler/client"
+	"HosterCore/internal/pkg/byteconversion"
 	"fmt"
 	"os"
 
@@ -21,11 +22,11 @@ func GenerateJobsTable(unix bool) error {
 	var t = table.New(os.Stdout)
 	t.SetAlignment(
 		table.AlignRight,  // ID number
+		table.AlignLeft,   // Resource Name
+		table.AlignCenter, // Resource Type
 		table.AlignLeft,   // Job ULID
 		table.AlignCenter, // Job Status
 		table.AlignCenter, // Job Type
-		table.AlignCenter, // Resource Name
-		table.AlignCenter, // Resource Type
 		table.AlignCenter, // Replication:  snapshots transferred / total snapshots to transfer
 		table.AlignLeft,   // Replication: bytes transferred / total amount of bytes
 	)
@@ -53,13 +54,15 @@ func GenerateJobsTable(unix bool) error {
 
 		t.AddHeaders(
 			"#",
-			"Job ULID",
-			"Job Status",
-			"Job Type",
-			"Resource Name",
-			"Resource Type",
-			"Repl: Snapshots",
-			"Repl: Bytes",
+			"Resource\nName",
+			"Resource\nType",
+			"Job\nULID",
+			"Job\nType",
+			"Job\nStatus",
+			"Time\nAdded",
+			"Time\nFinished",
+			"Replication\nSnapshots",
+			"Replication\nBytes",
 		)
 
 		t.SetLineStyle(table.StyleBrightCyan)
@@ -74,7 +77,7 @@ func GenerateJobsTable(unix bool) error {
 		} else if v.JobFailed {
 			jobStatus = "Error"
 		} else if v.JobInProgress {
-			jobStatus = "In progress"
+			jobStatus = "In Progress"
 		} else {
 			jobStatus = "Scheduled"
 		}
@@ -91,15 +94,20 @@ func GenerateJobsTable(unix bool) error {
 			v.Replication.ProgressBytesDone = v.Replication.ProgressBytesTotal
 		}
 
+		bytesDone := byteconversion.BytesToHuman(v.Replication.ProgressBytesDone)
+		bytesTotal := byteconversion.BytesToHuman(v.Replication.ProgressBytesTotal)
+
 		t.AddRow(
 			fmt.Sprintf("%d", i+1),
-			v.JobId,
-			jobStatus,
-			v.JobType,
 			resName,
-			"res type will be here",
+			v.ResType,
+			v.JobId,
+			v.JobType,
+			jobStatus,
+			fmt.Sprintf("%d", v.TimeAdded),
+			fmt.Sprintf("%d", v.TimeFinished),
 			fmt.Sprintf("%d/%d", v.Replication.ProgressDoneSnaps, v.Replication.ProgressTotalSnaps),
-			fmt.Sprintf("%d/%d", v.Replication.ProgressBytesDone, v.Replication.ProgressBytesTotal),
+			fmt.Sprintf("%s/%s", bytesDone, bytesTotal),
 		)
 	}
 

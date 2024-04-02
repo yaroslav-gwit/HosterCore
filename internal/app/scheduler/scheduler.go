@@ -163,12 +163,13 @@ func addJob(job SchedulerUtils.Job, m *sync.RWMutex) error {
 	defer m.Unlock()
 
 	job.JobId = ulid.Make().String()
+	job.TimeAdded = time.Now().Unix()
 	jobs = append(jobs, job)
 
 	return nil
 }
 
-// Runs every 25 seconds and removes the old/completed jobs
+// Runs every 10 seconds and removes the old/completed jobs
 func removeDoneJobs(m *sync.RWMutex) error {
 	m.Lock()
 	defer m.Unlock()
@@ -179,17 +180,12 @@ func removeDoneJobs(m *sync.RWMutex) error {
 
 	for i, v := range jobs {
 		if v.JobDone && v.JobDoneLogged {
+			// Remove a single Job
 			copy(jobs[i:], jobs[i+1:])
 			jobs[len(jobs)-1] = SchedulerUtils.Job{}
 			jobs = jobs[0 : len(jobs)-1]
 
-			if v.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
-				log.Infof("replication -> removed the old job for: %s", v.Replication.ResName)
-			}
-			if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
-				log.Infof("snapshot -> removed the old job for: %s", v.Snapshot.ResName)
-			}
-
+			log.Infof("removed an old job for: %s, with job id: %s", v.Snapshot.ResName, v.JobId)
 			return nil
 		}
 	}

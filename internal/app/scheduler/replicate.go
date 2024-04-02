@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/oklog/ulid/v2"
 )
@@ -160,6 +161,7 @@ func Replicate(job SchedulerUtils.Job, m *sync.RWMutex) error {
 		}
 
 		job.Replication.ProgressDoneSnaps = i + 1
+		job.TimeFinished = time.Now().Unix()
 		updateJob(m, job)
 	}
 

@@ -4,6 +4,7 @@ import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"sync"
+	"time"
 )
 
 // Runs every 6 seconds and executes a first available job
@@ -75,6 +76,7 @@ func executeSnapshotJobs(m *sync.RWMutex) error {
 				jobs[i].JobDone = true
 			}
 			snapshotMap[jobs[i].Snapshot.ResName] = false
+			jobs[i].TimeFinished = time.Now().Unix()
 
 			break
 		}
@@ -170,6 +172,7 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 			}
 			// snapShottedVM = ""
 			snapshotMap[jobs[i].Snapshot.ResName] = false
+			jobs[i].TimeFinished = time.Now().Unix()
 
 			break
 		}
