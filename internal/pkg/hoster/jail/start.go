@@ -7,6 +7,7 @@ package HosterJail
 import (
 	FileExists "HosterCore/internal/pkg/file_exists"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
+	HosterHost "HosterCore/internal/pkg/hoster/host"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterNetwork "HosterCore/internal/pkg/hoster/network"
 	"bytes"
@@ -190,7 +191,17 @@ func setJailStartValues(jailName string, jailDsFolder string, jailConfig HosterJ
 	r.JailName = jailName
 
 	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
-	r.JailHostname = jailName + "." + hostname + "." + "lan"
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		e = err
+		return
+	}
+
+	if len(hostConf.DnsSearchDomain) < 1 {
+		r.JailHostname = jailName + "." + hostname + "." + "lan"
+	} else {
+		r.JailHostname = jailName + "." + hostConf.DnsSearchDomain
+	}
 
 	r.JailRootPath = jailDsFolder + "/" + HosterJailUtils.JAIL_ROOT_FOLDER
 	cpus, err := FreeBSDsysctls.SysctlHwVmmMaxcpu()
