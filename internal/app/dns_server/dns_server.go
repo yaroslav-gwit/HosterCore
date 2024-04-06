@@ -144,14 +144,12 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 		for i, v := range jailInfoList {
 			dnsName := dnsNameSplit[0]
 			if dnsName == v.JailName {
-				// log.Debug(string(q.Name))
 				if q.Name == v.JailName+"."+hostConf.DnsSearchDomain+"." {
 					requestIsPublic = false
 				}
 				requestIsJailName = true
 				jailListIndex = i
 			} else if dnsName == strings.ToLower(v.JailName) {
-				// log.Debug(string(q.Name))
 				if q.Name == v.JailName+"."+hostConf.DnsSearchDomain+"." {
 					requestIsPublic = false
 				}
