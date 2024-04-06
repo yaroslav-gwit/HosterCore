@@ -59,7 +59,7 @@ sendmail_msp_queue_enable="NO"
 `
 
 const TemplateJailResolvConf = `# Hoster generated RESOLV.CONF
-search {{ .Parent }}.lan
+search {{ .DnsSearchDomain }}
 nameserver {{ .DnsServer }}
 `
 

@@ -213,10 +213,24 @@ func generateJailDeployConfig(cpuLimit int, ramLimit string, ipAddress string, n
 	}
 
 	r.Timezone = "Europe/London"
-	r.Parent, _ = FreeBSDsysctls.SysctlKernHostname()
 	r.Production = prod
 	r.UUID = uuid.New().String()
 	r.Description = "-"
+
+	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
+	r.Parent = hostname
+
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		e = err
+		return
+	}
+
+	if len(hostConf.DnsSearchDomain) < 1 {
+		r.DnsSearchDomain = hostname + ".lan"
+	} else {
+		r.DnsSearchDomain = hostConf.DnsSearchDomain
+	}
 
 	return
 }

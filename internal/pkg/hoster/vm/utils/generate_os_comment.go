@@ -31,13 +31,35 @@ func GenerateOsComment(input string) (r string) {
 		r = "Ubuntu 22.04"
 		return
 	}
+	if input == "ubuntu2404" {
+		r = "Ubuntu 24.04"
+		return
+	}
 
 	if input == "almalinux8" {
 		r = "AlmaLinux 8"
 		return
 	}
+	if input == "almalinux9" {
+		r = "AlmaLinux 9"
+		return
+	}
+
 	if input == "rockylinux8" {
 		r = "RockyLinux 8"
+		return
+	}
+	if input == "rockylinux9" {
+		r = "RockyLinux 9"
+		return
+	}
+
+	if input == "rhel8" {
+		r = "RHEL 8"
+		return
+	}
+	if input == "rhel9" {
+		r = "RHEL 9"
 		return
 	}
 

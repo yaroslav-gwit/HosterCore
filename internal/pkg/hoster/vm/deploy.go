@@ -128,11 +128,22 @@ func Deploy(input VmDeployInput) error {
 	c.OsType = input.OsType
 	c.OsComment = HosterVmUtils.GenerateOsComment(c.OsType)
 
-	c.ParentHost, _ = FreeBSDsysctls.SysctlKernHostname()
+	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
+	c.ParentHost = hostname
 	c.VncPassword = HosterHostUtils.GenerateRandomPassword(8, true, true)
 	c.VncPort, err = HosterVmUtils.GenerateVncPort()
 	if err != nil {
 		return errors.New("could not generate vnc port: " + err.Error())
+	}
+
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		return err
+	}
+	if len(hostConf.DnsSearchDomain) < 1 {
+		c.DnsSearchDomain = hostname + ".lan"
+	} else {
+		c.DnsSearchDomain = hostConf.DnsSearchDomain
 	}
 
 	c.SshKeys, err = getSystemSshKeys()
@@ -198,6 +209,7 @@ func Deploy(input VmDeployInput) error {
 	vmConfig.OsComment = c.OsComment
 	vmConfig.Owner = "system"
 	vmConfig.ParentHost = c.ParentHost
+	vmConfig.DnsSearchDomain = c.DnsSearchDomain
 
 	networkConfig.NetworkAdaptorType = "virtio-net"
 	networkConfig.NetworkBridge = c.NetworkName
@@ -336,6 +348,7 @@ type ConfigOutput struct {
 	NakedSubnet       string
 	Gateway           string
 	DnsServer         string
+	DnsSearchDomain   string
 	Production        bool
 	OsType            string
 	OsComment         string

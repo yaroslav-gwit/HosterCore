@@ -20,6 +20,7 @@ type JailConfig struct {
 	ConfigFileAppend string   `json:"config_file_append"`
 	IPAddress        string   `json:"ip_address"`
 	Network          string   `json:"network"`
+	DnsSearchDomain  string   `json:"dns_search_domain,omitempty"`
 	DnsServer        string   `json:"dns_server"`
 	Timezone         string   `json:"timezone"`
 	Parent           string   `json:"parent"`

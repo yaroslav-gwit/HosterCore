@@ -56,6 +56,7 @@ type VmConfig struct {
 	Owner              string      `json:"owner"`
 	ParentHost         string      `json:"parent_host"`
 	Networks           []VmNetwork `json:"networks"`
+	DnsSearchDomain    string      `json:"dns_search_domain,omitempty"`
 	Disks              []VmDisk    `json:"disks"`
 	IncludeHostSSHKeys bool        `json:"include_host_ssh_keys"`
 	VmSshKeys          []VmSshKey  `json:"vm_ssh_keys"`

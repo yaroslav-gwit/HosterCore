@@ -17,10 +17,12 @@ import (
 // Global state vars
 var vmInfoList []VmInfoStruct
 var jailInfoList []JailInfoStruct
+var hostConf HosterHost.HostConfig
 var upstreamServers []string
 
 func main() {
 	log.Info("Starting the DNS Server")
+	var err error
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGHUP)
@@ -31,9 +33,14 @@ func main() {
 				vmInfoList = getVmsInfo()
 				jailInfoList = getJailsInfo()
 				loadUpstreamDnsServers()
+
+				hostConf, err = HosterHost.GetHostConfig()
+				if err != nil {
+					log.Fatalf("Failed to read the host config: %s", err.Error())
+				}
 			}
 			if sig == syscall.SIGKILL {
-				log.Info("Received a reload signal: SIGKILL")
+				log.Info("Received a kill signal: SIGKILL, stopping the service now")
 				os.Exit(0)
 			}
 		}
@@ -44,11 +51,17 @@ func main() {
 	vmInfoList = getVmsInfo()
 	jailInfoList = getJailsInfo()
 
+	hostConf, err = HosterHost.GetHostConfig()
+	if err != nil {
+		log.Fatalf("Failed to read the host config: %s", err.Error())
+		os.Exit(1)
+	}
+
 	server := dns.Server{Addr: ":53", Net: "udp"}
 	server.Handler = dns.HandlerFunc(handleDNSRequest)
 
 	log.Info("DNS Server is listening on 0.0.0.0:53")
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		emojlog.PrintLogMessage("Failed to start the DNS Server", emojlog.Error)
 		os.Exit(1)
@@ -105,12 +118,24 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 		jailListIndex := 0
 		dnsNameSplit := strings.Split(q.Name, ".")
 
+		if len(dnsNameSplit) > 1 {
+			if IsPublicDomain(dnsNameSplit[len(dnsNameSplit)-2]) {
+				requestIsPublic = true
+			}
+		}
+
 		for i, v := range vmInfoList {
 			dnsName := dnsNameSplit[0]
 			if dnsName == v.vmName {
+				if q.Name == v.vmName+"."+hostConf.DnsSearchDomain+"." {
+					requestIsPublic = false
+				}
 				requestIsVmName = true
 				vmListIndex = i
 			} else if dnsName == strings.ToLower(v.vmName) {
+				if q.Name == v.vmName+"."+hostConf.DnsSearchDomain+"." {
+					requestIsPublic = false
+				}
 				requestIsVmName = true
 				vmListIndex = i
 			}
@@ -119,17 +144,17 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 		for i, v := range jailInfoList {
 			dnsName := dnsNameSplit[0]
 			if dnsName == v.JailName {
+				if q.Name == v.JailAddress+"."+hostConf.DnsSearchDomain+"." {
+					requestIsPublic = false
+				}
 				requestIsJailName = true
 				jailListIndex = i
 			} else if dnsName == strings.ToLower(v.JailName) {
+				if q.Name == v.JailAddress+"."+hostConf.DnsSearchDomain+"." {
+					requestIsPublic = false
+				}
 				requestIsJailName = true
 				jailListIndex = i
-			}
-		}
-
-		if len(dnsNameSplit) > 1 {
-			if IsPublicDomain(dnsNameSplit[len(dnsNameSplit)-2]) {
-				requestIsPublic = true
 			}
 		}
 
