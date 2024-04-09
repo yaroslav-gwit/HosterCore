@@ -100,6 +100,11 @@ func Deploy(input DeployInput) error {
 	}
 	// EOF Create jail_custom_parameters.conf
 
+	err = HosterHostUtils.ReloadDns()
+	if err != nil {
+		return err
+	}
+
 	log.Info("Jail has been deployed: " + input.JailName)
 	return nil
 }

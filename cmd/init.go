@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"syscall"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/exp/slices"
@@ -306,6 +307,11 @@ func checkInitFile() {
 		emojlog.PrintLogMessage("Please, execute `hoster init` to start using this utility", emojlog.Error)
 		os.Exit(1)
 		// return errors.New("hoster process state file is missing")
+	}
+
+	if syscall.Geteuid() != 0 {
+		emojlog.PrintLogMessage("`hoster` must be executed using elevated privileges (via root or sudo/doas)", emojlog.Error)
+		os.Exit(1)
 	}
 	// return nil
 }

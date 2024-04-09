@@ -245,8 +245,8 @@ var (
 
 	schedulerSnapshotCmd = &cobra.Command{
 		Use:   "snapshot [VM or Jail name]",
-		Short: "Use the Scheduling Service to snapshot the VM",
-		Long:  `Use the Scheduling Service to snapshot the VM in the background mode.`,
+		Short: "Use the Scheduling Service to snapshot a VM or a Jail",
+		Long:  `Use the Scheduling Service to snapshot a VM or a Jail in the background mode.`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
