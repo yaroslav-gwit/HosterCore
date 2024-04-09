@@ -4,18 +4,21 @@
 
 package HosterVmUtils
 
+import "strings"
+
 type ListTable struct {
-	VmName        string
-	VmStatus      string
-	CPUSockets    int
-	CPUCores      int
-	VmMemory      string
-	MainIpAddress string
-	OsType        string
-	OsComment     string
-	VmUptime      string
-	DiskUsedTotal string
-	VmDescription string
+	VmName           string
+	VmStatus         string
+	CPUSockets       int
+	CPUCores         int
+	VmMemory         string
+	MainIpAddress    string
+	OsType           string
+	OsComment        string
+	VmUptime         string
+	VmUptimeNoSpaces string
+	DiskUsedTotal    string
+	VmDescription    string
 }
 
 func ListAllTable() (r []ListTable, e error) {
@@ -51,6 +54,7 @@ func ListAllTable() (r []ListTable, e error) {
 		l.OsType = v.OsType
 		l.OsComment = v.OsComment
 		l.VmUptime = v.Uptime
+		l.VmUptimeNoSpaces = strings.ReplaceAll(v.Uptime, " ", "")
 		l.VmDescription = v.Description
 
 		if len(v.Networks) > 0 {

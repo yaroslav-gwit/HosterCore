@@ -99,7 +99,7 @@ func GenerateVMsTable(unix bool) error {
 				v.VmMemory,
 				v.MainIpAddress,
 				v.OsComment,
-				v.VmUptime,
+				v.VmUptimeNoSpaces,
 				v.DiskUsedTotal,
 				v.VmDescription,
 			)
