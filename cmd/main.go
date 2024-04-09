@@ -52,11 +52,14 @@ func init() {
 	schedulerCmd.AddCommand(schedulerStartCmd)
 	// Host Scheduler -> Status
 	schedulerCmd.AddCommand(schedulerStatusCmd)
+	// Host Scheduler -> Info
+	schedulerCmd.AddCommand(schedulerInfoCmd)
+	schedulerInfoCmd.Flags().BoolVarP(&schedulerListJsonPretty, "json-pretty", "", false, "Info for one of the scheduled jobs in a JSON-pretty format")
 	// Host Scheduler -> List
 	schedulerCmd.AddCommand(schedulerListCmd)
 	schedulerListCmd.Flags().BoolVarP(&schedulerListUnix, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
-	schedulerListCmd.Flags().BoolVarP(&schedulerListJson, "json", "j", false, "List of scheduled jobs in Json format")
-	schedulerListCmd.Flags().BoolVarP(&schedulerListJsonPretty, "json-pretty", "", false, "List of scheduled jobs in Json Pretty format")
+	schedulerListCmd.Flags().BoolVarP(&schedulerListJson, "json", "j", false, "List of scheduled jobs in a JSON format")
+	schedulerListCmd.Flags().BoolVarP(&schedulerListJsonPretty, "json-pretty", "", false, "List of scheduled jobs in a JSON-pretty format")
 	// Host Scheduler -> Show Log
 	schedulerCmd.AddCommand(schedulerShowLogCmd)
 	// Host Scheduler -> Stop

@@ -27,7 +27,7 @@ var (
 			checkInitFile()
 
 			// err := VmZfsSnapshot(args[0], snapshotNewType, snapshotNewSnapsToKeep)
-			err := SchedulerClient.AddSnapshotJob(args[0], snapshotNewSnapsToKeep, snapshotNewType, true)
+			_, err := SchedulerClient.AddSnapshotJob(args[0], snapshotNewSnapsToKeep, snapshotNewType, true)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)

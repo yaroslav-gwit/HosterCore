@@ -162,7 +162,9 @@ func addJob(job SchedulerUtils.Job, m *sync.RWMutex) error {
 	m.Lock()
 	defer m.Unlock()
 
-	job.JobId = ulid.Make().String()
+	if len(job.JobId) < 1 {
+		job.JobId = ulid.Make().String()
+	}
 	job.TimeAdded = time.Now().Unix()
 	jobs = append(jobs, job)
 

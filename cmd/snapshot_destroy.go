@@ -21,7 +21,7 @@ var (
 			checkInitFile()
 
 			// err := ZfsSnapshotDestroy(args[0], args[1])
-			err := SchedulerClient.AddSnapshotDestroyJob(args[0], args[1])
+			_, err := SchedulerClient.AddSnapshotDestroyJob(args[0], args[1])
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)

@@ -12,6 +12,7 @@ type ListTable struct {
 	VmMemory      string
 	MainIpAddress string
 	OsType        string
+	OsComment     string
 	VmUptime      string
 	DiskUsedTotal string
 	VmDescription string
@@ -47,7 +48,8 @@ func ListAllTable() (r []ListTable, e error) {
 		l.CPUCores = v.CPUCores
 		l.CPUSockets = v.CPUSockets
 		l.VmMemory = v.Memory
-		l.OsType = v.OsComment
+		l.OsType = v.OsType
+		l.OsComment = v.OsComment
 		l.VmUptime = v.Uptime
 		l.VmDescription = v.Description
 

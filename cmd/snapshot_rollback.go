@@ -25,7 +25,7 @@ var (
 			checkInitFile()
 
 			// err := ZfsSnapshotRollback(args[0], args[1], snapshotRollbackForceStop, snapshotRollbackForceStart)
-			err := SchedulerClient.AddSnapshotRollbackJob(args[0], args[1])
+			_, err := SchedulerClient.AddSnapshotRollbackJob(args[0], args[1])
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)

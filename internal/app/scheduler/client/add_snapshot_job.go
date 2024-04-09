@@ -11,9 +11,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+
+	"github.com/oklog/ulid/v2"
 )
 
-func AddSnapshotJob(resName string, snapshotsToKeep int, snapshotType string, takeImmediately bool) error {
+func AddSnapshotJob(resName string, snapshotsToKeep int, snapshotType string, takeImmediately bool) (string, error) {
 	// Res found check
 	resFound := false
 	resType := ""
@@ -21,7 +23,7 @@ func AddSnapshotJob(resName string, snapshotsToKeep int, snapshotType string, ta
 	if !resFound {
 		jails, err := HosterJailUtils.ListAllSimple()
 		if err != nil {
-			return err
+			return "", err
 		}
 		for i := range jails {
 			if jails[i].JailName == resName {
@@ -34,7 +36,7 @@ func AddSnapshotJob(resName string, snapshotsToKeep int, snapshotType string, ta
 	if !resFound {
 		vms, err := HosterVmUtils.ListAllSimple()
 		if err != nil {
-			return err
+			return "", err
 		}
 		for i := range vms {
 			if vms[i].VmName == resName {
@@ -45,17 +47,18 @@ func AddSnapshotJob(resName string, snapshotsToKeep int, snapshotType string, ta
 	}
 
 	if !resFound {
-		return fmt.Errorf("resource was not found")
+		return "", fmt.Errorf("resource was not found")
 	}
 	// EOF Res found check
 
 	c, err := net.Dial("unix", SchedulerUtils.SockAddr)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer c.Close()
 
 	job := SchedulerUtils.Job{}
+	job.JobId = ulid.Make().String()
 	job.JobType = SchedulerUtils.JOB_TYPE_SNAPSHOT
 	job.Snapshot.SnapshotsToKeep = snapshotsToKeep
 	job.Snapshot.TakeImmediately = takeImmediately
@@ -65,15 +68,15 @@ func AddSnapshotJob(resName string, snapshotsToKeep int, snapshotType string, ta
 
 	jsonJob, err := json.Marshal(job)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	_, err = c.Write(jsonJob)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return job.JobId, nil
 }
 
 func AddSnapshotAllJob(snapshotsToKeep int, snapshotType string) error {
@@ -150,14 +153,14 @@ func AddSnapshotAllJob(snapshotsToKeep int, snapshotType string) error {
 	return nil
 }
 
-func AddSnapshotDestroyJob(resName string, snapshotName string) error {
+func AddSnapshotDestroyJob(resName string, snapshotName string) (string, error) {
 	// Res found check
 	resFound := false
 
 	if !resFound {
 		jails, err := HosterJailUtils.ListAllSimple()
 		if err != nil {
-			return err
+			return "", err
 		}
 		for i := range jails {
 			if jails[i].JailName == resName {
@@ -169,7 +172,7 @@ func AddSnapshotDestroyJob(resName string, snapshotName string) error {
 	if !resFound {
 		vms, err := HosterVmUtils.ListAllSimple()
 		if err != nil {
-			return err
+			return "", err
 		}
 		for i := range vms {
 			if vms[i].VmName == resName {
@@ -179,17 +182,18 @@ func AddSnapshotDestroyJob(resName string, snapshotName string) error {
 	}
 
 	if !resFound {
-		return fmt.Errorf("resource was not found")
+		return "", fmt.Errorf("resource was not found")
 	}
 	// EOF Res found check
 
 	c, err := net.Dial("unix", SchedulerUtils.SockAddr)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer c.Close()
 
 	job := SchedulerUtils.Job{}
+	job.JobId = ulid.Make().String()
 	job.JobType = SchedulerUtils.JOB_TYPE_SNAPSHOT_DESTROY
 	job.Snapshot.SnapshotName = snapshotName
 	job.Snapshot.TakeImmediately = true
@@ -197,25 +201,25 @@ func AddSnapshotDestroyJob(resName string, snapshotName string) error {
 
 	jsonJob, err := json.Marshal(job)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	_, err = c.Write(jsonJob)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return job.JobId, nil
 }
 
-func AddSnapshotRollbackJob(resName string, snapshotName string) error {
+func AddSnapshotRollbackJob(resName string, snapshotName string) (string, error) {
 	// Res found check
 	resFound := false
 
 	if !resFound {
 		jails, err := HosterJailUtils.ListAllSimple()
 		if err != nil {
-			return err
+			return "", err
 		}
 		for i := range jails {
 			if jails[i].JailName == resName {
@@ -227,7 +231,7 @@ func AddSnapshotRollbackJob(resName string, snapshotName string) error {
 	if !resFound {
 		vms, err := HosterVmUtils.ListAllSimple()
 		if err != nil {
-			return err
+			return "", err
 		}
 		for i := range vms {
 			if vms[i].VmName == resName {
@@ -237,17 +241,18 @@ func AddSnapshotRollbackJob(resName string, snapshotName string) error {
 	}
 
 	if !resFound {
-		return fmt.Errorf("resource was not found")
+		return "", fmt.Errorf("resource was not found")
 	}
 	// EOF Res found check
 
 	c, err := net.Dial("unix", SchedulerUtils.SockAddr)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer c.Close()
 
 	job := SchedulerUtils.Job{}
+	job.JobId = ulid.Make().String()
 	job.JobType = SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK
 	job.Snapshot.SnapshotName = snapshotName
 	job.Snapshot.TakeImmediately = true
@@ -255,13 +260,13 @@ func AddSnapshotRollbackJob(resName string, snapshotName string) error {
 
 	jsonJob, err := json.Marshal(job)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	_, err = c.Write(jsonJob)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return job.JobId, nil
 }

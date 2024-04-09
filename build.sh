@@ -7,14 +7,13 @@ GO_BINARY=$(which go121)
 GREEN='\033[0;32m'
 LIGHT_GREEN='\033[1;32m'
 NC='\033[0m'
-
 # ERROR_TEXT="${LIGHT_RED}ERROR:${NC}"
 
 echo -e "${LIGHT_GREEN}=== Starting the build process ===${NC}"
 
 GIT_INFO=$(git describe --tags)
-DATE_INFO=$(date '+%Y-%m-%d_%H-%M-%S')
-VERSION=${GIT_INFO}_COMPTIME_${DATE_INFO} #; _=${VERSION}
+DATE_INFO=$(date '+%Y%m%d_%H%M%S')
+VERSION=${GIT_INFO}_COMPTIME_${DATE_INFO}
 # Set the RELEASE=true, to build the release version
 if test -z "${RELEASE}"; then
     echo -e "${GREEN}Building the DEV version of HosterCore${NC}"

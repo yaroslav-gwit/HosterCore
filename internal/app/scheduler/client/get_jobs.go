@@ -7,8 +7,68 @@ package SchedulerClient
 import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
 	"encoding/json"
+	"fmt"
 	"net"
 )
+
+func GetJobInfo(jobID string) (r SchedulerUtils.Job, e error) {
+	c, err := net.Dial("unix", SchedulerUtils.SockAddr)
+	if err != nil {
+		e = err
+		return
+	}
+	defer c.Close()
+
+	var job SchedulerUtils.Job
+	job.JobType = SchedulerUtils.JOB_TYPE_INFO
+
+	jsonJob, err := json.Marshal(job)
+	if err != nil {
+		e = err
+		return
+	}
+
+	_, err = c.Write(jsonJob)
+	if err != nil {
+		e = err
+		return
+	}
+
+	// Read the response from the socket
+	var jsonResponse []byte
+	buffer := make([]byte, 1024) // Adjust buffer size as needed
+
+	for {
+		n, err := c.Read(buffer)
+		if err != nil {
+			e = err
+			return
+		}
+
+		jsonResponse = append(jsonResponse, buffer[:n]...)
+		if n < len(buffer) {
+			break
+		}
+	}
+
+	// Process the JSON response as needed
+	var jobs []SchedulerUtils.Job
+	err = json.Unmarshal(jsonResponse, &jobs)
+	if err != nil {
+		e = err
+		return
+	}
+
+	for i := range jobs {
+		if jobs[i].JobId == jobID {
+			r = jobs[i]
+			return
+		}
+	}
+
+	e = fmt.Errorf("could not find the job using the ID provided")
+	return
+}
 
 func GetJobList() (r []SchedulerUtils.Job, e error) {
 	c, err := net.Dial("unix", SchedulerUtils.SockAddr)

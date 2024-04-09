@@ -87,6 +87,28 @@ var (
 )
 
 var (
+	// schedulerListJson       bool
+	// schedulerInfoJobID      string
+	schedulerInfoJsonPretty bool
+
+	schedulerInfoCmd = &cobra.Command{
+		Use:   "info [jobID]",
+		Short: "Show info for one of the scheduled jobs",
+		Long:  "Show a JSON-formatted info for one of the scheduled jobs",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := HosterCliJson.GenerateSchedulerJobInfo(args[0], schedulerInfoJsonPretty)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+		},
+	}
+)
+
+var (
 	schedulerListUnix       bool
 	schedulerListJson       bool
 	schedulerListJsonPretty bool
@@ -132,8 +154,8 @@ func statusSchedulerService() error {
 	for _, v := range pids {
 		if reMatchScheduler.MatchString(v.ProcessCmd) {
 			fmt.Println(" 🟢 Scheduler is running as PID " + strconv.Itoa(v.ProcessId))
-			fmt.Println()
 
+			// fmt.Println()
 			// resp, err := SchedulerClient.GetJobList()
 			// if err != nil {
 			// 	fmt.Println("ERROR: " + err.Error())
@@ -251,7 +273,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			err := SchedulerClient.AddSnapshotJob(args[0], schedulerSnapshotToKeep, schedulerSnapshotType, false)
+			_, err := SchedulerClient.AddSnapshotJob(args[0], schedulerSnapshotToKeep, schedulerSnapshotType, false)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)

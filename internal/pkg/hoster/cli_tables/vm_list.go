@@ -72,20 +72,38 @@ func GenerateVMsTable(unix bool) error {
 		t.SetHeaderStyle(table.StyleBold)
 	}
 
-	for i, v := range vms {
-		t.AddRow(
-			fmt.Sprintf("%d", i+1),
-			v.VmName,
-			v.VmStatus,
-			fmt.Sprintf("%d", v.CPUSockets),
-			fmt.Sprintf("%d", v.CPUCores),
-			v.VmMemory,
-			v.MainIpAddress,
-			v.OsType,
-			v.VmUptime,
-			v.DiskUsedTotal,
-			v.VmDescription,
-		)
+	if unix {
+		for i, v := range vms {
+			t.AddRow(
+				fmt.Sprintf("%d", i+1),
+				v.VmName,
+				v.VmStatus,
+				fmt.Sprintf("%d", v.CPUSockets),
+				fmt.Sprintf("%d", v.CPUCores),
+				v.VmMemory,
+				v.MainIpAddress,
+				v.OsType,
+				v.VmUptime,
+				v.DiskUsedTotal,
+				v.VmDescription,
+			)
+		}
+	} else {
+		for i, v := range vms {
+			t.AddRow(
+				fmt.Sprintf("%d", i+1),
+				v.VmName,
+				v.VmStatus,
+				fmt.Sprintf("%d", v.CPUSockets),
+				fmt.Sprintf("%d", v.CPUCores),
+				v.VmMemory,
+				v.MainIpAddress,
+				v.OsComment,
+				v.VmUptime,
+				v.DiskUsedTotal,
+				v.VmDescription,
+			)
+		}
 	}
 
 	t.Render()
