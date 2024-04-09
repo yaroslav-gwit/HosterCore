@@ -83,7 +83,7 @@ func GenerateVMsTable(unix bool) error {
 				v.VmMemory,
 				v.MainIpAddress,
 				v.OsType,
-				v.VmUptime,
+				v.VmUptimeNoSpaces,
 				v.DiskUsedTotal,
 				v.VmDescription,
 			)
@@ -99,7 +99,7 @@ func GenerateVMsTable(unix bool) error {
 				v.VmMemory,
 				v.MainIpAddress,
 				v.OsComment,
-				v.VmUptimeNoSpaces,
+				v.VmUptime,
 				v.DiskUsedTotal,
 				v.VmDescription,
 			)
