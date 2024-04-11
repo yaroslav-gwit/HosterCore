@@ -238,7 +238,7 @@ func GetHostInfo() (r HostInfo, e error) {
 
 		// Self Update
 		binary, err = HosterLocations.LocateBinary("self_update")
-		if err != nil {
+		if err == nil {
 			out, err := exec.Command(binary, "version").CombinedOutput()
 			if err != nil {
 				r.Services.SelfUpdateVersion = strings.TrimSpace(string(out))
