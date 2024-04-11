@@ -31,7 +31,7 @@ func init() {
 	logFile := os.Getenv("LOG_FILE")
 
 	// Log as JSON instead of the default ASCII/text formatter.
-	logInternal.SetFormatter(&logrus.JSONFormatter{})
+	// logInternal.SetFormatter(&logrus.JSONFormatter{})
 
 	// Output to stdout instead of the default stderr
 	logInternal.SetOutput(os.Stdout)

@@ -32,16 +32,17 @@ func Configure(level logrus.Level) *Log {
 		RespError: false,
 	}
 
-	logStdOut := os.Getenv("LOG_STDOUT")
+	// logStdOut := os.Getenv("LOG_STDOUT")
 	logFile := os.Getenv("LOG_FILE")
 
 	// Log as JSON instead of the default ASCII/text formatter.
-	l.SetFormatter(&logrus.JSONFormatter{})
+	// l.SetFormatter(&logrus.JSONFormatter{})
+
 	// Output to stdout instead of the default stderr
 	l.SetOutput(os.Stdout)
 
 	// Log to file, but fallback to STDOUT if something goes wrong
-	if logStdOut == "false" && len(logFile) > 2 {
+	if len(logFile) > 2 {
 		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
 			_ = 0
