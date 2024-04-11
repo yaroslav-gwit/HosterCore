@@ -179,6 +179,12 @@ func GetHostInfo() (r HostInfo, e error) {
 			r.Services.HaWatchdogPID = pid
 			r.Services.HaWatchdogRunning = true
 		}
+
+		pid, err = FreeBSDPgrep.FindRestAPIv2()
+		if err == nil {
+			r.Services.RestApiPID = pid
+			r.Services.RestApiRunning = true
+		}
 	}()
 
 	wg.Add(1)
@@ -254,6 +260,15 @@ func GetHostInfo() (r HostInfo, e error) {
 			out, err := exec.Command(binary, "version").CombinedOutput()
 			if err == nil {
 				r.Services.NodeExporterVersion = strings.TrimSpace(string(out))
+			}
+		}
+
+		// Node Exporter
+		binary, err = HosterLocations.LocateBinary("rest_api_v2")
+		if err == nil {
+			out, err := exec.Command(binary, "version").CombinedOutput()
+			if err == nil {
+				r.Services.RestApiVersion = strings.TrimSpace(string(out))
 			}
 		}
 	}()
