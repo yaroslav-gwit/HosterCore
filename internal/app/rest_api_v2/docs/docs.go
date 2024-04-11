@@ -1326,6 +1326,53 @@ const docTemplate = `{
                 "cpu_info": {
                     "$ref": "#/definitions/FreeBSDOsInfo.CpuInfo"
                 },
+                "hostname": {
+                    "type": "string"
+                },
+                "latest_kernel": {
+                    "type": "string"
+                },
+                "live_vms": {
+                    "type": "integer"
+                },
+                "offline_vms": {
+                    "type": "integer"
+                },
+                "offline_vms_prod": {
+                    "type": "integer"
+                },
+                "ram_info": {
+                    "$ref": "#/definitions/FreeBSDOsInfo.RamInfo"
+                },
+                "running_kernel": {
+                    "type": "string"
+                },
+                "services": {
+                    "$ref": "#/definitions/HosterHostUtils.HosterServices"
+                },
+                "swap_info": {
+                    "$ref": "#/definitions/FreeBSDOsInfo.SwapInfo"
+                },
+                "system_major_version": {
+                    "type": "string"
+                },
+                "system_uptime": {
+                    "type": "string"
+                },
+                "vcpu_2_pcpu_ratio": {
+                    "type": "number"
+                },
+                "zpool_list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/zfsutils.ZpoolInfo"
+                    }
+                }
+            }
+        },
+        "HosterHostUtils.HosterServices": {
+            "type": "object",
+            "properties": {
                 "dns_server_pid": {
                     "type": "integer"
                 },
@@ -1347,14 +1394,8 @@ const docTemplate = `{
                 "hoster_version": {
                     "type": "string"
                 },
-                "hostname": {
+                "mbuffer_version": {
                     "type": "string"
-                },
-                "latest_kernel": {
-                    "type": "string"
-                },
-                "live_vms": {
-                    "type": "integer"
                 },
                 "node_exporter_pid": {
                     "type": "integer"
@@ -1365,15 +1406,6 @@ const docTemplate = `{
                 "node_exporter_version": {
                     "type": "string"
                 },
-                "offline_vms": {
-                    "type": "integer"
-                },
-                "offline_vms_prod": {
-                    "type": "integer"
-                },
-                "ram_info": {
-                    "$ref": "#/definitions/FreeBSDOsInfo.RamInfo"
-                },
                 "rest_api_pid": {
                     "type": "integer"
                 },
@@ -1381,9 +1413,6 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "rest_api_version": {
-                    "type": "string"
-                },
-                "running_kernel": {
                     "type": "string"
                 },
                 "scheduler_pid": {
@@ -1395,26 +1424,11 @@ const docTemplate = `{
                 "scheduler_version": {
                     "type": "string"
                 },
-                "swap_info": {
-                    "$ref": "#/definitions/FreeBSDOsInfo.SwapInfo"
-                },
-                "system_major_version": {
+                "self_update_version": {
                     "type": "string"
-                },
-                "system_uptime": {
-                    "type": "string"
-                },
-                "vcpu_2_pcpu_ratio": {
-                    "type": "number"
                 },
                 "vm_supervisor_version": {
                     "type": "string"
-                },
-                "zpool_list": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/zfsutils.ZpoolInfo"
-                    }
                 }
             }
         },
