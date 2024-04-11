@@ -131,4 +131,17 @@ fi
 # shellcheck disable=SC2059
 printf "${GREEN}Done${NC}\n"
 
+# shellcheck disable=SC2059
+printf "Building the ${GREEN}rest_api_v2${NC} module ... "
+cd ..
+cd rest_api_v2/
+# $GO_BINARY build -trimpath
+if test -z "${RELEASE}"; then
+    $GO_BINARY build -ldflags="-X main.version=${DEV_VERSION}" -trimpath -o ./rest_api_v2
+else
+    $GO_BINARY build -ldflags="-X main.version=${RELEASE_VERSION}" -trimpath -o ./rest_api_v2
+fi
+# shellcheck disable=SC2059
+printf "${GREEN}Done${NC}\n"
+
 echo -e "${LIGHT_GREEN}=== Build process done ===${NC}"

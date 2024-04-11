@@ -57,6 +57,17 @@ fi
 #     cp -v internal/app/rest_api/rest_api /opt/hoster-core/hoster_rest_api 2>/dev/null || echo -e "${ERROR_TEXT} hoster_rest_api binary is in use"
 # fi
 
+# 7
+if [[ $1 == 7 || ${BUILD_ALL} == yes ]]; then
+    mkdir -p /opt/hoster-api/
+    cp -rv internal/app/rest_api_v2/docs /opt/hoster-api/ 2>/dev/null || echo -e "${ERROR_TEXT} could not copy rest_api_v2 docs"
+    cp -v internal/app/rest_api_v2/rest_api_v2 /opt/hoster-api/ 2>/dev/null || echo -e "${ERROR_TEXT} rest_api_v2 binary is in use"
+    chmod 0750 /opt/hoster-api/
+    chmod 0750 /opt/hoster-api/docs
+    chmod 0750 /opt/hoster-api/rest_api_v2
+    chmod 0640 /opt/hoster-api/docs/*
+fi
+
 # 8
 if [[ $1 == 8 || ${BUILD_ALL} == yes ]]; then
     cp -v internal/app/ha_watchdog/ha_watchdog /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} ha_watchdog binary is in use"
