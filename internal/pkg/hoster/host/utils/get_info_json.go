@@ -6,6 +6,7 @@ package HosterHostUtils
 
 import (
 	FreeBSDOsInfo "HosterCore/internal/pkg/freebsd/info"
+	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	HosterLocations "HosterCore/internal/pkg/hoster/locations"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
@@ -164,6 +165,35 @@ func GetHostInfo() (r HostInfo, e error) {
 			return
 		}
 		r.SwapInfo = info
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		pid, err := FreeBSDPgrep.FindDnsServer()
+		if err == nil {
+			r.Services.DnsServerRunning = true
+			r.Services.DnsServerPID = pid
+		}
+
+		pid, err = FreeBSDPgrep.FindNodeExporter()
+		if err == nil {
+			r.Services.NodeExporterPID = pid
+			r.Services.NodeExporterRunning = true
+		}
+
+		pid, err = FreeBSDPgrep.FindScheduler()
+		if err == nil {
+			r.Services.SchedulerPID = pid
+			r.Services.SchedulerRunning = true
+		}
+
+		pid, err = FreeBSDPgrep.FindWatchdog()
+		if err == nil {
+			r.Services.HaWatchdogPID = pid
+			r.Services.HaWatchdogRunning = true
+		}
 	}()
 
 	wg.Add(1)
