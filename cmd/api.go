@@ -141,11 +141,40 @@ var (
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+			// err := statusApiServer()
 
-			err := statusApiServer()
+			debug, prod := getHaRunMode()
+			apiPid, err := FreeBSDPgrep.FindRestAPIv2()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
+			}
+
+			wdPid, err := FreeBSDPgrep.FindWatchdog()
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+
+			if apiPid > 0 {
+				fmt.Println(" 🟢 API Server is running as PID " + strconv.Itoa(apiPid))
+			} else {
+				fmt.Println(" 🔴 API Server IS NOT running")
+			}
+
+			if wdPid > 0 {
+				fmt.Println(" 🟢 HA Watchdog service is running as PID " + strconv.Itoa(wdPid))
+				fmt.Println()
+
+				if debug {
+					fmt.Println(" ️🤖 HA is running in DEBUG mode")
+				}
+				if prod {
+					fmt.Println(" 🚀 HA is running in PRODUCTION mode")
+				}
+				fmt.Println(" 🔶 BE CAREFUL! This system is running as a part of the HA. Changes applied here, may affect other cluster members.")
+			} else {
+				fmt.Println(" 🔴 HA Watchdog service IS NOT running")
 			}
 		},
 	}
