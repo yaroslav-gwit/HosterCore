@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	RestApiConfig "HosterCore/internal/app/rest_api_v2/pkg/config"
 	"HosterCore/internal/pkg/emojlog"
 	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
+	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
+	HosterLocations "HosterCore/internal/pkg/hoster/locations"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,8 +24,8 @@ import (
 var (
 	apiCmd = &cobra.Command{
 		Use:   "api",
-		Short: "API Server Menu",
-		Long:  `API Server Menu.`,
+		Short: "RestAPI Service",
+		Long:  `RestAPI Service controls.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 			cmd.Help()
@@ -43,10 +46,49 @@ var (
 		Long:  `Start an API server on port 3000 (default).`,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
-			err := startApiServer()
+			// err := startApiServer()
+
+			pid, err := FreeBSDPgrep.FindRestAPIv2()
+			if err == nil || pid != 0 {
+				emojlog.PrintLogMessage("RestAPIv2 server is already running", emojlog.Error)
+				os.Exit(1)
+			}
+
+			bin, err := HosterLocations.LocateBinary("rest_api_v2")
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
+			}
+			config, err := HosterLocations.LocateConfig("restapi_config.json")
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+			file, err := os.ReadFile(config)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+
+			restApiConfig := RestApiConfig.RestApiConfig{}
+			err = json.Unmarshal(file, &restApiConfig)
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+
+			command := exec.Command(bin)
+			command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+			err = command.Start()
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
+
+			emojlog.PrintLogMessage("Started the REST API server on port: "+strconv.Itoa(restApiConfig.Port), emojlog.Info)
+			emojlog.PrintLogMessage("You can find user credentials inside of this config file: "+config, emojlog.Info)
+			if restApiConfig.Protocol != "https" {
+				emojlog.PrintLogMessage("Using unencrypted/plain HTTP protocol (don't forget to encapsulate it within the WireGuard tunnel)", emojlog.Warning)
 			}
 		},
 	}
@@ -76,6 +118,7 @@ var (
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
+
 			err := statusApiServer()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
@@ -102,7 +145,7 @@ var (
 	}
 )
 
-type RestApiConfig struct {
+type RestApiConfigLocal struct {
 	Bind     string `json:"bind"`
 	Port     int    `json:"port"`
 	Protocol string `json:"protocol"`
@@ -138,7 +181,7 @@ func startApiServer() error {
 		return errors.New("could not open restapi_config.json: " + err.Error())
 	}
 
-	restApiConfig := RestApiConfig{}
+	restApiConfig := RestApiConfigLocal{}
 	err = json.Unmarshal(file, &restApiConfig)
 	if err != nil {
 		return errors.New("could not parse restapi_config.json: " + err.Error())
@@ -241,8 +284,8 @@ func statusApiServer() error {
 
 type ApiProcessServiceInfoStruct struct {
 	HaWatchdogRunning bool
-	HaWatchDogPid     int
 	ApiServerRunning  bool
+	HaWatchDogPid     int
 	ApiServerPid      int
 }
 
