@@ -17,43 +17,47 @@ import (
 	"sync"
 )
 
+type HosterServices struct {
+	DnsServerRunning    bool   `json:"dns_server_running"`
+	SchedulerRunning    bool   `json:"scheduler_running"`
+	RestApiRunning      bool   `json:"rest_api_running"`
+	NodeExporterRunning bool   `json:"node_exporter_running"`
+	HaWatchdogRunning   bool   `json:"ha_watchdog_running"`
+	DnsServerPID        int    `json:"dns_server_pid"`
+	SchedulerPID        int    `json:"scheduler_pid"`
+	RestApiPID          int    `json:"rest_api_pid"`
+	NodeExporterPID     int    `json:"node_exporter_pid"`
+	HaWatchdogPID       int    `json:"ha_watchdog_pid"`
+	DnsServerVersion    string `json:"dns_server_version"`
+	SchedulerVersion    string `json:"scheduler_version"`
+	RestApiVersion      string `json:"rest_api_version"`
+	NodeExporterVersion string `json:"node_exporter_version"`
+	HaWatchdogVersion   string `json:"ha_watchdog_version"`
+	HosterVersion       string `json:"hoster_version"`
+	VmSupervisorVersion string `json:"vm_supervisor_version"`
+	MBufferVersion      string `json:"mbuffer_version"`
+	SelfUpdateVersion   string `json:"self_update_version"`
+}
+
 type HostInfo struct {
-	DnsServerRunning    bool                   `json:"dns_server_running"`
-	SchedulerRunning    bool                   `json:"scheduler_running"`
-	RestApiRunning      bool                   `json:"rest_api_running"`
-	NodeExporterRunning bool                   `json:"node_exporter_running"`
-	HaWatchdogRunning   bool                   `json:"ha_watchdog_running"`
-	DnsServerPID        int                    `json:"dns_server_pid"`
-	SchedulerPID        int                    `json:"scheduler_pid"`
-	RestApiPID          int                    `json:"rest_api_pid"`
-	NodeExporterPID     int                    `json:"node_exporter_pid"`
-	HaWatchdogPID       int                    `json:"ha_watchdog_pid"`
-	DnsServerVersion    string                 `json:"dns_server_version"`
-	SchedulerVersion    string                 `json:"scheduler_version"`
-	RestApiVersion      string                 `json:"rest_api_version"`
-	NodeExporterVersion string                 `json:"node_exporter_version"`
-	HaWatchdogVersion   string                 `json:"ha_watchdog_version"`
-	HosterVersion       string                 `json:"hoster_version"`
-	VmSupervisorVersion string                 `json:"vm_supervisor_version"`
-	MBufferVersion      string                 `json:"mbuffer_version"`
-	SelfUpdateVersion   string                 `json:"self_update_version"`
-	AllVms              int                    `json:"all_vms"`
-	LiveVms             int                    `json:"live_vms"`
-	BackupVms           int                    `json:"backup_vms"`
-	OfflineVms          int                    `json:"offline_vms"`
-	OfflineVmsProd      int                    `json:"offline_vms_prod"`
-	VCPU2PCURatio       float64                `json:"vcpu_2_pcpu_ratio"`
-	VCPU2PCU            string                 `json:"-"`
-	Hostname            string                 `json:"hostname"`
-	SystemUptime        string                 `json:"system_uptime"`
-	SystemMajorVersion  string                 `json:"system_major_version"`
-	RunningKernel       string                 `json:"running_kernel"`
-	LatestKernel        string                 `json:"latest_kernel"`
-	CpuInfo             FreeBSDOsInfo.CpuInfo  `json:"cpu_info"`
-	RamInfo             FreeBSDOsInfo.RamInfo  `json:"ram_info"`
-	SwapInfo            FreeBSDOsInfo.SwapInfo `json:"swap_info"`
-	ArcInfo             FreeBSDOsInfo.ArcInfo  `json:"arc_info"`
-	ZpoolList           []zfsutils.ZpoolInfo   `json:"zpool_list"`
+	Services           HosterServices         `json:"services"`
+	CpuInfo            FreeBSDOsInfo.CpuInfo  `json:"cpu_info"`
+	RamInfo            FreeBSDOsInfo.RamInfo  `json:"ram_info"`
+	SwapInfo           FreeBSDOsInfo.SwapInfo `json:"swap_info"`
+	ArcInfo            FreeBSDOsInfo.ArcInfo  `json:"arc_info"`
+	ZpoolList          []zfsutils.ZpoolInfo   `json:"zpool_list"`
+	VCPU2PCURatio      float64                `json:"vcpu_2_pcpu_ratio"`
+	AllVms             int                    `json:"all_vms"`
+	LiveVms            int                    `json:"live_vms"`
+	BackupVms          int                    `json:"backup_vms"`
+	OfflineVms         int                    `json:"offline_vms"`
+	OfflineVmsProd     int                    `json:"offline_vms_prod"`
+	VCPU2PCU           string                 `json:"-"`
+	Hostname           string                 `json:"hostname"`
+	SystemUptime       string                 `json:"system_uptime"`
+	SystemMajorVersion string                 `json:"system_major_version"`
+	RunningKernel      string                 `json:"running_kernel"`
+	LatestKernel       string                 `json:"latest_kernel"`
 }
 
 func GetHostInfo() (r HostInfo, e error) {
@@ -175,7 +179,7 @@ func GetHostInfo() (r HostInfo, e error) {
 		if err != nil {
 			return
 		}
-		r.HosterVersion = strings.TrimSpace(string(out))
+		r.Services.HosterVersion = strings.TrimSpace(string(out))
 
 		// VM Supervisor
 		binary, err = HosterLocations.LocateBinary("vm_supervisor_service")
@@ -186,7 +190,7 @@ func GetHostInfo() (r HostInfo, e error) {
 		if err != nil {
 			return
 		}
-		r.VmSupervisorVersion = strings.TrimSpace(string(out))
+		r.Services.VmSupervisorVersion = strings.TrimSpace(string(out))
 
 		// DNS Server
 		binary, err = HosterLocations.LocateBinary("dns_server")
@@ -197,7 +201,7 @@ func GetHostInfo() (r HostInfo, e error) {
 		if err != nil {
 			return
 		}
-		r.DnsServerVersion = strings.TrimSpace(string(out))
+		r.Services.DnsServerVersion = strings.TrimSpace(string(out))
 
 		// HA Watchdog
 		binary, err = HosterLocations.LocateBinary("ha_watchdog")
@@ -208,7 +212,7 @@ func GetHostInfo() (r HostInfo, e error) {
 		if err != nil {
 			return
 		}
-		r.HaWatchdogVersion = strings.TrimSpace(string(out))
+		r.Services.HaWatchdogVersion = strings.TrimSpace(string(out))
 
 		// Scheduler
 		binary, err = HosterLocations.LocateBinary("scheduler")
@@ -219,7 +223,7 @@ func GetHostInfo() (r HostInfo, e error) {
 		if err != nil {
 			return
 		}
-		r.SchedulerVersion = strings.TrimSpace(string(out))
+		r.Services.SchedulerVersion = strings.TrimSpace(string(out))
 
 		// Self Update
 		binary, err = HosterLocations.LocateBinary("self_update")
@@ -230,7 +234,7 @@ func GetHostInfo() (r HostInfo, e error) {
 		if err != nil {
 			return
 		}
-		r.SelfUpdateVersion = strings.TrimSpace(string(out))
+		r.Services.SelfUpdateVersion = strings.TrimSpace(string(out))
 
 		// MBuffer
 		binary, err = HosterLocations.LocateBinary("mbuffer")
@@ -241,7 +245,7 @@ func GetHostInfo() (r HostInfo, e error) {
 		if err != nil {
 			return
 		}
-		r.MBufferVersion = strings.TrimSpace(string(out))
+		r.Services.MBufferVersion = strings.TrimSpace(string(out))
 
 		// Node Exporter
 		binary, err = HosterLocations.LocateBinary("node_exporter_custom")
@@ -252,7 +256,7 @@ func GetHostInfo() (r HostInfo, e error) {
 		if err != nil {
 			return
 		}
-		r.NodeExporterVersion = strings.TrimSpace(string(out))
+		r.Services.NodeExporterVersion = strings.TrimSpace(string(out))
 	}()
 
 	wg.Add(1)
