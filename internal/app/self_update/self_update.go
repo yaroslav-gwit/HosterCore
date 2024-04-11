@@ -20,6 +20,16 @@ type Asset struct {
 }
 
 func main() {
+	args := os.Args
+	version := "" // automatically set during the build process
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			fmt.Println(version)
+			return
+		}
+	}
+
 	// Make a request to the GitHub API
 	resp, err := http.Get("https://api.github.com/repos/yaroslav-gwit/HosterCore/releases/latest")
 	if err != nil {

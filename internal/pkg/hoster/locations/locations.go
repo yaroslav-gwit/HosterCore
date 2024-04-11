@@ -12,6 +12,7 @@ import (
 func GetBinaryFolders() (r []string) {
 	r = []string{
 		"/opt/hoster-core",
+		"/opt/hoster-api",
 		"/opt/hoster",
 		"/usr/local/bin",
 		"/bin",
@@ -33,6 +34,9 @@ func GetConfigFolders() (r []string) {
 	return
 }
 
+// Returns an absolute path for a binary required.
+//
+// E.g. /opt/hoster-core/hoster
 func LocateBinary(binaryName string) (r string, e error) {
 	for _, v := range GetBinaryFolders() {
 		if FileExists.CheckUsingOsStat(v + "/" + binaryName) {
@@ -43,6 +47,25 @@ func LocateBinary(binaryName string) (r string, e error) {
 
 	if len(r) < 1 {
 		e = fmt.Errorf("could not locate the binary %s", binaryName)
+		return
+	}
+
+	return
+}
+
+// Returns an absolute path for a config file required.
+//
+// E.g. /opt/hoster-core/configs/hoster_config.json
+func LocateConfig(configName string) (r string, e error) {
+	for _, v := range GetConfigFolders() {
+		if FileExists.CheckUsingOsStat(v + "/" + configName) {
+			r = v + "/" + configName
+			return
+		}
+	}
+
+	if len(r) < 1 {
+		e = fmt.Errorf("could not locate the config file %s", configName)
 		return
 	}
 

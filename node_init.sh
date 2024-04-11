@@ -28,6 +28,7 @@ pkg upgrade -y
 pkg install -y vim bash bash-completion pftop tmux qemu-tools git curl
 pkg install -y bhyve-firmware uefi-edk2-bhyve-csm edk2-bhyve openssl
 pkg install -y htop wget gtar unzip cdrkit-genisoimage go121 beadm chrony
+pkg install -y exa bat micro # modern alternatives to `cat` and `ls`
 #_ EOF INSTALL THE REQUIRED PACKAGES _#
 
 #_ OPTIONAL PACKAGES _#

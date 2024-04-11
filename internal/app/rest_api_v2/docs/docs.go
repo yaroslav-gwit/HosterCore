@@ -1326,11 +1326,44 @@ const docTemplate = `{
                 "cpu_info": {
                     "$ref": "#/definitions/FreeBSDOsInfo.CpuInfo"
                 },
+                "dns_server_pid": {
+                    "type": "integer"
+                },
+                "dns_server_running": {
+                    "type": "boolean"
+                },
+                "dns_server_version": {
+                    "type": "string"
+                },
+                "ha_watchdog_pid": {
+                    "type": "integer"
+                },
+                "ha_watchdog_running": {
+                    "type": "boolean"
+                },
+                "ha_watchdog_version": {
+                    "type": "string"
+                },
+                "hoster_version": {
+                    "type": "string"
+                },
                 "hostname": {
+                    "type": "string"
+                },
+                "latest_kernel": {
                     "type": "string"
                 },
                 "live_vms": {
                     "type": "integer"
+                },
+                "node_exporter_pid": {
+                    "type": "integer"
+                },
+                "node_exporter_running": {
+                    "type": "boolean"
+                },
+                "node_exporter_version": {
+                    "type": "string"
                 },
                 "offline_vms": {
                     "type": "integer"
@@ -1340,6 +1373,27 @@ const docTemplate = `{
                 },
                 "ram_info": {
                     "$ref": "#/definitions/FreeBSDOsInfo.RamInfo"
+                },
+                "rest_api_pid": {
+                    "type": "integer"
+                },
+                "rest_api_running": {
+                    "type": "boolean"
+                },
+                "rest_api_version": {
+                    "type": "string"
+                },
+                "running_kernel": {
+                    "type": "string"
+                },
+                "scheduler_pid": {
+                    "type": "integer"
+                },
+                "scheduler_running": {
+                    "type": "boolean"
+                },
+                "scheduler_version": {
+                    "type": "string"
                 },
                 "swap_info": {
                     "$ref": "#/definitions/FreeBSDOsInfo.SwapInfo"
@@ -1352,6 +1406,9 @@ const docTemplate = `{
                 },
                 "vcpu_2_pcpu_ratio": {
                     "type": "number"
+                },
+                "vm_supervisor_version": {
+                    "type": "string"
                 },
                 "zpool_list": {
                     "type": "array",
@@ -1406,6 +1463,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "dns_search_domain": {
                     "type": "string"
                 },
                 "dns_server": {
@@ -1554,6 +1614,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/HosterVmUtils.VmDisk"
                     }
+                },
+                "dns_search_domain": {
+                    "type": "string"
                 },
                 "encrypted": {
                     "type": "boolean"
@@ -1901,7 +1964,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "snapshot_name": {
-                    "description": "Full snapshot path, or in other words it's full \"ZFS name\"",
+                    "description": "Full snapshot path, or in other words it's full \"ZFS name\", e.g. zroot/vm-encrypted/test-vm-0107@replication_2023-08-14_16-49-08",
                     "type": "string"
                 },
                 "snapshot_short_name": {

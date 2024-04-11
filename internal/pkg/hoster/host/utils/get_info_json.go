@@ -7,29 +7,53 @@ package HosterHostUtils
 import (
 	FreeBSDOsInfo "HosterCore/internal/pkg/freebsd/info"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
+	HosterLocations "HosterCore/internal/pkg/hoster/locations"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	timeconversion "HosterCore/internal/pkg/time_conversion"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
+	"os/exec"
 	"slices"
+	"strings"
 	"sync"
 )
 
 type HostInfo struct {
-	AllVms             int                    `json:"all_vms"`
-	LiveVms            int                    `json:"live_vms"`
-	BackupVms          int                    `json:"backup_vms"`
-	OfflineVms         int                    `json:"offline_vms"`
-	OfflineVmsProd     int                    `json:"offline_vms_prod"`
-	VCPU2PCURatio      float64                `json:"vcpu_2_pcpu_ratio"`
-	VCPU2PCU           string                 `json:"-"`
-	Hostname           string                 `json:"hostname"`
-	SystemUptime       string                 `json:"system_uptime"`
-	SystemMajorVersion string                 `json:"system_major_version"`
-	CpuInfo            FreeBSDOsInfo.CpuInfo  `json:"cpu_info"`
-	RamInfo            FreeBSDOsInfo.RamInfo  `json:"ram_info"`
-	SwapInfo           FreeBSDOsInfo.SwapInfo `json:"swap_info"`
-	ArcInfo            FreeBSDOsInfo.ArcInfo  `json:"arc_info"`
-	ZpoolList          []zfsutils.ZpoolInfo   `json:"zpool_list"`
+	DnsServerRunning    bool                   `json:"dns_server_running"`
+	SchedulerRunning    bool                   `json:"scheduler_running"`
+	RestApiRunning      bool                   `json:"rest_api_running"`
+	NodeExporterRunning bool                   `json:"node_exporter_running"`
+	HaWatchdogRunning   bool                   `json:"ha_watchdog_running"`
+	DnsServerPID        int                    `json:"dns_server_pid"`
+	SchedulerPID        int                    `json:"scheduler_pid"`
+	RestApiPID          int                    `json:"rest_api_pid"`
+	NodeExporterPID     int                    `json:"node_exporter_pid"`
+	HaWatchdogPID       int                    `json:"ha_watchdog_pid"`
+	DnsServerVersion    string                 `json:"dns_server_version"`
+	SchedulerVersion    string                 `json:"scheduler_version"`
+	RestApiVersion      string                 `json:"rest_api_version"`
+	NodeExporterVersion string                 `json:"node_exporter_version"`
+	HaWatchdogVersion   string                 `json:"ha_watchdog_version"`
+	HosterVersion       string                 `json:"hoster_version"`
+	VmSupervisorVersion string                 `json:"vm_supervisor_version"`
+	MBufferVersion      string                 `json:"mbuffer_version"`
+	SelfUpdateVersion   string                 `json:"self_update_version"`
+	AllVms              int                    `json:"all_vms"`
+	LiveVms             int                    `json:"live_vms"`
+	BackupVms           int                    `json:"backup_vms"`
+	OfflineVms          int                    `json:"offline_vms"`
+	OfflineVmsProd      int                    `json:"offline_vms_prod"`
+	VCPU2PCURatio       float64                `json:"vcpu_2_pcpu_ratio"`
+	VCPU2PCU            string                 `json:"-"`
+	Hostname            string                 `json:"hostname"`
+	SystemUptime        string                 `json:"system_uptime"`
+	SystemMajorVersion  string                 `json:"system_major_version"`
+	RunningKernel       string                 `json:"running_kernel"`
+	LatestKernel        string                 `json:"latest_kernel"`
+	CpuInfo             FreeBSDOsInfo.CpuInfo  `json:"cpu_info"`
+	RamInfo             FreeBSDOsInfo.RamInfo  `json:"ram_info"`
+	SwapInfo            FreeBSDOsInfo.SwapInfo `json:"swap_info"`
+	ArcInfo             FreeBSDOsInfo.ArcInfo  `json:"arc_info"`
+	ZpoolList           []zfsutils.ZpoolInfo   `json:"zpool_list"`
 }
 
 func GetHostInfo() (r HostInfo, e error) {
@@ -136,6 +160,36 @@ func GetHostInfo() (r HostInfo, e error) {
 			return
 		}
 		r.SwapInfo = info
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		binary, err := HosterLocations.LocateBinary("hoster")
+		if err != nil {
+			return
+		}
+		out, err := exec.Command(binary, "version").CombinedOutput()
+		if err != nil {
+			return
+		}
+		r.HosterVersion = strings.TrimSpace(string(out))
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		out, err := exec.Command("uname", "-r").CombinedOutput()
+		if err != nil {
+			return
+		}
+		r.RunningKernel = strings.TrimSpace(string(out))
+
+		out, err = exec.Command("freebsd-version", "-k").CombinedOutput()
+		if err != nil {
+			return
+		}
+		r.LatestKernel = strings.TrimSpace(string(out))
 	}()
 
 	wg.Wait()
