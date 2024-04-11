@@ -63,7 +63,12 @@ printf "${GREEN}Done${NC}\n"
 printf "Building the ${GREEN}dns_server${NC} module ... "
 cd ..
 cd dns_server/
-$GO_BINARY build -trimpath
+# $GO_BINARY build -trimpath
+if test -z "${RELEASE}"; then
+    $GO_BINARY build -ldflags="-X main.version=${DEV_VERSION}" -trimpath
+else
+    $GO_BINARY build -ldflags="-X main.version=${RELEASE_VERSION}" -trimpath
+fi
 # shellcheck disable=SC2059
 printf "${GREEN}Done${NC}\n"
 
@@ -71,7 +76,12 @@ printf "${GREEN}Done${NC}\n"
 printf "Building the ${GREEN}mbuffer${NC} limiter module ... "
 cd ..
 cd mbuffer/
-$GO_BINARY build -trimpath
+# $GO_BINARY build -trimpath
+if test -z "${RELEASE}"; then
+    $GO_BINARY build -ldflags="-X main.version=${DEV_VERSION}" -trimpath
+else
+    $GO_BINARY build -ldflags="-X main.version=${RELEASE_VERSION}" -trimpath
+fi
 # shellcheck disable=SC2059
 printf "${GREEN}Done${NC}\n"
 
@@ -79,7 +89,12 @@ printf "${GREEN}Done${NC}\n"
 printf "Building the ${GREEN}node_exporter_custom${NC} module ... "
 cd ..
 cd node_exporter/
-$GO_BINARY build -trimpath
+# $GO_BINARY build -trimpath
+if test -z "${RELEASE}"; then
+    $GO_BINARY build -ldflags="-X main.version=${DEV_VERSION}" -trimpath
+else
+    $GO_BINARY build -ldflags="-X main.version=${RELEASE_VERSION}" -trimpath
+fi
 # shellcheck disable=SC2059
 printf "${GREEN}Done${NC}\n"
 
@@ -94,7 +109,12 @@ printf "${GREEN}Done${NC}\n"
 printf "Building the ${GREEN}ha_watchdog${NC} module ... "
 cd ..
 cd ha_watchdog/
-$GO_BINARY build -trimpath
+# $GO_BINARY build -trimpath
+if test -z "${RELEASE}"; then
+    $GO_BINARY build -ldflags="-X main.version=${DEV_VERSION}" -trimpath
+else
+    $GO_BINARY build -ldflags="-X main.version=${RELEASE_VERSION}" -trimpath
+fi
 # shellcheck disable=SC2059
 printf "${GREEN}Done${NC}\n"
 
