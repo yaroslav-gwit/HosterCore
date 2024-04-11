@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -12,7 +13,19 @@ import (
 	"sync"
 )
 
+var version = "" // version is set by the build system
+
 func main() {
+	// Print the version and exit
+	args := os.Args
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			fmt.Println(version)
+			return
+		}
+	}
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; version=1")
 		fmt.Fprint(w, "hoster metrics exporter\ngo to /metrics to see the exported metrics")

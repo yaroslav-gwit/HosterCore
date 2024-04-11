@@ -6,6 +6,7 @@ import (
 	MiddlewareLogging "HosterCore/internal/app/rest_api_v2/pkg/middleware/logging"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -15,6 +16,7 @@ import (
 )
 
 var log *MiddlewareLogging.Log
+var version = "" // This is set by the build script
 
 // @title Hoster Node REST API Docs
 // @version 2.0
@@ -23,6 +25,16 @@ var log *MiddlewareLogging.Log
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @BasePath /api/v2
 func main() {
+	// Print the version and exit
+	args := os.Args
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			fmt.Println(version)
+			return
+		}
+	}
+
 	r := mux.NewRouter()
 	// log = MiddlewareLogging.Configure(logrus.DebugLevel)
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"HosterCore/cmd"
+	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -9,7 +10,19 @@ import (
 	"time"
 )
 
+var version = "" // version is set by the build system
+
 func main() {
+	// Print the version and exit
+	args := os.Args
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			fmt.Println(version)
+			return
+		}
+	}
+
 	log.Info("new service start-up")
 
 	var debugMode bool

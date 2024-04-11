@@ -165,6 +165,8 @@ func GetHostInfo() (r HostInfo, e error) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+
+		// Hoster
 		binary, err := HosterLocations.LocateBinary("hoster")
 		if err != nil {
 			return
@@ -174,6 +176,83 @@ func GetHostInfo() (r HostInfo, e error) {
 			return
 		}
 		r.HosterVersion = strings.TrimSpace(string(out))
+
+		// VM Supervisor
+		binary, err = HosterLocations.LocateBinary("vm_supervisor_service")
+		if err != nil {
+			return
+		}
+		out, err = exec.Command(binary, "version").CombinedOutput()
+		if err != nil {
+			return
+		}
+		r.VmSupervisorVersion = strings.TrimSpace(string(out))
+
+		// DNS Server
+		binary, err = HosterLocations.LocateBinary("dns_server")
+		if err != nil {
+			return
+		}
+		out, err = exec.Command(binary, "version").CombinedOutput()
+		if err != nil {
+			return
+		}
+		r.DnsServerVersion = strings.TrimSpace(string(out))
+
+		// HA Watchdog
+		binary, err = HosterLocations.LocateBinary("ha_watchdog")
+		if err != nil {
+			return
+		}
+		out, err = exec.Command(binary, "version").CombinedOutput()
+		if err != nil {
+			return
+		}
+		r.HaWatchdogVersion = strings.TrimSpace(string(out))
+
+		// Scheduler
+		binary, err = HosterLocations.LocateBinary("scheduler")
+		if err != nil {
+			return
+		}
+		out, err = exec.Command(binary, "version").CombinedOutput()
+		if err != nil {
+			return
+		}
+		r.SchedulerVersion = strings.TrimSpace(string(out))
+
+		// Self Update
+		binary, err = HosterLocations.LocateBinary("self_update")
+		if err != nil {
+			return
+		}
+		out, err = exec.Command(binary, "version").CombinedOutput()
+		if err != nil {
+			return
+		}
+		r.SelfUpdateVersion = strings.TrimSpace(string(out))
+
+		// MBuffer
+		binary, err = HosterLocations.LocateBinary("mbuffer")
+		if err != nil {
+			return
+		}
+		out, err = exec.Command(binary, "version").CombinedOutput()
+		if err != nil {
+			return
+		}
+		r.MBufferVersion = strings.TrimSpace(string(out))
+
+		// Node Exporter
+		binary, err = HosterLocations.LocateBinary("node_exporter_custom")
+		if err != nil {
+			return
+		}
+		out, err = exec.Command(binary, "version").CombinedOutput()
+		if err != nil {
+			return
+		}
+		r.NodeExporterVersion = strings.TrimSpace(string(out))
 	}()
 
 	wg.Add(1)

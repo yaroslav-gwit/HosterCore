@@ -15,6 +15,15 @@ import (
 var internalLog *logrus.Logger
 
 func init() {
+	// Ignore logging if version was requested
+	args := os.Args
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			return
+		}
+	}
+
 	internalLog = logrus.New() // internal HA log to hoster_ha.log, the variable name was set to this in order to avoid any conflicts with the global RestAPI logger
 	logFile := HA_LOG_LOCATION
 
@@ -43,6 +52,15 @@ var haHostsDb []HosterHaNode
 var hostsDbLock sync.RWMutex
 
 func init() {
+	// Ignore this init if version was requested
+	args := os.Args
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			return
+		}
+	}
+
 	var err error
 	restConf, err = RestApiConfig.GetApiConfig()
 	if err != nil {

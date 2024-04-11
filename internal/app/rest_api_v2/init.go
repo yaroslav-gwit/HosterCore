@@ -17,6 +17,15 @@ import (
 var logInternal = logrus.New()
 
 func init() {
+	// Ignore logging if version was requested
+	args := os.Args
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			return
+		}
+	}
+
 	logStdOut := os.Getenv("LOG_STDOUT")
 	logFile := os.Getenv("LOG_FILE")
 
@@ -43,6 +52,15 @@ func init() {
 var restConf RestApiConfig.RestApiConfig
 
 func init() {
+	// Ignore logging if version was requested
+	args := os.Args
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			return
+		}
+	}
+
 	var err error
 	restConf, err = RestApiConfig.GetApiConfig()
 	if err != nil {
@@ -56,6 +74,15 @@ const timesFailedMax = 3
 var timesFailed = 0
 
 func init() {
+	// Ignore logging if version was requested
+	args := os.Args
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			return
+		}
+	}
+
 	if !restConf.HaMode {
 		return
 	}
