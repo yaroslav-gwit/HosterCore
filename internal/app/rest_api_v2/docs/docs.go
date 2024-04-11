@@ -1329,9 +1329,6 @@ const docTemplate = `{
                 "hostname": {
                     "type": "string"
                 },
-                "latest_kernel": {
-                    "type": "string"
-                },
                 "live_vms": {
                     "type": "integer"
                 },
@@ -1343,9 +1340,6 @@ const docTemplate = `{
                 },
                 "ram_info": {
                     "$ref": "#/definitions/FreeBSDOsInfo.RamInfo"
-                },
-                "running_kernel": {
-                    "type": "string"
                 },
                 "services": {
                     "$ref": "#/definitions/HosterHostUtils.HosterServices"
