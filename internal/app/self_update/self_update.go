@@ -19,9 +19,10 @@ type Asset struct {
 	BrowserDownloadURL string `json:"browser_download_url"`
 }
 
+var version = "" // automatically set during the build process
+
 func main() {
 	args := os.Args
-	version := "" // automatically set during the build process
 	if len(args) > 1 {
 		res := os.Args[1]
 		if res == "version" || res == "v" || res == "--version" || res == "-v" {

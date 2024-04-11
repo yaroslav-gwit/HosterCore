@@ -45,9 +45,9 @@ printf "Building the ${GREEN}self_update_service${NC} module ... "
 cd ..
 cd self_update/
 if test -z "${RELEASE}"; then
-    $GO_BINARY build -ldflags="main.version=${DEV_VERSION}" -trimpath
+    $GO_BINARY build -ldflags="-X main.version=${DEV_VERSION}" -trimpath
 else
-    $GO_BINARY build -ldflags="main.version=${RELEASE_VERSION}" -trimpath
+    $GO_BINARY build -ldflags="-X main.version=${RELEASE_VERSION}" -trimpath
 fi
 printf "${GREEN}Done${NC}\n"
 

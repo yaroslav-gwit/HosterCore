@@ -298,7 +298,7 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 }
 
-var HosterVersion = "v0.3-RELEASE"
+var HosterVersion = "RELEASE"
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
