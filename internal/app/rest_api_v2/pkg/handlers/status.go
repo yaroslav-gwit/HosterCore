@@ -3,19 +3,10 @@ package handlers
 import (
 	ErrorMappings "HosterCore/internal/app/rest_api_v2/pkg/error_mappings"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
-	MiddlewareLogging "HosterCore/internal/app/rest_api_v2/pkg/middleware/logging"
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/sirupsen/logrus"
 )
-
-var log *MiddlewareLogging.Log
-
-func init() {
-	log = MiddlewareLogging.Configure(logrus.DebugLevel)
-}
 
 func SetStatusCode(w http.ResponseWriter, httpStatusCode int) {
 	log.SetStatusCode(httpStatusCode)
@@ -48,8 +39,4 @@ func UnauthenticatedResponse(w http.ResponseWriter, user string, pass string) {
 
 	SetStatusCode(w, http.StatusUnauthorized)
 	w.Write(payload)
-}
-
-func SetLogConfig(l *MiddlewareLogging.Log) {
-	log = l
 }
