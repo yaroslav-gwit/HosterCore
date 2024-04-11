@@ -14,8 +14,16 @@ import (
 var log = logrus.New()
 
 func init() {
-	logFile := os.Getenv("LOG_FILE")
+	// Do not set-up logging, if someone is calling in to get a binary version
+	args := os.Args
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			return
+		}
+	}
 
+	logFile := os.Getenv("LOG_FILE")
 	// Log as JSON instead of the default ASCII/text formatter.
 	// log.SetFormatter(&logrus.JSONFormatter{})
 

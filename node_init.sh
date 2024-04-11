@@ -285,10 +285,14 @@ EOF
 # Download all Hoster-related binaries
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/hoster -O ${HOSTER_WD}hoster -q --show-progress
 chmod 0755 ${HOSTER_WD}hoster
+# TBD in the new release rename to vm_supervisor instead
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/vm_supervisor_service -O ${HOSTER_WD}vm_supervisor_service -q --show-progress
 chmod 0755 ${HOSTER_WD}vm_supervisor_service
+# EOF TBD in the new release rename to vm_supervisor instead
+# TBD in the new release rename to self_update instead
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/self_update_service -O ${HOSTER_WD}self_update_service -q --show-progress
 chmod 0755 ${HOSTER_WD}self_update_service
+# EOF TBD in the new release rename to self_update instead
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/node_exporter_custom -O ${HOSTER_WD}node_exporter_custom -q --show-progress
 chmod 0755 ${HOSTER_WD}node_exporter_custom
 wget https://github.com/yaroslav-gwit/HosterCore/releases/download/v0.3/mbuffer -O ${HOSTER_WD}mbuffer -q --show-progress

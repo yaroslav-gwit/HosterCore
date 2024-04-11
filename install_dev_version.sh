@@ -32,7 +32,8 @@ fi
 
 # 3
 if [[ $1 == 3 || ${BUILD_ALL} == yes ]]; then
-    cp -v internal/app/self_update/self_update /opt/hoster-core/self_update_service 2>/dev/null || echo -e "${ERROR_TEXT} self_update_service binary is in use"
+    # cp -v internal/app/self_update/self_update /opt/hoster-core/self_update_service 2>/dev/null || echo -e "${ERROR_TEXT} self_update_service binary is in use"
+    cp -v internal/app/self_update/self_update /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} self_update binary is in use"
 fi
 
 # 4

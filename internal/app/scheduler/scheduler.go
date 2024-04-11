@@ -3,6 +3,7 @@ package main
 import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
 	"encoding/json"
+	"fmt"
 	"net"
 	"os"
 	"regexp"
@@ -22,7 +23,19 @@ var (
 	snapshotMap map[string]bool // this map keeps an exclusive snapshot lock for a specific VM, which prevents snapshot new, snapshot destroy, snapshot replicate and other ZFS conflicts
 )
 
+var version = "" // automatically set during the build process
+
 func main() {
+	// Print the version and exit
+	args := os.Args
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			fmt.Println(version)
+			return
+		}
+	}
+
 	log.Info("starting the scheduler service")
 	snapshotMap = make(map[string]bool)
 	var wg sync.WaitGroup
