@@ -57,8 +57,8 @@ type HostInfo struct {
 	Hostname           string                 `json:"hostname"`
 	SystemUptime       string                 `json:"system_uptime"`
 	SystemMajorVersion string                 `json:"system_major_version"`
-	RunningKernel      string                 `json:"running_kernel"`
-	LatestKernel       string                 `json:"latest_kernel"`
+	// RunningKernel      string                 `json:"running_kernel"`
+	// LatestKernel       string                 `json:"latest_kernel"`
 }
 
 func GetHostInfo() (r HostInfo, e error) {
@@ -273,20 +273,20 @@ func GetHostInfo() (r HostInfo, e error) {
 		}
 	}()
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	// wg.Add(1)
+	// go func() {
+	// 	defer wg.Done()
 
-		out, err := exec.Command("uname", "-r").CombinedOutput()
-		if err == nil {
-			r.RunningKernel = strings.TrimSpace(string(out))
-		}
+	// 	out, err := exec.Command("uname", "-r").CombinedOutput()
+	// 	if err == nil {
+	// 		r.RunningKernel = strings.TrimSpace(string(out))
+	// 	}
 
-		out, err = exec.Command("freebsd-version", "-k").CombinedOutput()
-		if err == nil {
-			r.LatestKernel = strings.TrimSpace(string(out))
-		}
-	}()
+	// 	out, err = exec.Command("freebsd-version", "-k").CombinedOutput()
+	// 	if err == nil {
+	// 		r.LatestKernel = strings.TrimSpace(string(out))
+	// 	}
+	// }()
 
 	wg.Wait()
 	return
