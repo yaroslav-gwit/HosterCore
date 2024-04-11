@@ -22,6 +22,7 @@ type Asset struct {
 var version = "" // automatically set during the build process
 
 func main() {
+	// Print the version and exit
 	args := os.Args
 	if len(args) > 1 {
 		res := os.Args[1]

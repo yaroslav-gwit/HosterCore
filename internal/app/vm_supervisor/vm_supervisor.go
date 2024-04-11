@@ -9,6 +9,7 @@ import (
 	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -20,8 +21,19 @@ import (
 )
 
 var vmName string
+var version = "" // automatically set during the build process
 
 func main() {
+	// Print the version and exit
+	args := os.Args
+	if len(args) > 1 {
+		res := os.Args[1]
+		if res == "version" || res == "v" || res == "--version" || res == "-v" {
+			fmt.Println(version)
+			return
+		}
+	}
+
 	// Get env vars passed from "hoster vm start"
 	vmName = os.Getenv("VM_NAME")
 	vmStartCommand := os.Getenv("VM_START")

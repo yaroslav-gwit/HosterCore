@@ -10,7 +10,6 @@ NC='\033[0m'
 # ERROR_TEXT="${LIGHT_RED}ERROR:${NC}"
 
 echo -e "${LIGHT_GREEN}=== Starting the build process ===${NC}"
-
 # Set the RELEASE=true, to build the release version
 GIT_INFO=$(git describe --tags)
 DATE_INFO=$(date '+%Y%m%d_%H%M%S')
@@ -20,14 +19,12 @@ RELEASE_VERSION=$(git describe --tags | sed 's/-[^-]*$//')
 if test -z "${RELEASE}"; then
     echo -e "${GREEN}Building the DEV version of HosterCore${NC}"
     echo ""
-
     printf "Building the ${GREEN}hoster${NC} module ... "
     # go build -a -ldflags="-X HosterCore/cmd.HosterVersion=${VERSION}" -o hoster
     $GO_BINARY build -ldflags="-X HosterCore/cmd.HosterVersion=${DEV_VERSION}" -trimpath -o hoster
 else
     echo -e "${GREEN}Building the RELEASE version of HosterCore${NC}"
     echo ""
-
     printf "Building the ${GREEN}hoster${NC} module ... "
     # $GO_BINARY build -trimpath -o hoster
     $GO_BINARY build -ldflags="-X HosterCore/cmd.HosterVersion=${RELEASE_VERSION}" -trimpath -o hoster
@@ -35,10 +32,14 @@ fi
 printf "${GREEN}Done${NC}\n"
 
 cd internal/app
-
 printf "Building the ${GREEN}vm_supervisor_service${NC} module ... "
 cd vm_supervisor/
-$GO_BINARY build -trimpath
+# $GO_BINARY build -trimpath
+if test -z "${RELEASE}"; then
+    $GO_BINARY build -ldflags="-X main.version=${DEV_VERSION}" -trimpath
+else
+    $GO_BINARY build -ldflags="-X main.version=${RELEASE_VERSION}" -trimpath
+fi
 printf "${GREEN}Done${NC}\n"
 
 printf "Building the ${GREEN}self_update_service${NC} module ... "
