@@ -101,11 +101,34 @@ var (
 		Long:  `Stop the API server.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
-			err := StopApiServer()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
+			// err := StopApiServer()
+
+			apiPid, _ := FreeBSDPgrep.FindRestAPIv2()
+			watchdogPid, _ := FreeBSDPgrep.FindWatchdog()
+
+			if watchdogPid > 0 {
+				err1 := FreeBSDKill.KillProcess(FreeBSDKill.KillSignalINT, apiPid)
+				err2 := FreeBSDKill.KillProcess(FreeBSDKill.KillSignalTERM, watchdogPid)
+
+				if err1 != nil {
+					emojlog.PrintLogMessage(err1.Error(), emojlog.Error)
+					os.Exit(1)
+				}
+				if err2 != nil {
+					emojlog.PrintLogMessage(err2.Error(), emojlog.Error)
+					os.Exit(1)
+				}
+				os.Exit(0)
+			} else if apiPid > 0 {
+				err := FreeBSDKill.KillProcess(FreeBSDKill.KillSignalTERM, apiPid)
+				if err != nil {
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
+				}
+				os.Exit(0)
 			}
+
+			emojlog.PrintLogMessage("RestAPIv2 service is not running", emojlog.Error)
 		},
 	}
 )
