@@ -77,6 +77,7 @@ var (
 				os.Exit(1)
 			}
 
+			os.Setenv("LOG_FILE", "/var/log/hoster_rest_api_v2.log")
 			command := exec.Command(bin)
 			command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 			err = command.Start()
@@ -281,8 +282,9 @@ func StopApiServer() error {
 }
 
 func showLogApiServer() error {
-	tailCmd := exec.Command("tail", "-35", "-f", "/var/log/hoster_rest_api.log")
 	// tailCmd := exec.Command("tail", "-35", "-f", "/var/run/hoster_rest_api.log")
+	// tailCmd := exec.Command("tail", "-35", "-f", "/var/log/hoster_rest_api.log")
+	tailCmd := exec.Command("tail", "-35", "-f", "/var/log/hoster_rest_api_v2.log")
 
 	tailCmd.Stdin = os.Stdin
 	tailCmd.Stdout = os.Stdout

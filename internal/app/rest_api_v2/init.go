@@ -26,7 +26,8 @@ func init() {
 		}
 	}
 
-	logStdOut := os.Getenv("LOG_STDOUT")
+	// logStdOut := os.Getenv("LOG_STDOUT")
+	// logFile := "/var/log/hoster_rest_api_v2.log"
 	logFile := os.Getenv("LOG_FILE")
 
 	// Log as JSON instead of the default ASCII/text formatter.
@@ -36,7 +37,7 @@ func init() {
 	logInternal.SetOutput(os.Stdout)
 
 	// Log to file, but fallback to STDOUT if something goes wrong
-	if logStdOut == "false" && len(logFile) > 2 {
+	if len(logFile) > 2 {
 		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
 			FreeBSDLogger.LoggerToSyslog(FreeBSDLogger.LOGGER_SRV_SCHEDULER, FreeBSDLogger.LOGGER_LEVEL_ERROR, "REST API: could not use this file for logging "+logFile+", falling back to STDOUT")
