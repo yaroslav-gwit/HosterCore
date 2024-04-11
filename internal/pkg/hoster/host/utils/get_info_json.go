@@ -120,51 +120,36 @@ func GetHostInfo() (r HostInfo, e error) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		info, err := FreeBSDOsInfo.GetRamInfo()
-		if err != nil {
-			return
+
+		infoArc, err := FreeBSDOsInfo.GetArcInfo()
+		if err == nil {
+			r.ArcInfo = infoArc
 		}
-		r.RamInfo = info
+
+		infoZpoolList, err := zfsutils.GetZpoolList()
+		if err == nil {
+			r.ZpoolList = infoZpoolList
+		}
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		info, err := FreeBSDOsInfo.GetArcInfo()
-		if err != nil {
-			return
-		}
-		r.ArcInfo = info
-	}()
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		info, err := zfsutils.GetZpoolList()
-		if err != nil {
-			return
+		infoCpu, err := FreeBSDOsInfo.GetCpuInfo()
+		if err == nil {
+			r.CpuInfo = infoCpu
 		}
-		r.ZpoolList = info
-	}()
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		info, err := FreeBSDOsInfo.GetCpuInfo()
-		if err != nil {
-			return
+		infoSwap, err := FreeBSDOsInfo.GetSwapInfo()
+		if err == nil {
+			r.SwapInfo = infoSwap
 		}
-		r.CpuInfo = info
-	}()
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		info, err := FreeBSDOsInfo.GetSwapInfo()
-		if err != nil {
-			return
+		infoRam, err := FreeBSDOsInfo.GetRamInfo()
+		if err == nil {
+			r.RamInfo = infoRam
 		}
-		r.SwapInfo = info
 	}()
 
 	wg.Add(1)
@@ -202,107 +187,90 @@ func GetHostInfo() (r HostInfo, e error) {
 
 		// Hoster
 		binary, err := HosterLocations.LocateBinary("hoster")
-		if err != nil {
-			return
+		if err == nil {
+			out, err := exec.Command(binary, "version").CombinedOutput()
+			if err == nil {
+				r.Services.HosterVersion = strings.TrimSpace(string(out))
+			}
 		}
-		out, err := exec.Command(binary, "version").CombinedOutput()
-		if err != nil {
-			return
-		}
-		r.Services.HosterVersion = strings.TrimSpace(string(out))
 
 		// VM Supervisor
 		binary, err = HosterLocations.LocateBinary("vm_supervisor_service")
-		if err != nil {
-			return
+		if err == nil {
+			out, err := exec.Command(binary, "version").CombinedOutput()
+			if err == nil {
+				r.Services.VmSupervisorVersion = strings.TrimSpace(string(out))
+			}
 		}
-		out, err = exec.Command(binary, "version").CombinedOutput()
-		if err != nil {
-			return
-		}
-		r.Services.VmSupervisorVersion = strings.TrimSpace(string(out))
 
 		// DNS Server
 		binary, err = HosterLocations.LocateBinary("dns_server")
-		if err != nil {
-			return
+		if err == nil {
+			out, err := exec.Command(binary, "version").CombinedOutput()
+			if err == nil {
+				r.Services.DnsServerVersion = strings.TrimSpace(string(out))
+			}
 		}
-		out, err = exec.Command(binary, "version").CombinedOutput()
-		if err != nil {
-			return
-		}
-		r.Services.DnsServerVersion = strings.TrimSpace(string(out))
 
 		// HA Watchdog
 		binary, err = HosterLocations.LocateBinary("ha_watchdog")
-		if err != nil {
-			return
+		if err == nil {
+			out, err := exec.Command(binary, "version").CombinedOutput()
+			if err == nil {
+				r.Services.HaWatchdogVersion = strings.TrimSpace(string(out))
+			}
 		}
-		out, err = exec.Command(binary, "version").CombinedOutput()
-		if err != nil {
-			return
-		}
-		r.Services.HaWatchdogVersion = strings.TrimSpace(string(out))
 
 		// Scheduler
 		binary, err = HosterLocations.LocateBinary("scheduler")
-		if err != nil {
-			return
+		if err == nil {
+			out, err := exec.Command(binary, "version").CombinedOutput()
+			if err == nil {
+				r.Services.SchedulerVersion = strings.TrimSpace(string(out))
+			}
 		}
-		out, err = exec.Command(binary, "version").CombinedOutput()
-		if err != nil {
-			return
-		}
-		r.Services.SchedulerVersion = strings.TrimSpace(string(out))
 
 		// Self Update
 		binary, err = HosterLocations.LocateBinary("self_update")
 		if err != nil {
-			return
+			out, err := exec.Command(binary, "version").CombinedOutput()
+			if err != nil {
+				r.Services.SelfUpdateVersion = strings.TrimSpace(string(out))
+			}
 		}
-		out, err = exec.Command(binary, "version").CombinedOutput()
-		if err != nil {
-			return
-		}
-		r.Services.SelfUpdateVersion = strings.TrimSpace(string(out))
 
 		// MBuffer
 		binary, err = HosterLocations.LocateBinary("mbuffer")
-		if err != nil {
-			return
+		if err == nil {
+			out, err := exec.Command(binary, "version").CombinedOutput()
+			if err == nil {
+				r.Services.MBufferVersion = strings.TrimSpace(string(out))
+			}
 		}
-		out, err = exec.Command(binary, "version").CombinedOutput()
-		if err != nil {
-			return
-		}
-		r.Services.MBufferVersion = strings.TrimSpace(string(out))
 
 		// Node Exporter
 		binary, err = HosterLocations.LocateBinary("node_exporter_custom")
-		if err != nil {
-			return
+		if err == nil {
+			out, err := exec.Command(binary, "version").CombinedOutput()
+			if err == nil {
+				r.Services.NodeExporterVersion = strings.TrimSpace(string(out))
+			}
 		}
-		out, err = exec.Command(binary, "version").CombinedOutput()
-		if err != nil {
-			return
-		}
-		r.Services.NodeExporterVersion = strings.TrimSpace(string(out))
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+
 		out, err := exec.Command("uname", "-r").CombinedOutput()
-		if err != nil {
-			return
+		if err == nil {
+			r.RunningKernel = strings.TrimSpace(string(out))
 		}
-		r.RunningKernel = strings.TrimSpace(string(out))
 
 		out, err = exec.Command("freebsd-version", "-k").CombinedOutput()
-		if err != nil {
-			return
+		if err == nil {
+			r.LatestKernel = strings.TrimSpace(string(out))
 		}
-		r.LatestKernel = strings.TrimSpace(string(out))
 	}()
 
 	wg.Wait()
