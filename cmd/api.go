@@ -144,17 +144,8 @@ var (
 			// err := statusApiServer()
 
 			debug, prod := getHaRunMode()
-			apiPid, err := FreeBSDPgrep.FindRestAPIv2()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-
-			wdPid, err := FreeBSDPgrep.FindWatchdog()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
+			apiPid, _ := FreeBSDPgrep.FindRestAPIv2()
+			wdPid, _ := FreeBSDPgrep.FindWatchdog()
 
 			if apiPid > 0 {
 				fmt.Println(" 🟢 API Server is running as PID " + strconv.Itoa(apiPid))
