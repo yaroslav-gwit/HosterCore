@@ -1225,6 +1225,31 @@ const docTemplate = `{
                 }
             }
         },
+        "FreeBSDOsInfo.IoStatCpu": {
+            "type": "object",
+            "properties": {
+                "idle_mode": {
+                    "description": "% of cpu time in idle mode",
+                    "type": "integer"
+                },
+                "system_interrupt_mode": {
+                    "description": "% of cpu time in system interrupt mode",
+                    "type": "integer"
+                },
+                "system_mode": {
+                    "description": "% of cpu time in system mode",
+                    "type": "integer"
+                },
+                "user_mode": {
+                    "description": "% of cpu time in user mode",
+                    "type": "integer"
+                },
+                "user_nice_mode": {
+                    "description": "% of cpu time in user nice mode",
+                    "type": "integer"
+                }
+            }
+        },
         "FreeBSDOsInfo.RamInfo": {
             "type": "object",
             "properties": {
@@ -1325,6 +1350,9 @@ const docTemplate = `{
                 },
                 "cpu_info": {
                     "$ref": "#/definitions/FreeBSDOsInfo.CpuInfo"
+                },
+                "cpu_metrics": {
+                    "$ref": "#/definitions/FreeBSDOsInfo.IoStatCpu"
                 },
                 "hostname": {
                     "type": "string"

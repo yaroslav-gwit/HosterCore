@@ -41,22 +41,23 @@ type HosterServices struct {
 }
 
 type HostInfo struct {
-	Services           HosterServices         `json:"services"`
-	CpuInfo            FreeBSDOsInfo.CpuInfo  `json:"cpu_info"`
-	RamInfo            FreeBSDOsInfo.RamInfo  `json:"ram_info"`
-	SwapInfo           FreeBSDOsInfo.SwapInfo `json:"swap_info"`
-	ArcInfo            FreeBSDOsInfo.ArcInfo  `json:"arc_info"`
-	ZpoolList          []zfsutils.ZpoolInfo   `json:"zpool_list"`
-	VCPU2PCURatio      float64                `json:"vcpu_2_pcpu_ratio"`
-	AllVms             int                    `json:"all_vms"`
-	LiveVms            int                    `json:"live_vms"`
-	BackupVms          int                    `json:"backup_vms"`
-	OfflineVms         int                    `json:"offline_vms"`
-	OfflineVmsProd     int                    `json:"offline_vms_prod"`
-	VCPU2PCU           string                 `json:"-"`
-	Hostname           string                 `json:"hostname"`
-	SystemUptime       string                 `json:"system_uptime"`
-	SystemMajorVersion string                 `json:"system_major_version"`
+	Services           HosterServices          `json:"services"`
+	CpuInfo            FreeBSDOsInfo.CpuInfo   `json:"cpu_info"`
+	RamInfo            FreeBSDOsInfo.RamInfo   `json:"ram_info"`
+	SwapInfo           FreeBSDOsInfo.SwapInfo  `json:"swap_info"`
+	ArcInfo            FreeBSDOsInfo.ArcInfo   `json:"arc_info"`
+	CpuMetrics         FreeBSDOsInfo.IoStatCpu `json:"cpu_metrics"`
+	ZpoolList          []zfsutils.ZpoolInfo    `json:"zpool_list"`
+	VCPU2PCURatio      float64                 `json:"vcpu_2_pcpu_ratio"`
+	AllVms             int                     `json:"all_vms"`
+	LiveVms            int                     `json:"live_vms"`
+	BackupVms          int                     `json:"backup_vms"`
+	OfflineVms         int                     `json:"offline_vms"`
+	OfflineVmsProd     int                     `json:"offline_vms_prod"`
+	VCPU2PCU           string                  `json:"-"`
+	Hostname           string                  `json:"hostname"`
+	SystemUptime       string                  `json:"system_uptime"`
+	SystemMajorVersion string                  `json:"system_major_version"`
 	// RunningKernel      string                 `json:"running_kernel"`
 	// LatestKernel       string                 `json:"latest_kernel"`
 }
@@ -139,6 +140,11 @@ func GetHostInfo() (r HostInfo, e error) {
 		infoCpu, err := FreeBSDOsInfo.GetCpuInfo()
 		if err == nil {
 			r.CpuInfo = infoCpu
+		}
+
+		metricsCpu, err := FreeBSDOsInfo.IoStatCpuMetrics()
+		if err == nil {
+			r.CpuMetrics = metricsCpu
 		}
 
 		infoSwap, err := FreeBSDOsInfo.GetSwapInfo()
