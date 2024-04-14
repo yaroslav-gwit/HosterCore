@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -95,7 +96,13 @@ func main() {
 	// Define a route to serve the static file
 	r.HandleFunc("/api/v2/swagger.json", func(w http.ResponseWriter, r *http.Request) {
 		log.SetStatusCode(http.StatusOK)
-		http.ServeFile(w, r, "docs/swagger.json")
+		ex, err := os.Executable()
+		if err != nil {
+			log.Error("could not get the executable path: " + err.Error())
+			return
+		}
+		binPath := filepath.Dir(ex)
+		http.ServeFile(w, r, binPath+"/docs/swagger.json")
 	})
 	// Catch-all route for 404 errors
 	r.NotFoundHandler = r.NewRoute().HandlerFunc(handlers.NotFoundHandler).GetHandler()
