@@ -163,6 +163,7 @@ func Replicate(job SchedulerUtils.Job, m *sync.RWMutex) error {
 		// Wait for command to finish
 		err = cmd.Wait()
 		if err != nil {
+			job.TimeFinished = time.Now().Unix()
 			return fmt.Errorf("%v", errLines)
 		}
 
