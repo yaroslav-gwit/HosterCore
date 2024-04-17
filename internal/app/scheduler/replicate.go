@@ -1,6 +1,7 @@
 package main
 
 import (
+	SpeedLimitVar "HosterCore/internal/app/mbuffer/speed_limit_var"
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
 	"bufio"
 	"fmt"
@@ -61,7 +62,7 @@ func executeReplicationJobs(m *sync.RWMutex) error {
 			jobs[i].JobInProgress = true
 
 			if v.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
-				logLine := "replication -> started a new job for: " + v.Replication.ResName
+				logLine := "replication -> started a new job for: " + v.Replication.ResName + ", speed limit: " + strconv.Itoa(v.Replication.SpeedLimit) + "MB/s"
 				log.Info(logLine)
 
 				go func(input SchedulerUtils.Job) {
@@ -110,7 +111,12 @@ func Replicate(job SchedulerUtils.Job, m *sync.RWMutex) error {
 
 	for i, v := range job.Replication.ScriptsReplicate {
 		replFile := "/tmp/" + ulid.Make().String()
-		err := os.WriteFile(replFile, []byte(v), 0600)
+		scriptText := ""
+		if job.Replication.SpeedLimit > 0 {
+			scriptText = fmt.Sprintf("%s=%d\n", SpeedLimitVar.SPEED_LIMIT_OS_ENV, job.Replication.SpeedLimit)
+		}
+		scriptText = scriptText + v
+		err := os.WriteFile(replFile, []byte(scriptText), 0600)
 		if err != nil {
 			return err
 		}

@@ -13,11 +13,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"os/exec"
 	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 )
 
@@ -95,12 +93,13 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 		return
 	}
 
-	rsName, _, err := zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_REPLICATION, 5)
+	// rsName, _, err := zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_REPLICATION, 5)
+	_, _, err = zfsutils.TakeScheduledSnapshot(localDs, zfsutils.TYPE_REPLICATION, 5)
 	if err != nil {
 		e = err
 		return
 	}
-	fmt.Println("Took a new snapshot: " + rsName)
+	// fmt.Println("Took a new snapshot: " + rsName)
 
 	out, err := exec.Command("ssh", "-oStrictHostKeyChecking=accept-new", "-oBatchMode=yes", "-i", job.SshKey, fmt.Sprintf("-p%d", job.SshPort), job.SshEndpoint, "zfs", "list", "-t", "all", "-o", "name,mountpoint").CombinedOutput()
 	if err != nil {
@@ -206,9 +205,9 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 
 	// Send initial snapshot
 	if len(remoteDs) < 1 {
-		if job.SpeedLimit > 0 {
-			os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
-		}
+		// if job.SpeedLimit > 0 {
+		// 	os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
+		// }
 		cmd := fmt.Sprintf("zfs send -P -v %s | %s | ssh -oStrictHostKeyChecking=accept-new -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 		replicateCmds = append(replicateCmds, cmd)
 	} else {
@@ -225,9 +224,9 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 				break
 			}
 
-			if job.SpeedLimit > 0 {
-				os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
-			}
+			// if job.SpeedLimit > 0 {
+			// 	os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
+			// }
 			cmd := fmt.Sprintf("zfs send -P -vi %s %s | %s | ssh -oStrictHostKeyChecking=accept-new -i %s -p%d %s zfs receive -F %s", v, toReplicate[i+1], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 			replicateCmds = append(replicateCmds, cmd)
 		}

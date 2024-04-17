@@ -1,6 +1,7 @@
 package main
 
 import (
+	SpeedLimitVar "HosterCore/internal/app/mbuffer/speed_limit_var"
 	"fmt"
 	"io"
 	"os"
@@ -23,7 +24,7 @@ func main() {
 
 	// Parse environment variable for speed limit
 	speedLimitMBPerSecond := 100 // Default value
-	if speedLimitStr := os.Getenv("SPEED_LIMIT_MB_PER_SECOND"); speedLimitStr != "" {
+	if speedLimitStr := os.Getenv(SpeedLimitVar.SPEED_LIMIT_OS_ENV); speedLimitStr != "" {
 		speedLimit, err := strconv.Atoi(speedLimitStr)
 		if err == nil && speedLimit > 0 {
 			speedLimitMBPerSecond = speedLimit
