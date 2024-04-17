@@ -34,8 +34,9 @@ func AddReplicationJob(replJob SchedulerUtils.ReplicationJob) error {
 
 	job.JobType = SchedulerUtils.JOB_TYPE_REPLICATION
 	job.Replication = output
-	job.Replication.ResName = replJob.ResName
 	job.ResType = resType
+	job.Replication.ResName = replJob.ResName
+	job.Replication.SpeedLimit = replJob.SpeedLimit
 
 	jsonJob, err := json.Marshal(job)
 	if err != nil {
