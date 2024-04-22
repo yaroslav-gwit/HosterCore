@@ -69,7 +69,6 @@ func GetHostInfo() (r HostInfo, e error) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		cpusUsed := 0
 		vms, err := HosterVmUtils.ListAllSimple()
 		if err != nil {
 			return
@@ -79,6 +78,7 @@ func GetHostInfo() (r HostInfo, e error) {
 			return
 		}
 
+		cpusUsed := 0
 		for _, v := range vms {
 			conf, err := HosterVmUtils.GetVmConfig(v.Mountpoint + "/" + v.VmName)
 			if err != nil {
@@ -88,7 +88,11 @@ func GetHostInfo() (r HostInfo, e error) {
 			r.AllVms += 1
 			if slices.Contains(list, v.VmName) {
 				r.LiveVms += 1
-				cpusUsed = cpusUsed + (r.CpuInfo.Sockets * r.CpuInfo.Cores * r.CpuInfo.Threads)
+				if conf.CPUThreads > 0 {
+					cpusUsed += (conf.CPUSockets * conf.CPUCores * conf.CPUThreads)
+				} else {
+					cpusUsed += (conf.CPUSockets * conf.CPUCores)
+				}
 			} else if conf.ParentHost == r.Hostname {
 				r.OfflineVms += 1
 				if conf.Production {

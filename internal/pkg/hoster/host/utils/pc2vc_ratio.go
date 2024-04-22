@@ -54,8 +54,8 @@ func GetPc2VcRatioLazy(cpusUsed int) (string, float64) {
 	}
 
 	result := float64(cpusUsed) / float64(cpusAvailable)
-	fmt.Println("Used:", cpusUsed)
-	fmt.Println("Available:", cpusAvailable)
+	// fmt.Println("Used:", cpusUsed)
+	// fmt.Println("Available:", cpusAvailable)
 	// Round the float to the 1 decimal place
 	// result = math.Pow(result, 1)
 	result = math.Pow(result, 0)
