@@ -54,21 +54,24 @@ func GetPc2VcRatioLazy(cpusUsed int) (string, float64) {
 	}
 
 	result := float64(cpusUsed) / float64(cpusAvailable)
+	fmt.Println("Used:", cpusUsed)
+	fmt.Println("Available:", cpusAvailable)
 	// Round the float to the 1 decimal place
-	result = math.Pow(result, 1)
+	// result = math.Pow(result, 1)
+	result = math.Pow(result, 0)
 
 	var ratio string
 	if result < 1 {
 		ratio = termcolors.LIGHT_GREEN + "<1" + termcolors.NC
 	} else if result >= 1 && result <= 3 {
 		// ratio = termcolors.LIGHT_GREEN + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
-		ratio = termcolors.LIGHT_GREEN + fmt.Sprintf("%.1f", result) + ":1" + termcolors.NC
+		ratio = termcolors.LIGHT_GREEN + fmt.Sprintf("%.0f", result) + ":1" + termcolors.NC
 	} else if result >= 3 && result <= 5 {
 		// ratio = termcolors.LIGHT_YELLOW + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
-		ratio = termcolors.LIGHT_YELLOW + fmt.Sprintf("%.1f", result) + ":1" + termcolors.NC
+		ratio = termcolors.LIGHT_YELLOW + fmt.Sprintf("%.0f", result) + ":1" + termcolors.NC
 	} else if result > 5 {
 		// ratio = termcolors.LIGHT_RED + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
-		ratio = termcolors.LIGHT_RED + fmt.Sprintf("%.1f", result) + ":1" + termcolors.NC
+		ratio = termcolors.LIGHT_RED + fmt.Sprintf("%.0f", result) + ":1" + termcolors.NC
 	}
 
 	return ratio, result
