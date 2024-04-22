@@ -46,22 +46,23 @@ import (
 // }
 
 // Same as the above, but doesn't need to iterate over all VMs every time, because you can submit a number of used CPUs.
-func GetPc2VcRatioLazy(cpusUsed int) (string, float64) {
+func GetPc2VcRatioLazy(cpusUsed int) (string, int) {
 	cpusAvailable, err := FreeBSDsysctls.SysctlHwNcpu()
 	if err != nil {
 		cpusAvailable = 0
 	}
 
-	result := float64(cpusUsed / cpusAvailable)
+	result := cpusUsed / cpusAvailable
+
 	var ratio string
 	if result < 1 {
 		ratio = termcolors.LIGHT_GREEN + "<1" + termcolors.NC
 	} else if result >= 1 && result <= 3 {
-		ratio = termcolors.LIGHT_GREEN + fmt.Sprintf("%.0f", result) + ":1" + termcolors.NC
+		ratio = termcolors.LIGHT_GREEN + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
 	} else if result >= 3 && result <= 5 {
-		ratio = termcolors.LIGHT_YELLOW + fmt.Sprintf("%.0f", result) + ":1" + termcolors.NC
+		ratio = termcolors.LIGHT_YELLOW + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
 	} else if result > 5 {
-		ratio = termcolors.LIGHT_RED + fmt.Sprintf("%.0f", result) + ":1" + termcolors.NC
+		ratio = termcolors.LIGHT_RED + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
 	}
 
 	return ratio, result
