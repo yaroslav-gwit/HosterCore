@@ -48,7 +48,7 @@ type HostInfo struct {
 	ArcInfo            FreeBSDOsInfo.ArcInfo   `json:"arc_info"`
 	CpuMetrics         FreeBSDOsInfo.IoStatCpu `json:"cpu_metrics"`
 	ZpoolList          []zfsutils.ZpoolInfo    `json:"zpool_list"`
-	VCPU2PCURatio      int                     `json:"vcpu_2_pcpu_ratio"`
+	VCPU2PCURatio      float64                 `json:"vcpu_2_pcpu_ratio"`
 	AllVms             int                     `json:"all_vms"`
 	LiveVms            int                     `json:"live_vms"`
 	BackupVms          int                     `json:"backup_vms"`
@@ -58,7 +58,6 @@ type HostInfo struct {
 	Hostname           string                  `json:"hostname"`
 	SystemUptime       string                  `json:"system_uptime"`
 	SystemMajorVersion string                  `json:"system_major_version"`
-	// VCPU2PCURatio      float64                 `json:"vcpu_2_pcpu_ratio"`
 	// RunningKernel      string                 `json:"running_kernel"`
 	// LatestKernel       string                 `json:"latest_kernel"`
 }

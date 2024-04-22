@@ -4,6 +4,7 @@ import (
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	termcolors "HosterCore/internal/pkg/hoster/terminal_colours"
 	"fmt"
+	"math"
 )
 
 // If this ratio is > 6:1 you should really stop deploying more VMs to avoid performance issues
@@ -46,23 +47,28 @@ import (
 // }
 
 // Same as the above, but doesn't need to iterate over all VMs every time, because you can submit a number of used CPUs.
-func GetPc2VcRatioLazy(cpusUsed int) (string, int) {
+func GetPc2VcRatioLazy(cpusUsed int) (string, float64) {
 	cpusAvailable, err := FreeBSDsysctls.SysctlHwNcpu()
 	if err != nil {
 		cpusAvailable = 0
 	}
 
-	result := cpusUsed / cpusAvailable
+	result := float64(cpusUsed) / float64(cpusAvailable)
+	// Round the float to the 1 decimal place
+	result = math.Pow(result, 1)
 
 	var ratio string
 	if result < 1 {
 		ratio = termcolors.LIGHT_GREEN + "<1" + termcolors.NC
 	} else if result >= 1 && result <= 3 {
-		ratio = termcolors.LIGHT_GREEN + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
+		// ratio = termcolors.LIGHT_GREEN + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
+		ratio = termcolors.LIGHT_GREEN + fmt.Sprintf("%.1f", result) + ":1" + termcolors.NC
 	} else if result >= 3 && result <= 5 {
-		ratio = termcolors.LIGHT_YELLOW + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
+		// ratio = termcolors.LIGHT_YELLOW + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
+		ratio = termcolors.LIGHT_YELLOW + fmt.Sprintf("%.1f", result) + ":1" + termcolors.NC
 	} else if result > 5 {
-		ratio = termcolors.LIGHT_RED + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
+		// ratio = termcolors.LIGHT_RED + fmt.Sprintf("%d", result) + ":1" + termcolors.NC
+		ratio = termcolors.LIGHT_RED + fmt.Sprintf("%.1f", result) + ":1" + termcolors.NC
 	}
 
 	return ratio, result
