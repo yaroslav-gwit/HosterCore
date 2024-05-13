@@ -5,6 +5,7 @@ import (
 	"HosterCore/internal/pkg/byteconversion"
 	HosterHost "HosterCore/internal/pkg/hoster/host"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os/exec"
@@ -67,7 +68,38 @@ type DatasetInfo struct {
 }
 
 func getDsInfo(dsName string) (r DatasetInfo, e error) {
-	out, err := exec.Command("zfs", "list", "-p", "-o", "name,used,available,mounted,encryption", dsName).CombinedOutput()
+	reSpace := regexp.MustCompile(`\s+`)
+
+	pool := strings.Split(dsName, "/")[0]
+	out, err := exec.Command("zpool", "list", "-p", "-o", "name,size", pool).CombinedOutput()
+	// Pool output example:
+	//
+	// zpool list -p -o name,size tank
+	// NAME           SIZE
+	//  [0]           [1]
+	// tank          1992864825344
+	if err != nil {
+		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
+		return
+	}
+
+	splitPool := strings.Split(string(out), "\n")
+	poolValues := ""
+	if len(splitPool) > 1 {
+		poolValues = splitPool[1]
+	} else {
+		e = errors.New("could not find the pool")
+		return
+	}
+
+	totalString := reSpace.Split(poolValues, -1)[1]
+	total, err := strconv.ParseUint(totalString, 10, 64)
+	if err != nil {
+		e = err
+		return
+	}
+
+	out, err = exec.Command("zfs", "list", "-p", "-o", "name,used,available,mounted,encryption", dsName).CombinedOutput()
 	if err != nil {
 		e = fmt.Errorf("%s; %s", strings.TrimSpace(string(out)), err.Error())
 		return
@@ -87,16 +119,16 @@ func getDsInfo(dsName string) (r DatasetInfo, e error) {
 	// [0]                  [1]         [2]          [3]      [4]
 	// tank/vm-unencrypted  98304   1329563111424    yes      off
 
-	reSpace := regexp.MustCompile(`\s+`)
 	realValues := strings.Split(string(out), "\n")[1]
 	split := reSpace.Split(realValues, -1)
+	r.Name = split[0]
 
-	used, err := strconv.ParseUint(split[1], 10, 64)
-	if err != nil {
-		e = err
-		return
-	}
-	usedHuman := byteconversion.BytesToHuman(used)
+	// used, err := strconv.ParseUint(split[1], 10, 64)
+	// if err != nil {
+	// 	e = err
+	// 	return
+	// }
+	// usedHuman := byteconversion.BytesToHuman(used)
 
 	available, err := strconv.ParseUint(split[2], 10, 64)
 	if err != nil {
@@ -105,14 +137,13 @@ func getDsInfo(dsName string) (r DatasetInfo, e error) {
 	}
 	availableHuman := byteconversion.BytesToHuman(available)
 
-	r.Name = split[0]
 	r.Available = available
 	r.AvailableHuman = availableHuman
 
-	r.Used = used
-	r.UsedHuman = usedHuman
+	r.Used = total - available
+	r.UsedHuman = byteconversion.BytesToHuman(r.Used)
 
-	r.Total = used + available
+	r.Total = total
 	r.TotalHuman = byteconversion.BytesToHuman(r.Total)
 
 	r.Mounted = split[3] == "yes"
