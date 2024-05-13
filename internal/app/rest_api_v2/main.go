@@ -54,6 +54,7 @@ func main() {
 	r.HandleFunc("/api/v2/health/auth/regular", handlers.HealthCheckRegularAuth).Methods("GET")
 	// Host
 	r.HandleFunc("/api/v2/host/info", handlers.HostInfo).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/host/settings", handlers.HostSettings).Methods(http.MethodGet)
 	// VMs
 	r.HandleFunc("/api/v2/vm/all", handlers.VmList).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/info/{vm_name}", handlers.VmInfo).Methods(http.MethodGet)

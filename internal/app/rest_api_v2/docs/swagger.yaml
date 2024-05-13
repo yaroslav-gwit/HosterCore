@@ -96,6 +96,32 @@ definitions:
       vm_name:
         type: string
     type: object
+  HosterHost.HostConfig:
+    properties:
+      active_datasets:
+        items:
+          type: string
+        type: array
+      dns_search_domain:
+        type: string
+      dns_servers:
+        items:
+          type: string
+        type: array
+      host_ssh_keys:
+        items:
+          $ref: '#/definitions/HosterHost.HostConfigKey'
+        type: array
+      public_vm_image_server:
+        type: string
+    type: object
+  HosterHost.HostConfigKey:
+    properties:
+      comment:
+        type: string
+      key_value:
+        type: string
+    type: object
   HosterHostUtils.HostInfo:
     properties:
       all_vms:
@@ -783,6 +809,25 @@ paths:
       security:
       - BasicAuth: []
       summary: Get Host info.
+      tags:
+      - Host
+  /host/settings:
+    get:
+      description: 'Get Host Settings.<br>`AUTH`: only REST user is allowed.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/HosterHost.HostConfig'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get Host Settings.
       tags:
       - Host
   /jail/all:

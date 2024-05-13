@@ -339,6 +339,37 @@
                 }
             }
         },
+        "/host/settings": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get Host Settings.\u003cbr\u003e`AUTH`: only REST user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Host"
+                ],
+                "summary": "Get Host Settings.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/HosterHost.HostConfig"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/all": {
             "get": {
                 "security": [
@@ -1325,6 +1356,46 @@
                     "type": "string"
                 },
                 "vm_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "HosterHost.HostConfig": {
+            "type": "object",
+            "properties": {
+                "active_datasets": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "dns_search_domain": {
+                    "type": "string"
+                },
+                "dns_servers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "host_ssh_keys": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HosterHost.HostConfigKey"
+                    }
+                },
+                "public_vm_image_server": {
+                    "type": "string"
+                }
+            }
+        },
+        "HosterHost.HostConfigKey": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "key_value": {
                     "type": "string"
                 }
             }
