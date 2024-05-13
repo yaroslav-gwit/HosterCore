@@ -11,10 +11,12 @@ NC='\033[0m'
 
 echo -e "${LIGHT_GREEN}=== Starting the build process ===${NC}"
 # Set the RELEASE=true, to build the release version
-GIT_INFO=$(git describe --tags)
-DATE_INFO=$(date '+%Y%m%d_%H%M%S')
+GIT_INFO=$(git describe --tags | sed 's/-g.*$//')
+# DATE_INFO=$(date '+%Y%m%d_%H%M%S') # include seconds
+DATE_INFO=$(date '+%Y%m%d_%H%M')
 DEV_VERSION=${GIT_INFO}_COMPTIME_${DATE_INFO}
-RELEASE_VERSION=$(git describe --tags | sed 's/-[^-]*$//')
+# RELEASE_VERSION=$(git describe --tags | sed 's/-[^-]*$//')
+RELEASE_VERSION=$(git describe --tags | sed 's/-g.*$//')
 
 if test -z "${RELEASE}"; then
     echo -e "${GREEN}Building the DEV version of HosterCore${NC}"
