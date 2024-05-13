@@ -81,18 +81,19 @@ UNENCRYPTED_DS=$(zfs list | grep -c "zroot/vm-unencrypted")
 #_ EOF REGISTER IF THE REQUIRED DATASETS EXIST _#
 
 #_ CREATE ZFS DATASETS IF THEY DON'T EXIST _#
+zpool set autoexpand=on zroot
+zpool set autoreplace=on zroot
+
 if [[ ${ENCRYPTED_DS} -lt 1 ]]; then
-    zpool set autoexpand=on zroot
-    zpool set autoreplace=on zroot
     # zfs set primarycache=metadata zroot
     echo -e "${ZFS_RANDOM_PASSWORD}" | zfs create -o encryption=on -o keyformat=passphrase zroot/vm-encrypted
+    zfs atime=off zroot/vm-encrypted
 fi
 
 if [[ ${UNENCRYPTED_DS} -lt 1 ]]; then
-    zpool set autoexpand=on zroot
-    zpool set autoreplace=on zroot
     # zfs set primarycache=metadata zroot
     zfs create zroot/vm-unencrypted
+    zfs atime=off zroot/vm-unencrypted
 fi
 #_ EOF CREATE ZFS DATASETS IF THEY DON'T EXIST _#
 

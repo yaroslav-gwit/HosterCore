@@ -8,7 +8,7 @@ type HosterHaNode struct {
 }
 
 type ModifyHostsDb struct {
-	addOrUpdate bool
-	remove      bool
-	data        HosterHaNode
+	AddOrUpdate bool
+	Remove      bool
+	Data        HosterHaNode
 }

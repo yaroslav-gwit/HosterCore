@@ -1,3 +1,6 @@
+//go:build freebsd
+// +build freebsd
+
 package HandlersHA
 
 import (
@@ -57,7 +60,7 @@ func HandleRegistration(w http.ResponseWriter, r *http.Request) {
 	hosterHaNode.NodeInfo.Address = r.RemoteAddr
 	hosterHaNode.LastPing = time.Now().Unix()
 
-	modifyHostsDb(ModifyHostsDb{addOrUpdate: true, data: hosterHaNode}, &hostsDbLock)
+	modifyHostsDb(ModifyHostsDb{AddOrUpdate: true, Data: hosterHaNode}, &hostsDbLock)
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	handlers.SetStatusCode(w, http.StatusOK)
@@ -101,7 +104,7 @@ func HandlePing(w http.ResponseWriter, r *http.Request) {
 	hosterHaNode.NodeInfo.Address = r.RemoteAddr
 	hosterHaNode.LastPing = time.Now().Unix()
 
-	modifyHostsDb(ModifyHostsDb{addOrUpdate: true, data: hosterHaNode}, &hostsDbLock)
+	modifyHostsDb(ModifyHostsDb{AddOrUpdate: true, Data: hosterHaNode}, &hostsDbLock)
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "pong")
 	handlers.SetStatusCode(w, http.StatusOK)

@@ -1,3 +1,6 @@
+//go:build freebsd
+// +build freebsd
+
 package HandlersHA
 
 import (
@@ -283,7 +286,7 @@ func removeOfflineNodes() {
 			if time.Now().Unix() > v.LastPing+v.NodeInfo.FailOverTime {
 				if len(v.NodeInfo.Hostname) > 0 {
 					failoverHostVms(v)
-					modifyHostsDb(ModifyHostsDb{data: v, remove: true}, &hostsDbLock)
+					modifyHostsDb(ModifyHostsDb{Data: v, Remove: true}, &hostsDbLock)
 					// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has gone offline: "+v.NodeInfo.Hostname).Run()
 					internalLog.Warnf("host has gone offline %s", v.NodeInfo.Hostname)
 				}
@@ -448,13 +451,13 @@ func modifyHostsDb(input ModifyHostsDb, dbLock *sync.RWMutex) {
 	}()
 
 	defer dbLock.Unlock()
-	if input.addOrUpdate {
+	if input.AddOrUpdate {
 		hostFound := false
 		hostIndex := 0
 
 		dbLock.Lock()
 		for i, v := range haHostsDb {
-			if input.data.NodeInfo.Hostname == v.NodeInfo.Hostname {
+			if input.Data.NodeInfo.Hostname == v.NodeInfo.Hostname {
 				hostFound = true
 				hostIndex = i
 			}
@@ -462,29 +465,29 @@ func modifyHostsDb(input ModifyHostsDb, dbLock *sync.RWMutex) {
 
 		if !hostFound {
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "INFO: registered a new node: "+input.data.NodeInfo.Hostname).Run()
-			internalLog.Infof("registered a new node: %s", input.data.NodeInfo.Hostname)
-			haHostsDb = append(haHostsDb, input.data)
+			internalLog.Infof("registered a new node: %s", input.Data.NodeInfo.Hostname)
+			haHostsDb = append(haHostsDb, input.Data)
 		} else {
 			// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "DEBUG: Updated last ping time and network address for "+msg.NodeInfo.Hostname).Run()
-			internalLog.Debugf("updated last ping time for: %s", input.data.NodeInfo.Hostname)
-			haHostsDb[hostIndex].NodeInfo.Address = input.data.NodeInfo.Address
-			if input.data.NodeInfo.StartupTime > 0 {
-				haHostsDb[hostIndex].NodeInfo.StartupTime = input.data.NodeInfo.StartupTime
+			internalLog.Debugf("updated last ping time for: %s", input.Data.NodeInfo.Hostname)
+			haHostsDb[hostIndex].NodeInfo.Address = input.Data.NodeInfo.Address
+			if input.Data.NodeInfo.StartupTime > 0 {
+				haHostsDb[hostIndex].NodeInfo.StartupTime = input.Data.NodeInfo.StartupTime
 			}
 			haHostsDb[hostIndex].LastPing = time.Now().Unix()
 		}
 		return
 	}
 
-	if input.remove {
+	if input.Remove {
 		dbLock.Lock()
 		for i, v := range haHostsDb {
-			if input.data.NodeInfo.Hostname == v.NodeInfo.Hostname && len(v.NodeInfo.Hostname) > 0 {
+			if input.Data.NodeInfo.Hostname == v.NodeInfo.Hostname && len(v.NodeInfo.Hostname) > 0 {
 				haHostsDb[i] = haHostsDb[len(haHostsDb)-1]
 				haHostsDb[len(haHostsDb)-1] = HosterHaNode{}
 				haHostsDb = haHostsDb[0 : len(haHostsDb)-1]
 				// _ = exec.Command("logger", "-t", "HOSTER_HA_REST", "WARN: host has been removed from the cluster: "+input.data.NodeInfo.Hostname).Run()
-				internalLog.Warnf("removed the node from the cluster: %s", input.data.NodeInfo.Hostname)
+				internalLog.Warnf("removed the node from the cluster: %s", input.Data.NodeInfo.Hostname)
 			}
 		}
 		return

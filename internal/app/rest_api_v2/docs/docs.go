@@ -1475,6 +1475,9 @@ const docTemplate = `{
                 "network_name": {
                     "type": "string"
                 },
+                "production": {
+                    "type": "boolean"
+                },
                 "ram_limit": {
                     "type": "string"
                 },
