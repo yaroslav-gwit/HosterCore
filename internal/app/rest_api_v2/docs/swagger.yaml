@@ -479,6 +479,46 @@ definitions:
       user:
         type: string
     type: object
+  RestApiConfig.RestApiConfig:
+    properties:
+      bind:
+        description: can be empty, 0.0.0.0 used by default
+        type: string
+      ha_debug:
+        description: ha_debug allows you to test the HA Mode, because instead of applying
+          the real actions, ha_debug will only log them instead
+        type: boolean
+      ha_mode:
+        description: whether to start the API server in an HA cluster mode
+        type: boolean
+      http_auth:
+        items:
+          properties:
+            ha_user:
+              description: HA User has access to a different set of routes than the
+                regular REST API user, and vise versa. Has been implemented to limit
+                per-user API exposure, aka normal user is not authorized to call HA
+                related routes.
+              type: boolean
+            password:
+              description: password for the basic HTTP auth
+              type: string
+            user:
+              description: user name for the basic HTTP auth
+              type: string
+          type: object
+        type: array
+      log_level:
+        description: DEBUG, INFO, WARN, or ERROR
+        type: string
+      port:
+        description: port to bind the HTTP server to
+        type: integer
+      protocol:
+        description: 'http or https -> not implemented yet, will require another parameter:
+          key_location'
+        type: string
+    type: object
   handlers.DatasetInfo:
     properties:
       available:
@@ -893,6 +933,26 @@ paths:
       security:
       - BasicAuth: []
       summary: Get Host Settings.
+      tags:
+      - Host
+  /host/settings/api:
+    get:
+      description: 'Get RestAPI Settings (including HA settings).<br>`AUTH`: only
+        REST user is allowed.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/RestApiConfig.RestApiConfig'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get RestAPI Settings (including HA settings).
       tags:
       - Host
   /jail/all:

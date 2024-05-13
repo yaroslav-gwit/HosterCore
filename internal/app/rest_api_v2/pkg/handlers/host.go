@@ -2,6 +2,7 @@ package handlers
 
 import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
+	RestApiConfig "HosterCore/internal/app/rest_api_v2/pkg/config"
 	HosterHost "HosterCore/internal/pkg/hoster/host"
 	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
 	"encoding/json"
@@ -55,6 +56,37 @@ func HostSettings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	info, err := HosterHost.GetHostConfig()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := json.Marshal(info)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags Host
+// @Summary Get RestAPI Settings (including HA settings).
+// @Description Get RestAPI Settings (including HA settings).<br>`AUTH`: only REST user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} RestApiConfig.RestApiConfig
+// @Failure 500 {object} SwaggerError
+// @Router /host/settings/api [get]
+func HostRestApiSettings(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	info, err := RestApiConfig.GetApiConfig()
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

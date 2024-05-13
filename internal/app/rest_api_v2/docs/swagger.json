@@ -404,6 +404,37 @@
                 }
             }
         },
+        "/host/settings/api": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get RestAPI Settings (including HA settings).\u003cbr\u003e`AUTH`: only REST user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Host"
+                ],
+                "summary": "Get RestAPI Settings (including HA settings).",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/RestApiConfig.RestApiConfig"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/all": {
             "get": {
                 "security": [
@@ -2005,6 +2036,55 @@
                     "type": "integer"
                 },
                 "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "RestApiConfig.RestApiConfig": {
+            "type": "object",
+            "properties": {
+                "bind": {
+                    "description": "can be empty, 0.0.0.0 used by default",
+                    "type": "string"
+                },
+                "ha_debug": {
+                    "description": "ha_debug allows you to test the HA Mode, because instead of applying the real actions, ha_debug will only log them instead",
+                    "type": "boolean"
+                },
+                "ha_mode": {
+                    "description": "whether to start the API server in an HA cluster mode",
+                    "type": "boolean"
+                },
+                "http_auth": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "ha_user": {
+                                "description": "HA User has access to a different set of routes than the regular REST API user, and vise versa. Has been implemented to limit per-user API exposure, aka normal user is not authorized to call HA related routes.",
+                                "type": "boolean"
+                            },
+                            "password": {
+                                "description": "password for the basic HTTP auth",
+                                "type": "string"
+                            },
+                            "user": {
+                                "description": "user name for the basic HTTP auth",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "log_level": {
+                    "description": "DEBUG, INFO, WARN, or ERROR",
+                    "type": "string"
+                },
+                "port": {
+                    "description": "port to bind the HTTP server to",
+                    "type": "integer"
+                },
+                "protocol": {
+                    "description": "http or https -\u003e not implemented yet, will require another parameter: key_location",
                     "type": "string"
                 }
             }

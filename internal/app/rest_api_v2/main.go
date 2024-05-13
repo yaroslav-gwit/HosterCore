@@ -55,6 +55,7 @@ func main() {
 	// Host
 	r.HandleFunc("/api/v2/host/info", handlers.HostInfo).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/host/settings", handlers.HostSettings).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/host/settings/api", handlers.HostRestApiSettings).Methods(http.MethodGet)
 	// Datasets
 	r.HandleFunc("/api/v2/dataset/all", handlers.DatasetList).Methods(http.MethodGet)
 	// Networks
