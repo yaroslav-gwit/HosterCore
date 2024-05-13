@@ -114,6 +114,10 @@ definitions:
         type: array
       public_vm_image_server:
         type: string
+      tags:
+        items:
+          type: string
+        type: array
     type: object
   HosterHost.HostConfigKey:
     properties:
@@ -456,6 +460,27 @@ definitions:
       user:
         type: string
     type: object
+  handlers.DatasetInfo:
+    properties:
+      available:
+        type: integer
+      available_human:
+        type: string
+      encrypted:
+        type: boolean
+      mounted:
+        type: boolean
+      name:
+        type: string
+      total:
+        type: integer
+      total_human:
+        type: string
+      used:
+        type: integer
+      used_human:
+        type: string
+    type: object
   handlers.JailCloneInput:
     properties:
       jail_name:
@@ -608,6 +633,27 @@ info:
   title: Hoster Node REST API Docs
   version: "2.0"
 paths:
+  /dataset/list:
+    get:
+      description: 'Get active dataset list.<br>`AUTH`: Only REST user is allowed.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handlers.DatasetInfo'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get active dataset list.
+      tags:
+      - Datasets
   /ha/jail-list:
     get:
       description: Handle the HA enabled Jail list.

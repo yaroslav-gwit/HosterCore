@@ -19,6 +19,40 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/dataset/list": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get active dataset list.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only REST user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Datasets"
+                ],
+                "summary": "Get active dataset list.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.DatasetInfo"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/ha/jail-list": {
             "get": {
                 "security": [
@@ -1393,6 +1427,12 @@ const docTemplate = `{
                 },
                 "public_vm_image_server": {
                     "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -1909,6 +1949,38 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "user": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.DatasetInfo": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "integer"
+                },
+                "available_human": {
+                    "type": "string"
+                },
+                "encrypted": {
+                    "type": "boolean"
+                },
+                "mounted": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_human": {
+                    "type": "string"
+                },
+                "used": {
+                    "type": "integer"
+                },
+                "used_human": {
                     "type": "string"
                 }
             }

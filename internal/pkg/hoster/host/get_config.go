@@ -19,9 +19,10 @@ type HostConfigKey struct {
 
 type HostConfig struct {
 	ImageServer       string          `json:"public_vm_image_server"`
+	DnsSearchDomain   string          `json:"dns_search_domain,omitempty"`
+	Tags              []string        `json:"tags"`
 	ActiveZfsDatasets []string        `json:"active_datasets"`
 	DnsServers        []string        `json:"dns_servers,omitempty"`
-	DnsSearchDomain   string          `json:"dns_search_domain,omitempty"`
 	HostSSHKeys       []HostConfigKey `json:"host_ssh_keys"`
 }
 
