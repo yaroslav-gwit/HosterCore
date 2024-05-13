@@ -25,6 +25,7 @@ hoster dns stop
 hoster api stop
 echo -e "${LIGHT_GREEN}=== Stopping the additional services: DONE ===${NC}"
 
+echo ""
 echo -e "${LIGHT_GREEN}=== Starting the installation process ===${NC}"
 
 cp -v hoster /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} hoster binary is in use"
