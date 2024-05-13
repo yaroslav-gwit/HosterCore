@@ -282,6 +282,25 @@ definitions:
       uuid:
         type: string
     type: object
+  HosterNetwork.NetworkConfig:
+    properties:
+      apply_bridge_address:
+        type: boolean
+      bridge_interface:
+        type: string
+      comment:
+        type: string
+      network_gateway:
+        type: string
+      network_name:
+        type: string
+      network_range_end:
+        type: string
+      network_range_start:
+        type: string
+      network_subnet:
+        type: string
+    type: object
   HosterVm.VmDeployInput:
     properties:
       custom_dns_server:
@@ -1131,6 +1150,27 @@ paths:
       tags:
       - Metrics
       - VMs
+  /network/all:
+    get:
+      description: 'Get the networks list.<br>`AUTH`: Only REST user is allowed.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/HosterNetwork.NetworkConfig'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get the networks list.
+      tags:
+      - Networks
   /snapshot/all/{res_name}:
     get:
       description: 'List all snapshots for any given VM or a Jail.<br>`AUTH`: Both

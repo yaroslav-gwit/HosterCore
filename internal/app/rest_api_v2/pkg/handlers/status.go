@@ -31,7 +31,7 @@ func ReportError(w http.ResponseWriter, httpStatusCode int, errorValue string) {
 }
 
 func UnauthenticatedResponse(w http.ResponseWriter, user string, pass string) {
-	payload, _ := JSONResponse.GenerateJson(w, "message", "unauthorized")
+	payload, _ := JSONResponse.GenerateJson(w, "error", "unauthorized")
 	w.Header().Add("WWW-Authenticate", `Basic realm="Restricted"`)
 
 	message := fmt.Sprintf("could not authenticate '%s' using '%s'", user, pass)
