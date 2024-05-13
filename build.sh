@@ -18,14 +18,14 @@ RELEASE_VERSION=$(git describe --tags | sed 's/-[^-]*$//')
 
 if test -z "${RELEASE}"; then
     echo -e "${GREEN}Building the DEV version of HosterCore${NC}"
-    echo ""
+    # echo ""
     # shellcheck disable=SC2059
     printf "Building the ${GREEN}hoster${NC} module ... "
     # go build -a -ldflags="-X HosterCore/cmd.HosterVersion=${VERSION}" -o hoster
     $GO_BINARY build -ldflags="-X HosterCore/cmd.HosterVersion=${DEV_VERSION}" -trimpath -o hoster
 else
     echo -e "${GREEN}Building the RELEASE version of HosterCore${NC}"
-    echo ""
+    # echo ""
     # shellcheck disable=SC2059
     printf "Building the ${GREEN}hoster${NC} module ... "
     # $GO_BINARY build -trimpath -o hoster

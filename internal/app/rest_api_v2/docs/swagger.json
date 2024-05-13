@@ -12,7 +12,7 @@
     },
     "basePath": "/api/v2",
     "paths": {
-        "/dataset/list": {
+        "/dataset/all": {
             "get": {
                 "security": [
                     {

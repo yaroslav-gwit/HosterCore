@@ -20,7 +20,7 @@ import (
 // @Security BasicAuth
 // @Success 200 {object} []DatasetInfo
 // @Failure 500 {object} SwaggerError
-// @Router /dataset/list [get]
+// @Router /dataset/all [get]
 func DatasetList(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()

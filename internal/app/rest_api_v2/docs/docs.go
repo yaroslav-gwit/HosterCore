@@ -19,7 +19,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/dataset/list": {
+        "/dataset/all": {
             "get": {
                 "security": [
                     {
