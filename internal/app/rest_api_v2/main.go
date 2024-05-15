@@ -48,14 +48,16 @@ func main() {
 	r.Use(log.LogResponses)
 
 	// Health checks
-	r.HandleFunc("/api/v2/health", handlers.HealthCheck).Methods("GET")
-	r.HandleFunc("/api/v2/health/auth/ha", handlers.HealthCheckHaAuth).Methods("GET")
-	r.HandleFunc("/api/v2/health/auth/any", handlers.HealthCheckAnyAuth).Methods("GET")
-	r.HandleFunc("/api/v2/health/auth/regular", handlers.HealthCheckRegularAuth).Methods("GET")
+	// r.HandleFunc("/api/v2/health", handlers.HealthCheck).Methods("GET")
+	r.HandleFunc("/api/v2/health", handlers.HealthCheck).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/health/auth/ha", handlers.HealthCheckHaAuth).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/health/auth/any", handlers.HealthCheckAnyAuth).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/health/auth/regular", handlers.HealthCheckRegularAuth).Methods(http.MethodGet)
 	// Host
 	r.HandleFunc("/api/v2/host/info", handlers.HostInfo).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/host/settings", handlers.HostSettings).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/host/settings/api", handlers.HostRestApiSettings).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/host/settings/dns-search-domain", handlers.PostHostSettingsDnsSearchDomain).Methods(http.MethodPost)
 	// Datasets
 	r.HandleFunc("/api/v2/dataset/all", handlers.DatasetList).Methods(http.MethodGet)
 	// Networks

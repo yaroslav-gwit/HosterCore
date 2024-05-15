@@ -442,6 +442,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/host/settings/dns-search-domain": {
+            "post": {
+                "description": "Post a new DNS search domain.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hosts"
+                ],
+                "summary": "Post a new DNS search domain.",
+                "parameters": [
+                    {
+                        "description": "Request Payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.DnsSearchDomainInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/all": {
             "get": {
                 "security": [
@@ -2124,6 +2161,14 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "used_human": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.DnsSearchDomainInput": {
+            "type": "object",
+            "properties": {
+                "dns_search_domain": {
                     "type": "string"
                 }
             }

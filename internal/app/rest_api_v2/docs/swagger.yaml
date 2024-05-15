@@ -540,6 +540,11 @@ definitions:
       used_human:
         type: string
     type: object
+  handlers.DnsSearchDomainInput:
+    properties:
+      dns_search_domain:
+        type: string
+    type: object
   handlers.JailCloneInput:
     properties:
       jail_name:
@@ -955,6 +960,30 @@ paths:
       summary: Get RestAPI Settings (including HA settings).
       tags:
       - Host
+  /host/settings/dns-search-domain:
+    post:
+      description: Post a new DNS search domain.
+      parameters:
+      - description: Request Payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.DnsSearchDomainInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      summary: Post a new DNS search domain.
+      tags:
+      - Hosts
   /jail/all:
     get:
       description: 'Get the list of all Jails, including the information about them.<br>`AUTH`:

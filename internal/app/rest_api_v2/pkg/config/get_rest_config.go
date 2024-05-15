@@ -24,11 +24,9 @@ type RestApiConfig struct {
 
 const confFileName = "restapi_config.json"
 
-// An internal function, that loops through the list of possible
+// A function, that loops through the list of possible
 // config locations and picks up the first one available.
-//
-// Used only in the GetHostConfig().
-func getApiConfigLocation() (r string, e error) {
+func GetApiConfigLocation() (r string, e error) {
 	for _, v := range HosterLocations.GetConfigFolders() {
 		configLocation := v + "/" + confFileName
 		if FileExists.CheckUsingOsStat(configLocation) {
@@ -43,7 +41,7 @@ func getApiConfigLocation() (r string, e error) {
 
 // Parses the host_config.json, and returns the underlying struct or an error
 func GetApiConfig() (r RestApiConfig, e error) {
-	apiConfigFile, err := getApiConfigLocation()
+	apiConfigFile, err := GetApiConfigLocation()
 	if err != nil {
 		e = err
 		return

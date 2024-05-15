@@ -14,7 +14,7 @@ echo -e "${LIGHT_GREEN}=== Starting the build process ===${NC}"
 GIT_INFO=$(git describe --tags | sed 's/-g.*$//')
 # DATE_INFO=$(date '+%Y%m%d_%H%M%S') # include seconds
 DATE_INFO=$(date '+%Y%m%d_%H%M')
-DEV_VERSION=${GIT_INFO}_COMPTIME_${DATE_INFO}
+DEV_VERSION=${GIT_INFO}_COMPT_${DATE_INFO}
 # RELEASE_VERSION=$(git describe --tags | sed 's/-[^-]*$//')
 RELEASE_VERSION=$(git describe --tags | sed 's/-g.*$//')
 

@@ -28,10 +28,8 @@ type HostConfig struct {
 
 const confFileName = "host_config.json"
 
-// An internal function, that loops through the list of possible
+// A function, that loops through the list of possible
 // config locations and picks up the first one available.
-//
-// Used only in the GetHostConfig().
 func getHostConfigLocation() (r string, e error) {
 	for _, v := range HosterLocations.GetConfigFolders() {
 		configLocation := v + "/" + confFileName
@@ -66,4 +64,29 @@ func GetHostConfig() (r HostConfig, e error) {
 	}
 
 	return
+}
+
+func SaveHostConfig(config HostConfig) error {
+	confFile, err := getHostConfigLocation()
+	if err != nil {
+		return err
+	}
+
+	jsonData, err := json.MarshalIndent(config, "", "   ")
+	if err != nil {
+		return err
+	}
+
+	file, err := os.OpenFile(confFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.Write(jsonData)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

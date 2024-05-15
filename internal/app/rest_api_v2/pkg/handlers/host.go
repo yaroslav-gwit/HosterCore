@@ -3,6 +3,7 @@ package handlers
 import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
 	RestApiConfig "HosterCore/internal/app/rest_api_v2/pkg/config"
+	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	HosterHost "HosterCore/internal/pkg/hoster/host"
 	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
 	"encoding/json"
@@ -98,6 +99,50 @@ func HostRestApiSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+type DnsSearchDomainInput struct {
+	DnsSearchDomain string `json:"dns_search_domain"`
+}
+
+// @Tags Hosts
+// @Summary Post a new DNS search domain.
+// @Description Post a new DNS search domain.
+// @Produce json
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body DnsSearchDomainInput true "Request Payload"
+// @Router /host/settings/dns-search-domain [post]
+func PostHostSettingsDnsSearchDomain(w http.ResponseWriter, r *http.Request) {
+	input := DnsSearchDomainInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(input.DnsSearchDomain) < 1 {
+		ReportError(w, http.StatusBadRequest, "dns_search_domain is required")
+		return
+	}
+
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hostConf.DnsSearchDomain = input.DnsSearchDomain
+	err = HosterHost.SaveHostConfig(hostConf)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
