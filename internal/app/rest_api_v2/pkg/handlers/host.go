@@ -107,7 +107,7 @@ type DnsSearchDomainInput struct {
 	DnsSearchDomain string `json:"dns_search_domain"`
 }
 
-// @Tags Hosts
+// @Tags Host
 // @Summary Post a new DNS search domain.
 // @Description Post a new DNS search domain.
 // @Produce json
