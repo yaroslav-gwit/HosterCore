@@ -411,6 +411,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/host/settings/add-upstream-dns": {
+            "post": {
+                "description": "Add a new upstream DNS server.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Host"
+                ],
+                "summary": "Add a new upstream DNS server.",
+                "parameters": [
+                    {
+                        "description": "Request Payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UpstreamDnsInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/host/settings/api": {
             "get": {
                 "security": [
@@ -2272,6 +2309,14 @@ const docTemplate = `{
             "properties": {
                 "message": {
                     "description": "success",
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.UpstreamDnsInput": {
+            "type": "object",
+            "properties": {
+                "dns_server": {
                     "type": "string"
                 }
             }

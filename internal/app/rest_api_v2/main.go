@@ -59,6 +59,7 @@ func main() {
 	r.HandleFunc("/api/v2/host/settings/api", handlers.HostRestApiSettings).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/host/settings/dns-search-domain", handlers.PostHostSettingsDnsSearchDomain).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/host/settings/vm-templates", handlers.PostHostSettingsVmTemplateLink).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/host/settings/add-upstream-dns", handlers.PostHostSettingsAddUpstreamDns).Methods(http.MethodPost)
 	// Datasets
 	r.HandleFunc("/api/v2/dataset/all", handlers.DatasetList).Methods(http.MethodGet)
 	// Networks

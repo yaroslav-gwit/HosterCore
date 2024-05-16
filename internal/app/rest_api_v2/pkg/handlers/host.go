@@ -204,3 +204,52 @@ func PostHostSettingsVmTemplateLink(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+type UpstreamDnsInput struct {
+	DnsServer string `json:"dns_server"`
+}
+
+// @Tags Host
+// @Summary Add a new upstream DNS server.
+// @Description Add a new upstream DNS server.
+// @Produce json
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body UpstreamDnsInput true "Request Payload"
+// @Router /host/settings/add-upstream-dns [post]
+func PostHostSettingsAddUpstreamDns(w http.ResponseWriter, r *http.Request) {
+	input := UpstreamDnsInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(input.DnsServer) < 1 {
+		ReportError(w, http.StatusBadRequest, "dns_server is required")
+		return
+	}
+
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hostConf.DnsServers = append(hostConf.DnsServers, input.DnsServer)
+	err = HosterHost.SaveHostConfig(hostConf)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := JSONResponse.GenerateJson(w, "message", "success")
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}

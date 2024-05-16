@@ -581,6 +581,11 @@ definitions:
         description: success
         type: string
     type: object
+  handlers.UpstreamDnsInput:
+    properties:
+      dns_server:
+        type: string
+    type: object
   handlers.VmCloneInput:
     properties:
       new_vm_name:
@@ -943,6 +948,30 @@ paths:
       security:
       - BasicAuth: []
       summary: Get Host Settings.
+      tags:
+      - Host
+  /host/settings/add-upstream-dns:
+    post:
+      description: Add a new upstream DNS server.
+      parameters:
+      - description: Request Payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpstreamDnsInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      summary: Add a new upstream DNS server.
       tags:
       - Host
   /host/settings/api:
