@@ -260,3 +260,62 @@ func PostHostSettingsAddUpstreamDns(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+// @Tags Host
+// @Summary Delete an upstream DNS server.
+// @Description Delete an upstream DNS server.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body UpstreamDnsInput true "Request Payload"
+// @Router /host/settings/delete-upstream-dns [delete]
+func DeleteHostSettingsAddUpstreamDns(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := UpstreamDnsInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(input.DnsServer) < 1 {
+		ReportError(w, http.StatusBadRequest, "dns_server is required")
+		return
+	}
+
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	servers := []string{}
+	for _, v := range hostConf.DnsServers {
+		if v != input.DnsServer {
+			servers = append(servers, v)
+		}
+	}
+	hostConf.DnsServers = servers
+
+	err = HosterHost.SaveHostConfig(hostConf)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := JSONResponse.GenerateJson(w, "message", "success")
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}

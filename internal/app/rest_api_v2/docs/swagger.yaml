@@ -971,6 +971,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
       summary: Add a new upstream DNS server.
       tags:
       - Host
@@ -992,6 +994,32 @@ paths:
       security:
       - BasicAuth: []
       summary: Get RestAPI Settings (including HA settings).
+      tags:
+      - Host
+  /host/settings/delete-upstream-dns:
+    delete:
+      description: Delete an upstream DNS server.
+      parameters:
+      - description: Request Payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpstreamDnsInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Delete an upstream DNS server.
       tags:
       - Host
   /host/settings/dns-search-domain:
