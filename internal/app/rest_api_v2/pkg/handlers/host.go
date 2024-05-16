@@ -116,6 +116,12 @@ type DnsSearchDomainInput struct {
 // @Param Input body DnsSearchDomainInput true "Request Payload"
 // @Router /host/settings/dns-search-domain [post]
 func PostHostSettingsDnsSearchDomain(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
 	input := DnsSearchDomainInput{}
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
@@ -160,6 +166,12 @@ type VmTemplateLink struct {
 // @Param Input body DnsSearchDomainInput true "Request Payload"
 // @Router /host/settings/vm-templates [post]
 func PostHostSettingsVmTemplateLink(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
 	input := VmTemplateLink{}
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
