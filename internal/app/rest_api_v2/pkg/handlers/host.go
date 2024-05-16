@@ -270,7 +270,7 @@ func PostHostSettingsAddUpstreamDns(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} SwaggerError
 // @Param Input body UpstreamDnsInput true "Request Payload"
 // @Router /host/settings/delete-upstream-dns [delete]
-func DeleteHostSettingsAddUpstreamDns(w http.ResponseWriter, r *http.Request) {
+func DeleteHostSettingsUpstreamDns(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
