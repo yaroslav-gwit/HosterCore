@@ -111,6 +111,7 @@ type DnsSearchDomainInput struct {
 // @Summary Post a new DNS search domain.
 // @Description Post a new DNS search domain.
 // @Produce json
+// @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Param Input body DnsSearchDomainInput true "Request Payload"
@@ -161,6 +162,7 @@ type VmTemplateLink struct {
 // @Summary Post an updated VM template site.
 // @Description Post an updated VM template site.
 // @Produce json
+// @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Param Input body DnsSearchDomainInput true "Request Payload"
