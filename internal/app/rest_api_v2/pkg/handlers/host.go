@@ -165,7 +165,7 @@ type VmTemplateLink struct {
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
-// @Param Input body DnsSearchDomainInput true "Request Payload"
+// @Param Input body VmTemplateLink true "Request Payload"
 // @Router /host/settings/vm-templates [post]
 func PostHostSettingsVmTemplateLink(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
