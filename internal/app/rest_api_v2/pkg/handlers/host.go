@@ -213,11 +213,18 @@ type UpstreamDnsInput struct {
 // @Summary Add a new upstream DNS server.
 // @Description Add a new upstream DNS server.
 // @Produce json
+// @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Param Input body UpstreamDnsInput true "Request Payload"
 // @Router /host/settings/add-upstream-dns [post]
 func PostHostSettingsAddUpstreamDns(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
 	input := UpstreamDnsInput{}
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
