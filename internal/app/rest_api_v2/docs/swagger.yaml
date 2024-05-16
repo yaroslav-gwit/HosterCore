@@ -602,6 +602,11 @@ definitions:
       vm_name:
         type: string
     type: object
+  handlers.VmTemplateLink:
+    properties:
+      vm_template_link:
+        type: string
+    type: object
   rctl.RctMetrics:
     properties:
       code_dump_size:
@@ -981,6 +986,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
       summary: Post a new DNS search domain.
       tags:
       - Host
@@ -993,7 +1000,7 @@ paths:
         name: Input
         required: true
         schema:
-          $ref: '#/definitions/handlers.DnsSearchDomainInput'
+          $ref: '#/definitions/handlers.VmTemplateLink'
       produces:
       - application/json
       responses:
@@ -1005,6 +1012,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
       summary: Post an updated VM template site.
       tags:
       - Host

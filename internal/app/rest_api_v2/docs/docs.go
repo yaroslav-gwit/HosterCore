@@ -444,6 +444,11 @@ const docTemplate = `{
         },
         "/host/settings/dns-search-domain": {
             "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Post a new DNS search domain.",
                 "produces": [
                     "application/json"
@@ -481,6 +486,11 @@ const docTemplate = `{
         },
         "/host/settings/vm-templates": {
             "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
                 "description": "Post an updated VM template site.",
                 "produces": [
                     "application/json"
@@ -496,7 +506,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.DnsSearchDomainInput"
+                            "$ref": "#/definitions/handlers.VmTemplateLink"
                         }
                     }
                 ],
@@ -2292,6 +2302,14 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "vm_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.VmTemplateLink": {
+            "type": "object",
+            "properties": {
+                "vm_template_link": {
                     "type": "string"
                 }
             }
