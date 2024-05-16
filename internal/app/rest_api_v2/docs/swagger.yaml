@@ -983,7 +983,31 @@ paths:
             $ref: '#/definitions/handlers.SwaggerError'
       summary: Post a new DNS search domain.
       tags:
-      - Hosts
+      - Host
+  /host/settings/vm-templates:
+    post:
+      description: Post an updated VM template site.
+      parameters:
+      - description: Request Payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.DnsSearchDomainInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      summary: Post an updated VM template site.
+      tags:
+      - Host
   /jail/all:
     get:
       description: 'Get the list of all Jails, including the information about them.<br>`AUTH`:

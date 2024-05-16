@@ -146,3 +146,47 @@ func PostHostSettingsDnsSearchDomain(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+type VmTemplateLink struct {
+	Link string `json:"vm_template_link"`
+}
+
+// @Tags Host
+// @Summary Post an updated VM template site.
+// @Description Post an updated VM template site.
+// @Produce json
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body DnsSearchDomainInput true "Request Payload"
+// @Router /host/settings/vm-templates [post]
+func PostHostSettingsVmTemplateLink(w http.ResponseWriter, r *http.Request) {
+	input := VmTemplateLink{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(input.Link) < 1 {
+		ReportError(w, http.StatusBadRequest, "vm_template_link is required")
+		return
+	}
+
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hostConf.ImageServer = input.Link
+	err = HosterHost.SaveHostConfig(hostConf)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}

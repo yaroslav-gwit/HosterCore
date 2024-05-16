@@ -449,9 +449,46 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Hosts"
+                    "Host"
                 ],
                 "summary": "Post a new DNS search domain.",
+                "parameters": [
+                    {
+                        "description": "Request Payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.DnsSearchDomainInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/host/settings/vm-templates": {
+            "post": {
+                "description": "Post an updated VM template site.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Host"
+                ],
+                "summary": "Post an updated VM template site.",
                 "parameters": [
                     {
                         "description": "Request Payload",
