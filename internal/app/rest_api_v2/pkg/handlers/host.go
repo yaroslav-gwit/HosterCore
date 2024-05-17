@@ -319,3 +319,123 @@ func DeleteHostSettingsUpstreamDns(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+type SshKeyInput struct {
+	KeyComment string `json:"key_comment"`
+	KeyValue   string `json:"key_value"`
+}
+
+// @Tags Host
+// @Summary Add a new SSH key.
+// @Description Add a new SSH key.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body SshKeyInput true "Request Payload"
+// @Router /host/settings/add-ssh-key [post]
+func PostHostSettingsSshKey(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := SshKeyInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(input.KeyComment) < 1 {
+		ReportError(w, http.StatusBadRequest, "key_comment is required")
+		return
+	}
+	if len(input.KeyValue) < 1 {
+		ReportError(w, http.StatusBadRequest, "key_value is required")
+		return
+	}
+
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hostConf.HostSSHKeys = append(hostConf.HostSSHKeys, HosterHost.HostConfigKey{KeyValue: input.KeyValue, Comment: input.KeyComment})
+	err = HosterHost.SaveHostConfig(hostConf)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := JSONResponse.GenerateJson(w, "message", "success")
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags Host
+// @Summary Delete an existing SSH key.
+// @Description Delete an existing SSH key.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body SshKeyInput true "Request Payload"
+// @Router /host/settings/delete-ssh-key [delete]
+func DeleteHostSettingsSshKey(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := SshKeyInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(input.KeyValue) < 1 {
+		ReportError(w, http.StatusBadRequest, "key_value is required")
+		return
+	}
+
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hostKeys := []HosterHost.HostConfigKey{}
+	for _, v := range hostConf.HostSSHKeys {
+		if v.KeyValue != input.KeyValue {
+			hostKeys = append(hostKeys, v)
+		}
+	}
+	hostConf.HostSSHKeys = hostKeys
+
+	err = HosterHost.SaveHostConfig(hostConf)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := JSONResponse.GenerateJson(w, "message", "success")
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}

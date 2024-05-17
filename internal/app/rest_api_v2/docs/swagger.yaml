@@ -568,6 +568,13 @@ definitions:
       snapshot_name:
         type: string
     type: object
+  handlers.SshKeyInput:
+    properties:
+      key_comment:
+        type: string
+      key_value:
+        type: string
+    type: object
   handlers.SwaggerError:
     properties:
       id:
@@ -950,6 +957,32 @@ paths:
       summary: Get Host Settings.
       tags:
       - Host
+  /host/settings/add-ssh-key:
+    post:
+      description: Add a new SSH key.
+      parameters:
+      - description: Request Payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SshKeyInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Add a new SSH key.
+      tags:
+      - Host
   /host/settings/add-upstream-dns:
     post:
       description: Add a new upstream DNS server.
@@ -994,6 +1027,32 @@ paths:
       security:
       - BasicAuth: []
       summary: Get RestAPI Settings (including HA settings).
+      tags:
+      - Host
+  /host/settings/delete-ssh-key:
+    delete:
+      description: Delete an existing SSH key.
+      parameters:
+      - description: Request Payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SshKeyInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Delete an existing SSH key.
       tags:
       - Host
   /host/settings/delete-upstream-dns:
