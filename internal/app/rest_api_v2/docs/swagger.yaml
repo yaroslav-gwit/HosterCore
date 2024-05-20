@@ -519,6 +519,13 @@ definitions:
           key_location'
         type: string
     type: object
+  handlers.DatasetEncryptionInput:
+    properties:
+      dataset:
+        type: string
+      password:
+        type: string
+    type: object
   handlers.DatasetInfo:
     properties:
       available:
@@ -733,6 +740,32 @@ paths:
       security:
       - BasicAuth: []
       summary: Get active dataset list.
+      tags:
+      - Datasets
+  /dataset/unlock:
+    post:
+      description: 'Unlock an encrypted dataset.<br>`AUTH`: Only REST user is allowed.'
+      parameters:
+      - description: Request Payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.DatasetEncryptionInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Unlock an encrypted dataset.
       tags:
       - Datasets
   /ha/jail-list:
