@@ -67,6 +67,7 @@ func main() {
 	r.HandleFunc("/api/v2/host/settings/delete-ssh-key", handlers.DeleteHostSettingsSshKey).Methods(http.MethodPost) // additional POST method for the clients that do not support DELETE
 	// Datasets
 	r.HandleFunc("/api/v2/dataset/all", handlers.DatasetList).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/dataset/unlock", handlers.UnlockEncryptedDataset).Methods(http.MethodPost)
 	// Networks
 	r.HandleFunc("/api/v2/network/all", handlers.NetworkList).Methods(http.MethodGet)
 	// VMs
