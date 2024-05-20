@@ -2,8 +2,10 @@ package handlers
 
 import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
+	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	"HosterCore/internal/pkg/byteconversion"
 	HosterHost "HosterCore/internal/pkg/hoster/host"
+	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -150,4 +152,58 @@ func getDsInfo(dsName string) (r DatasetInfo, e error) {
 	r.Encrypted = split[4] != "off"
 
 	return
+}
+
+type DatasetEncryptionInput struct {
+	Dataset  string `json:"dataset"`
+	Password string `json:"password"`
+}
+
+// @Tags Datasets
+// @Summary Unlock an encrypted dataset.
+// @Description Unlock an encrypted dataset.<br>`AUTH`: Only REST user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body DatasetEncryptionInput true "Request Payload"
+// @Router /dataset/unlock [post]
+func UnlockEncryptedDataset(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := DatasetEncryptionInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(input.Password) < 1 {
+		ReportError(w, http.StatusBadRequest, "password is required")
+		return
+	}
+	if len(input.Dataset) < 1 {
+		ReportError(w, http.StatusBadRequest, "dataset is required")
+		return
+	}
+
+	err = HosterHostUtils.UnlockEncryptedDataset(input.Dataset, input.Password)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := JSONResponse.GenerateJson(w, "message", "success")
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
 }
