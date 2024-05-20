@@ -1,6 +1,7 @@
 package HosterHostUtils
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os/exec"
@@ -23,9 +24,12 @@ func UnlockEncryptedDataset(dataset string, password string) (e error) {
 		e = fmt.Errorf("error creating stdin pipe: %s", err.Error())
 		return
 	}
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	// Start the command
 	if err := cmd.Start(); err != nil {
-		e = fmt.Errorf("could not load the encryption key: %s", err.Error())
+		e = fmt.Errorf("could not start the load-key command: %s", err.Error())
 		return
 	}
 	// Write the password to stdin and close it
@@ -35,7 +39,7 @@ func UnlockEncryptedDataset(dataset string, password string) (e error) {
 	}()
 	// Wait for the command to finish
 	if err := cmd.Wait(); err != nil {
-		e = fmt.Errorf("could not load the encryption key: %s", err.Error())
+		e = fmt.Errorf("could not load the encryption key: %s; %s", stderr.String(), err.Error())
 		return
 	}
 

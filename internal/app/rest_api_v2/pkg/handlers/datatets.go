@@ -198,6 +198,12 @@ func UnlockEncryptedDataset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = HosterHostUtils.ReloadDns()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	payload, err := JSONResponse.GenerateJson(w, "message", "success")
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
