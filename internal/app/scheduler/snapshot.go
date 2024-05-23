@@ -179,10 +179,11 @@ IMMEDIATE_SNAPSHOT:
 				}
 
 				// Wait for the VM to stop
-				maxTimes := 1000
+				maxTimes := 0
 				for vmOnline {
-					if maxTimes > 999 {
-						log.Infof("snapshot rollback job timed-out: %v", err)
+					maxTimes++
+					if maxTimes > 700 {
+						log.Infof("snapshot rollback job timed-out for %s", jobs[i].Snapshot.ResName)
 						jobs[i].JobFailed = true
 						jobs[i].JobError = err.Error()
 						break IMMEDIATE_SNAPSHOT
