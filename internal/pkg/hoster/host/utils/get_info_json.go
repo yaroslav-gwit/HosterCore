@@ -73,7 +73,7 @@ func GetHostInfo() (r HostInfo, e error) {
 		if err != nil {
 			return
 		}
-		list, err := HosterVmUtils.GetRunningVms()
+		onlineVms, err := HosterVmUtils.GetRunningVms()
 		if err != nil {
 			return
 		}
@@ -86,7 +86,7 @@ func GetHostInfo() (r HostInfo, e error) {
 			}
 
 			r.AllVms += 1
-			if slices.Contains(list, v.VmName) {
+			if slices.Contains(onlineVms, v.VmName) {
 				r.LiveVms += 1
 				if conf.CPUThreads > 0 {
 					cpusUsed += (conf.CPUSockets * conf.CPUCores * conf.CPUThreads)

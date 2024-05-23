@@ -46,7 +46,8 @@ import (
 // 	return ratio, result
 // }
 
-// Same as the above, but doesn't need to iterate over all VMs every time, because you can submit a number of used CPUs.
+// Same as the above, but doesn't need to iterate over all VMs every time, because you can provide a number of used CPUs.
+// Useful in loops, to avoid the expensive computations/lookups.
 func GetPc2VcRatioLazy(cpusUsed int) (string, float64) {
 	cpusAvailable, err := FreeBSDsysctls.SysctlHwNcpu()
 	if err != nil {
@@ -54,11 +55,9 @@ func GetPc2VcRatioLazy(cpusUsed int) (string, float64) {
 	}
 
 	result := float64(cpusUsed) / float64(cpusAvailable)
-	// fmt.Println("Used:", cpusUsed)
-	// fmt.Println("Available:", cpusAvailable)
-	// Round the float to the 1 decimal place
-	// result = math.Pow(result, 1)
-	result = math.Pow(result, 0)
+	// Round the float
+	// result = math.Ceil(result)
+	result = math.Floor(result + 0.5)
 
 	var ratio string
 	if result < 1 {
