@@ -3,6 +3,7 @@ package main
 import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
 	HosterVm "HosterCore/internal/pkg/hoster/vm"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"sync"
 	"time"
@@ -138,7 +139,7 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 
 			dataset, err := zfsutils.FindResourceDataset(v.Snapshot.ResName)
 			if err != nil {
-				log.Infof("immediate snapshot job jailed: %v", err)
+				log.Infof("immediate snapshot job failed: %v", err)
 				jobs[i].JobFailed = true
 				jobs[i].JobError = err.Error()
 			}
@@ -148,7 +149,7 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 			if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
 				newSnap, removedSnaps, err := zfsutils.TakeScheduledSnapshot(dataset, v.Snapshot.SnapshotType, v.Snapshot.SnapshotsToKeep)
 				if err != nil {
-					log.Infof("immediate snapshot job jailed: %v", err)
+					log.Infof("immediate snapshot job failed: %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 				} else {
@@ -159,25 +160,40 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 			} else if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_DESTROY {
 				err = zfsutils.RemoveSnapshot(jobs[i].Snapshot.SnapshotName)
 				if err != nil {
-					log.Infof("snapshot destroy job jailed: %v", err)
+					log.Infof("snapshot destroy job failed: %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 				}
 			} else if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK {
 				err = HosterVm.Stop(jobs[i].Snapshot.ResName, true, false)
 				if err != nil {
-					log.Infof("snapshot rollback job jailed (could not stop the VM): %v", err)
+					log.Infof("snapshot rollback job failed (could not stop the VM): %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 				}
 
+				// Wait for the VM to stop
+				online, _ := HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
+				maxTimes := 1000
+				for online {
+					if maxTimes > 999 {
+						log.Infof("snapshot rollback job timed-out: %v", err)
+						jobs[i].JobFailed = true
+						jobs[i].JobError = err.Error()
+						return nil
+					}
+					time.Sleep(500 * time.Millisecond)
+					online, _ = HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
+				}
+				// Rollback the snapshot
 				err = zfsutils.RollbackSnapshot(jobs[i].Snapshot.SnapshotName)
 				if err != nil {
-					log.Infof("snapshot rollback job jailed: %v", err)
+					log.Infof("snapshot rollback job failed: %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 				}
 			}
+
 			// snapShottedVM = ""
 			snapshotMap[jobs[i].Snapshot.ResName] = false
 			jobs[i].TimeFinished = time.Now().Unix()
