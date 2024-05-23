@@ -91,23 +91,24 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 	m.Lock()
 	defer m.Unlock()
 
+IMMEDIATE_SNAPSHOT:
 	for i, v := range jobs {
 		if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT || v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_DESTROY || v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK {
 			_ = 0
 		} else {
-			continue
+			continue IMMEDIATE_SNAPSHOT
 		}
 		if v.Snapshot.ResName == replicatedVm {
-			continue
+			continue IMMEDIATE_SNAPSHOT
 		}
 		// if v.Replication.ResName == snapShottedVM {
 		// 	continue
 		// }
 		if snapshotMap[v.Snapshot.ResName] {
-			continue
+			continue IMMEDIATE_SNAPSHOT
 		}
 		if !v.Snapshot.TakeImmediately {
-			continue
+			continue IMMEDIATE_SNAPSHOT
 		}
 
 		if v.JobDone && !v.JobDoneLogged {
@@ -115,7 +116,7 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 			log.Info(logLine)
 			jobs[i].JobDoneLogged = true
 			jobs[i].JobInProgress = false
-			continue
+			continue IMMEDIATE_SNAPSHOT
 		}
 
 		if v.JobFailed && !v.JobFailedLogged {
@@ -123,14 +124,14 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 			log.Error(logLine)
 			jobs[i].JobFailedLogged = true
 			jobs[i].JobInProgress = false
-			continue
+			continue IMMEDIATE_SNAPSHOT
 		}
 
 		// If the job is still in progress then break and try again during the next loop
 		if v.JobInProgress {
 			logLine := "immediate snapshot -> in progress for: " + v.Snapshot.ResName
 			log.Info(logLine)
-			break
+			break IMMEDIATE_SNAPSHOT
 		}
 
 		if !v.JobDone {
@@ -142,6 +143,7 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 				log.Infof("immediate snapshot job failed: %v", err)
 				jobs[i].JobFailed = true
 				jobs[i].JobError = err.Error()
+				break IMMEDIATE_SNAPSHOT
 			}
 
 			// snapShottedVM = jobs[i].Snapshot.ResName
@@ -165,25 +167,28 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 					jobs[i].JobError = err.Error()
 				}
 			} else if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK {
-				err = HosterVm.Stop(jobs[i].Snapshot.ResName, true, false)
-				if err != nil {
-					log.Infof("snapshot rollback job failed (could not stop the VM): %v", err)
-					jobs[i].JobFailed = true
-					jobs[i].JobError = err.Error()
+				vmOnline, _ := HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
+				if vmOnline {
+					err = HosterVm.Stop(jobs[i].Snapshot.ResName, true, false)
+					if err != nil {
+						log.Infof("snapshot rollback job failed (could not stop the VM): %v", err)
+						jobs[i].JobFailed = true
+						jobs[i].JobError = err.Error()
+						break IMMEDIATE_SNAPSHOT
+					}
 				}
 
 				// Wait for the VM to stop
-				online, _ := HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
 				maxTimes := 1000
-				for online {
+				for vmOnline {
 					if maxTimes > 999 {
 						log.Infof("snapshot rollback job timed-out: %v", err)
 						jobs[i].JobFailed = true
 						jobs[i].JobError = err.Error()
-						return nil
+						break IMMEDIATE_SNAPSHOT
 					}
 					time.Sleep(500 * time.Millisecond)
-					online, _ = HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
+					vmOnline, _ = HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
 				}
 				// Rollback the snapshot
 				err = zfsutils.RollbackSnapshot(jobs[i].Snapshot.SnapshotName)
@@ -191,14 +196,14 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 					log.Infof("snapshot rollback job failed: %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
+					break IMMEDIATE_SNAPSHOT
 				}
 			}
 
 			// snapShottedVM = ""
 			snapshotMap[jobs[i].Snapshot.ResName] = false
 			jobs[i].TimeFinished = time.Now().Unix()
-
-			break
+			break IMMEDIATE_SNAPSHOT
 		}
 	}
 
