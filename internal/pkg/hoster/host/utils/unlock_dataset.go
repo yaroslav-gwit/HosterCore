@@ -37,7 +37,8 @@ func UnlockEncryptedDataset(dataset string, password string) (e error) {
 	}
 
 	// Mount the dataset
-	out, err := exec.Command("zfs", "mount", dataset).CombinedOutput()
+	// out, err := exec.Command("zfs", "mount", dataset).CombinedOutput()
+	out, err := exec.Command("zfs", "mount", "-a").CombinedOutput()
 	if err != nil {
 		e = fmt.Errorf("could not mount dataset: %s", strings.TrimSpace(string(out)))
 		return

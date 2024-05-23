@@ -215,6 +215,7 @@ func AddSnapshotDestroyJob(resName string, snapshotName string) (string, error) 
 func AddSnapshotRollbackJob(resName string, snapshotName string) (string, error) {
 	// Res found check
 	resFound := false
+	job := SchedulerUtils.Job{}
 
 	if !resFound {
 		jails, err := HosterJailUtils.ListAllSimple()
@@ -224,6 +225,7 @@ func AddSnapshotRollbackJob(resName string, snapshotName string) (string, error)
 		for i := range jails {
 			if jails[i].JailName == resName {
 				resFound = true
+				job.ResType = "Jail"
 			}
 		}
 	}
@@ -236,6 +238,7 @@ func AddSnapshotRollbackJob(resName string, snapshotName string) (string, error)
 		for i := range vms {
 			if vms[i].VmName == resName {
 				resFound = true
+				job.ResType = "VM"
 			}
 		}
 	}
@@ -251,7 +254,6 @@ func AddSnapshotRollbackJob(resName string, snapshotName string) (string, error)
 	}
 	defer c.Close()
 
-	job := SchedulerUtils.Job{}
 	job.JobId = ulid.Make().String()
 	job.JobType = SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK
 	job.Snapshot.SnapshotName = snapshotName

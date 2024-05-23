@@ -12,6 +12,7 @@ NETWORK_RANGE_START="${DEF_NETWORK_RANGE_START:=10.0.101.10}"
 NETWORK_RANGE_END="${DEF_NETWORK_RANGE_END:=10.0.101.200}"
 PUBLIC_INTERFACE="${DEF_PUBLIC_INTERFACE:=$(ifconfig | head -1 | awk '{ print $1 }' | sed s/://)}"
 UPSTREAM_DNS_SERVER="${DEF_UPSTREAM_DNS_SERVER:=1.1.1.2}"
+DNS_SEARCH_DOMAIN="${DEF_DNS_SEARCH_DOMAIN:=hoster-core.lan}"
 #_ EOF SET DEFAULT VARS _#
 
 #_ CREATE AND SET A WORKING DIRECTORY _#
@@ -26,9 +27,9 @@ HOSTER_WD="/opt/hoster-core/"
 pkg update
 pkg upgrade -y
 pkg install -y vim bash bash-completion pftop tmux qemu-tools git curl
-pkg install -y bhyve-firmware uefi-edk2-bhyve-csm edk2-bhyve openssl
-pkg install -y htop wget gtar unzip cdrkit-genisoimage go121 beadm chrony
-pkg install -y exa bat micro # modern alternatives to `cat` and `ls`
+pkg install -y bhyve-firmware uefi-edk2-bhyve-csm edk2-bhyve openssl smartmontools
+pkg install -y htop wget gtar unzip cdrkit-genisoimage go121 beadm chrony nano
+pkg install -y exa bat micro # modern alternatives to `cat`, `ls` and `nano`
 #_ EOF INSTALL THE REQUIRED PACKAGES _#
 
 #_ OPTIONAL PACKAGES _#
@@ -108,9 +109,10 @@ BOOTLOADER_FILE="/boot/loader.conf"
 # CMD_LINE='virtio_blk_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
 ## Up-to-date values
 CMD_LINE='# vfs.zfs.arc.max=367001600  # 350MB -> Min possible ZFS ARC Limit on FreeBSD' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
-CMD_LINE='vfs.zfs.arc.max=1073741824  # 1G ZFS ARC Limit' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
+CMD_LINE='vfs.zfs.arc.max=1073741824  # 1G Default Hoster ZFS ARC Limit' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 CMD_LINE='pf_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 CMD_LINE='kern.racct.enable=1' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
+CMD_LINE='net.fibs=16' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 # Install a better (official) Realtek driver to improve the stability and performance
 ifconfig re0 &>/dev/null && echo " 🔷 DEBUG: Realtek interface detected, installing realtek-re-kmod driver and enabling boot time optimizations for it"
 ifconfig re0 &>/dev/null && pkg install -y realtek-re-kmod
@@ -214,6 +216,7 @@ cat <<EOF | cat >${HOSTER_WD}config_files/host_config.json
     "dns_servers": [
         "${UPSTREAM_DNS_SERVER}"
     ],
+    "dns_search_domain": "${DNS_SEARCH_DOMAIN}",
     "host_ssh_keys": [
         {
             "key_value": "${HOST_SSH_KEY}",

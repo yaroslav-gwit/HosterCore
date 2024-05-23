@@ -2,6 +2,7 @@ package main
 
 import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
+	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"sync"
 	"time"
@@ -163,6 +164,13 @@ func executeImmediateSnapshot(m *sync.RWMutex) error {
 					jobs[i].JobError = err.Error()
 				}
 			} else if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK {
+				err = HosterVm.Stop(jobs[i].Snapshot.ResName, true, false)
+				if err != nil {
+					log.Infof("snapshot rollback job jailed (could not stop the VM): %v", err)
+					jobs[i].JobFailed = true
+					jobs[i].JobError = err.Error()
+				}
+
 				err = zfsutils.RollbackSnapshot(jobs[i].Snapshot.SnapshotName)
 				if err != nil {
 					log.Infof("snapshot rollback job jailed: %v", err)
