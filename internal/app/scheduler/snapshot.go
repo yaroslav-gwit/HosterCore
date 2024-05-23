@@ -140,7 +140,7 @@ IMMEDIATE_SNAPSHOT:
 
 			dataset, err := zfsutils.FindResourceDataset(v.Snapshot.ResName)
 			if err != nil {
-				log.Infof("immediate snapshot job failed: %v", err)
+				log.Errorf("immediate snapshot job failed: %v", err)
 				jobs[i].JobFailed = true
 				jobs[i].JobError = err.Error()
 				break IMMEDIATE_SNAPSHOT
@@ -151,7 +151,7 @@ IMMEDIATE_SNAPSHOT:
 			if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
 				newSnap, removedSnaps, err := zfsutils.TakeScheduledSnapshot(dataset, v.Snapshot.SnapshotType, v.Snapshot.SnapshotsToKeep)
 				if err != nil {
-					log.Infof("immediate snapshot job failed: %v", err)
+					log.Errorf("immediate snapshot job failed: %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 				} else {
@@ -162,16 +162,16 @@ IMMEDIATE_SNAPSHOT:
 			} else if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_DESTROY {
 				err = zfsutils.RemoveSnapshot(jobs[i].Snapshot.SnapshotName)
 				if err != nil {
-					log.Infof("snapshot destroy job failed: %v", err)
+					log.Errorf("snapshot destroy job failed: %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 				}
 			} else if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK {
-				vmOnline, _ := HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
-				if vmOnline {
+				resOnline, _ := HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
+				if resOnline {
 					err = HosterVm.Stop(jobs[i].Snapshot.ResName, true, false)
 					if err != nil {
-						log.Infof("snapshot rollback job failed (could not stop the VM): %v", err)
+						log.Errorf("snapshot rollback job failed (could not stop the VM): %v", err)
 						jobs[i].JobFailed = true
 						jobs[i].JobError = err.Error()
 						break IMMEDIATE_SNAPSHOT
@@ -180,25 +180,28 @@ IMMEDIATE_SNAPSHOT:
 
 				// Wait for the VM to stop
 				maxTimes := 0
-				for vmOnline {
+				for resOnline {
 					maxTimes++
 					if maxTimes > 700 {
-						log.Infof("snapshot rollback job timed-out for %s", jobs[i].Snapshot.ResName)
+						log.Errorf("snapshot rollback job timed-out for %s", jobs[i].Snapshot.ResName)
 						jobs[i].JobFailed = true
 						jobs[i].JobError = err.Error()
 						break IMMEDIATE_SNAPSHOT
 					}
 					time.Sleep(500 * time.Millisecond)
-					vmOnline, _ = HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
+					resOnline, _ = HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
 				}
+
 				// Rollback the snapshot
 				err = zfsutils.RollbackSnapshot(jobs[i].Snapshot.SnapshotName)
 				if err != nil {
-					log.Infof("snapshot rollback job failed: %v", err)
+					log.Errorf("snapshot rollback job failed: %v", err)
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 					break IMMEDIATE_SNAPSHOT
 				}
+				log.Infof("snapshot rollback done for: %s", jobs[i].Snapshot.ResName)
+				jobs[i].JobDone = true
 			}
 
 			// snapShottedVM = ""
