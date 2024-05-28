@@ -70,6 +70,7 @@ func main() {
 	r.HandleFunc("/api/v2/dataset/unlock", handlers.UnlockEncryptedDataset).Methods(http.MethodPost)
 	// Networks
 	r.HandleFunc("/api/v2/network/all", handlers.NetworkList).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/network/add-new-network", handlers.PostNewNetwork).Methods(http.MethodPost)
 	// VMs
 	r.HandleFunc("/api/v2/vm/all", handlers.VmList).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/info/{vm_name}", handlers.VmInfo).Methods(http.MethodGet)
