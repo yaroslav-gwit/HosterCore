@@ -64,3 +64,29 @@ func GetNetworkConfig() (r []NetworkConfig, e error) {
 
 	return
 }
+
+// Saves the network config to the network_config.json file by taking in the NetworkConfig struct.
+func SaveNetworkConfig(config []NetworkConfig) error {
+	confFile, err := getNetworkConfigLocation()
+	if err != nil {
+		return err
+	}
+
+	jsonData, err := json.MarshalIndent(config, "", "   ")
+	if err != nil {
+		return err
+	}
+
+	file, err := os.OpenFile(confFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.Write(jsonData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
