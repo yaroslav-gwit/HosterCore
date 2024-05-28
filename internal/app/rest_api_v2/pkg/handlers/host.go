@@ -8,6 +8,9 @@ import (
 	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
 	"encoding/json"
 	"net/http"
+	"os"
+	"slices"
+	"strings"
 )
 
 // @Tags Host
@@ -326,8 +329,8 @@ type SshKeyInput struct {
 }
 
 // @Tags Host
-// @Summary Add a new SSH key.
-// @Description Add a new SSH key.
+// @Summary Add a new VM SSH access key.
+// @Description Add a new VM SSH access key.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
@@ -438,4 +441,74 @@ func DeleteHostSettingsSshKey(w http.ResponseWriter, r *http.Request) {
 
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
+}
+
+type HostAuthSshKeyInput struct {
+	KeyValue string `json:"key_value"`
+}
+
+// @Tags Host
+// @Summary Add a new host-level authorized SSH key.
+// @Description Add a new host-level authorized SSH key.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body HostAuthSshKeyInput true "Request Payload"
+// @Router /host/settings/ssh-auth-key [post]
+func PostHostSshAuthKey(w http.ResponseWriter, r *http.Request) {
+	authKeyLocation := "/root/.ssh/authorized_keys"
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := HostAuthSshKeyInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(input.KeyValue) < 1 {
+		ReportError(w, http.StatusBadRequest, "key_value is required")
+		return
+	}
+
+	keyFile, err := os.ReadFile(authKeyLocation)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := JSONResponse.GenerateJson(w, "message", "success")
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	kSplit := strings.Split(string(keyFile), "\n")
+	keys := []string{}
+	for _, v := range kSplit {
+		if len(strings.TrimSpace(v)) > 0 {
+			keys = append(keys, v)
+		}
+	}
+
+	if slices.Contains(keys, input.KeyValue) {
+		SetStatusCode(w, http.StatusOK)
+		w.Write(payload)
+	} else {
+		keys = append(keys, input.KeyValue)
+		err = os.WriteFile(authKeyLocation, []byte(strings.Join(keys, "\n")), 0600)
+		if err != nil {
+			ReportError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		SetStatusCode(w, http.StatusOK)
+		w.Write(payload)
+	}
 }

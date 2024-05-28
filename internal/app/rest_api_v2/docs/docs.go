@@ -460,14 +460,14 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Add a new SSH key.",
+                "description": "Add a new VM SSH access key.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Host"
                 ],
-                "summary": "Add a new SSH key.",
+                "summary": "Add a new VM SSH access key.",
                 "parameters": [
                     {
                         "description": "Request Payload",
@@ -675,6 +675,48 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/handlers.DnsSearchDomainInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/host/settings/ssh-auth-key": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Add a new host-level authorized SSH key.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Host"
+                ],
+                "summary": "Add a new host-level authorized SSH key.",
+                "parameters": [
+                    {
+                        "description": "Request Payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HostAuthSshKeyInput"
                         }
                     }
                 ],
@@ -2482,6 +2524,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "dns_search_domain": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.HostAuthSshKeyInput": {
+            "type": "object",
+            "properties": {
+                "key_value": {
                     "type": "string"
                 }
             }

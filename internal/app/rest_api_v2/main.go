@@ -62,6 +62,7 @@ func main() {
 	r.HandleFunc("/api/v2/host/settings/add-upstream-dns", handlers.PostHostSettingsAddUpstreamDns).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/host/settings/delete-upstream-dns", handlers.DeleteHostSettingsUpstreamDns).Methods(http.MethodDelete)
 	r.HandleFunc("/api/v2/host/settings/delete-upstream-dns", handlers.DeleteHostSettingsUpstreamDns).Methods(http.MethodPost) // additional POST method for the clients that do not support DELETE
+	r.HandleFunc("/api/v2/host/settings/ssh-auth-key", handlers.PostHostSshAuthKey).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/host/settings/add-ssh-key", handlers.PostHostSettingsSshKey).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/host/settings/delete-ssh-key", handlers.DeleteHostSettingsSshKey).Methods(http.MethodDelete)
 	r.HandleFunc("/api/v2/host/settings/delete-ssh-key", handlers.DeleteHostSettingsSshKey).Methods(http.MethodPost) // additional POST method for the clients that do not support DELETE
