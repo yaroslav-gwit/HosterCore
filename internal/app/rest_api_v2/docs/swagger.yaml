@@ -1421,6 +1421,34 @@ paths:
       tags:
       - Metrics
       - VMs
+  /network/add-new-network:
+    post:
+      description: 'Add a new network.<br>`AUTH`: Only REST user is allowed.'
+      parameters:
+      - description: Request Payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/HosterNetwork.NetworkConfig'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Add a new network.
+      tags:
+      - Networks
   /network/all:
     get:
       description: 'Get the networks list.<br>`AUTH`: Only REST user is allowed.'
