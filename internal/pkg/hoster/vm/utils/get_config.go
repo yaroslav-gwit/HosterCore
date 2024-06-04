@@ -49,6 +49,7 @@ type VmConfig struct {
 	CPUSockets         int         `json:"cpu_sockets"`
 	CPUCores           int         `json:"cpu_cores"`
 	CPUThreads         int         `json:"cpu_threads,omitempty"`
+	IgnoreHostClock    bool        `json:"ignore_host_clock,omitempty"`
 	Memory             string      `json:"memory"`
 	Loader             string      `json:"loader"`
 	OsType             string      `json:"os_type"`

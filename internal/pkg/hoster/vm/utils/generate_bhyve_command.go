@@ -23,10 +23,21 @@ func GenerateBhyveStartCmd(vmName string, vmLocation string, restoreVmState bool
 	}
 
 	if len(conf.Passthru) > 0 {
-		r = "bhyve -S -HAuw -s 0:0,hostbridge -s 31,lpc "
+		// r = "bhyve -S -HAuw -s 0:0,hostbridge -s 31,lpc "
+		r = "bhyve -S -HAw" // -S will force the RAM wiring/allocation to be static
 	} else {
-		r = "bhyve -HAuw -s 0:0,hostbridge -s 31,lpc "
+		// r = "bhyve -HAuw -s 0:0,hostbridge -s 31,lpc "
+		r = "bhyve -HAw"
 	}
+
+	// In some cases, the host clock should be ignored.
+	// For example, if the host sits in a different timezone than the VM.
+	// This also applied sometimes if the VM is Windows-based.
+	if !conf.IgnoreHostClock {
+		r = r + "u"
+	}
+	r += " -s 0:0,hostbridge -s 31,lpc "
+
 	bhyvePci := 2
 	bhyvePci2 := 0
 

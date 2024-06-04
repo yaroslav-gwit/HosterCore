@@ -11,6 +11,8 @@ import (
 	"os"
 	"slices"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 // @Tags Host
@@ -511,4 +513,111 @@ func PostHostSshAuthKey(w http.ResponseWriter, r *http.Request) {
 		SetStatusCode(w, http.StatusOK)
 		w.Write(payload)
 	}
+}
+
+// @Tags Tags
+// @Summary Add a new Host-related tag.
+// @Description Add a new Host-related tag.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param tag path string true "Host Tag"
+// @Router /host/settings/add-tag/{tag} [post]
+func PostHostTag(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := mux.Vars(r)["tag"]
+
+	if len(input) < 1 {
+		ReportError(w, http.StatusBadRequest, "tag is required")
+		return
+	}
+	if len(input) > 20 {
+		ReportError(w, http.StatusBadRequest, "tag length must be less than 20 characters")
+		return
+	}
+
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hostConf.Tags = append(hostConf.Tags, input)
+	err = HosterHost.SaveHostConfig(hostConf)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := JSONResponse.GenerateJson(w, "message", "success")
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags Tags
+// @Summary Delete an existing Host-related tag.
+// @Description Delete an existing Host-related tag.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param tag path string true "Host Tag"
+// @Router /host/settings/delete-tag/{tag} [delete]
+func DeleteHostTag(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := mux.Vars(r)["tag"]
+
+	if len(input) < 1 {
+		ReportError(w, http.StatusBadRequest, "tag is required")
+		return
+	}
+	if len(input) > 20 {
+		ReportError(w, http.StatusBadRequest, "tag length must be less than 20 characters")
+		return
+	}
+
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	tags := []string{}
+	for _, v := range hostConf.Tags {
+		if v != input {
+			tags = append(tags, v)
+		}
+	}
+	hostConf.Tags = tags
+
+	err = HosterHost.SaveHostConfig(hostConf)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := JSONResponse.GenerateJson(w, "message", "success")
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
 }

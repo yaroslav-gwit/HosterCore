@@ -161,6 +161,24 @@ alias jailsu="hoster jail list -u"
 EOF
 # EOF Set .profile for the `root` user
 
+# Set the snapshot schedule
+cat <<'EOF' | cat >/etc/cron.d/hoster_scheduled_snapshots
+# $FreeBSD$
+# Hoster Cron File
+
+SHELL=/bin/sh
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/opt/hoster-core
+
+*/15 * * * * root hoster scheduler snapshot-all --keep 20 --type frequent  # Snap every 15 minutes
+@hourly  root hoster scheduler snapshot-all --keep 10 --type hourly
+@daily   root hoster scheduler snapshot-all --keep 10 --type daily
+@weekly  root hoster scheduler snapshot-all --keep 6  --type weekly
+@monthly root hoster scheduler snapshot-all --keep 10 --type monthly
+@yearly  root hoster scheduler snapshot-all --keep 2  --type yearly
+
+EOF
+# EOF Set the snapshot schedule
+
 #_ GENERATE MINIMAL REQUIRED CONFIG FILES _#
 mkdir -p ${HOSTER_WD}config_files/
 
@@ -209,6 +227,7 @@ EOF
 cat <<EOF | cat >${HOSTER_WD}config_files/host_config.json
 {
     "public_vm_image_server": "https://images.yari.pw/",
+    "tags": [],
     "active_datasets": [
         "zroot/vm-encrypted",
         "zroot/vm-unencrypted"

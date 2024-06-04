@@ -359,6 +359,8 @@ definitions:
         type: string
       encrypted:
         type: boolean
+      ignore_host_clock:
+        type: boolean
       include_host_ssh_keys:
         type: boolean
       loader:
@@ -1021,6 +1023,31 @@ paths:
       summary: Add a new VM SSH access key.
       tags:
       - Host
+  /host/settings/add-tag/{tag}:
+    post:
+      description: Add a new Host-related tag.
+      parameters:
+      - description: Host Tag
+        in: path
+        name: tag
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Add a new Host-related tag.
+      tags:
+      - Tags
   /host/settings/add-upstream-dns:
     post:
       description: Add a new upstream DNS server.
@@ -1093,6 +1120,31 @@ paths:
       summary: Delete an existing SSH key.
       tags:
       - Host
+  /host/settings/delete-tag/{tag}:
+    delete:
+      description: Delete an existing Host-related tag.
+      parameters:
+      - description: Host Tag
+        in: path
+        name: tag
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Delete an existing Host-related tag.
+      tags:
+      - Tags
   /host/settings/delete-upstream-dns:
     delete:
       description: Delete an upstream DNS server.
@@ -1790,4 +1842,7 @@ paths:
       summary: Stop a specific VM.
       tags:
       - VMs
+securityDefinitions:
+  BasicAuth:
+    type: basic
 swagger: "2.0"

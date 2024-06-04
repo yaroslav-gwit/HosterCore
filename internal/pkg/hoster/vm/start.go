@@ -9,7 +9,6 @@ package HosterVm
 
 import (
 	ErrorMappings "HosterCore/internal/app/rest_api_v2/pkg/error_mappings"
-	FileExists "HosterCore/internal/pkg/file_exists"
 	HosterLocations "HosterCore/internal/pkg/hoster/locations"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"fmt"
@@ -74,15 +73,20 @@ func Start(vmName string, waitVnc bool, debugRun bool) error {
 	os.Setenv("LOG_FILE", vmLocation+"/"+HosterVmUtils.VM_LOG_NAME)
 	log.Debug("bhyve cmd: " + bhyveCmd)
 
-	binaryLoc := ""
-	for _, v := range HosterLocations.GetBinaryFolders() {
-		loc := v + "/vm_supervisor_service"
-		if FileExists.CheckUsingOsStat(loc) {
-			binaryLoc = loc
-		}
-	}
-	if len(binaryLoc) < 1 {
-		return fmt.Errorf("vm_supervisor_service has not been found on your system")
+	// binaryLoc := ""
+	// for _, v := range HosterLocations.GetBinaryFolders() {
+	// 	loc := v + "/vm_supervisor_service"
+	// 	if FileExists.CheckUsingOsStat(loc) {
+	// 		binaryLoc = loc
+	// 	}
+	// }
+	// if len(binaryLoc) < 1 {
+	// 	return fmt.Errorf("vm_supervisor_service has not been found on your system")
+	// }
+
+	binaryLoc, err := HosterLocations.LocateBinary(HosterLocations.VM_SUPERVISOR_BINARY_NAME)
+	if err != nil {
+		return err
 	}
 
 	if !debugRun {

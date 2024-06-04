@@ -24,6 +24,7 @@ var version = "" // This is set by the build script
 
 // @title Hoster Node REST API Docs
 // @version 2.0
+// @securityDefinitions.basic BasicAuth
 // @description `NOTE!` This REST API HTTP endpoint is located directly on the `Hoster` node.<br><br>The API should ideally be integrated into another system (e.g. a user-accessible back-end server), and not interacted with directly.<br><br>Please, take an extra care with the things you execute here, because some of them may be disruptive or non-revertible (e.g. vm destroy, snapshot rollback, host reboot, etc).
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
@@ -56,6 +57,9 @@ func main() {
 	// Host
 	r.HandleFunc("/api/v2/host/info", handlers.HostInfo).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/host/settings", handlers.HostSettings).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/host/settings/add-tag/{tag}", handlers.PostHostTag).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/host/settings/delete-tag/{tag}", handlers.DeleteHostTag).Methods(http.MethodDelete)
+	r.HandleFunc("/api/v2/host/settings/delete-tag/{tag}", handlers.DeleteHostTag).Methods(http.MethodPost) // additional POST method for the clients that do not support DELETE
 	r.HandleFunc("/api/v2/host/settings/api", handlers.HostRestApiSettings).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/host/settings/dns-search-domain", handlers.PostHostSettingsDnsSearchDomain).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/host/settings/vm-templates", handlers.PostHostSettingsVmTemplateLink).Methods(http.MethodPost)

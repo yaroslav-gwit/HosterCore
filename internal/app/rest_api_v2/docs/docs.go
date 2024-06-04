@@ -495,6 +495,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/host/settings/add-tag/{tag}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Add a new Host-related tag.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Add a new Host-related tag.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Host Tag",
+                        "name": "tag",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/host/settings/add-upstream-dns": {
             "post": {
                 "security": [
@@ -592,6 +632,46 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/handlers.SshKeyInput"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/host/settings/delete-tag/{tag}": {
+            "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Delete an existing Host-related tag.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Delete an existing Host-related tag.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Host Tag",
+                        "name": "tag",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -2246,6 +2326,9 @@ const docTemplate = `{
                 "encrypted": {
                     "type": "boolean"
                 },
+                "ignore_host_clock": {
+                    "type": "boolean"
+                },
                 "include_host_ssh_keys": {
                     "type": "boolean"
                 },
@@ -2769,6 +2852,11 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
         }
     }
 }`
