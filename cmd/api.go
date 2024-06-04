@@ -50,53 +50,56 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 			// err := startApiServer()
-
-			pid, err := FreeBSDPgrep.FindRestAPIv2()
-			if err == nil || pid != 0 {
-				emojlog.PrintLogMessage("RestAPIv2 server is already running", emojlog.Error)
-				os.Exit(1)
-			}
-
-			bin, err := HosterLocations.LocateBinary("rest_api_v2")
+			err := startRestApiV2()
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)
-			}
-			config, err := HosterLocations.LocateConfig("restapi_config.json")
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-			file, err := os.ReadFile(config)
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-
-			restApiConfig := RestApiConfig.RestApiConfig{}
-			err = json.Unmarshal(file, &restApiConfig)
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-
-			os.Setenv("LOG_FILE", "/var/log/hoster_rest_api_v2.log")
-			command := exec.Command(bin)
-			command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-			err = command.Start()
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
-			}
-
-			emojlog.PrintLogMessage("Started the REST API server on port: "+strconv.Itoa(restApiConfig.Port), emojlog.Info)
-			emojlog.PrintLogMessage("You can find user credentials inside of this config file: "+config, emojlog.Info)
-			if restApiConfig.Protocol != "https" {
-				emojlog.PrintLogMessage("Using unencrypted/plain HTTP protocol (don't forget to encapsulate it within the WireGuard tunnel)", emojlog.Warning)
 			}
 		},
 	}
 )
+
+func startRestApiV2() error {
+	pid, err := FreeBSDPgrep.FindRestAPIv2()
+	if err == nil || pid != 0 {
+		return fmt.Errorf("RestAPIv2 server is already running")
+	}
+
+	bin, err := HosterLocations.LocateBinary("rest_api_v2")
+	if err != nil {
+		return err
+	}
+	config, err := HosterLocations.LocateConfig("restapi_config.json")
+	if err != nil {
+		return err
+	}
+	file, err := os.ReadFile(config)
+	if err != nil {
+		return err
+	}
+
+	restApiConfig := RestApiConfig.RestApiConfig{}
+	err = json.Unmarshal(file, &restApiConfig)
+	if err != nil {
+		return err
+	}
+
+	os.Setenv("LOG_FILE", "/var/log/hoster_rest_api_v2.log")
+	command := exec.Command(bin)
+	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	err = command.Start()
+	if err != nil {
+		return err
+	}
+
+	emojlog.PrintLogMessage("Started the REST API server on port: "+strconv.Itoa(restApiConfig.Port), emojlog.Info)
+	emojlog.PrintLogMessage("You can find user credentials inside of this config file: "+config, emojlog.Info)
+	if restApiConfig.Protocol != "https" {
+		emojlog.PrintLogMessage("Using unencrypted/plain HTTP protocol (don't forget to encapsulate it within the WireGuard tunnel)", emojlog.Warning)
+	}
+
+	return nil
+}
 
 var (
 	apiStopCmd = &cobra.Command{

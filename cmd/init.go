@@ -69,6 +69,12 @@ var (
 				err = nil
 			}
 
+			err = startRestApiV2()
+			if err != nil {
+				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+				err = nil
+			}
+
 			// Start Node_Exporter_Custom
 			err = startNodeExporter()
 			if err != nil {
