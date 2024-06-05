@@ -625,7 +625,6 @@ func DeleteHostTag(w http.ResponseWriter, r *http.Request) {
 // @Tags Host
 // @Summary Get README.MD for this particular Hoster node.
 // @Description Get README.MD for this particular Hoster node.
-// @Produce text
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError

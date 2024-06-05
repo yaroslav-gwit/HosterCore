@@ -422,6 +422,34 @@ const docTemplate = `{
                 }
             }
         },
+        "/host/readme": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get README.MD for this particular Hoster node.",
+                "tags": [
+                    "Host"
+                ],
+                "summary": "Get README.MD for this particular Hoster node.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/host/settings": {
             "get": {
                 "security": [

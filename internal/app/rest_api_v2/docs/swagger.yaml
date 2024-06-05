@@ -978,6 +978,23 @@ paths:
       summary: Get Host info.
       tags:
       - Host
+  /host/readme:
+    get:
+      description: Get README.MD for this particular Hoster node.
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get README.MD for this particular Hoster node.
+      tags:
+      - Host
   /host/settings:
     get:
       description: 'Get Host Settings.<br>`AUTH`: only REST user is allowed.'
