@@ -56,6 +56,7 @@ func main() {
 	r.HandleFunc("/api/v2/health/auth/regular", handlers.HealthCheckRegularAuth).Methods(http.MethodGet)
 	// Host
 	r.HandleFunc("/api/v2/host/info", handlers.HostInfo).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/host/readme", handlers.GetHostReadme).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/host/settings", handlers.HostSettings).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/host/settings/add-tag/{tag}", handlers.PostHostTag).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/host/settings/delete-tag/{tag}", handlers.DeleteHostTag).Methods(http.MethodDelete)
