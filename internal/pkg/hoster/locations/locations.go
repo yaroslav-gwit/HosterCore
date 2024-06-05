@@ -7,6 +7,8 @@ package HosterLocations
 import (
 	FileExists "HosterCore/internal/pkg/file_exists"
 	"fmt"
+	"os"
+	"strings"
 )
 
 func GetBinaryFolders() (r []string) {
@@ -61,6 +63,34 @@ func LocateConfig(configName string) (r string, e error) {
 		if FileExists.CheckUsingOsStat(v + "/" + configName) {
 			r = v + "/" + configName
 			return
+		}
+	}
+
+	if len(r) < 1 {
+		e = fmt.Errorf("could not locate the config file %s", configName)
+		return
+	}
+
+	return
+}
+
+// Returns an absolute path for a config file required.
+//
+// E.g. /opt/hoster-core/configs/hoster_config.json or /opt/hoster-core/configs/HOSTER_CONFIG.json
+func LocateConfigCaseInsensitive(configName string) (r string, e error) {
+	configName = strings.ToLower(configName)
+
+	for _, v := range GetConfigFolders() {
+		files, err := os.ReadDir(v)
+		if err != nil {
+			continue
+		}
+
+		for _, vv := range files {
+			if strings.ToLower(vv.Name()) == configName {
+				r = v + "/" + vv.Name()
+				return
+			}
 		}
 	}
 

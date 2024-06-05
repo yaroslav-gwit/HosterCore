@@ -621,3 +621,29 @@ func DeleteHostTag(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+// @Tags Host
+// @Summary Get README.MD for this particular Hoster node.
+// @Description Get README.MD for this particular Hoster node.
+// @Produce text
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Router /host/readme [get]
+func GetHostReadme(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	readme, err := HosterHost.GetReadme()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	w.Header().Add("Content-Type", "text/plain")
+	SetStatusCode(w, http.StatusOK)
+	w.Write([]byte(readme))
+}
