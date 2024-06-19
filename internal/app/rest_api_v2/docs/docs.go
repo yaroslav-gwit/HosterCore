@@ -1741,6 +1741,15 @@ const docTemplate = `{
                     "VMs"
                 ],
                 "summary": "Get README.MD for a particular VM.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VM Name",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

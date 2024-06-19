@@ -263,6 +263,7 @@ func VmDeploy(w http.ResponseWriter, r *http.Request) {
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "VM Name"
 // @Router /vm/readme/{vm_name} [get]
 func VmGetReadme(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {

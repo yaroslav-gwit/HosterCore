@@ -1810,6 +1810,12 @@ paths:
     get:
       description: 'Get README.MD for a particular VM.<br>`AUTH`: Only `rest` user
         is allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
       produces:
       - application/json
       responses:
