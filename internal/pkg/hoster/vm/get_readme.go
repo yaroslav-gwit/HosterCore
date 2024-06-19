@@ -46,6 +46,10 @@ func GetReadme(vmName string) (r string, e error) {
 				}
 			}
 
+			if len(vmReadme) < 1 {
+				e = fmt.Errorf("readme.md not found")
+				return
+			}
 		}
 	}
 
