@@ -162,7 +162,7 @@ EOF
 # EOF Set .profile for the `root` user
 
 # Set the snapshot schedule
-cat <<'EOF' | cat >/etc/cron.d/hoster_scheduled_snapshots
+cat <<'EOF' | cat >/etc/cron.d/hoster_snapshots
 # $FreeBSD$
 # Hoster Cron File
 

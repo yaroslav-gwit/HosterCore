@@ -13,7 +13,7 @@ import (
 
 type MountPoint struct {
 	DsName     string
-	Mountpoint string // Example: /tank/vm-encrypted
+	Mountpoint string // ZFS Dataset Mountpoint. For example: "/tank/vm-encrypted"
 	Encrypted  bool
 }
 

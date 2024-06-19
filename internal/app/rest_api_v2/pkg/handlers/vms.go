@@ -255,3 +255,32 @@ func VmDeploy(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+// @Tags VMs
+// @Summary Get README.MD for a particular VM.
+// @Description Get README.MD for a particular VM.<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Router /vm/{vm_name}/readme [get]
+func VmGetReadme(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+
+	readme, err := HosterVm.GetReadme(vmName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	w.Header().Add("Content-Type", "text/plain")
+	SetStatusCode(w, http.StatusOK)
+	w.Write([]byte(readme))
+}

@@ -587,8 +587,8 @@ func DeleteHostTag(w http.ResponseWriter, r *http.Request) {
 		ReportError(w, http.StatusBadRequest, "tag is required")
 		return
 	}
-	if len(input) > 20 {
-		ReportError(w, http.StatusBadRequest, "tag length must be less than 20 characters")
+	if len(input) > 40 {
+		ReportError(w, http.StatusBadRequest, "tag length must be less than 40 characters")
 		return
 	}
 

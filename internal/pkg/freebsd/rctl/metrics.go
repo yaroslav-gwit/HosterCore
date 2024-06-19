@@ -5,7 +5,9 @@
 package rctl
 
 import (
+	FreeBSDOsInfo "HosterCore/internal/pkg/freebsd/info"
 	"fmt"
+	"math"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -181,12 +183,31 @@ func parseMetrics(metrics string) (r RctMetrics, e error) {
 		}
 
 		if strings.HasPrefix(v, PCPU) {
+			// This metrics has to be divided by the number of overall CPUs
+			// In order to avoid returning a number greater than 100
 			v = strings.TrimPrefix(v, PCPU)
-			r.PCpu, err = strconv.Atoi(v)
+			pcpu, err := strconv.Atoi(v)
 			if err != nil {
 				e = err
 				return
 			}
+
+			info, err := FreeBSDOsInfo.GetCpuInfo()
+			if err != nil {
+				e = err
+				return
+			}
+
+			if pcpu == 0 {
+				r.PCpu = 0
+			} else {
+				r.PCpu = int(math.Floor((float64(pcpu) / float64(info.OverallCpus)) + 0.5)) // Round to the nearest integer
+			}
+
+			if r.PCpu > 100 {
+				r.PCpu = 100
+			}
+
 			continue
 		}
 
