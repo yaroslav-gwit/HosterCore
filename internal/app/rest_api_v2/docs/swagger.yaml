@@ -1806,6 +1806,26 @@ paths:
       summary: Get the VM Info.
       tags:
       - VMs
+  /vm/readme/{vm_name}:
+    get:
+      description: 'Get README.MD for a particular VM.<br>`AUTH`: Only `rest` user
+        is allowed.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get README.MD for a particular VM.
+      tags:
+      - VMs
   /vm/start/{vm_name}:
     post:
       description: 'Start a specific VM using it''s name as a parameter.<br>`AUTH`:
