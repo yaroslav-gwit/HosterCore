@@ -204,13 +204,13 @@ func SnapshotDestroy(w http.ResponseWriter, r *http.Request) {
 
 	iterations := 0
 	for {
-		if iterations > 10 {
+		if iterations > 8 {
 			ReportError(w, http.StatusInternalServerError, "job is still running in the background, but it's taking too long, please check the status manually")
 			return
 		}
 		iterations++
 
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(1 * time.Second)
 
 		jobStatus, err := SchedulerClient.GetJobInfo(jobID)
 		if err != nil {
