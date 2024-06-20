@@ -153,6 +153,7 @@ func AddSnapshotAllJob(snapshotsToKeep int, snapshotType string) error {
 	return nil
 }
 
+// This function returns the job ID and an error if something went wrong.
 func AddSnapshotDestroyJob(resName string, snapshotName string) (string, error) {
 	// Res found check
 	resFound := false

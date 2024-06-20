@@ -8,11 +8,13 @@ import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
 	ErrorMappings "HosterCore/internal/app/rest_api_v2/pkg/error_mappings"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
+	SchedulerClient "HosterCore/internal/app/scheduler/client"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -157,6 +159,7 @@ func SnapshotList(w http.ResponseWriter, r *http.Request) {
 }
 
 type SnapshotName struct {
+	VmName       string `json:"vm_name"`
 	SnapshotName string `json:"snapshot_name"`
 }
 
@@ -184,31 +187,54 @@ func SnapshotDestroy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	snaps, err := zfsutils.SnapshotListWithDescriptions()
+	// snaps, err := zfsutils.SnapshotListWithDescriptions()
+	// if err != nil {
+	// 	ReportError(w, http.StatusInternalServerError, err.Error())
+	// 	return
+	// }
+
+	// for _, v := range snaps {
+	// 	if v.Name == input.SnapshotName {
+	// err = zfsutils.RemoveSnapshot(input.SnapshotName)
+	jobID, err := SchedulerClient.AddSnapshotDestroyJob(input.VmName, input.SnapshotName)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	snapFound := false
-	for _, v := range snaps {
-		if v.Name == input.SnapshotName {
-			err = zfsutils.RemoveSnapshot(input.SnapshotName)
-			if err != nil {
-				ReportError(w, http.StatusInternalServerError, err.Error())
-				return
-			}
-			snapFound = true
+	iterations := 0
+	for {
+		if iterations > 10 {
+			ReportError(w, http.StatusInternalServerError, "job is still running in the background, but it's taking too long, please check the status manually")
+			return
+		}
+		iterations++
+
+		time.Sleep(500 * time.Millisecond)
+
+		jobStatus, err := SchedulerClient.GetJobInfo(jobID)
+		if err != nil {
+			ReportError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		if jobStatus.JobDone {
+			payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+			SetStatusCode(w, http.StatusOK)
+			w.Write(payload)
+			return
+		} else if jobStatus.JobFailed {
+			ReportError(w, http.StatusInternalServerError, jobStatus.JobError)
+			return
+		} else {
+			continue
 		}
 	}
-	if !snapFound {
-		ReportError(w, http.StatusInternalServerError, ErrorMappings.SnapshotDoesntExist.String())
-		return
-	}
+	// 	}
+	// }
 
-	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
-	SetStatusCode(w, http.StatusOK)
-	w.Write(payload)
+	// If the code above didn't return, the snapshot wasn't found.
+	// ReportError(w, http.StatusInternalServerError, ErrorMappings.SnapshotDoesntExist.String())
 }
 
 // @Tags Snapshots

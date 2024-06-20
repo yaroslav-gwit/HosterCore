@@ -2720,6 +2720,9 @@ const docTemplate = `{
             "properties": {
                 "snapshot_name": {
                     "type": "string"
+                },
+                "vm_name": {
+                    "type": "string"
                 }
             }
         },
