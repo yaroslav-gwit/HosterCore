@@ -166,6 +166,8 @@ IMMEDIATE_SNAPSHOT:
 					jobs[i].JobFailed = true
 					jobs[i].JobError = err.Error()
 				}
+				log.Infof("snapshot destroy job done for: %s", jobs[i].Snapshot.ResName)
+				jobs[i].JobDone = true
 			} else if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK {
 				resOnline, _ := HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
 				if resOnline {

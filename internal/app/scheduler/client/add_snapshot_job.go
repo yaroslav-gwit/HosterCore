@@ -157,6 +157,7 @@ func AddSnapshotAllJob(snapshotsToKeep int, snapshotType string) error {
 func AddSnapshotDestroyJob(resName string, snapshotName string) (string, error) {
 	// Res found check
 	resFound := false
+	resType := ""
 
 	if !resFound {
 		jails, err := HosterJailUtils.ListAllSimple()
@@ -166,6 +167,7 @@ func AddSnapshotDestroyJob(resName string, snapshotName string) (string, error) 
 		for i := range jails {
 			if jails[i].JailName == resName {
 				resFound = true
+				resType = "Jail"
 			}
 		}
 	}
@@ -178,6 +180,7 @@ func AddSnapshotDestroyJob(resName string, snapshotName string) (string, error) 
 		for i := range vms {
 			if vms[i].VmName == resName {
 				resFound = true
+				resType = "VM"
 			}
 		}
 	}
@@ -199,6 +202,7 @@ func AddSnapshotDestroyJob(resName string, snapshotName string) (string, error) 
 	job.Snapshot.SnapshotName = snapshotName
 	job.Snapshot.TakeImmediately = true
 	job.Snapshot.ResName = resName
+	job.ResType = resType
 
 	jsonJob, err := json.Marshal(job)
 	if err != nil {
