@@ -2,9 +2,11 @@ package main
 
 import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
+	HosterJail "HosterCore/internal/pkg/hoster/jail"
 	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
+	"strings"
 	"sync"
 	"time"
 )
@@ -169,29 +171,40 @@ IMMEDIATE_SNAPSHOT:
 				log.Infof("snapshot destroy job done for: %s", jobs[i].Snapshot.ResName)
 				jobs[i].JobDone = true
 			} else if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT_ROLLBACK {
-				resOnline, _ := HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
-				if resOnline {
-					err = HosterVm.Stop(jobs[i].Snapshot.ResName, true, false)
+				if strings.ToLower(v.ResType) == "vm" {
+					// VM
+					resOnline, _ := HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
+					if resOnline {
+						err = HosterVm.Stop(jobs[i].Snapshot.ResName, true, false)
+						if err != nil {
+							log.Errorf("snapshot rollback job failed (could not stop the VM): %v", err)
+							jobs[i].JobFailed = true
+							jobs[i].JobError = err.Error()
+							break IMMEDIATE_SNAPSHOT
+						}
+					}
+					// Wait for the VM to stop
+					maxTimes := 0
+					for resOnline {
+						maxTimes++
+						if maxTimes > 700 {
+							log.Errorf("snapshot rollback job timed-out for %s", jobs[i].Snapshot.ResName)
+							jobs[i].JobFailed = true
+							jobs[i].JobError = err.Error()
+							break IMMEDIATE_SNAPSHOT
+						}
+						time.Sleep(500 * time.Millisecond)
+						resOnline, _ = HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
+					}
+				} else {
+					// Jail
+					err = HosterJail.Stop(jobs[i].Snapshot.ResName)
 					if err != nil {
-						log.Errorf("snapshot rollback job failed (could not stop the VM): %v", err)
+						log.Errorf("snapshot rollback job failed (could not stop the jail): %v", err)
 						jobs[i].JobFailed = true
 						jobs[i].JobError = err.Error()
 						break IMMEDIATE_SNAPSHOT
 					}
-				}
-
-				// Wait for the VM to stop
-				maxTimes := 0
-				for resOnline {
-					maxTimes++
-					if maxTimes > 700 {
-						log.Errorf("snapshot rollback job timed-out for %s", jobs[i].Snapshot.ResName)
-						jobs[i].JobFailed = true
-						jobs[i].JobError = err.Error()
-						break IMMEDIATE_SNAPSHOT
-					}
-					time.Sleep(500 * time.Millisecond)
-					resOnline, _ = HosterVmUtils.IsVmOnline(jobs[i].Snapshot.ResName)
 				}
 
 				// Rollback the snapshot
