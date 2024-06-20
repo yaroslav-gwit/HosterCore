@@ -2718,10 +2718,12 @@ const docTemplate = `{
         "handlers.SnapshotName": {
             "type": "object",
             "properties": {
-                "snapshot_name": {
+                "resource_name": {
+                    "description": "VM or Jail name",
                     "type": "string"
                 },
-                "vm_name": {
+                "snapshot_name": {
+                    "description": "Full snapshot name, including the whole path, e.g. \"tank/vm-encrypted/vmTest1@snap1\"",
                     "type": "string"
                 }
             }

@@ -159,8 +159,8 @@ func SnapshotList(w http.ResponseWriter, r *http.Request) {
 }
 
 type SnapshotName struct {
-	VmName       string `json:"vm_name"`
-	SnapshotName string `json:"snapshot_name"`
+	ResourceName string `json:"resource_name"` // VM or Jail name
+	SnapshotName string `json:"snapshot_name"` // Full snapshot name, including the whole path, e.g. "tank/vm-encrypted/vmTest1@snap1"
 }
 
 // @Tags Snapshots
@@ -196,7 +196,7 @@ func SnapshotDestroy(w http.ResponseWriter, r *http.Request) {
 	// for _, v := range snaps {
 	// 	if v.Name == input.SnapshotName {
 	// err = zfsutils.RemoveSnapshot(input.SnapshotName)
-	jobID, err := SchedulerClient.AddSnapshotDestroyJob(input.VmName, input.SnapshotName)
+	jobID, err := SchedulerClient.AddSnapshotDestroyJob(input.ResourceName, input.SnapshotName)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
