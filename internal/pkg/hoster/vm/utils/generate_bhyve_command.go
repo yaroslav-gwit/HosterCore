@@ -22,6 +22,13 @@ func GenerateBhyveStartCmd(vmName string, vmLocation string, restoreVmState bool
 		return
 	}
 
+	// Bhyve options:
+	// -S  Wire	guest memory. This option is required for the PCI pass-through to work.
+	// -H  Yield the virtual CPU thread when a HLT instruction is detected. If this option is not specified, virtual CPUs will use 100% of a host CPU.
+	// -A  Generate ACPI tables. Required for FreeBSD/amd64 guests.
+	// -w  Ignore accesses to unimplemented Model  Specific  Registers (MSRs).  This is intended for debug purposes.
+	// -u  RTC keeps UTC time.
+
 	if len(conf.Passthru) > 0 {
 		// r = "bhyve -S -HAuw -s 0:0,hostbridge -s 31,lpc "
 		r = "bhyve -S -HAw" // -S will force the RAM wiring/allocation to be static

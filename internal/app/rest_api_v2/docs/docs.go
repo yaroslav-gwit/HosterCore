@@ -1402,6 +1402,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/snapshot/clone": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Clone an existing VM or Jail snapshot.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.\u003cbr\u003e",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Snapshots"
+                ],
+                "summary": "Clone an existing VM or Jail snapshot.",
+                "parameters": [
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SnapshotInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/snapshot/destroy": {
             "delete": {
                 "security": [
@@ -1451,7 +1493,7 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Rollback to a previous snapshot.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.\u003cbr\u003e\u003cbr\u003e` + "`" + `NOTE` + "`" + `: You need to make sure that your VM or Jail is fully shut down before running the rollback command.",
+                "description": "Rollback to a previous snapshot.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.\u003cbr\u003e",
                 "produces": [
                     "application/json"
                 ],
@@ -2704,13 +2746,24 @@ const docTemplate = `{
         "handlers.SnapshotInput": {
             "type": "object",
             "properties": {
+                "new_res_name": {
+                    "description": "Used in clone operation, e.g. newVmName, the internal call will automatically append the dataset name",
+                    "type": "string"
+                },
                 "res_name": {
+                    "description": "VM or Jail name",
+                    "type": "string"
+                },
+                "snapshot_name": {
+                    "description": "Full snapshot name, including the whole path, e.g. \"tank/vm-encrypted/vmTest1@snap1\"",
                     "type": "string"
                 },
                 "snapshot_type": {
+                    "description": "\"hourly\", \"daily\", \"weekly\", \"monthly\", \"frequent\"",
                     "type": "string"
                 },
                 "snapshots_to_keep": {
+                    "description": "How many snapshots to keep, e.g. 5",
                     "type": "integer"
                 }
             }

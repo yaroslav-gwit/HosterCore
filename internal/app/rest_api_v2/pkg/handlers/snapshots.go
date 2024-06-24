@@ -14,15 +14,18 @@ import (
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 )
 
 type SnapshotInput struct {
-	SnapshotsToKeep int    `json:"snapshots_to_keep"`
-	ResourceName    string `json:"res_name"`
-	SnapshotType    string `json:"snapshot_type"`
+	SnapshotsToKeep int    `json:"snapshots_to_keep"` // How many snapshots to keep, e.g. 5
+	SnapshotName    string `json:"snapshot_name"`     // Full snapshot name, including the whole path, e.g. "tank/vm-encrypted/vmTest1@snap1"
+	ResourceName    string `json:"res_name"`          // VM or Jail name
+	NewResourceName string `json:"new_res_name"`      // Used in clone operation, e.g. newVmName, the internal call will automatically append the dataset name
+	SnapshotType    string `json:"snapshot_type"`     // "hourly", "daily", "weekly", "monthly", "frequent"
 	SnapshotDataset string `json:"-"`
 }
 
@@ -225,7 +228,7 @@ func SnapshotDestroy(w http.ResponseWriter, r *http.Request) {
 
 // @Tags Snapshots
 // @Summary Rollback to a previous snapshot.
-// @Description Rollback to a previous snapshot.<br>`AUTH`: Only `rest` user is allowed.<br><br>`NOTE`: You need to make sure that your VM or Jail is fully shut down before running the rollback command.
+// @Description Rollback to a previous snapshot.<br>`AUTH`: Only `rest` user is allowed.<br>
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
@@ -281,4 +284,46 @@ func SnapshotRollback(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 	}
+}
+
+// @Tags Snapshots
+// @Summary Clone an existing VM or Jail snapshot.
+// @Description Clone an existing VM or Jail snapshot.<br>`AUTH`: Only `rest` user is allowed.<br>
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param Input body SnapshotInput true "Request payload"
+// @Router /snapshot/clone [post]
+func SnapshotClone(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := SnapshotInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
+		return
+	}
+
+	tempLs := strings.Split(input.SnapshotName, "/")
+	if len(tempLs) < 2 {
+		ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
+		return
+	}
+
+	newRes := strings.Join(tempLs[:len(tempLs)-2], "/") + "/" + input.NewResourceName
+	err = zfsutils.SnapshotClone(input.SnapshotName, newRes)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
 }

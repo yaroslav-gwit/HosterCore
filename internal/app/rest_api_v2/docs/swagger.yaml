@@ -570,11 +570,21 @@ definitions:
     type: object
   handlers.SnapshotInput:
     properties:
+      new_res_name:
+        description: Used in clone operation, e.g. newVmName, the internal call will
+          automatically append the dataset name
+        type: string
       res_name:
+        description: VM or Jail name
+        type: string
+      snapshot_name:
+        description: Full snapshot name, including the whole path, e.g. "tank/vm-encrypted/vmTest1@snap1"
         type: string
       snapshot_type:
+        description: '"hourly", "daily", "weekly", "monthly", "frequent"'
         type: string
       snapshots_to_keep:
+        description: How many snapshots to keep, e.g. 5
         type: integer
     type: object
   handlers.SnapshotName:
@@ -1602,6 +1612,33 @@ paths:
       summary: List all snapshots for any given VM or a Jail.
       tags:
       - Snapshots
+  /snapshot/clone:
+    post:
+      description: 'Clone an existing VM or Jail snapshot.<br>`AUTH`: Only `rest`
+        user is allowed.<br>'
+      parameters:
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SnapshotInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Clone an existing VM or Jail snapshot.
+      tags:
+      - Snapshots
   /snapshot/destroy:
     delete:
       description: 'Destroy a snapshot for any given VM or a Jail.<br>`AUTH`: Only
@@ -1632,8 +1669,7 @@ paths:
   /snapshot/rollback:
     post:
       description: 'Rollback to a previous snapshot.<br>`AUTH`: Only `rest` user is
-        allowed.<br><br>`NOTE`: You need to make sure that your VM or Jail is fully
-        shut down before running the rollback command.'
+        allowed.<br>'
       parameters:
       - description: Request payload
         in: body
