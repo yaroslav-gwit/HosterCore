@@ -12,3 +12,5 @@ const ERRTXT_VM_IS_RUNNING = "VM is already running"
 const ERRTXT_VM_IS_STOPPED = "VM is already offline"
 const ERRTXT_VM_DOESNT_EXIST = "VM doesn't exist"
 const ERRTXT_VM_ALREADY_EXIST = "VM already exists"
+
+const VM_CACHE_FILE = "/var/run/hoster_vm_cache.json"

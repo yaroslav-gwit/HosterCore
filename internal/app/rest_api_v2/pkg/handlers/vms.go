@@ -92,6 +92,37 @@ func VmList(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Tags VMs
+// @Summary List all VMs (cached version).
+// @Description Get the list of all VMs, including the information about them (cached version).<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} []HosterVmUtils.VmApi
+// @Failure 500 {object} SwaggerError
+// @Router /vm/all/cache [get]
+func VmListCache(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vms, err := HosterVmUtils.ReadCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := json.Marshal(vms)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
 // @Summary Get the VM Info.
 // @Description Get the VM Info.<br>`AUTH`: Both users are allowed.
 // @Produce json
