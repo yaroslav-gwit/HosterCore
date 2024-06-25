@@ -76,6 +76,7 @@ func WriteCache() (r []VmApi, e error) {
 		return
 	}
 
+	r = vms
 	return
 }
 
