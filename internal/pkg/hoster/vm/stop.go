@@ -110,12 +110,17 @@ func SendShutdownSignal(vmName string, forceKill bool, forceCleanup bool) error 
 			message := fmt.Sprintf("Graceful SIGTERM signal has been sent to: %s; PID: %d", vmName, vmPid)
 			log.Info(message)
 		}
+	}
 
-		if forceKill && forceCleanup {
-			err := HosterVmUtils.BhyveCtlDestroy(vmName)
-			if err != nil {
-				log.Error(err.Error())
-			}
+	if forceKill || forceCleanup {
+		err = HosterVmUtils.BhyveCtlForcePoweroff(vmName)
+		if err != nil {
+			log.Error(err.Error())
+		}
+
+		err := HosterVmUtils.BhyveCtlDestroy(vmName)
+		if err != nil {
+			log.Error(err.Error())
 		}
 	}
 
@@ -125,7 +130,7 @@ func SendShutdownSignal(vmName string, forceKill bool, forceCleanup bool) error 
 
 		// Forceful VM Supervisor shutdown using -SIGKILL
 		FreeBSDKill.KillProcess(FreeBSDKill.KillSignalKILL, supervisorPid)
-		message := fmt.Sprintf("SIGTERM signal has been sent to the VM Supervisor; PID: %d", supervisorPid)
+		message := fmt.Sprintf("SIGKILL signal has been sent to the VM Supervisor; PID: %d", supervisorPid)
 		log.Info(message)
 	}
 
