@@ -209,7 +209,7 @@ func SnapshotListCache(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	snaps, err := zfsutils.ReadCache()
+	snaps, err := zfsutils.ReadSnapshotCache()
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -223,11 +223,11 @@ func SnapshotListCache(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Debugging
-	// _ = result
-	// mp := map[string]string{"ds": resDataset}
-	// payload, err := json.Marshal(mp)
+	_ = result
+	mp := map[string]string{"ds": resDataset}
+	payload, err := json.Marshal(mp)
 
-	payload, err := json.Marshal(result)
+	// payload, err := json.Marshal(result)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

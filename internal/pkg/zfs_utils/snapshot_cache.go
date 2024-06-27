@@ -12,8 +12,8 @@ import (
 )
 
 // Read the Snapshot List cache.
-func ReadCache() (r []SnapshotInfo, e error) {
-	if !CacheOutdated(SNAPSHOT_CACHE_FILE) {
+func ReadSnapshotCache() (r []SnapshotInfo, e error) {
+	if !SnapshotCacheOutdated(SNAPSHOT_CACHE_FILE) {
 		f, err := os.ReadFile(SNAPSHOT_CACHE_FILE)
 		if err != nil {
 			e = err
@@ -26,7 +26,7 @@ func ReadCache() (r []SnapshotInfo, e error) {
 			return
 		}
 	} else {
-		snapshots, err := WriteCache()
+		snapshots, err := WriteSnapshotCache()
 		if err != nil {
 			e = err
 			return
@@ -37,7 +37,7 @@ func ReadCache() (r []SnapshotInfo, e error) {
 	return
 }
 
-func WriteCache() (r []SnapshotInfo, e error) {
+func WriteSnapshotCache() (r []SnapshotInfo, e error) {
 	snapshots, err := SnapshotListWithDescriptions()
 	if err != nil {
 		e = err
@@ -61,7 +61,7 @@ func WriteCache() (r []SnapshotInfo, e error) {
 }
 
 // If this function returns true, the cache is outdated or outright missing
-func CacheOutdated(filePath string) bool {
+func SnapshotCacheOutdated(filePath string) bool {
 	if !FileExists.CheckUsingOsStat(SNAPSHOT_CACHE_FILE) {
 		return true
 	}
