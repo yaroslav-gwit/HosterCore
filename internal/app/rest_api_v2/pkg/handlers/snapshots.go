@@ -222,7 +222,11 @@ func SnapshotListCache(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	payload, err := json.Marshal(result)
+	_ = result
+	mp := map[string]string{"ds": resDataset}
+
+	// payload, err := json.Marshal(result)
+	payload, err := json.Marshal(mp)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
