@@ -9,4 +9,6 @@ const (
 	TYPE_WEEKLY      = "weekly"
 	TYPE_MONTHLY     = "monthly"
 	TYPE_YEARLY      = "yearly"
+
+	SNAPSHOT_CACHE_FILE = "/var/run/hoster_snapshot_cache.json"
 )

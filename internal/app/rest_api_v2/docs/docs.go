@@ -920,6 +920,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/jail/all/cache": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get the list of all Jails, including the information about them (cached version).\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "List all Jails (cached version).",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/HosterJailUtils.JailApi"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/clone": {
             "post": {
                 "security": [
@@ -1374,6 +1408,49 @@ const docTemplate = `{
                     "Snapshots"
                 ],
                 "summary": "List all snapshots for any given VM or a Jail.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource Name (Jail or VM)",
+                        "name": "res_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/zfsutils.SnapshotInfo"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/snapshot/all/{res_name}/cache": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "List all snapshots for any given VM or a Jail (cached version).\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Snapshots"
+                ],
+                "summary": "List all snapshots for any given VM or a Jail (cached version).",
                 "parameters": [
                     {
                         "type": "string",

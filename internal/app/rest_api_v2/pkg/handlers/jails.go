@@ -43,6 +43,37 @@ func JailList(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Tags Jails
+// @Summary List all Jails (cached version).
+// @Description Get the list of all Jails, including the information about them (cached version).<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} []HosterJailUtils.JailApi
+// @Failure 500 {object} SwaggerError
+// @Router /jail/all/cache [get]
+func JailListCache(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	jails, err := HosterJailUtils.ReadCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := json.Marshal(jails)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags Jails
 // @Summary List all Jail templates.
 // @Description Get the list of all Jail templates.<br>`AUTH`: Only `rest` user is allowed.
 // @Produce json

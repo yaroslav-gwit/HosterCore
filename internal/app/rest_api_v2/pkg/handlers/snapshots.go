@@ -161,6 +161,77 @@ func SnapshotList(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
+// @Tags Snapshots
+// @Summary List all snapshots for any given VM or a Jail (cached version).
+// @Description List all snapshots for any given VM or a Jail (cached version).<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} []zfsutils.SnapshotInfo
+// @Failure 500 {object} SwaggerError
+// @Param res_name path string true "Resource Name (Jail or VM)"
+// @Router /snapshot/all/{res_name}/cache [get]
+func SnapshotListCache(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	resName := vars["res_name"]
+	resDataset := ""
+
+	jails, err := HosterJailUtils.ReadCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	vms, err := HosterVmUtils.ReadCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	for _, v := range jails {
+		if v.Name == resName {
+			resDataset = v.Simple.Mountpoint + "/" + v.Name
+		}
+	}
+	if len(resDataset) < 1 {
+		for _, v := range vms {
+			if v.Name == resName {
+				resDataset = v.Simple.Mountpoint + "/" + v.Name
+			}
+		}
+	}
+	if len(resDataset) < 1 {
+		ReportError(w, http.StatusInternalServerError, ErrorMappings.ResourceDoesntExist.String())
+		return
+	}
+
+	snaps, err := zfsutils.ReadCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	result := []zfsutils.SnapshotInfo{}
+	for _, v := range snaps {
+		if v.Dataset == resDataset {
+			result = append(result, v)
+		}
+	}
+
+	payload, err := json.Marshal(result)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
 type SnapshotName struct {
 	ResourceName string `json:"resource_name"` // VM or Jail name
 	SnapshotName string `json:"snapshot_name"` // Full snapshot name, including the whole path, e.g. "tank/vm-encrypted/vmTest1@snap1"
