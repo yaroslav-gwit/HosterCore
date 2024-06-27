@@ -194,13 +194,13 @@ func SnapshotListCache(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range jails {
 		if v.Name == resName {
-			resDataset = v.Simple.Mountpoint + "/" + v.Name
+			resDataset = v.Simple.DsName + "/" + v.Name
 		}
 	}
 	if len(resDataset) < 1 {
 		for _, v := range vms {
 			if v.Name == resName {
-				resDataset = v.Simple.Mountpoint + "/" + v.Name
+				resDataset = v.Simple.DsName + "/" + v.Name
 			}
 		}
 	}
@@ -222,11 +222,12 @@ func SnapshotListCache(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_ = result
-	mp := map[string]string{"ds": resDataset}
+	// Debugging
+	// _ = result
+	// mp := map[string]string{"ds": resDataset}
+	// payload, err := json.Marshal(mp)
 
-	// payload, err := json.Marshal(result)
-	payload, err := json.Marshal(mp)
+	payload, err := json.Marshal(result)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
