@@ -9,7 +9,7 @@ import (
 
 type JailApi struct {
 	JailConfig
-	Simple         JailListSimple `json:"-"`
+	Simple         JailListSimple `json:"simple"`
 	Name           string         `json:"name"`
 	Uptime         string         `json:"uptime"`
 	Running        bool           `json:"running"`

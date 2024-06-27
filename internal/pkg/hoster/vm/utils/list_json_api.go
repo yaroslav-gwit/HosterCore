@@ -21,7 +21,7 @@ type DiskSize struct {
 
 type VmApi struct {
 	VmConfig
-	Simple      VmListSimple `json:"-"`
+	Simple      VmListSimple `json:"simple"`
 	Name        string       `json:"name"`
 	Uptime      string       `json:"uptime"`
 	UptimeUnix  int64        `json:"uptime_unix"`
