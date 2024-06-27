@@ -2398,6 +2398,9 @@ const docTemplate = `{
                 "shutdown_script": {
                     "type": "string"
                 },
+                "simple": {
+                    "$ref": "#/definitions/HosterJailUtils.JailListSimple"
+                },
                 "space_free_b": {
                     "type": "integer"
                 },
@@ -2427,6 +2430,17 @@ const docTemplate = `{
                 },
                 "uuid": {
                     "type": "string"
+                }
+            }
+        },
+        "HosterJailUtils.JailListSimple": {
+            "type": "object",
+            "properties": {
+                "jail_name": {
+                    "type": "string"
+                },
+                "mount_point": {
+                    "$ref": "#/definitions/HosterZfs.MountPoint"
                 }
             }
         },
@@ -2593,6 +2607,9 @@ const docTemplate = `{
                 "running": {
                     "type": "boolean"
                 },
+                "simple": {
+                    "$ref": "#/definitions/HosterVmUtils.VmListSimple"
+                },
                 "tags": {
                     "type": "array",
                     "items": {
@@ -2657,6 +2674,24 @@ const docTemplate = `{
                 }
             }
         },
+        "HosterVmUtils.VmListSimple": {
+            "type": "object",
+            "properties": {
+                "dsName": {
+                    "type": "string"
+                },
+                "encrypted": {
+                    "type": "boolean"
+                },
+                "mountpoint": {
+                    "description": "ZFS Dataset Mountpoint. For example: \"/tank/vm-encrypted\"",
+                    "type": "string"
+                },
+                "vmName": {
+                    "type": "string"
+                }
+            }
+        },
         "HosterVmUtils.VmNetwork": {
             "type": "object",
             "properties": {
@@ -2687,6 +2722,21 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "key_value": {
+                    "type": "string"
+                }
+            }
+        },
+        "HosterZfs.MountPoint": {
+            "type": "object",
+            "properties": {
+                "dsName": {
+                    "type": "string"
+                },
+                "encrypted": {
+                    "type": "boolean"
+                },
+                "mountpoint": {
+                    "description": "ZFS Dataset Mountpoint. For example: \"/tank/vm-encrypted\"",
                     "type": "string"
                 }
             }

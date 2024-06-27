@@ -261,6 +261,8 @@ definitions:
         type: boolean
       shutdown_script:
         type: string
+      simple:
+        $ref: '#/definitions/HosterJailUtils.JailListSimple'
       space_free_b:
         type: integer
       space_free_h:
@@ -281,6 +283,13 @@ definitions:
         type: string
       uuid:
         type: string
+    type: object
+  HosterJailUtils.JailListSimple:
+    properties:
+      jail_name:
+        type: string
+      mount_point:
+        $ref: '#/definitions/HosterZfs.MountPoint'
     type: object
   HosterNetwork.NetworkConfig:
     properties:
@@ -390,6 +399,8 @@ definitions:
         type: boolean
       running:
         type: boolean
+      simple:
+        $ref: '#/definitions/HosterVmUtils.VmListSimple'
       tags:
         items:
           type: string
@@ -432,6 +443,18 @@ definitions:
       used_human:
         type: string
     type: object
+  HosterVmUtils.VmListSimple:
+    properties:
+      dsName:
+        type: string
+      encrypted:
+        type: boolean
+      mountpoint:
+        description: 'ZFS Dataset Mountpoint. For example: "/tank/vm-encrypted"'
+        type: string
+      vmName:
+        type: string
+    type: object
   HosterVmUtils.VmNetwork:
     properties:
       comment:
@@ -452,6 +475,16 @@ definitions:
       key_owner:
         type: string
       key_value:
+        type: string
+    type: object
+  HosterZfs.MountPoint:
+    properties:
+      dsName:
+        type: string
+      encrypted:
+        type: boolean
+      mountpoint:
+        description: 'ZFS Dataset Mountpoint. For example: "/tank/vm-encrypted"'
         type: string
     type: object
   RestApiConfig.HaNode:
