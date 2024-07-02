@@ -424,6 +424,74 @@ definitions:
       vnc_resolution:
         type: integer
     type: object
+  HosterVmUtils.VmConfig:
+    properties:
+      9p_shares:
+        items:
+          $ref: '#/definitions/HosterVmUtils.Virtio9P'
+        type: array
+      cpu_cores:
+        type: integer
+      cpu_sockets:
+        type: integer
+      cpu_threads:
+        type: integer
+      description:
+        type: string
+      disable_xhci:
+        type: boolean
+      disks:
+        items:
+          $ref: '#/definitions/HosterVmUtils.VmDisk'
+        type: array
+      dns_search_domain:
+        type: string
+      ignore_host_clock:
+        type: boolean
+      include_host_ssh_keys:
+        type: boolean
+      loader:
+        type: string
+      memory:
+        type: string
+      networks:
+        items:
+          $ref: '#/definitions/HosterVmUtils.VmNetwork'
+        type: array
+      os_comment:
+        type: string
+      os_type:
+        type: string
+      owner:
+        type: string
+      parent_host:
+        type: string
+      passthru:
+        items:
+          type: string
+        type: array
+      production:
+        description: LiveStatus         string      `json:"live_status"`
+        type: boolean
+      tags:
+        items:
+          type: string
+        type: array
+      uuid:
+        type: string
+      vga:
+        type: string
+      vm_ssh_keys:
+        items:
+          $ref: '#/definitions/HosterVmUtils.VmSshKey'
+        type: array
+      vnc_password:
+        type: string
+      vnc_port:
+        type: integer
+      vnc_resolution:
+        type: integer
+    type: object
   HosterVmUtils.VmDisk:
     properties:
       comment:
@@ -1975,6 +2043,32 @@ paths:
       security:
       - BasicAuth: []
       summary: Get README.MD for a particular VM.
+      tags:
+      - VMs
+  /vm/settings/{vm_name}:
+    get:
+      description: 'Get the settings for a particular VM.<br>`AUTH`: Both users are
+        allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/HosterVmUtils.VmConfig'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get the settings for a particular VM.
       tags:
       - VMs
   /vm/start/{vm_name}:

@@ -1912,6 +1912,46 @@
                 }
             }
         },
+        "/vm/settings/{vm_name}": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get the settings for a particular VM.\u003cbr\u003e`AUTH`: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Get the settings for a particular VM.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VM Name",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/HosterVmUtils.VmConfig"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/start/{vm_name}": {
             "post": {
                 "security": [
@@ -2614,6 +2654,108 @@
                 },
                 "uptime_unix": {
                     "type": "integer"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "vga": {
+                    "type": "string"
+                },
+                "vm_ssh_keys": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HosterVmUtils.VmSshKey"
+                    }
+                },
+                "vnc_password": {
+                    "type": "string"
+                },
+                "vnc_port": {
+                    "type": "integer"
+                },
+                "vnc_resolution": {
+                    "type": "integer"
+                }
+            }
+        },
+        "HosterVmUtils.VmConfig": {
+            "type": "object",
+            "properties": {
+                "9p_shares": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HosterVmUtils.Virtio9P"
+                    }
+                },
+                "cpu_cores": {
+                    "type": "integer"
+                },
+                "cpu_sockets": {
+                    "type": "integer"
+                },
+                "cpu_threads": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "disable_xhci": {
+                    "type": "boolean"
+                },
+                "disks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HosterVmUtils.VmDisk"
+                    }
+                },
+                "dns_search_domain": {
+                    "type": "string"
+                },
+                "ignore_host_clock": {
+                    "type": "boolean"
+                },
+                "include_host_ssh_keys": {
+                    "type": "boolean"
+                },
+                "loader": {
+                    "type": "string"
+                },
+                "memory": {
+                    "type": "string"
+                },
+                "networks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HosterVmUtils.VmNetwork"
+                    }
+                },
+                "os_comment": {
+                    "type": "string"
+                },
+                "os_type": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "parent_host": {
+                    "type": "string"
+                },
+                "passthru": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "production": {
+                    "description": "LiveStatus         string      `json:\"live_status\"`",
+                    "type": "boolean"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "uuid": {
                     "type": "string"

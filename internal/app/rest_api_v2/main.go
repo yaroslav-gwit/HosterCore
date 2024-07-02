@@ -81,6 +81,7 @@ func main() {
 	r.HandleFunc("/api/v2/vm/all", handlers.VmList).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/all/cache", handlers.VmListCache).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/info/{vm_name}", handlers.VmInfo).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/vm/settings/{vm_name}", handlers.VmGetSettings).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/readme/{vm_name}", handlers.VmGetReadme).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/start/{vm_name}", handlers.VmStart).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/stop", handlers.VmStop).Methods(http.MethodPost)

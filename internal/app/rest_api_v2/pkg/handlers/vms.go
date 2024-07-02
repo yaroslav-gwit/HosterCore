@@ -316,3 +316,38 @@ func VmGetReadme(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write([]byte(readme))
 }
+
+// @Tags VMs
+// @Summary Get the settings for a particular VM.
+// @Description Get the settings for a particular VM.<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} HosterVmUtils.VmConfig
+// @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "VM Name"
+// @Router /vm/settings/{vm_name} [get]
+func VmGetSettings(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+
+	config, err := HosterVmUtils.GetVmConfig(vmName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := json.Marshal(config)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
