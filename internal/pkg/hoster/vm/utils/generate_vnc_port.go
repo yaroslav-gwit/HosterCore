@@ -10,8 +10,8 @@ import (
 )
 
 func GenerateVncPort() (r int, e error) {
-	maxPort := 6300
-	r = 5900
+	minPort := 5900
+	maxPort := 7999
 
 	vms, err := ListJsonApi()
 	if err != nil {
@@ -19,22 +19,23 @@ func GenerateVncPort() (r int, e error) {
 		return
 	}
 
-	existing := []int{}
+	var usedPorts []int
 	for _, v := range vms {
-		existing = append(existing, v.VncPort)
+		usedPorts = append(usedPorts, v.VncPort)
 	}
 
+	port := minPort
 	for {
-		if r > maxPort {
-			e = fmt.Errorf("ran out of available VNC ports")
-			return
-		}
-
-		if slices.Contains(existing, r) {
-			r += 1
-		} else {
+		if !slices.Contains(usedPorts, port) {
+			r = port
 			break
 		}
+		port++
+	}
+
+	if r > maxPort {
+		e = fmt.Errorf("ran out of available VNC ports (tried ports %d to %d)", minPort, maxPort)
+		return
 	}
 
 	return
