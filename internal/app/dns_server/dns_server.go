@@ -137,35 +137,10 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			continue
 		}
 
-		if len(staticRecords) > 0 {
-			// Only handle A and CNAME records from the static records for now
-			for _, v := range staticRecords {
-				if q.Name == v.Domain && q.Qtype == dns.TypeA && strings.ToUpper(v.Type) == "A" {
-					rr, err := dns.NewRR(q.Name + " IN A " + v.Data)
-					if err != nil {
-						log.Error("Failed to generate an A record (from the static records): " + err.Error())
-						continue
-					}
-					m.Answer = append(m.Answer, rr)
-					logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::STATIC_A_RECORD"
-					log.Info(logLine)
-				}
-				if q.Name == v.Domain && q.Qtype == dns.TypeCNAME && strings.ToUpper(v.Type) == "CNAME" {
-					rr, err := dns.NewRR(q.Name + " IN CNAME " + v.Data)
-					if err != nil {
-						log.Error("Failed to generate an A record (from the static records): " + err.Error())
-						continue
-					}
-					m.Answer = append(m.Answer, rr)
-					logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::STATIC_CNAME_RECORD"
-					log.Info(logLine)
-				}
-			}
-		}
-
 		requestIsVmName := false
 		requestIsJailName := false
 		requestIsPublic := false
+		requestIsStaticRecord := false
 
 		vmListIndex := 0
 		jailListIndex := 0
@@ -177,76 +152,109 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			}
 		}
 
-		for i, v := range vmInfoList {
-			dnsName := dnsNameSplit[0]
-			if dnsName == v.vmName {
-				if q.Name == v.vmName+"."+hostConf.DnsSearchDomain+"." {
-					requestIsPublic = false
+		if len(staticRecords) > 0 {
+			// Only handle A and CNAME records from the static records for now
+			for _, v := range staticRecords {
+				if q.Qtype == dns.TypeA && strings.ToUpper(v.Type) == "A" {
+					if q.Name == v.Domain || q.Name == v.Domain+"."+hostConf.DnsSearchDomain+"." {
+						rr, err := dns.NewRR(q.Name + " IN A " + v.Data)
+						if err != nil {
+							log.Error("Failed to generate an A record (from the static records): " + err.Error())
+							continue
+						}
+						m.Answer = append(m.Answer, rr)
+						logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::STATIC_A_RECORD"
+						log.Info(logLine)
+						requestIsStaticRecord = true
+					}
+				} else if q.Qtype == dns.TypeCNAME && strings.ToUpper(v.Type) == "CNAME" {
+					if q.Name == v.Domain || q.Name == v.Domain+"."+hostConf.DnsSearchDomain+"." {
+						rr, err := dns.NewRR(q.Name + " IN CNAME " + v.Data)
+						if err != nil {
+							log.Error("Failed to generate a CNAME record (from the static records): " + err.Error())
+							continue
+						}
+						m.Answer = append(m.Answer, rr)
+						logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::STATIC_CNAME_RECORD"
+						log.Info(logLine)
+						requestIsStaticRecord = true
+					}
 				}
-				requestIsVmName = true
-				vmListIndex = i
-			} else if dnsName == strings.ToLower(v.vmName) {
-				if q.Name == v.vmName+"."+hostConf.DnsSearchDomain+"." {
-					requestIsPublic = false
-				}
-				requestIsVmName = true
-				vmListIndex = i
 			}
 		}
 
-		for i, v := range jailInfoList {
-			dnsName := dnsNameSplit[0]
-			if dnsName == v.JailName {
-				if q.Name == v.JailName+"."+hostConf.DnsSearchDomain+"." {
-					requestIsPublic = false
+		if !requestIsStaticRecord {
+			for i, v := range vmInfoList {
+				dnsName := dnsNameSplit[0]
+				if dnsName == v.vmName {
+					if q.Name == v.vmName+"."+hostConf.DnsSearchDomain+"." {
+						requestIsPublic = false
+					}
+					requestIsVmName = true
+					vmListIndex = i
+				} else if dnsName == strings.ToLower(v.vmName) {
+					if q.Name == v.vmName+"."+hostConf.DnsSearchDomain+"." {
+						requestIsPublic = false
+					}
+					requestIsVmName = true
+					vmListIndex = i
 				}
-				requestIsJailName = true
-				jailListIndex = i
-			} else if dnsName == strings.ToLower(v.JailName) {
-				if q.Name == v.JailName+"."+hostConf.DnsSearchDomain+"." {
-					requestIsPublic = false
-				}
-				requestIsJailName = true
-				jailListIndex = i
 			}
-		}
 
-		if requestIsPublic {
-			response, server, err := queryExternalDNS(q)
-			if err != nil {
-				log.Error("Failed to query external DNS:", err)
-				continue
+			for i, v := range jailInfoList {
+				dnsName := dnsNameSplit[0]
+				if dnsName == v.JailName {
+					if q.Name == v.JailName+"."+hostConf.DnsSearchDomain+"." {
+						requestIsPublic = false
+					}
+					requestIsJailName = true
+					jailListIndex = i
+				} else if dnsName == strings.ToLower(v.JailName) {
+					if q.Name == v.JailName+"."+hostConf.DnsSearchDomain+"." {
+						requestIsPublic = false
+					}
+					requestIsJailName = true
+					jailListIndex = i
+				}
 			}
-			m.Answer = append(m.Answer, response.Answer...)
-			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
-			log.Info(logLine)
-		} else if requestIsVmName {
-			rr, err := dns.NewRR(q.Name + " IN A " + vmInfoList[vmListIndex].vmAddress)
-			if err != nil {
-				log.Error("Failed to create an A record:", err)
-				continue
+
+			if requestIsPublic {
+				response, server, err := queryExternalDNS(q)
+				if err != nil {
+					log.Error("Failed to query external DNS:", err)
+					continue
+				}
+				m.Answer = append(m.Answer, response.Answer...)
+				logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
+				log.Info(logLine)
+			} else if requestIsVmName {
+				rr, err := dns.NewRR(q.Name + " IN A " + vmInfoList[vmListIndex].vmAddress)
+				if err != nil {
+					log.Error("Failed to create an A record:", err)
+					continue
+				}
+				m.Answer = append(m.Answer, rr)
+				logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::VM"
+				log.Info(logLine)
+			} else if requestIsJailName {
+				rr, err := dns.NewRR(q.Name + " IN A " + jailInfoList[jailListIndex].JailAddress)
+				if err != nil {
+					log.Error("Failed to create an A record:", err)
+					continue
+				}
+				m.Answer = append(m.Answer, rr)
+				logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::Jail"
+				log.Info(logLine)
+			} else {
+				response, server, err := queryExternalDNS(q)
+				if err != nil {
+					log.Error("Failed to query external DNS:", err)
+					continue
+				}
+				m.Answer = append(m.Answer, response.Answer...)
+				logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
+				log.Info(logLine)
 			}
-			m.Answer = append(m.Answer, rr)
-			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::VM"
-			log.Info(logLine)
-		} else if requestIsJailName {
-			rr, err := dns.NewRR(q.Name + " IN A " + jailInfoList[jailListIndex].JailAddress)
-			if err != nil {
-				log.Error("Failed to create an A record:", err)
-				continue
-			}
-			m.Answer = append(m.Answer, rr)
-			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::Jail"
-			log.Info(logLine)
-		} else {
-			response, server, err := queryExternalDNS(q)
-			if err != nil {
-				log.Error("Failed to query external DNS:", err)
-				continue
-			}
-			m.Answer = append(m.Answer, response.Answer...)
-			logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_MISS::" + server
-			log.Info(logLine)
 		}
 	}
 
