@@ -156,7 +156,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 			// Only handle A and CNAME records from the static records for now
 			for _, v := range staticRecords {
 				if q.Qtype == dns.TypeA && strings.ToUpper(v.Type) == "A" {
-					if q.Name == v.Domain || q.Name == v.Domain+"."+hostConf.DnsSearchDomain+"." {
+					if q.Name == v.Domain+"." || q.Name == v.Domain+"."+hostConf.DnsSearchDomain+"." {
 						rr, err := dns.NewRR(q.Name + " IN A " + v.Data)
 						if err != nil {
 							log.Error("Failed to generate an A record (from the static records): " + err.Error())
@@ -168,7 +168,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 						requestIsStaticRecord = true
 					}
 				} else if q.Qtype == dns.TypeCNAME && strings.ToUpper(v.Type) == "CNAME" {
-					if q.Name == v.Domain || q.Name == v.Domain+"."+hostConf.DnsSearchDomain+"." {
+					if q.Name == v.Domain+"." || q.Name == v.Domain+"."+hostConf.DnsSearchDomain+"." {
 						rr, err := dns.NewRR(q.Name + " IN CNAME " + v.Data)
 						if err != nil {
 							log.Error("Failed to generate a CNAME record (from the static records): " + err.Error())
