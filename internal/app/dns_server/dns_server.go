@@ -169,6 +169,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 					}
 				} else if q.Qtype == dns.TypeA && strings.ToUpper(v.Type) == "CNAME" {
 					if q.Name == v.Domain+"." || q.Name == v.Domain+"."+hostConf.DnsSearchDomain+"." {
+						q.Name = v.Data + "."
 						response, server, err := queryExternalDNS(q)
 						if err != nil {
 							log.Error("Failed to query external DNS:", err)
