@@ -18,6 +18,7 @@ import (
 var vmInfoList []VmInfoStruct
 var jailInfoList []JailInfoStruct
 var hostConf HosterHost.HostConfig
+var staticRecords []HosterHost.DnsStaticRecord
 var upstreamServers []string
 
 var version = "" // version is set by the build system
@@ -59,6 +60,7 @@ func main() {
 	}()
 
 	loadUpstreamDnsServers()
+	loadStaticRecords()
 
 	vmInfoList = getVmsInfo()
 	jailInfoList = getJailsInfo()
@@ -77,6 +79,19 @@ func main() {
 	if err != nil {
 		emojlog.PrintLogMessage("Failed to start the DNS Server", emojlog.Error)
 		os.Exit(1)
+	}
+}
+
+func loadStaticRecords() {
+	// Load host config
+	hostConf, err := HosterHost.GetHostConfig()
+	if err != nil {
+		log.Error("Error loading host config file:" + err.Error())
+	}
+
+	// Load static DNS records from the host config
+	if len(hostConf.DnsStaticRecords) > 0 {
+		staticRecords = append(staticRecords, hostConf.DnsStaticRecords...)
 	}
 }
 
@@ -116,11 +131,37 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 	for _, q := range r.Question {
 		// Drop any IPv6 record requests
 		// TBD: add a config variable that controls this behavior
+		clientIP := w.RemoteAddr().String()
 		if q.Qtype == dns.TypeAAAA {
-			log.Info(fmt.Sprintf("IPv6 request was ignored: %s", q.Name))
+			log.Info(fmt.Sprintf("%s -> IPv6 request was ignored: %s", clientIP, q.Name))
 			continue
 		}
-		clientIP := w.RemoteAddr().String()
+
+		if len(staticRecords) > 0 {
+			// Only handle A and CNAME records from the static records for now
+			for _, v := range staticRecords {
+				if q.Name == v.Domain && q.Qtype == dns.TypeA && strings.ToUpper(v.Type) == "A" {
+					rr, err := dns.NewRR(q.Name + " IN A " + v.Data)
+					if err != nil {
+						log.Error("Failed to generate an A record (from the static records): " + err.Error())
+						continue
+					}
+					m.Answer = append(m.Answer, rr)
+					logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::STATIC_A_RECORD"
+					log.Info(logLine)
+				}
+				if q.Name == v.Domain && q.Qtype == dns.TypeCNAME && strings.ToUpper(v.Type) == "CNAME" {
+					rr, err := dns.NewRR(q.Name + " IN CNAME " + v.Data)
+					if err != nil {
+						log.Error("Failed to generate an A record (from the static records): " + err.Error())
+						continue
+					}
+					m.Answer = append(m.Answer, rr)
+					logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_HIT::STATIC_CNAME_RECORD"
+					log.Info(logLine)
+				}
+			}
+		}
 
 		requestIsVmName := false
 		requestIsJailName := false
