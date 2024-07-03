@@ -25,7 +25,7 @@ type VmDisk struct {
 
 type VmNetwork struct {
 	NetworkAdaptorType string `json:"network_adaptor_type"`
-	NetworkBridge      string `json:"network_bridge"`
+	NetworkBridge      string `json:"network_bridge"` // is this a network name?
 	NetworkMac         string `json:"network_mac"`
 	IPAddress          string `json:"ip_address"`
 	Comment            string `json:"comment"`

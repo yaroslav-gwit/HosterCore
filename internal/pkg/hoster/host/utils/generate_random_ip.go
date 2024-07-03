@@ -9,43 +9,44 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"slices"
 	"time"
-
-	"golang.org/x/exp/slices"
 )
 
-func GenerateNewRandomIp(networkName string) (string, error) {
+func GenerateNewRandomIp(networkName string) (r string, e error) {
 	var existingIps []string
 
 	// Add existing VM IPs
 	vms, err := HosterVmUtils.ListJsonApi()
 	if err != nil {
-		return "", err
+		e = err
+		return
 	}
 
 	for _, v := range vms {
-		// tempConfig := vmConfig(v)
-		for _, v := range v.Networks {
-			if v.NetworkBridge == networkName {
-				existingIps = append(existingIps, v.IPAddress)
+		for _, vv := range v.Networks {
+			if vv.NetworkBridge == networkName {
+				existingIps = append(existingIps, vv.IPAddress)
 			}
 		}
 	}
 	// EOF Add existing VM IPs
 
 	// Add existing Jail IPs
-	jailList, err := HosterJailUtils.ListAllExtendedTable()
+	jailList, err := HosterJailUtils.ListJsonApi()
 	if err != nil {
-		return "", err
+		e = err
+		return
 	}
 	for _, v := range jailList {
-		existingIps = append(existingIps, v.MainIpAddress)
+		existingIps = append(existingIps, v.IPAddress)
 	}
 	// EOF Add existing Jail IPs
 
 	networks, err := HosterNetwork.GetNetworkConfig()
 	if err != nil {
-		return "", errors.New("could not read the config file: " + err.Error())
+		e = errors.New("could not read the config file: " + err.Error())
+		return
 	}
 
 	var subnet string
@@ -67,10 +68,10 @@ func GenerateNewRandomIp(networkName string) (string, error) {
 	}
 
 	var randomIp string
-	// var err error
 	randomIp, err = generateUniqueRandomIp(subnet)
 	if err != nil {
-		return "", errors.New("could not generate a random IP address: " + err.Error())
+		e = errors.New("could not generate a random IP address: " + err.Error())
+		return
 	}
 
 	iteration := 0
@@ -78,18 +79,20 @@ func GenerateNewRandomIp(networkName string) (string, error) {
 		if slices.Contains(existingIps, randomIp) || !ipIsWithinRange(randomIp, subnet, rangeStart, rangeEnd) {
 			randomIp, err = generateUniqueRandomIp(subnet)
 			if err != nil {
-				return "", errors.New("could not generate a random IP address: " + err.Error())
+				e = errors.New("could not generate a random IP address: " + err.Error())
+				return
 			}
-			iteration = iteration + 1
-			if iteration > 400 {
-				return "", errors.New("ran out of IP available addresses within this range")
+
+			iteration++
+			if iteration > 800 {
+				e = errors.New("ran out of IP available addresses within this range")
+				return
 			}
 		} else {
-			break
+			r = randomIp
+			return
 		}
 	}
-
-	return randomIp, nil
 }
 
 func generateUniqueRandomIp(subnet string) (string, error) {
