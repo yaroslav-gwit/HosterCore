@@ -167,6 +167,18 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 						log.Info(logLine)
 						requestIsStaticRecord = true
 					}
+				} else if q.Qtype == dns.TypeA && strings.ToUpper(v.Type) == "CNAME" {
+					if q.Name == v.Domain+"." || q.Name == v.Domain+"."+hostConf.DnsSearchDomain+"." {
+						response, server, err := queryExternalDNS(q)
+						if err != nil {
+							log.Error("Failed to query external DNS:", err)
+							continue
+						}
+						m.Answer = append(m.Answer, response.Answer...)
+						logLine = clientIP + " -> " + q.Name + "::." + parseAnswer(m.Answer) + " <- CACHE_MISS::STATIC_CNAME_RECORD::" + server
+						log.Info(logLine)
+						requestIsStaticRecord = true
+					}
 				} else if q.Qtype == dns.TypeCNAME && strings.ToUpper(v.Type) == "CNAME" {
 					if q.Name == v.Domain+"." || q.Name == v.Domain+"."+hostConf.DnsSearchDomain+"." {
 						rr, err := dns.NewRR(q.Name + " IN CNAME " + v.Data)
