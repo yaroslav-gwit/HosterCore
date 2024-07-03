@@ -336,7 +336,10 @@ func VmGetSettings(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	vmName := vars["vm_name"]
 
-	config, err := HosterVmUtils.GetVmConfig(vmName)
+	vmInfo, err := HosterVmUtils.InfoJsonApi(vmName)
+	location := vmInfo.Simple.MountPoint.Mountpoint + "/" + vmName
+
+	config, err := HosterVmUtils.GetVmConfig(location)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
