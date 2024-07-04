@@ -24,6 +24,8 @@ import (
 )
 
 var vmName string
+var logCrashDetected []string
+var reSpace *regexp.Regexp
 var version = "" // automatically set during the build process
 
 func main() {
@@ -40,6 +42,10 @@ func main() {
 	// Get env vars passed from "hoster vm start"
 	vmName = os.Getenv("VM_NAME")
 	vmStartCommand := os.Getenv("VM_START")
+
+	// Add the log crash detection strings
+	reSpace = regexp.MustCompile(`\s+`)
+	logCrashDetected = append(logCrashDetected, "read |0: file already closed")
 
 	// Start the process
 	parts := strings.Fields(vmStartCommand)
@@ -122,7 +128,6 @@ func main() {
 }
 
 func readAndLogOutput(reader *bufio.Reader, name string) {
-	reMatchProcessFailureLogLine1 := regexp.MustCompile(`read\s+\|0:\s+file\s+already\s+closed`) // match this result: "read |0: file already closed"
 	for {
 		line, err := reader.ReadString('\n')
 		if err == io.EOF {
@@ -139,11 +144,15 @@ func readAndLogOutput(reader *bufio.Reader, name string) {
 		}
 
 		// Match one of the error outputs, and kill the VM process if something has gone wrong. Aka "fail early" principle.
-		if reMatchProcessFailureLogLine1.MatchString(line) {
-			_, _ = HosterNetwork.VmNetworkCleanup(vmName)
-			_ = HosterVmUtils.BhyveCtlDestroy(vmName)
-			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("SUPERVISED SESSION ENDED. Bhyve process failure.")
-			os.Exit(1001)
+		for _, v := range logCrashDetected {
+			line = reSpace.ReplaceAllString(line, " ")
+			if strings.Contains(line, v) {
+				_, _ = HosterNetwork.VmNetworkCleanup(vmName)
+				_ = HosterVmUtils.BhyveCtlForcePoweroff(vmName)
+				_ = HosterVmUtils.BhyveCtlDestroy(vmName)
+				log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("SUPERVISED SESSION ENDED. Bhyve process failure (log crash detected): " + line)
+				os.Exit(1001)
+			}
 		}
 	}
 }
