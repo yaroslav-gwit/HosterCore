@@ -138,6 +138,7 @@ func readAndLogOutput(reader *bufio.Reader, name string) {
 			_ = HosterVmUtils.BhyveCtlForcePoweroff(vmName)
 			_ = HosterVmUtils.BhyveCtlDestroy(vmName)
 			_, _ = HosterNetwork.VmNetworkCleanup(vmName)
+			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("SUPERVISED SESSION ENDED. Unexpected error (may be related to a Windows guest shutdown/reboot).")
 			os.Exit(100)
 		}
 
