@@ -135,6 +135,9 @@ func readAndLogOutput(reader *bufio.Reader, name string) {
 		}
 		if err != nil {
 			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error(name + "; " + err.Error())
+			_ = HosterVmUtils.BhyveCtlForcePoweroff(vmName)
+			_ = HosterVmUtils.BhyveCtlDestroy(vmName)
+			_, _ = HosterNetwork.VmNetworkCleanup(vmName)
 			os.Exit(100)
 		}
 
@@ -147,9 +150,9 @@ func readAndLogOutput(reader *bufio.Reader, name string) {
 		for _, v := range logCrashDetected {
 			line = reSpace.ReplaceAllString(line, " ")
 			if strings.Contains(line, v) {
-				_, _ = HosterNetwork.VmNetworkCleanup(vmName)
 				_ = HosterVmUtils.BhyveCtlForcePoweroff(vmName)
 				_ = HosterVmUtils.BhyveCtlDestroy(vmName)
+				_, _ = HosterNetwork.VmNetworkCleanup(vmName)
 				log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("SUPERVISED SESSION ENDED. Bhyve process failure (log crash detected): " + line)
 				os.Exit(1001)
 			}
