@@ -14,7 +14,6 @@ import (
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"encoding/json"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -388,13 +387,36 @@ func SnapshotClone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tempLs := strings.Split(input.SnapshotName, "/")
-	if len(tempLs) < 2 {
-		ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
+	vms, err := HosterVmUtils.ListAllSimple()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	newRes := strings.Join(tempLs[:len(tempLs)-2], "/") + "/" + input.NewResourceName
+	jails, err := HosterJailUtils.ListAllSimple()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	newRes := ""
+	for _, v := range vms {
+		if v.VmName == input.ResourceName {
+			newRes = v.DsName + "/" + input.NewResourceName
+		}
+	}
+	if len(newRes) < 1 {
+		for _, v := range jails {
+			if v.JailName == input.ResourceName {
+				newRes = v.DsName + "/" + input.NewResourceName
+			}
+		}
+	}
+	if len(newRes) < 1 {
+		ReportError(w, http.StatusInternalServerError, ErrorMappings.ResourceDoesntExist.String())
+		return
+	}
+
 	err = zfsutils.SnapshotClone(input.SnapshotName, newRes)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
