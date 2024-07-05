@@ -4,6 +4,7 @@ import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
 	RestApiConfig "HosterCore/internal/app/rest_api_v2/pkg/config"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
+	FileExists "HosterCore/internal/pkg/file_exists"
 	HosterHost "HosterCore/internal/pkg/hoster/host"
 	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
 	"encoding/json"
@@ -460,6 +461,14 @@ type HostAuthSshKeyInput struct {
 // @Router /host/settings/ssh-auth-key [post]
 func PostHostSshAuthKey(w http.ResponseWriter, r *http.Request) {
 	authKeyLocation := "/root/.ssh/authorized_keys"
+	if !FileExists.CheckUsingOsStat(authKeyLocation) {
+		err := os.WriteFile(authKeyLocation, []byte(""), 0600)
+		if err != nil {
+			ReportError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
 	if !ApiAuth.CheckAnyUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
