@@ -383,7 +383,8 @@ func SnapshotClone(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
 	if err != nil {
-		ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
+		// ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
+		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
