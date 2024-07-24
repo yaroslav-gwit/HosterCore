@@ -64,7 +64,7 @@ func VmPostNewTag(w http.ResponseWriter, r *http.Request) {
 		config.Tags = append(config.Tags, newTag)
 	}
 
-	err = HosterVmUtils.ConfigFileWriter(config, location)
+	err = HosterVmUtils.ConfigFileWriter(config, location+"/"+HosterVmUtils.VM_CONFIG_NAME)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

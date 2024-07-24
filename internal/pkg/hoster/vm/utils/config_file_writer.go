@@ -10,7 +10,9 @@ import (
 )
 
 // Function that writes a new config to the disk.
-// It takes in a new config struct to be written, and config file location, e.g. /tank/vm-encrypted/test-vm-1/vm_config.json
+// It takes in a new config struct to be written, and an absolute config file location:
+//
+// e.g. /tank/vm-encrypted/test-vm-1/vm_config.json
 func ConfigFileWriter(conf VmConfig, confLocation string) error {
 	jsonOutput, err := json.MarshalIndent(conf, "", "   ")
 	if err != nil {

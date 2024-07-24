@@ -91,7 +91,7 @@ func VmDeleteExistingTag(w http.ResponseWriter, r *http.Request) {
 	config.Tags = []string{}
 	config.Tags = append(config.Tags, tags...)
 
-	err = HosterVmUtils.ConfigFileWriter(config, location)
+	err = HosterVmUtils.ConfigFileWriter(config, location+"/"+HosterVmUtils.VM_CONFIG_NAME)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
