@@ -37,7 +37,7 @@ type HosterServices struct {
 	HosterVersion       string `json:"hoster_version"`
 	VmSupervisorVersion string `json:"vm_supervisor_version"`
 	MBufferVersion      string `json:"mbuffer_version"`
-	SelfUpdateVersion   string `json:"self_update_version"`
+	// SelfUpdateVersion   string `json:"self_update_version"` // Deprecated for now
 }
 
 type HostInfo struct {
@@ -247,13 +247,13 @@ func GetHostInfo() (r HostInfo, e error) {
 		}
 
 		// Self Update
-		binary, err = HosterLocations.LocateBinary("self_update")
-		if err == nil {
-			out, err := exec.Command(binary, "version").CombinedOutput()
-			if err == nil {
-				r.Services.SelfUpdateVersion = strings.TrimSpace(string(out))
-			}
-		}
+		// binary, err = HosterLocations.LocateBinary("self_update")
+		// if err == nil {
+		// 	out, err := exec.Command(binary, "version").CombinedOutput()
+		// 	if err == nil {
+		// 		r.Services.SelfUpdateVersion = strings.TrimSpace(string(out))
+		// 	}
+		// }
 
 		// MBuffer
 		binary, err = HosterLocations.LocateBinary("mbuffer")

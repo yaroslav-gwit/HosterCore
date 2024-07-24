@@ -96,6 +96,20 @@ definitions:
       vm_name:
         type: string
     type: object
+  HosterHost.DnsStaticRecord:
+    properties:
+      data:
+        description: The record data, e.g. "192.168.120.1" for A record, "mail.example.com"
+          for CNAME, etc.
+        type: string
+      domain:
+        description: The domain name, e.g. "example.com" or simply "example"
+        type: string
+      type:
+        description: The record type, e.g. "A", "AAAA", "CNAME", "TXT", "MX", "NS",
+          "SRV", "SOA", "PTR"
+        type: string
+    type: object
   HosterHost.HostConfig:
     properties:
       active_datasets:
@@ -107,6 +121,10 @@ definitions:
       dns_servers:
         items:
           type: string
+        type: array
+      dns_static_records:
+        items:
+          $ref: '#/definitions/HosterHost.DnsStaticRecord'
         type: array
       host_ssh_keys:
         items:
@@ -198,8 +216,6 @@ definitions:
       scheduler_running:
         type: boolean
       scheduler_version:
-        type: string
-      self_update_version:
         type: string
       vm_supervisor_version:
         type: string
@@ -532,6 +548,7 @@ definitions:
       network_adaptor_type:
         type: string
       network_bridge:
+        description: is this a network name?
         type: string
       network_mac:
         type: string
@@ -1994,6 +2011,38 @@ paths:
       summary: Destroy the VM.
       tags:
       - VMs
+  /vm/destroy/{vm_name}/{existing_tag}:
+    delete:
+      description: 'Delete an existing tag for any specific VM.<br>`AUTH`: Only `rest`
+        user is allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      - description: Existing Tag
+        in: path
+        name: existing_tag
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Delete an existing tag for any specific VM.
+      tags:
+      - VMs
+      - Tags
   /vm/info/{vm_name}:
     get:
       description: 'Get the VM Info.<br>`AUTH`: Both users are allowed.'
@@ -2071,6 +2120,38 @@ paths:
       summary: Get the settings for a particular VM.
       tags:
       - VMs
+  /vm/settings/{vm_name}/{new_tag}:
+    post:
+      description: 'Add a new tag for any particular VM.<br>`AUTH`: Only `rest` user
+        is allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      - description: New Tag
+        in: path
+        name: new_tag
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Add a new tag for any particular VM.
+      tags:
+      - VMs
+      - Tags
   /vm/start/{vm_name}:
     post:
       description: 'Start a specific VM using it''s name as a parameter.<br>`AUTH`:

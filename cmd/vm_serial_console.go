@@ -17,10 +17,11 @@ import (
 
 var (
 	vmSerialConsoleCmd = &cobra.Command{
-		Use:   "serial-console [vmName]",
-		Short: "Connect to VM's serial console",
-		Long:  `Connect to VM's serial console (useful for connectivity troubleshooting)`,
-		Args:  cobra.ExactArgs(1),
+		Use:     "serial-console [vmName]",
+		Aliases: []string{"sc"},
+		Short:   "Connect to VM's serial console",
+		Long:    `Connect to VM's serial console (useful for connectivity troubleshooting)`,
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 			err := connectToSerialConsole(args[0])

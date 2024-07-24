@@ -1839,6 +1839,54 @@ const docTemplate = `{
                 }
             }
         },
+        "/vm/destroy/{vm_name}/{existing_tag}": {
+            "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Delete an existing tag for any specific VM.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs",
+                    "Tags"
+                ],
+                "summary": "Delete an existing tag for any specific VM.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VM Name",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Existing Tag",
+                        "name": "existing_tag",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/info/{vm_name}": {
             "get": {
                 "security": [
@@ -1948,6 +1996,54 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/HosterVmUtils.VmConfig"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vm/settings/{vm_name}/{new_tag}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Add a new tag for any particular VM.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs",
+                    "Tags"
+                ],
+                "summary": "Add a new tag for any particular VM.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VM Name",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "New Tag",
+                        "name": "new_tag",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
                         }
                     },
                     "500": {
@@ -2188,6 +2284,23 @@ const docTemplate = `{
                 }
             }
         },
+        "HosterHost.DnsStaticRecord": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "The record data, e.g. \"192.168.120.1\" for A record, \"mail.example.com\" for CNAME, etc.",
+                    "type": "string"
+                },
+                "domain": {
+                    "description": "The domain name, e.g. \"example.com\" or simply \"example\"",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "The record type, e.g. \"A\", \"AAAA\", \"CNAME\", \"TXT\", \"MX\", \"NS\", \"SRV\", \"SOA\", \"PTR\"",
+                    "type": "string"
+                }
+            }
+        },
         "HosterHost.HostConfig": {
             "type": "object",
             "properties": {
@@ -2204,6 +2317,12 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "type": "string"
+                    }
+                },
+                "dns_static_records": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HosterHost.DnsStaticRecord"
                     }
                 },
                 "host_ssh_keys": {
@@ -2342,9 +2461,6 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "scheduler_version": {
-                    "type": "string"
-                },
-                "self_update_version": {
                     "type": "string"
                 },
                 "vm_supervisor_version": {
@@ -2847,6 +2963,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "network_bridge": {
+                    "description": "is this a network name?",
                     "type": "string"
                 },
                 "network_mac": {
