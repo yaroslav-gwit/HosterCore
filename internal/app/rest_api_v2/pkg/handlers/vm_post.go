@@ -28,7 +28,7 @@ import (
 // @Failure 500 {object} SwaggerError
 // @Param vm_name path string true "VM Name"
 // @Param new_tag path string true "New Tag"
-// @Router /vm/settings/{vm_name}/{new_tag} [post]
+// @Router /vm/settings/add-tag/{vm_name}/{new_tag} [post]
 func VmPostNewTag(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()

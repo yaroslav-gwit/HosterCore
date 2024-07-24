@@ -56,7 +56,7 @@ func VmDestroy(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} SwaggerError
 // @Param vm_name path string true "VM Name"
 // @Param existing_tag path string true "Existing Tag"
-// @Router /vm/destroy/{vm_name}/{existing_tag} [delete]
+// @Router /vm/settings/delete-tag/{vm_name}/{existing_tag} [delete]
 func VmDeleteExistingTag(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()

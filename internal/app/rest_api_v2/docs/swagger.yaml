@@ -2011,38 +2011,6 @@ paths:
       summary: Destroy the VM.
       tags:
       - VMs
-  /vm/destroy/{vm_name}/{existing_tag}:
-    delete:
-      description: 'Delete an existing tag for any specific VM.<br>`AUTH`: Only `rest`
-        user is allowed.'
-      parameters:
-      - description: VM Name
-        in: path
-        name: vm_name
-        required: true
-        type: string
-      - description: Existing Tag
-        in: path
-        name: existing_tag
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.SwaggerSuccess'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.SwaggerError'
-      security:
-      - BasicAuth: []
-      summary: Delete an existing tag for any specific VM.
-      tags:
-      - VMs
-      - Tags
   /vm/info/{vm_name}:
     get:
       description: 'Get the VM Info.<br>`AUTH`: Both users are allowed.'
@@ -2120,7 +2088,7 @@ paths:
       summary: Get the settings for a particular VM.
       tags:
       - VMs
-  /vm/settings/{vm_name}/{new_tag}:
+  /vm/settings/add-tag/{vm_name}/{new_tag}:
     post:
       description: 'Add a new tag for any particular VM.<br>`AUTH`: Only `rest` user
         is allowed.'
@@ -2149,6 +2117,38 @@ paths:
       security:
       - BasicAuth: []
       summary: Add a new tag for any particular VM.
+      tags:
+      - VMs
+      - Tags
+  /vm/settings/delete-tag/{vm_name}/{existing_tag}:
+    delete:
+      description: 'Delete an existing tag for any specific VM.<br>`AUTH`: Only `rest`
+        user is allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      - description: Existing Tag
+        in: path
+        name: existing_tag
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Delete an existing tag for any specific VM.
       tags:
       - VMs
       - Tags

@@ -1839,54 +1839,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/vm/destroy/{vm_name}/{existing_tag}": {
-            "delete": {
-                "security": [
-                    {
-                        "BasicAuth": []
-                    }
-                ],
-                "description": "Delete an existing tag for any specific VM.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "VMs",
-                    "Tags"
-                ],
-                "summary": "Delete an existing tag for any specific VM.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "VM Name",
-                        "name": "vm_name",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Existing Tag",
-                        "name": "existing_tag",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.SwaggerSuccess"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.SwaggerError"
-                        }
-                    }
-                }
-            }
-        },
         "/vm/info/{vm_name}": {
             "get": {
                 "security": [
@@ -1967,47 +1919,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vm/settings/{vm_name}": {
-            "get": {
-                "security": [
-                    {
-                        "BasicAuth": []
-                    }
-                ],
-                "description": "Get the settings for a particular VM.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "VMs"
-                ],
-                "summary": "Get the settings for a particular VM.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "VM Name",
-                        "name": "vm_name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/HosterVmUtils.VmConfig"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.SwaggerError"
-                        }
-                    }
-                }
-            }
-        },
-        "/vm/settings/{vm_name}/{new_tag}": {
+        "/vm/settings/add-tag/{vm_name}/{new_tag}": {
             "post": {
                 "security": [
                     {
@@ -2044,6 +1956,94 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vm/settings/delete-tag/{vm_name}/{existing_tag}": {
+            "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Delete an existing tag for any specific VM.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs",
+                    "Tags"
+                ],
+                "summary": "Delete an existing tag for any specific VM.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VM Name",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Existing Tag",
+                        "name": "existing_tag",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vm/settings/{vm_name}": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get the settings for a particular VM.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Get the settings for a particular VM.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VM Name",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/HosterVmUtils.VmConfig"
                         }
                     },
                     "500": {
