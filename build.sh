@@ -49,17 +49,18 @@ fi
 # shellcheck disable=SC2059
 printf "${GREEN}Done${NC}\n"
 
+# Self update module (deprecated for now)
 # shellcheck disable=SC2059
-printf "Building the ${GREEN}self_update${NC} module ... "
-cd ..
-cd self_update/
-if test -z "${RELEASE}"; then
-    $GO_BINARY build -ldflags="-X main.version=${DEV_VERSION}" -trimpath
-else
-    $GO_BINARY build -ldflags="-X main.version=${RELEASE_VERSION}" -trimpath
-fi
+# printf "Building the ${GREEN}self_update${NC} module ... "
+# cd ..
+# cd self_update/
+# if test -z "${RELEASE}"; then
+#     $GO_BINARY build -ldflags="-X main.version=${DEV_VERSION}" -trimpath
+# else
+#     $GO_BINARY build -ldflags="-X main.version=${RELEASE_VERSION}" -trimpath
+# fi
 # shellcheck disable=SC2059
-printf "${GREEN}Done${NC}\n"
+# printf "${GREEN}Done${NC}\n"
 
 # shellcheck disable=SC2059
 printf "Building the ${GREEN}dns_server${NC} module ... "
