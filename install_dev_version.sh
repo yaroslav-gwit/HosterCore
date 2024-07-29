@@ -31,7 +31,7 @@ echo -e "${LIGHT_GREEN}=== Starting the installation process ===${NC}"
 cp -v hoster /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} hoster binary is in use"
 cp -v internal/app/vm_supervisor/vm_supervisor /opt/hoster-core/vm_supervisor_service 2>/dev/null || echo -e "${ERROR_TEXT} vm_supervisor_service binary is in use"
 # cp -v internal/app/self_update/self_update /opt/hoster-core/self_update_service 2>/dev/null || echo -e "${ERROR_TEXT} self_update_service binary is in use"
-cp -v internal/app/self_update/self_update /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} self_update binary is in use"
+# cp -v internal/app/self_update/self_update /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} self_update binary is in use" # TEMPORARILY DISABLED DUE TO THE DEPRECATION OF THE SELF UPDATE MODULE
 cp -v internal/app/dns_server/dns_server /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} dns_server binary is in use"
 cp -v internal/app/mbuffer/mbuffer /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} mbuffer binary is in use"
 cp -v internal/app/node_exporter/node_exporter /opt/hoster-core/node_exporter_custom 2>/dev/null || echo -e "${ERROR_TEXT} node_exporter_custom binary is in use"
