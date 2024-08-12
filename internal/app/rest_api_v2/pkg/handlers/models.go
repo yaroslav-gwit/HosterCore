@@ -27,3 +27,9 @@ type VmCloneInput struct {
 	NewVmName    string `json:"new_vm_name"`
 	SnapshotName string `json:"snapshot_name"`
 }
+
+type VmCpuInput struct {
+	CpuSockets int `json:"cpu_sockets"`
+	CpuCores   int `json:"cpu_cores"`
+	CpuThreads int `json:"cpu_threads"`
+}

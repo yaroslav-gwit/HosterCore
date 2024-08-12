@@ -1967,6 +1967,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/vm/settings/cpu/{vm_name}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Modify VM's CPU settings.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Modify VM's CPU settings.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the VM",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.VmCpuInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/settings/delete-tag/{vm_name}/{existing_tag}": {
             "delete": {
                 "security": [
@@ -3251,6 +3300,20 @@ const docTemplate = `{
                 },
                 "vm_name": {
                     "type": "string"
+                }
+            }
+        },
+        "handlers.VmCpuInput": {
+            "type": "object",
+            "properties": {
+                "cpu_cores": {
+                    "type": "integer"
+                },
+                "cpu_sockets": {
+                    "type": "integer"
+                },
+                "cpu_threads": {
+                    "type": "integer"
                 }
             }
         },

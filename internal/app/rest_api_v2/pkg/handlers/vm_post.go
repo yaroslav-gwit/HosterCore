@@ -11,6 +11,7 @@ import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
 	ErrorMappings "HosterCore/internal/app/rest_api_v2/pkg/error_mappings"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
+	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
 	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"encoding/json"
@@ -203,6 +204,87 @@ func VmStop(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = HosterVm.Stop(input.VmName, false, false)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
+// @Summary Modify VM's CPU settings.
+// @Description Modify VM's CPU settings.<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "Name of the VM"
+// @Param Input body VmCpuInput true "Request payload"
+// @Router /vm/settings/cpu/{vm_name} [post]
+func VmPostCpuInfo(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+
+	input := VmCpuInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hostInfo, err := HosterHostUtils.GetHostInfo()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if input.CpuCores < 1 {
+		ReportError(w, http.StatusInternalServerError, "CPU cores must be greater than 0")
+		return
+	}
+	if input.CpuThreads < 1 {
+		ReportError(w, http.StatusInternalServerError, "CPU threads must be greater than 0")
+		return
+	}
+	if input.CpuSockets < 1 {
+		ReportError(w, http.StatusInternalServerError, "CPU sockets must be greater than 0")
+		return
+	}
+
+	overallCpus := input.CpuCores * input.CpuThreads * input.CpuSockets
+	if overallCpus > hostInfo.CpuInfo.OverallCpus || input.CpuCores*input.CpuThreads < 1 {
+		ReportError(w, http.StatusInternalServerError, "CPU settings exceed the host's capabilities")
+		return
+	}
+
+	vmInfo, err := HosterVmUtils.InfoJsonApi(vmName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	location := vmInfo.Simple.MountPoint.Mountpoint + "/" + vmName
+	config, err := HosterVmUtils.GetVmConfig(location)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	config.CPUCores = input.CpuCores
+	config.CPUThreads = input.CpuThreads
+	config.CPUSockets = input.CpuSockets
+
+	err = HosterVmUtils.ConfigFileWriter(config, location+"/"+HosterVmUtils.VM_CONFIG_NAME)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

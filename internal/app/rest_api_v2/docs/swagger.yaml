@@ -748,6 +748,15 @@ definitions:
       vm_name:
         type: string
     type: object
+  handlers.VmCpuInput:
+    properties:
+      cpu_cores:
+        type: integer
+      cpu_sockets:
+        type: integer
+      cpu_threads:
+        type: integer
+    type: object
   handlers.VmStopInput:
     properties:
       force_cleanup:
@@ -2120,6 +2129,37 @@ paths:
       tags:
       - VMs
       - Tags
+  /vm/settings/cpu/{vm_name}:
+    post:
+      description: 'Modify VM''s CPU settings.<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Name of the VM
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.VmCpuInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Modify VM's CPU settings.
+      tags:
+      - VMs
   /vm/settings/delete-tag/{vm_name}/{existing_tag}:
     delete:
       description: 'Delete an existing tag for any specific VM.<br>`AUTH`: Only `rest`
