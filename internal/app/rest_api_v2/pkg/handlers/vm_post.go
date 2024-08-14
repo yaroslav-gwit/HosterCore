@@ -339,12 +339,12 @@ func VmPostRamInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if input.BytesValue == "M" {
-		if overallRamBytes < 512 {
+		if input.RamAmount < 512 {
 			ReportError(w, http.StatusInternalServerError, "RAM must be at least 512MB")
 			return
 		}
 	} else if input.BytesValue == "G" {
-		if overallRamBytes < 1 {
+		if input.RamAmount < 1 {
 			ReportError(w, http.StatusInternalServerError, "RAM must be at least 1GB")
 			return
 		}
@@ -353,7 +353,7 @@ func VmPostRamInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if overallRamBytes > hostInfo.RamInfo.RamOverallBytes {
+	if overallRamBytes >= hostInfo.RamInfo.RamOverallBytes {
 		ReportError(w, http.StatusInternalServerError, "RAM settings exceed the host's capabilities")
 		return
 	}
