@@ -759,10 +759,10 @@ definitions:
     type: object
   handlers.VmRamInput:
     properties:
-      amount:
-        type: integer
-      value:
+      bytes_value:
         type: string
+      ram_amount:
+        type: integer
     type: object
   handlers.VmStopInput:
     properties:

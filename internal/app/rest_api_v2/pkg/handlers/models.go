@@ -35,6 +35,6 @@ type VmCpuInput struct {
 }
 
 type VmRamInput struct {
-	Amount int    `json:"amount"`
-	Value  string `json:"value"`
+	RamAmount  int    `json:"ram_amount"`
+	BytesValue string `json:"bytes_value"`
 }

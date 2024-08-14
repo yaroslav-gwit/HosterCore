@@ -3369,11 +3369,11 @@ const docTemplate = `{
         "handlers.VmRamInput": {
             "type": "object",
             "properties": {
-                "amount": {
-                    "type": "integer"
-                },
-                "value": {
+                "bytes_value": {
                     "type": "string"
+                },
+                "ram_amount": {
+                    "type": "integer"
                 }
             }
         },

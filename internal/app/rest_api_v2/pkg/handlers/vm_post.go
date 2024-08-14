@@ -331,19 +331,19 @@ func VmPostRamInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	overallRamHuman := fmt.Sprintf("%d%s", input.Amount, input.Value)
+	overallRamHuman := fmt.Sprintf("%d%s", input.RamAmount, input.BytesValue)
 	overallRamBytes, err := byteconversion.HumanToBytes(overallRamHuman)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	if input.Value == "M" {
+	if input.BytesValue == "M" {
 		if overallRamBytes < 512 {
 			ReportError(w, http.StatusInternalServerError, "RAM must be at least 512MB")
 			return
 		}
-	} else if input.Value == "G" {
+	} else if input.BytesValue == "G" {
 		if overallRamBytes < 1 {
 			ReportError(w, http.StatusInternalServerError, "RAM must be at least 1GB")
 			return
