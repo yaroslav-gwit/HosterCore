@@ -372,6 +372,9 @@ func VmPostRamInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.Memory = overallRamHuman
+	log.Debug("Setting RAM to: " + overallRamHuman)
+	log.Debug(config)
+
 	err = HosterVmUtils.ConfigFileWriter(config, location+"/"+HosterVmUtils.VM_CONFIG_NAME)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
