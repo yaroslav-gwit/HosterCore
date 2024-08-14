@@ -757,6 +757,13 @@ definitions:
       cpu_threads:
         type: integer
     type: object
+  handlers.VmRamInput:
+    properties:
+      amount:
+        type: integer
+      value:
+        type: string
+    type: object
   handlers.VmStopInput:
     properties:
       force_cleanup:
@@ -2192,6 +2199,37 @@ paths:
       tags:
       - VMs
       - Tags
+  /vm/settings/ram/{vm_name}:
+    post:
+      description: 'Modify VM''s RAM settings.<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Name of the VM
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.VmRamInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Modify VM's RAM settings.
+      tags:
+      - VMs
   /vm/start/{vm_name}:
     post:
       description: 'Start a specific VM using it''s name as a parameter.<br>`AUTH`:

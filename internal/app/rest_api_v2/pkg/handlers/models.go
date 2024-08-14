@@ -33,3 +33,8 @@ type VmCpuInput struct {
 	CpuCores   int `json:"cpu_cores"`
 	CpuThreads int `json:"cpu_threads"`
 }
+
+type VmRamInput struct {
+	Amount int    `json:"amount"`
+	Value  string `json:"value"`
+}

@@ -2064,6 +2064,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/vm/settings/ram/{vm_name}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Modify VM's RAM settings.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Modify VM's RAM settings.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the VM",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.VmRamInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/settings/{vm_name}": {
             "get": {
                 "security": [
@@ -3314,6 +3363,17 @@ const docTemplate = `{
                 },
                 "cpu_threads": {
                     "type": "integer"
+                }
+            }
+        },
+        "handlers.VmRamInput": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "value": {
+                    "type": "string"
                 }
             }
         },
