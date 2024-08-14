@@ -350,6 +350,7 @@ func VmPostRamInfo(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		ReportError(w, http.StatusInternalServerError, "Invalid RAM value")
+		return
 	}
 
 	if overallRamBytes > hostInfo.RamInfo.RamOverallBytes {
