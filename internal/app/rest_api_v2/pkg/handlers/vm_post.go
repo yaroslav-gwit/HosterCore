@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -375,6 +376,72 @@ func VmPostRamInfo(w http.ResponseWriter, r *http.Request) {
 	// log.Debug("Setting RAM to: " + overallRamHuman)
 	// log.Debug(config)
 
+	err = HosterVmUtils.ConfigFileWriter(config, location+"/"+HosterVmUtils.VM_CONFIG_NAME)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
+// @Summary Modify VM's VNC Resolution.
+// @Description Modify VM's VNC Resolution.<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "Name of the VM"
+// @Param resolution path int true "Resolution code, e.g. 3 for 1024x768"
+// @Router /vm/settings/vnc-resolution/{vm_name}/{resolution} [post]
+func VmPostVncResolution(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+	resolution := vars["resolution"]
+
+	resolutionInt, err := strconv.Atoi(resolution)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, "resolution must be an integer")
+		return
+	}
+
+	if resolutionInt < 1 || resolutionInt > 8 {
+		// VNC Resolution List
+		// 1: 640x480
+		// 2: 800x600
+		// 3: 1024x768
+		// 4: 1280x720
+		// 5: 1280x1024
+		// 6: 1600x900
+		// 7: 1920x1080
+		// 8: 1920x1200
+		ReportError(w, http.StatusInternalServerError, "invalid screen resolution")
+		return
+	}
+
+	vmInfo, err := HosterVmUtils.InfoJsonApi(vmName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	location := vmInfo.Simple.MountPoint.Mountpoint + "/" + vmName
+	config, err := HosterVmUtils.GetVmConfig(location)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	config.VncResolution = resolutionInt
 	err = HosterVmUtils.ConfigFileWriter(config, location+"/"+HosterVmUtils.VM_CONFIG_NAME)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())

@@ -2230,6 +2230,36 @@ paths:
       summary: Modify VM's RAM settings.
       tags:
       - VMs
+  /vm/settings/vnc-resolution/{vm_name}/{resolution}:
+    post:
+      description: 'Modify VM''s VNC Resolution.<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Name of the VM
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      - description: Resolution code, e.g. 3 for 1024x768
+        in: path
+        name: resolution
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Modify VM's VNC Resolution.
+      tags:
+      - VMs
   /vm/start/{vm_name}:
     post:
       description: 'Start a specific VM using it''s name as a parameter.<br>`AUTH`:

@@ -84,6 +84,7 @@ func main() {
 	r.HandleFunc("/api/v2/vm/settings/{vm_name}", handlers.VmGetSettings).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/settings/cpu/{vm_name}", handlers.VmPostCpuInfo).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/settings/ram/{vm_name}", handlers.VmPostRamInfo).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/vm/settings/vnc-resolution/{vm_name}/{resolution}", handlers.VmPostVncResolution).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/settings/add-tag/{vm_name}/{new_tag}", handlers.VmPostNewTag).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/settings/delete-tag/{vm_name}/{existing_tag}", handlers.VmDeleteExistingTag).Methods(http.MethodDelete)
 	r.HandleFunc("/api/v2/vm/readme/{vm_name}", handlers.VmGetReadme).Methods(http.MethodGet)
