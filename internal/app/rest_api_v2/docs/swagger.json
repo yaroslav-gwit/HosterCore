@@ -2104,6 +2104,53 @@
                 }
             }
         },
+        "/vm/settings/firmware/{vm_name}/{production}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Modify VM's Workload type (e.g. is this a production VM, true or false).\u003cbr\u003e`AUTH`: Only `rest` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Modify VM's Workload type (e.g. is this a production VM, true or false).",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the VM",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workload type (is this a production VM), e.g. true or false",
+                        "name": "production",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/settings/ram/{vm_name}": {
             "post": {
                 "security": [

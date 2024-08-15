@@ -2230,6 +2230,37 @@ paths:
       summary: Modify VM's Firmware type (e.g. bootloader type, bios vs uefi).
       tags:
       - VMs
+  /vm/settings/firmware/{vm_name}/{production}:
+    post:
+      description: 'Modify VM''s Workload type (e.g. is this a production VM, true
+        or false).<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Name of the VM
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      - description: Workload type (is this a production VM), e.g. true or false
+        in: path
+        name: production
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Modify VM's Workload type (e.g. is this a production VM, true or false).
+      tags:
+      - VMs
   /vm/settings/ram/{vm_name}:
     post:
       description: 'Modify VM''s RAM settings.<br>`AUTH`: Only `rest` user is allowed.'
