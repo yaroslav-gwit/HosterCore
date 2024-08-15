@@ -453,3 +453,57 @@ func VmPostVncResolution(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+// @Tags VMs
+// @Summary Modify VM's Firmware type (e.g. bootloader type, bios vs uefi).
+// @Description Modify VM's Firmware type (e.g. bootloader type, bios vs uefi).<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "Name of the VM"
+// @Param firmware path string true "Firmware type (bootloader type), e.g. bios or uefi"
+// @Router /vm/settings/firmware/{vm_name}/{firmware} [post]
+func VmPostFirmwareType(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+	firmware := vars["firmware"]
+
+	if firmware == "bios" || firmware == "uefi" {
+		_ = 0
+	} else {
+		errValue := "invalid firmware type, must be either 'bios' or 'uefi'"
+		ReportError(w, http.StatusInternalServerError, errValue)
+		return
+	}
+
+	vmInfo, err := HosterVmUtils.InfoJsonApi(vmName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	location := vmInfo.Simple.MountPoint.Mountpoint + "/" + vmName
+	config, err := HosterVmUtils.GetVmConfig(location)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	config.Loader = firmware
+	err = HosterVmUtils.ConfigFileWriter(config, location+"/"+HosterVmUtils.VM_CONFIG_NAME)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}

@@ -2064,6 +2064,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/vm/settings/firmware/{vm_name}/{firmware}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Modify VM's Firmware type (e.g. bootloader type, bios vs uefi).\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Modify VM's Firmware type (e.g. bootloader type, bios vs uefi).",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the VM",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Firmware type (bootloader type), e.g. bios or uefi",
+                        "name": "firmware",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/settings/ram/{vm_name}": {
             "post": {
                 "security": [

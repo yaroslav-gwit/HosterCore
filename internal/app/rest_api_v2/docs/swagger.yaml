@@ -2199,6 +2199,37 @@ paths:
       tags:
       - VMs
       - Tags
+  /vm/settings/firmware/{vm_name}/{firmware}:
+    post:
+      description: 'Modify VM''s Firmware type (e.g. bootloader type, bios vs uefi).<br>`AUTH`:
+        Only `rest` user is allowed.'
+      parameters:
+      - description: Name of the VM
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      - description: Firmware type (bootloader type), e.g. bios or uefi
+        in: path
+        name: firmware
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Modify VM's Firmware type (e.g. bootloader type, bios vs uefi).
+      tags:
+      - VMs
   /vm/settings/ram/{vm_name}:
     post:
       description: 'Modify VM''s RAM settings.<br>`AUTH`: Only `rest` user is allowed.'
