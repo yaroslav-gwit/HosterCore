@@ -414,16 +414,17 @@ func VmPostVncResolution(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if resolutionInt < 1 || resolutionInt > 8 {
+	if resolutionInt < 1 || resolutionInt > 9 {
 		// VNC Resolution List
-		// 1: 640x480
-		// 2: 800x600
-		// 3: 1024x768
-		// 4: 1280x720
-		// 5: 1280x1024
+		// 9: 1920x1200
+		// 8: 1920x1080
+		// 7: 1600x1200
 		// 6: 1600x900
-		// 7: 1920x1080
-		// 8: 1920x1200
+		// 5: 1280x1024
+		// 4: 1280x720
+		// 3: 1024x768
+		// 2: 800x600
+		// 1: 640x480
 		ReportError(w, http.StatusInternalServerError, "invalid screen resolution")
 		return
 	}
