@@ -757,6 +757,13 @@ definitions:
       cpu_threads:
         type: integer
     type: object
+  handlers.VmOsSettings:
+    properties:
+      os_comment:
+        type: string
+      os_type:
+        type: string
+    type: object
   handlers.VmRamInput:
     properties:
       bytes_value:
@@ -2259,6 +2266,38 @@ paths:
       security:
       - BasicAuth: []
       summary: Modify VM's Workload type (e.g. is this a production VM, true or false).
+      tags:
+      - VMs
+  /vm/settings/os-info/{vm_name}:
+    post:
+      description: 'Modify VM''s OS info (e.g. os_type - debian12, os_comment - Debian
+        12).<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Name of the VM
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.VmOsSettings'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Modify VM's OS info (e.g. os_type - debian12, os_comment - Debian 12).
       tags:
       - VMs
   /vm/settings/ram/{vm_name}:

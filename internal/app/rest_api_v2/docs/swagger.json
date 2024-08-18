@@ -2151,6 +2151,55 @@
                 }
             }
         },
+        "/vm/settings/os-info/{vm_name}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Modify VM's OS info (e.g. os_type - debian12, os_comment - Debian 12).\u003cbr\u003e`AUTH`: Only `rest` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Modify VM's OS info (e.g. os_type - debian12, os_comment - Debian 12).",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the VM",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.VmOsSettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/settings/ram/{vm_name}": {
             "post": {
                 "security": [
@@ -3497,6 +3546,17 @@
                 },
                 "cpu_threads": {
                     "type": "integer"
+                }
+            }
+        },
+        "handlers.VmOsSettings": {
+            "type": "object",
+            "properties": {
+                "os_comment": {
+                    "type": "string"
+                },
+                "os_type": {
+                    "type": "string"
                 }
             }
         },

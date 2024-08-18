@@ -84,6 +84,7 @@ func main() {
 	r.HandleFunc("/api/v2/vm/settings/{vm_name}", handlers.VmGetSettings).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/settings/cpu/{vm_name}", handlers.VmPostCpuInfo).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/settings/ram/{vm_name}", handlers.VmPostRamInfo).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/vm/settings/os-info/{vm_name}", handlers.VmPostOsSettings).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/settings/vnc-resolution/{vm_name}/{resolution}", handlers.VmPostVncResolution).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/settings/firmware/{vm_name}/{firmware}", handlers.VmPostFirmwareType).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/settings/production/{vm_name}/{production}", handlers.VmPostProductionSetting).Methods(http.MethodPost)

@@ -38,3 +38,8 @@ type VmRamInput struct {
 	RamAmount  int    `json:"ram_amount"`
 	BytesValue string `json:"bytes_value"`
 }
+
+type VmOsSettings struct {
+	OsType    string `json:"os_type"`
+	OsComment string `json:"os_comment"`
+}
