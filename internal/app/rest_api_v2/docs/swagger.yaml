@@ -2185,7 +2185,7 @@ paths:
       summary: Modify VM's CPU settings.
       tags:
       - VMs
-  /vm/settings/delete-tag/{vm_name}/{existing_tag}:
+  /vm/settings/delete-tag/{vm_name}:
     delete:
       description: 'Delete an existing tag for any specific VM.<br>`AUTH`: Only `rest`
         user is allowed.'
@@ -2195,11 +2195,12 @@ paths:
         name: vm_name
         required: true
         type: string
-      - description: Existing Tag
-        in: path
-        name: existing_tag
+      - description: Request payload
+        in: body
+        name: Input
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/handlers.TagInput'
       produces:
       - application/json
       responses:

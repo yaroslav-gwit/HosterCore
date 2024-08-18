@@ -12,6 +12,7 @@ import (
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	HosterVm "HosterCore/internal/pkg/hoster/vm"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
+	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -55,8 +56,8 @@ func VmDestroy(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Param vm_name path string true "VM Name"
-// @Param existing_tag path string true "Existing Tag"
-// @Router /vm/settings/delete-tag/{vm_name}/{existing_tag} [delete]
+// @Param Input body TagInput true "Request payload"
+// @Router /vm/settings/delete-tag/{vm_name} [delete]
 func VmDeleteExistingTag(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
@@ -66,7 +67,14 @@ func VmDeleteExistingTag(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	vmName := vars["vm_name"]
-	existingTag := vars["existing_tag"]
+
+	input := TagInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
 	vmInfo, err := HosterVmUtils.InfoJsonApi(vmName)
 	if err != nil {
@@ -83,7 +91,7 @@ func VmDeleteExistingTag(w http.ResponseWriter, r *http.Request) {
 
 	tags := []string{}
 	for _, v := range config.Tags {
-		if v != existingTag {
+		if v != input.Tag {
 			tags = append(tags, v)
 		}
 	}

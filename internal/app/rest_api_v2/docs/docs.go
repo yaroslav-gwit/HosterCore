@@ -2025,7 +2025,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vm/settings/delete-tag/{vm_name}/{existing_tag}": {
+        "/vm/settings/delete-tag/{vm_name}": {
             "delete": {
                 "security": [
                     {
@@ -2050,11 +2050,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "Existing Tag",
-                        "name": "existing_tag",
-                        "in": "path",
-                        "required": true
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.TagInput"
+                        }
                     }
                 ],
                 "responses": {
