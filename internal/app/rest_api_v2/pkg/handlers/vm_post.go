@@ -621,6 +621,14 @@ func VmPostOsSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Update the VM's cache because we've changed the VM's settings
+	// (otherwise the icon won't change in the UI)
+	_, err = HosterVmUtils.WriteCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
