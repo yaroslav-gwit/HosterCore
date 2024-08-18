@@ -1919,7 +1919,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vm/settings/add-tag/{vm_name}/{new_tag}": {
+        "/vm/settings/add-tag/{vm_name}": {
             "post": {
                 "security": [
                     {
@@ -1949,6 +1949,15 @@ const docTemplate = `{
                         "name": "new_tag",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.TagInput"
+                        }
                     }
                 ],
                 "responses": {
@@ -3516,6 +3525,14 @@ const docTemplate = `{
             "properties": {
                 "message": {
                     "description": "success",
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.TagInput": {
+            "type": "object",
+            "properties": {
+                "tag": {
                     "type": "string"
                 }
             }

@@ -43,3 +43,7 @@ type VmOsSettings struct {
 	OsType    string `json:"os_type"`
 	OsComment string `json:"os_comment"`
 }
+
+type TagInput struct {
+	Tag string `json:"tag"`
+}

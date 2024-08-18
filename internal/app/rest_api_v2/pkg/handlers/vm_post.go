@@ -33,7 +33,8 @@ import (
 // @Failure 500 {object} SwaggerError
 // @Param vm_name path string true "VM Name"
 // @Param new_tag path string true "New Tag"
-// @Router /vm/settings/add-tag/{vm_name}/{new_tag} [post]
+// @Param Input body TagInput true "Request payload"
+// @Router /vm/settings/add-tag/{vm_name} [post]
 func VmPostNewTag(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
@@ -42,8 +43,25 @@ func VmPostNewTag(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	newTag := vars["new_tag"]
 	vmName := vars["vm_name"]
+
+	input := TagInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(input.Tag) < 1 {
+		ReportError(w, http.StatusBadRequest, "tag must be at least 1 character long")
+		return
+	}
+
+	if len(input.Tag) > 255 {
+		ReportError(w, http.StatusBadRequest, "tag must be at most 255 characters long")
+		return
+	}
 
 	vmInfo, err := HosterVmUtils.InfoJsonApi(vmName)
 	if err != nil {
@@ -60,13 +78,13 @@ func VmPostNewTag(w http.ResponseWriter, r *http.Request) {
 
 	var tagFound bool
 	for _, v := range config.Tags {
-		if v == newTag {
+		if v == input.Tag {
 			tagFound = true
 			break
 		}
 	}
 	if !tagFound {
-		config.Tags = append(config.Tags, newTag)
+		config.Tags = append(config.Tags, input.Tag)
 	}
 
 	err = HosterVmUtils.ConfigFileWriter(config, location+"/"+HosterVmUtils.VM_CONFIG_NAME)
