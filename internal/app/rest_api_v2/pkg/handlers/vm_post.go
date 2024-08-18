@@ -610,10 +610,10 @@ func VmPostOsSettings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Debug
-	log.Debug(input)
+	// log.Debug(input)
 
-	vmInfo.OsType = input.OsType
-	vmInfo.OsComment = input.OsComment
+	config.OsType = input.OsType
+	config.OsComment = input.OsComment
 
 	err = HosterVmUtils.ConfigFileWriter(config, location+"/"+HosterVmUtils.VM_CONFIG_NAME)
 	if err != nil {
