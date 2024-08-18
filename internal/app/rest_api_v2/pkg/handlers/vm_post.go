@@ -609,6 +609,9 @@ func VmPostOsSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Debug
+	log.Debug(input)
+
 	vmInfo.OsType = input.OsType
 	vmInfo.OsComment = input.OsComment
 
