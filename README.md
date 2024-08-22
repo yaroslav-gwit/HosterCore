@@ -89,9 +89,15 @@ Everything else in terms of configuration and `Hoster` management still happens 
 | Debian 11           |     🟢 Ready      | VM image is ready to be downloaded directly from our public image server                            |
 | Debian 12           |     🟢 Ready      | VM image is ready to be downloaded directly from our public image server                            |
 | AlmaLinux 8         |     🟢 Ready      | VM image is ready to be downloaded directly from our public image server                            |
+| AlmaLinux 9         |     🟢 Ready      | VM image is ready to be downloaded directly from our public image server                            |
 | RockyLinux 8        |     🟢 Ready      | VM image is ready to be downloaded directly from our public image server                            |
+| RockyLinux 9        |     🟢 Ready      | VM image is ready to be downloaded directly from our public image server                            |
 | Ubuntu 20.04        |     🟢 Ready      | VM image is ready to be downloaded directly from our public image server                            |
 | Ubuntu 22.04        |     🟢 Ready      | VM image is ready to be downloaded directly from our public image server                            |
+| Ubuntu 24.04        |     🟢 Ready      | VM image is ready to be downloaded directly from our public image server                            |
+| RHEL 8              |   🟡 Compatible   | VM image will have to be built manually by the end user due to licensing issues                     |
+| RHEL 9              |   🟡 Compatible   | VM image will have to be built manually by the end user due to licensing issues                     |
+| RouterOS 7          |   🟡 Compatible   | VM image will have to be built manually by the end user due to licensing issues                     |
 | Windows 10          |   🟡 Compatible   | VM image will have to be built manually by the end user due to licensing issues                     |
 | Windows 11          |   🟡 Compatible   | OS requires tinkering with the registry to disable the TPM checks                                   |
 | Windows Server 19   |   🟡 Compatible   | VM image will have to be built manually by the end user due to licensing issues                     |
