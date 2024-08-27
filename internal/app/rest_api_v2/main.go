@@ -93,7 +93,9 @@ func main() {
 	r.HandleFunc("/api/v2/vm/readme/{vm_name}", handlers.VmGetReadme).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/start/{vm_name}", handlers.VmPostStart).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/start/wait-vnc/{vm_name}", handlers.VmPostStartAndWaitVnc).Methods(http.MethodPost)
-	r.HandleFunc("/api/v2/vm/stop", handlers.VmStop).Methods(http.MethodPost)
+	// r.HandleFunc("/api/v2/vm/stop", handlers.VmStop).Methods(http.MethodPost) // Deprecated old method
+	r.HandleFunc("/api/v2/vm/stop/{vm_name}", handlers.VmPostStop).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/vm/stop/force/{vm_name}", handlers.VmPostStopForce).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/clone", handlers.VmClone).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/deploy", handlers.VmPostDeploy).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/destroy/{vm_name}", handlers.VmDestroy).Methods(http.MethodDelete)

@@ -9,7 +9,6 @@ package handlers
 
 import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
-	ErrorMappings "HosterCore/internal/app/rest_api_v2/pkg/error_mappings"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	"HosterCore/internal/pkg/byteconversion"
 	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
@@ -221,41 +220,6 @@ func VmClone(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = HosterVm.Clone(input.VmName, input.NewVmName, input.SnapshotName)
-	if err != nil {
-		ReportError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
-	SetStatusCode(w, http.StatusOK)
-	w.Write(payload)
-}
-
-// @Tags VMs
-// @Summary Stop a specific VM.
-// @Description Stop a specific VM using it's name as a parameter.<br>`AUTH`: Both users are allowed.
-// @Produce json
-// @Security BasicAuth
-// @Success 200 {object} SwaggerSuccess
-// @Failure 500 {object} SwaggerError
-// @Param Input body VmStopInput true "Request payload"
-// @Router /vm/stop [post]
-func VmStop(w http.ResponseWriter, r *http.Request) {
-	if !ApiAuth.CheckAnyUser(r) {
-		user, pass, _ := r.BasicAuth()
-		UnauthenticatedResponse(w, user, pass)
-		return
-	}
-
-	input := VmStopInput{}
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&input)
-	if err != nil {
-		ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
-		return
-	}
-
-	err = HosterVm.Stop(input.VmName, false, false)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -672,6 +636,66 @@ func VmPostOsSettings(w http.ResponseWriter, r *http.Request) {
 	// Update the VM's cache because we've changed the VM's settings
 	// (otherwise the icon won't change in the UI)
 	_, err = HosterVmUtils.WriteCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
+// @Summary Stop a specific VM.
+// @Description Stop a specific VM using it's name as a parameter.<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "VM Name"
+// @Router /vm/stop/{vm_name} [post]
+func VmPostStop(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+
+	err := HosterVm.Stop(vmName, false, false)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
+// @Summary Stop (forcefully) a specific VM.
+// @Description Stop (forcefully) a specific VM using it's name as a parameter.<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "VM Name"
+// @Router /vm/stop/force/{vm_name} [post]
+func VmPostStopForce(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+
+	err := HosterVm.Stop(vmName, true, false)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

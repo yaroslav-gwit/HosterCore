@@ -776,18 +776,6 @@ definitions:
       ram_amount:
         type: integer
     type: object
-  handlers.VmStopInput:
-    properties:
-      force_cleanup:
-        description: Kill the VM supervisor directly (useful in the situations where
-          you want to destroy the VM, or roll it back to a previous snapshot)
-        type: boolean
-      force_stop:
-        description: Send a SIGKILL instead of a graceful SIGTERM
-        type: boolean
-      vm_name:
-        type: string
-    type: object
   handlers.VmTemplateLink:
     properties:
       vm_template_link:
@@ -2425,17 +2413,16 @@ paths:
       summary: Start a specific VM (and wait for a VNC screen connection).
       tags:
       - VMs
-  /vm/stop:
+  /vm/stop/{vm_name}:
     post:
       description: 'Stop a specific VM using it''s name as a parameter.<br>`AUTH`:
         Both users are allowed.'
       parameters:
-      - description: Request payload
-        in: body
-        name: Input
+      - description: VM Name
+        in: path
+        name: vm_name
         required: true
-        schema:
-          $ref: '#/definitions/handlers.VmStopInput'
+        type: string
       produces:
       - application/json
       responses:
@@ -2450,6 +2437,32 @@ paths:
       security:
       - BasicAuth: []
       summary: Stop a specific VM.
+      tags:
+      - VMs
+  /vm/stop/force/{vm_name}:
+    post:
+      description: 'Stop (forcefully) a specific VM using it''s name as a parameter.<br>`AUTH`:
+        Both users are allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Stop (forcefully) a specific VM.
       tags:
       - VMs
 securityDefinitions:
