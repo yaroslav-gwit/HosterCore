@@ -2354,6 +2354,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/vm/start/wait-vnc/{vm_name}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Start a specific VM using it's name as a parameter (and wait for a VNC screen connection).\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `REST` + "`" + `-type user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Start a specific VM (and wait for a VNC screen connection).",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VM Name",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/start/{vm_name}": {
             "post": {
                 "security": [

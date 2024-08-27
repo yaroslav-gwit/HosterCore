@@ -145,7 +145,7 @@ func VmPostDeploy(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} SwaggerError
 // @Param vm_name path string true "VM Name"
 // @Router /vm/start/{vm_name} [post]
-func VmStart(w http.ResponseWriter, r *http.Request) {
+func VmPostStart(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckAnyUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
@@ -156,6 +156,36 @@ func VmStart(w http.ResponseWriter, r *http.Request) {
 	vmName := vars["vm_name"]
 
 	err := HosterVm.Start(vmName, false, false)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
+// @Summary Start a specific VM (and wait for a VNC screen connection).
+// @Description Start a specific VM using it's name as a parameter (and wait for a VNC screen connection).<br>`AUTH`: Only `REST`-type user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "VM Name"
+// @Router /vm/start/wait-vnc/{vm_name} [post]
+func VmPostStartAndWaitVnc(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+
+	err := HosterVm.Start(vmName, true, false)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

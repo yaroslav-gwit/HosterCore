@@ -2399,6 +2399,32 @@ paths:
       summary: Start a specific VM.
       tags:
       - VMs
+  /vm/start/wait-vnc/{vm_name}:
+    post:
+      description: 'Start a specific VM using it''s name as a parameter (and wait
+        for a VNC screen connection).<br>`AUTH`: Only `REST`-type user is allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Start a specific VM (and wait for a VNC screen connection).
+      tags:
+      - VMs
   /vm/stop:
     post:
       description: 'Stop a specific VM using it''s name as a parameter.<br>`AUTH`:
