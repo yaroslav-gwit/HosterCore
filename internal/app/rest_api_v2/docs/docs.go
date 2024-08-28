@@ -1605,7 +1605,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/snapshot/take": {
+        "/snapshot/take/immediate": {
             "post": {
                 "security": [
                     {

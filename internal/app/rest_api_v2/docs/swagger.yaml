@@ -1877,7 +1877,7 @@ paths:
       summary: Rollback to a previous snapshot.
       tags:
       - Snapshots
-  /snapshot/take:
+  /snapshot/take/immediate:
     post:
       description: 'Take a new VM or Jail snapshot, using the resource name (Jail
         name or a VM name).<br>`AUTH`: Only `rest` user is allowed.'

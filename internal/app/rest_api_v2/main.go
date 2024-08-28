@@ -110,7 +110,7 @@ func main() {
 	r.HandleFunc("/api/v2/jail/destroy/{jail_name}", handlers.JailDestroy).Methods(http.MethodDelete)
 	r.HandleFunc("/api/v2/jail/deploy", handlers.JailDeploy).Methods(http.MethodPost)
 	// Snapshots
-	r.HandleFunc("/api/v2/snapshot/take", handlers.SnapshotTake).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/snapshot/take/immediate", handlers.SnapshotTakeImmediate).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/snapshot/clone", handlers.SnapshotClone).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/snapshot/all/{res_name}", handlers.SnapshotList).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/snapshot/all/{res_name}/cache", handlers.SnapshotListCache).Methods(http.MethodGet)

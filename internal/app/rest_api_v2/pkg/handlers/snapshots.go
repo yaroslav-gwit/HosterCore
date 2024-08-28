@@ -37,8 +37,8 @@ type SnapshotInput struct {
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
 // @Param Input body SnapshotInput true "Request payload"
-// @Router /snapshot/take [post]
-func SnapshotTake(w http.ResponseWriter, r *http.Request) {
+// @Router /snapshot/take/immediate [post]
+func SnapshotTakeImmediate(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
