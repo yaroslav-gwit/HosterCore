@@ -109,6 +109,12 @@ func SnapshotTakeImmediate(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	_, err = zfsutils.WriteSnapshotCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
