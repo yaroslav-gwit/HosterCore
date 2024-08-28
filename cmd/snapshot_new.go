@@ -22,14 +22,13 @@ var (
 	snapshotNewSnapsToKeep int
 
 	snapshotNewCmd = &cobra.Command{
-		Use:   "new [vmName]",
-		Short: "Create a new VM snapshot (using ZFS snapshot)",
-		Long:  `Create a new VM snapshot (using ZFS snapshot).`,
+		Use:   "new [resourceName]",
+		Short: "Create a new snapshot immediately",
+		Long:  `Create a new snapshot immediately.`,
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			// err := VmZfsSnapshot(args[0], snapshotNewType, snapshotNewSnapsToKeep)
 			_, err := SchedulerClient.AddSnapshotJob(args[0], snapshotNewSnapsToKeep, snapshotNewType, true)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)

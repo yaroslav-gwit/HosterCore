@@ -15,6 +15,9 @@ import (
 	"github.com/oklog/ulid/v2"
 )
 
+// This function returns the job ID and an error if something went wrong.
+//
+// Return values: JOB ID, ERROR
 func AddSnapshotJob(resName string, snapshotsToKeep int, snapshotType string, takeImmediately bool) (string, error) {
 	// Res found check
 	resFound := false
