@@ -9,6 +9,7 @@ import (
 	ErrorMappings "HosterCore/internal/app/rest_api_v2/pkg/error_mappings"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	SchedulerClient "HosterCore/internal/app/scheduler/client"
+	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	zfsutils "HosterCore/internal/pkg/zfs_utils"
@@ -48,7 +49,6 @@ func SnapshotTake(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
 	if err != nil {
-		// ReportError(w, http.StatusInternalServerError, ErrorMappings.CouldNotParseYourInput.String())
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -80,11 +80,32 @@ func SnapshotTake(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// name, removed, err := zfsutils.TakeScheduledSnapshot(input.SnapshotDataset, input.SnapshotType, input.SnapshotsToKeep)
-	_, _, err = zfsutils.TakeScheduledSnapshot(input.SnapshotDataset, input.SnapshotType, input.SnapshotsToKeep)
+	jobId, err := SchedulerClient.AddSnapshotJob(input.ResourceName, 9000, zfsutils.TYPE_CUSTOM, true)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
+	}
+
+	iter := 0
+	job := SchedulerUtils.Job{}
+	for {
+		if iter > 5 {
+			ReportError(w, http.StatusInternalServerError, "job is still running in the background, but it's taking too long, please check the status manually")
+			return
+		}
+
+		time.Sleep(500 * time.Millisecond)
+		iter += 1
+
+		job, err = SchedulerClient.GetJobInfo(jobId)
+		if err != nil {
+			ReportError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		if job.JobDone {
+			break
+		}
 	}
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
