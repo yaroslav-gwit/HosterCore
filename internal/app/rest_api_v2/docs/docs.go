@@ -3551,6 +3551,10 @@ const docTemplate = `{
                     "description": "VM or Jail name",
                     "type": "string"
                 },
+                "snapshot_description": {
+                    "description": "Description of the snapshot",
+                    "type": "string"
+                },
                 "snapshot_name": {
                     "description": "Full snapshot name, including the whole path, e.g. \"tank/vm-encrypted/vmTest1@snap1\"",
                     "type": "string"

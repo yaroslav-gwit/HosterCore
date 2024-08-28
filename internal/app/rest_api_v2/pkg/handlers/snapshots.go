@@ -21,12 +21,13 @@ import (
 )
 
 type SnapshotInput struct {
-	SnapshotsToKeep int    `json:"snapshots_to_keep"` // How many snapshots to keep, e.g. 5
-	SnapshotName    string `json:"snapshot_name"`     // Full snapshot name, including the whole path, e.g. "tank/vm-encrypted/vmTest1@snap1"
-	ResourceName    string `json:"res_name"`          // VM or Jail name
-	NewResourceName string `json:"new_res_name"`      // Used in clone operation, e.g. newVmName, the internal call will automatically append the dataset name
-	SnapshotType    string `json:"snapshot_type"`     // "hourly", "daily", "weekly", "monthly", "frequent"
-	SnapshotDataset string `json:"-"`
+	SnapshotsToKeep     int    `json:"snapshots_to_keep"`    // How many snapshots to keep, e.g. 5
+	SnapshotName        string `json:"snapshot_name"`        // Full snapshot name, including the whole path, e.g. "tank/vm-encrypted/vmTest1@snap1"
+	ResourceName        string `json:"res_name"`             // VM or Jail name
+	NewResourceName     string `json:"new_res_name"`         // Used in clone operation, e.g. newVmName, the internal call will automatically append the dataset name
+	SnapshotType        string `json:"snapshot_type"`        // "hourly", "daily", "weekly", "monthly", "frequent"
+	SnapshotDescription string `json:"snapshot_description"` // Description of the snapshot
+	SnapshotDataset     string `json:"-"`
 }
 
 // @Tags Snapshots
