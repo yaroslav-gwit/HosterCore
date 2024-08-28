@@ -57,6 +57,16 @@ var (
 			if len(vmDeployCmdFromIso) > 1 {
 				// err = deployVmFromIso(vmDeployCmdVmName, vmDeployCmdNetworkName, vmDeployCmdOsType, vmDeployCmdZfsDataset, vmDeployCmdCpus, vmDeployCmdRam, vmDeployCmdStartWhenReady, vmDeployCmdIsoFilePath)
 				err = deployVmFromIso(vmDeployCmdVmName, vmDeployCmdNetworkName, vmDeployCmdOsType, vmDeployCmdZfsDataset, vmDeployCmdCpus, vmDeployCmdRam, vmDeployCmdStartWhenReady, vmDeployCmdFromIso)
+				if err != nil {
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
+				}
+
+				_, err = HosterVmUtils.WriteCache()
+				if err != nil {
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
+				}
 			} else {
 				input := HosterVm.VmDeployInput{}
 
@@ -71,11 +81,16 @@ var (
 				input.VmName = vmDeployCmdVmName
 
 				err = HosterVm.Deploy(input)
-			}
+				if err != nil {
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
+				}
 
-			if err != nil {
-				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-				os.Exit(1)
+				_, err = HosterVmUtils.WriteCache()
+				if err != nil {
+					emojlog.PrintLogMessage(err.Error(), emojlog.Error)
+					os.Exit(1)
+				}
 			}
 		},
 	}

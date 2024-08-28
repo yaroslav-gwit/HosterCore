@@ -98,7 +98,7 @@ func main() {
 	r.HandleFunc("/api/v2/vm/stop/force/{vm_name}", handlers.VmPostStopForce).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/clone", handlers.VmClone).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/deploy", handlers.VmPostDeploy).Methods(http.MethodPost)
-	r.HandleFunc("/api/v2/vm/destroy/{vm_name}", handlers.VmDestroy).Methods(http.MethodDelete)
+	r.HandleFunc("/api/v2/vm/destroy/{vm_name}", handlers.VmDestroy).Methods(http.MethodDelete, http.MethodPost)
 	// Jails
 	r.HandleFunc("/api/v2/jail/all", handlers.JailList).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/jail/all/cache", handlers.JailListCache).Methods(http.MethodGet)
