@@ -90,6 +90,8 @@ func main() {
 	r.HandleFunc("/api/v2/vm/settings/production/{vm_name}/{production}", handlers.VmPostProductionSetting).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/settings/add-tag/{vm_name}", handlers.VmPostNewTag).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/settings/delete-tag/{vm_name}", handlers.VmDeleteExistingTag).Methods(http.MethodDelete, http.MethodPost)
+	r.HandleFunc("/api/v2/vm/cloud-init/mount-iso/{vm_name}", handlers.VmPostMountCiIso).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/vm/cloud-init/unmount-iso/{vm_name}", handlers.VmPostUnmountCiIso).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/readme/{vm_name}", handlers.VmGetReadme).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/vm/start/{vm_name}", handlers.VmPostStart).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/start/wait-vnc/{vm_name}", handlers.VmPostStartAndWaitVnc).Methods(http.MethodPost)

@@ -1978,6 +1978,58 @@ paths:
       summary: Clone the VM.
       tags:
       - VMs
+  /vm/cloud-init/mount-iso/{vm_name}:
+    post:
+      description: 'Mount a real CloudInit ISO.<br>`AUTH`: Only `REST` user is allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Mount a real CloudInit ISO.
+      tags:
+      - VMs
+  /vm/cloud-init/unmount-iso/{vm_name}:
+    post:
+      description: 'Replace a real CloudInit ISO with an empty one. Useful in the
+        situations where multiple users reside on the same VM, because an empty ISO
+        will protect the VM''s secrets.<br>`AUTH`: Only `REST` user is allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Replace a real CloudInit ISO with an empty one.
+      tags:
+      - VMs
   /vm/deploy:
     post:
       description: 'Deploy a new VM.<br>`AUTH`: Only `rest` user is allowed.'
