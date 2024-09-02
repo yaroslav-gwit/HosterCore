@@ -56,7 +56,7 @@ func UnmountCiIso(vmName string) error {
 	}
 
 	diskFound := false
-	vmFolder := vmConf.Simple.Mountpoint + "/" + VM_CONFIG_NAME
+	vmFolder := vmConf.Simple.Mountpoint + "/" + vmName
 	for i, v := range vmConf.Disks {
 		if v.DiskImage == "seed-empty.iso" {
 			return errors.New("CloudInit ISO has already been unmounted")
