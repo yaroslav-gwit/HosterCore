@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 func MountCiIso(vmName string) error {
@@ -27,7 +28,7 @@ func MountCiIso(vmName string) error {
 
 			err := ConfigFileWriter(vmConf.VmConfig, vmFolder+"/"+VM_CONFIG_NAME)
 			if err != nil {
-				return nil
+				return err
 			}
 
 			// if vmConf.Running {
@@ -35,7 +36,7 @@ func MountCiIso(vmName string) error {
 			// }
 			// emojlog.PrintLogMessage("CloudInit ISO has been mounted", emojlog.Changed)
 
-			return nil
+			// return nil
 		}
 	}
 
@@ -68,14 +69,14 @@ func UnmountCiIso(vmName string) error {
 
 			err := ConfigFileWriter(vmConf.VmConfig, vmFolder+"/"+VM_CONFIG_NAME)
 			if err != nil {
-				return nil
+				return err
 			}
 
 			// if vmConf.Running {
 			// 	emojlog.PrintLogMessage("Please don't forget to reboot the VM to apply changes", emojlog.Debug)
 			// }
 			// emojlog.PrintLogMessage("CloudInit ISO has been unmounted", emojlog.Changed)
-			return nil
+			// return nil
 		}
 	}
 
@@ -85,13 +86,13 @@ func UnmountCiIso(vmName string) error {
 
 	err = os.WriteFile(vmFolder+"/placeholder", fileContents, 0640)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	_ = os.Remove(vmFolder + "/seed-empty.iso")
 	out, err := exec.Command("genisoimage", "-output", vmFolder+"/seed-empty.iso", "-volid", "cidata", "-joliet", "-rock", vmFolder+"/placeholder").CombinedOutput()
 	if err != nil {
-		return errors.New("there was a problem generating an ISO: " + string(out) + "; " + err.Error())
+		return errors.New("there was a problem generating an ISO: " + strings.TrimSpace(string(out)) + "; " + strings.TrimSpace(err.Error()))
 	}
 	_ = os.Remove(vmFolder + "/placeholder")
 
