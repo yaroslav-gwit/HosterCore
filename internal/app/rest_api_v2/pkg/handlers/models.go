@@ -47,3 +47,8 @@ type VmOsSettings struct {
 type TagInput struct {
 	Tag string `json:"tag"`
 }
+
+type VmMountIsoInput struct {
+	IsoPath    string `json:"iso_path"`
+	IsoComment string `json:"iso_comment"`
+}

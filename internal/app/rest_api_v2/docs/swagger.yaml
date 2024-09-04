@@ -2323,6 +2323,32 @@ paths:
       summary: Modify VM's Workload type (e.g. is this a production VM, true or false).
       tags:
       - VMs
+  /vm/settings/mount-iso/{vm_name}:
+    post:
+      description: 'Mount a real ISO. This could be an installation ISO, or an ISO
+        with OS drivers, etc.<br>`AUTH`: Only `REST` user is allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Mount a real ISO.
+      tags:
+      - VMs
   /vm/settings/os-info/{vm_name}:
     post:
       description: 'Modify VM''s OS info (e.g. os_type - debian12, os_comment - Debian
@@ -2384,6 +2410,32 @@ paths:
       security:
       - BasicAuth: []
       summary: Modify VM's RAM settings.
+      tags:
+      - VMs
+  /vm/settings/unmount-iso/{vm_name}:
+    post:
+      description: 'Unmount an installation ISO. This could be an installation ISO,
+        or an ISO with OS drivers, etc.<br>`AUTH`: Only `REST` user is allowed.'
+      parameters:
+      - description: VM Name
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Unmount an installation ISO.
       tags:
       - VMs
   /vm/settings/vnc-resolution/{vm_name}/{resolution}:
