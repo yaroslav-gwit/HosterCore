@@ -4,8 +4,6 @@ import (
 	FileExists "HosterCore/internal/pkg/file_exists"
 	"fmt"
 	"strings"
-
-	"github.com/gofiber/fiber/v2/log"
 )
 
 // This function mounts an ISO file inside a VM. This ISO is used for the OS installation purposes most of the time.
@@ -20,9 +18,6 @@ func MountInstallationIso(vmName string, isoPath string, isoComment string) erro
 	if len(isoPath) < 1 {
 		return fmt.Errorf("ISO file path is empty")
 	}
-
-	log.Debug("path: ", isoPath)
-	log.Debug("comment: ", isoComment)
 
 	if strings.HasSuffix(strings.ToLower(isoPath), ".iso") {
 		return fmt.Errorf("ISO file must have an .iso extension")
