@@ -19,7 +19,7 @@ func MountInstallationIso(vmName string, isoPath string, isoComment string) erro
 		return fmt.Errorf("ISO file path is empty")
 	}
 
-	if strings.HasSuffix(strings.ToLower(isoPath), ".iso") {
+	if !strings.HasSuffix(strings.ToLower(isoPath), ".iso") {
 		return fmt.Errorf("ISO file must have an .iso extension")
 	}
 
@@ -59,7 +59,7 @@ func UnmountInstallationIso(vmName string, isoPath string) error {
 		return fmt.Errorf("ISO file path is empty")
 	}
 
-	if strings.HasSuffix(strings.ToLower(isoPath), ".iso") {
+	if !strings.HasSuffix(strings.ToLower(isoPath), ".iso") {
 		return fmt.Errorf("ISO file must have an .iso extension")
 	}
 

@@ -793,8 +793,7 @@ func VmPostMountIso(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debug(input)
-
+	// log.Debug(input)
 	err = HosterVmUtils.MountInstallationIso(vmName, input.IsoPath, input.IsoComment)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
