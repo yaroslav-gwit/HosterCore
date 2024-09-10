@@ -842,3 +842,50 @@ func VmPostUnmountIso(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+// @Tags VMs
+// @Summary Add a new VM data disk.
+// @Description Add a new VM data disk.<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "Name of the VM"
+// @Param Input body HosterVmUtils.VmDisk{} true "Request payload"
+// @Router /vm/settings/disk/add-new/{vm_name} [post]
+func VmPostAddNewDisk(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+
+	input := HosterVmUtils.VmDisk{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = HosterVmUtils.AddNewVmDisk(vmName, input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Update the VM's cache because we've changed the VM's settings
+	// (otherwise the icon won't change in the UI)
+	_, err = HosterVmUtils.WriteCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}

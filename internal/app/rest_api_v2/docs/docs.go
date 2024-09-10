@@ -2155,6 +2155,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/vm/settings/disk/add-new/{vm_name}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Add a new VM data disk.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Add a new VM data disk.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the VM",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/HosterVmUtils.VmDisk"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/settings/firmware/{vm_name}/{firmware}": {
             "post": {
                 "security": [
@@ -3449,10 +3498,14 @@ const docTemplate = `{
                 "disk_image": {
                     "type": "string"
                 },
+                "disk_input_size": {
+                    "type": "integer"
+                },
                 "disk_location": {
                     "type": "string"
                 },
                 "disk_type": {
+                    "description": "this is a disk driver type, e.g. virtio-blk, nvme, ahci-hd, ahci-cd.",
                     "type": "string"
                 },
                 "total_bytes": {
