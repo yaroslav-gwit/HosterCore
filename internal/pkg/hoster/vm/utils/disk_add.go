@@ -61,6 +61,10 @@ func AddNewVmDisk(vmName string, input VmDisk) error {
 	}
 
 	input.DiskInputSize = 0
+	if input.DiskLocation == "internal" {
+		split := strings.Split(input.DiskImage, "/")
+		input.DiskImage = split[len(split)-1]
+	}
 	vmInfo.VmConfig.Disks = append(vmInfo.VmConfig.Disks, input)
 
 	configLocation := vmInfo.Simple.Mountpoint + "/" + vmName + "/" + VM_CONFIG_NAME
