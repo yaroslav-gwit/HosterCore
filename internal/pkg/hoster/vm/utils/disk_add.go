@@ -65,6 +65,15 @@ func AddNewVmDisk(vmName string, input VmDisk) error {
 		split := strings.Split(input.DiskImage, "/")
 		input.DiskImage = split[len(split)-1]
 	}
+
+	// Clean up the disk size data, in order to avoid writing it to the config file
+	disks := []VmDisk{}
+	for _, v := range vmInfo.VmConfig.Disks {
+		v.DiskSize = DiskSize{}
+		disks = append(disks, v)
+	}
+
+	vmInfo.VmConfig.Disks = disks
 	vmInfo.VmConfig.Disks = append(vmInfo.VmConfig.Disks, input)
 
 	configLocation := vmInfo.Simple.Mountpoint + "/" + vmName + "/" + VM_CONFIG_NAME
