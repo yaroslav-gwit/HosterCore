@@ -24,7 +24,9 @@ func AddNewVmDisk(vmName string, input VmDisk) error {
 	}
 
 	if !strings.HasSuffix(strings.ToLower(input.DiskImage), ".img") {
-		return fmt.Errorf("disk image file must have an .img extension")
+		if input.DiskLocation == "external" {
+			return fmt.Errorf("disk image file must have an .img extension")
+		}
 	}
 
 	if len(input.Comment) < 1 {
