@@ -16,10 +16,11 @@ import (
 )
 
 type VmDisk struct {
-	DiskType     string `json:"disk_type"`
-	DiskLocation string `json:"disk_location"`
-	DiskImage    string `json:"disk_image"`
-	Comment      string `json:"comment"`
+	DiskType      string `json:"disk_type"` // this is a disk driver type, e.g. virtio-blk, nvme, ahci-hd, ahci-cd.
+	DiskLocation  string `json:"disk_location"`
+	DiskImage     string `json:"disk_image"`
+	DiskInputSize uint64 `json:"disk_input_size,omitempty"`
+	Comment       string `json:"comment"`
 	DiskSize
 }
 
