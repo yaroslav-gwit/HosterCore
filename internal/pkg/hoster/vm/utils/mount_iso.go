@@ -59,6 +59,10 @@ func UnmountInstallationIso(vmName string, isoPath string) error {
 		return fmt.Errorf("ISO file path is empty")
 	}
 
+	if strings.HasSuffix(isoPath, "/seed.iso") || strings.HasSuffix(isoPath, "/seed-empty.iso") {
+		return fmt.Errorf("CloudInit ISO file cannot be unmounted")
+	}
+
 	if !strings.HasSuffix(strings.ToLower(isoPath), ".iso") {
 		return fmt.Errorf("ISO file must have an .iso extension")
 	}
