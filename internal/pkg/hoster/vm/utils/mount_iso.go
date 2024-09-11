@@ -59,10 +59,6 @@ func UnmountInstallationIso(vmName string, isoPath string) error {
 		return fmt.Errorf("ISO file path is empty")
 	}
 
-	if strings.HasSuffix(isoPath, "/seed.iso") || strings.HasSuffix(isoPath, "/seed-empty.iso") {
-		return fmt.Errorf("CloudInit ISO file cannot be unmounted")
-	}
-
 	if !strings.HasSuffix(strings.ToLower(isoPath), ".iso") {
 		return fmt.Errorf("ISO file must have an .iso extension")
 	}
@@ -75,6 +71,9 @@ func UnmountInstallationIso(vmName string, isoPath string) error {
 	disks := []VmDisk{}
 	for _, v := range vmInfo.VmConfig.Disks {
 		if v.DiskImage == isoPath {
+			if isoPath == "seed.iso" || isoPath == "seed-empty.iso" {
+				return fmt.Errorf("CloudInit ISO file cannot be unmounted")
+			}
 			continue
 		} else {
 			disks = append(disks, v)
