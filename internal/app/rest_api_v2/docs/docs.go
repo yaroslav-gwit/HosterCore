@@ -2204,6 +2204,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/vm/settings/disk/expand/{vm_name}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Expand an existing VM disk.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Expand an existing VM disk.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the VM",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.VmDiskExpandInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/settings/firmware/{vm_name}/{firmware}": {
             "post": {
                 "security": [
@@ -3866,6 +3915,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "cpu_threads": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.VmDiskExpandInput": {
+            "type": "object",
+            "properties": {
+                "disk_image": {
+                    "type": "string"
+                },
+                "expansion_size": {
                     "type": "integer"
                 }
             }

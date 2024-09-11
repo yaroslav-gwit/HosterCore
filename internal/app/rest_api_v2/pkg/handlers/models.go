@@ -52,3 +52,8 @@ type VmMountIsoInput struct {
 	IsoPath    string `json:"iso_path"`
 	IsoComment string `json:"iso_comment"`
 }
+
+type VmDiskExpandInput struct {
+	DiskImage     string `json:"disk_image"`
+	ExpansionSize int    `json:"expansion_size"`
+}

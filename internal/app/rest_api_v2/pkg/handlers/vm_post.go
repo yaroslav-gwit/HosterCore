@@ -879,11 +879,58 @@ func VmPostAddNewDisk(w http.ResponseWriter, r *http.Request) {
 
 	// Update the VM's cache because we've changed the VM's settings
 	// (otherwise the icon won't change in the UI)
-	_, err = HosterVmUtils.WriteCache()
+	// _, err = HosterVmUtils.WriteCache()
+	// if err != nil {
+	// 	ReportError(w, http.StatusInternalServerError, err.Error())
+	// 	return
+	// }
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
+// @Summary Expand an existing VM disk.
+// @Description Expand an existing VM disk.<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param vm_name path string true "Name of the VM"
+// @Param Input body VmDiskExpandInput{} true "Request payload"
+// @Router /vm/settings/disk/expand/{vm_name} [post]
+func VmPostExpandDisk(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	vmName := vars["vm_name"]
+
+	input := VmDiskExpandInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	err = HosterVmUtils.DiskExpandOffline(input.DiskImage, input.ExpansionSize, vmName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Update the VM's cache because we've changed the VM's settings
+	// (otherwise the icon won't change in the UI)
+	// _, err = HosterVmUtils.WriteCache()
+	// if err != nil {
+	// 	ReportError(w, http.StatusInternalServerError, err.Error())
+	// 	return
+	// }
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)

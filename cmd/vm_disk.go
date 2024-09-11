@@ -37,7 +37,9 @@ var (
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
-			err := DiskExpandOffline(args[0], diskImage, expansionSize)
+
+			// err := DiskExpandOffline(args[0], diskImage, expansionSize)
+			err := HosterVmUtils.DiskExpandOffline(diskImage, expansionSize, args[0])
 			if err != nil {
 				log.Fatal(err)
 			}
