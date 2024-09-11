@@ -93,7 +93,7 @@ func main() {
 	r.HandleFunc("/api/v2/vm/settings/mount-iso/{vm_name}", handlers.VmPostMountIso).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/settings/unmount-iso/{vm_name}", handlers.VmPostUnmountIso).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/settings/disk/add-new/{vm_name}", handlers.VmPostAddNewDisk).Methods(http.MethodPost)
-	r.HandleFunc("/api/v2/vm/settings/disk/expand/{vm_name}", handlers.VmPostAddNewDisk).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/vm/settings/disk/expand/{vm_name}", handlers.VmPostExpandDisk).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/cloud-init/mount-iso/{vm_name}", handlers.VmPostMountCiIso).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/cloud-init/unmount-iso/{vm_name}", handlers.VmPostUnmountCiIso).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/readme/{vm_name}", handlers.VmGetReadme).Methods(http.MethodGet)
