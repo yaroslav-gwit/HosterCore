@@ -93,7 +93,7 @@ OUTER:
 		return errors.New("MAC address is already in use")
 	}
 
-	vm.VmConfig.Networks = append(vm.Networks, network)
+	vm.VmConfig.Networks = append(vm.VmConfig.Networks, network)
 	err = HosterVmUtils.ConfigFileWriter(vm.VmConfig, vm.Simple.Mountpoint+"/"+vm.Name+"/config.json")
 	if err != nil {
 		return err
