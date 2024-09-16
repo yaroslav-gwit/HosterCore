@@ -20,7 +20,11 @@ func AddNewVmNetwork(vmName string, network HosterVmUtils.VmNetwork) error {
 		return errors.New("invalid MAC address")
 	}
 	if len(network.IPAddress) < 1 {
-		HosterHostUtils.GenerateNewRandomIp(network.NetworkBridge)
+		var err error
+		network.IPAddress, err = HosterHostUtils.GenerateNewRandomIp(network.NetworkBridge)
+		if err != nil {
+			return err
+		}
 	}
 
 	if network.NetworkAdaptorType != "virtio-net" {
