@@ -94,7 +94,7 @@ OUTER:
 	}
 
 	vm.VmConfig.Networks = append(vm.VmConfig.Networks, network)
-	err = HosterVmUtils.ConfigFileWriter(vm.VmConfig, vm.Simple.Mountpoint+"/"+vm.Name+"/config.json")
+	err = HosterVmUtils.ConfigFileWriter(vm.VmConfig, vm.Simple.Mountpoint+"/"+vm.Name+"/"+HosterVmUtils.VM_CONFIG_NAME)
 	if err != nil {
 		return err
 	}
