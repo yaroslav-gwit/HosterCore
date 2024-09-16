@@ -12,6 +12,16 @@ func AddNewVmNetwork(vmName string, network HosterVmUtils.VmNetwork) error {
 		return errors.New("invalid MAC address")
 	}
 
+	if network.NetworkAdaptorType != "virtio-net" {
+		if network.NetworkAdaptorType != "e1000" {
+			return errors.New("invalid network driver type")
+		}
+	}
+
+	if len(network.Comment) < 1 {
+		network.Comment = "New VM network"
+	}
+
 	vm, err := HosterVmUtils.InfoJsonApi(vmName)
 	if err != nil {
 		return err
