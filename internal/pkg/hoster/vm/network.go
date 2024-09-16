@@ -37,7 +37,6 @@ func AddNewVmNetwork(vmName string, network HosterVmUtils.VmNetwork) error {
 
 	ipConflict := false
 	macConflict := false
-	networkBridgeFound := false
 
 	vms, err := HosterVmUtils.ListJsonApi()
 	if err != nil {
@@ -49,9 +48,10 @@ func AddNewVmNetwork(vmName string, network HosterVmUtils.VmNetwork) error {
 		return err
 	}
 
+	networkBridgeFound := false
 	net := HosterNetwork.NetworkConfig{}
 	for _, v := range netConfig {
-		if v.BridgeInterface == network.NetworkBridge {
+		if v.NetworkName == network.NetworkBridge {
 			networkBridgeFound = true
 			net = v
 			break
@@ -60,6 +60,7 @@ func AddNewVmNetwork(vmName string, network HosterVmUtils.VmNetwork) error {
 	if !networkBridgeFound {
 		return errors.New("network bridge not found")
 	}
+
 	if len(network.IPAddress) < 1 {
 		HosterHostUtils.GenerateNewRandomIp(network.NetworkBridge)
 	}
