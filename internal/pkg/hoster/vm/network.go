@@ -19,6 +19,9 @@ func AddNewVmNetwork(vmName string, network HosterVmUtils.VmNetwork) error {
 	if !HosterVmUtils.IsMacAddressValid(network.NetworkMac) {
 		return errors.New("invalid MAC address")
 	}
+	if len(network.IPAddress) < 1 {
+		HosterHostUtils.GenerateNewRandomIp(network.NetworkBridge)
+	}
 
 	if network.NetworkAdaptorType != "virtio-net" {
 		if network.NetworkAdaptorType != "e1000" {
@@ -61,10 +64,6 @@ func AddNewVmNetwork(vmName string, network HosterVmUtils.VmNetwork) error {
 		return errors.New("network bridge not found")
 	}
 
-	if len(network.IPAddress) < 1 {
-		HosterHostUtils.GenerateNewRandomIp(network.NetworkBridge)
-	}
-
 OUTER:
 	for _, v := range vms {
 		for _, vv := range v.Networks {
@@ -90,7 +89,7 @@ OUTER:
 		return errors.New("MAC address is already in use")
 	}
 
-	vm.Networks = append(vm.Networks, network)
+	vm.VmConfig.Networks = append(vm.Networks, network)
 	err = HosterVmUtils.ConfigFileWriter(vm.VmConfig, vm.Simple.Mountpoint+"/"+vm.Name+"/config.json")
 	if err != nil {
 		return err
