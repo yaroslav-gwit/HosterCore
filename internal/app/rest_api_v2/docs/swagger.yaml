@@ -2421,6 +2421,39 @@ paths:
       summary: Mount a real ISO.
       tags:
       - VMs
+  /vm/settings/network/add/{vm_name}:
+    post:
+      description: 'Add a new VM network interface.<br>`AUTH`: Only `rest` user is
+        allowed.'
+      parameters:
+      - description: Name of the VM
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/HosterVmUtils.VmNetwork'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Add a new VM network interface.
+      tags:
+      - VMs
+      - Networks
   /vm/settings/os-info/{vm_name}:
     post:
       description: 'Modify VM''s OS info (e.g. os_type - debian12, os_comment - Debian

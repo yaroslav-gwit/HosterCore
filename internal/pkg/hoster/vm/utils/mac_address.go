@@ -7,6 +7,8 @@ package HosterVmUtils
 import (
 	"crypto/rand"
 	"fmt"
+	"net"
+	"regexp"
 	"slices"
 )
 
@@ -40,4 +42,16 @@ func GenerateMacAddress() (r string, e error) {
 	}
 
 	return
+}
+
+func IsMacAddressValid(mac string) bool {
+	// Use net.ParseMAC to check if the MAC address can be parsed
+	_, err := net.ParseMAC(mac)
+	if err != nil {
+		return false
+	}
+
+	// Ensure MAC format is either "xx:xx:xx:xx:xx:xx" or "xx-xx-xx-xx-xx-xx"
+	macRegex := regexp.MustCompile(`^([0-9A-Fa-f]{2}:){4}([0-9A-Fa-f]{2})$`)
+	return macRegex.MatchString(mac)
 }

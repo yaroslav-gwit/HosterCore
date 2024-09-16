@@ -6,7 +6,6 @@ import (
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"net"
 	"slices"
@@ -76,7 +75,7 @@ func GenerateNewRandomIp(networkName string) (r string, e error) {
 
 	iteration := 0
 	for {
-		if slices.Contains(existingIps, randomIp) || !ipIsWithinRange(randomIp, subnet, rangeStart, rangeEnd) {
+		if slices.Contains(existingIps, randomIp) || !IsIpWithinRange(randomIp, subnet, rangeStart, rangeEnd) {
 			randomIp, err = generateUniqueRandomIp(subnet)
 			if err != nil {
 				e = errors.New("could not generate a random IP address: " + err.Error())
@@ -121,11 +120,12 @@ func generateUniqueRandomIp(subnet string) (string, error) {
 	return stringAddress, nil
 }
 
-func ipIsWithinRange(ipAddress string, subnet string, rangeStart string, rangeEnd string) bool {
+func IsIpWithinRange(ipAddress string, subnet string, rangeStart string, rangeEnd string) bool {
 	// Parse the subnet IP and mask
 	_, ipNet, err := net.ParseCIDR(subnet)
 	if err != nil {
-		panic(err)
+		return false
+		// panic(err)
 	}
 
 	// Define the range of allowed host addresses
@@ -146,7 +146,8 @@ func ipIsWithinRange(ipAddress string, subnet string, rangeStart string, rangeEn
 func bytesInRange(ip, start, end []byte) bool {
 	for i := 0; i < len(ip); i++ {
 		if start[i] > end[i] {
-			log.Fatal("Make sure range start is lower than range end!")
+			// log.Fatal("Make sure range start is lower than range end!")
+			return false
 		} else if ip[i] < start[i] || ip[i] > end[i] {
 			return false
 		}
