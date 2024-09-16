@@ -25,9 +25,9 @@ type VmDisk struct {
 }
 
 type VmNetwork struct {
-	NetworkAdaptorType string `json:"network_adaptor_type"`
-	NetworkBridge      string `json:"network_bridge"` // is this a network name?
-	NetworkMac         string `json:"network_mac"`
+	NetworkAdaptorType string `json:"network_adaptor_type"` // this is a network driver type, e.g. virtio-net or e1000, rename to network_driver in the v2 release
+	NetworkBridge      string `json:"network_bridge"`       // this is a network name
+	NetworkMac         string `json:"network_mac"`          // rename to mac_address in the v2 release
 	IPAddress          string `json:"ip_address"`
 	Comment            string `json:"comment"`
 }

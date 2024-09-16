@@ -8,6 +8,14 @@ import (
 )
 
 func AddNewVmNetwork(vmName string, network HosterVmUtils.VmNetwork) error {
+	if len(network.NetworkMac) < 1 {
+		var err error
+		network.NetworkMac, err = HosterVmUtils.GenerateMacAddress()
+		if err != nil {
+			return err
+		}
+	}
+
 	if !HosterVmUtils.IsMacAddressValid(network.NetworkMac) {
 		return errors.New("invalid MAC address")
 	}

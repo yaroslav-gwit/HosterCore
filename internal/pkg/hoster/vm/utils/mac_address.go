@@ -52,6 +52,6 @@ func IsMacAddressValid(mac string) bool {
 	}
 
 	// Ensure MAC format is either "xx:xx:xx:xx:xx:xx" or "xx-xx-xx-xx-xx-xx"
-	macRegex := regexp.MustCompile(`^([0-9A-Fa-f]{2}:){4}([0-9A-Fa-f]{2})$`)
+	macRegex := regexp.MustCompile(`^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$`)
 	return macRegex.MatchString(mac)
 }
