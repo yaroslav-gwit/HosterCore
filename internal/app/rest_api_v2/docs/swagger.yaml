@@ -692,6 +692,13 @@ definitions:
       snapshot_name:
         type: string
     type: object
+  handlers.JailShells:
+    properties:
+      available_shells:
+        items:
+          type: string
+        type: array
+    type: object
   handlers.SnapshotInput:
     properties:
       new_res_name:
@@ -1552,6 +1559,32 @@ paths:
       security:
       - BasicAuth: []
       summary: Destroy a specific Jail.
+      tags:
+      - Jails
+  /jail/get/shells/{jail_name}:
+    get:
+      description: 'Get a list of active shells for a specific Jail.<br>`AUTH`: Only
+        `rest` user is allowed.'
+      parameters:
+      - description: Jail Name
+        in: path
+        name: jail_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.JailShells'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get a list of active shells for a specific Jail.
       tags:
       - Jails
   /jail/info/{jail_name}:

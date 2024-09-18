@@ -57,3 +57,7 @@ type VmDiskExpandInput struct {
 	DiskImage     string `json:"disk_image"`
 	ExpansionSize int    `json:"expansion_size"`
 }
+
+type JailShells struct {
+	AvailableShells []string `json:"available_shells"`
+}

@@ -136,6 +136,7 @@ func JailInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
@@ -328,4 +329,42 @@ func JailGetReadme(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/plain")
 	SetStatusCode(w, http.StatusOK)
 	w.Write([]byte(readme))
+}
+
+// @Tags Jails
+// @Summary Get a list of active shells for a specific Jail.
+// @Description Get a list of active shells for a specific Jail.<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} JailShells{}
+// @Failure 500 {object} SwaggerError
+// @Param jail_name path string true "Jail Name"
+// @Router /jail/get/shells/{jail_name} [get]
+func JailGetShells(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	jailName := vars["jail_name"]
+
+	var err error
+	output := JailShells{}
+	output.AvailableShells, err = HosterJailUtils.GetJailShells(jailName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := json.Marshal(output)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
 }

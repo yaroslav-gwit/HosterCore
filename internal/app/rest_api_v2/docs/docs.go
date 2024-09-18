@@ -1078,6 +1078,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/jail/get/shells/{jail_name}": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get a list of active shells for a specific Jail.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Get a list of active shells for a specific Jail.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Jail Name",
+                        "name": "jail_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JailShells"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/info/{jail_name}": {
             "get": {
                 "security": [
@@ -3891,6 +3931,17 @@ const docTemplate = `{
                 },
                 "snapshot_name": {
                     "type": "string"
+                }
+            }
+        },
+        "handlers.JailShells": {
+            "type": "object",
+            "properties": {
+                "available_shells": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
