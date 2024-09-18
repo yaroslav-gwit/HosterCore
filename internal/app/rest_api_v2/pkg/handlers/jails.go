@@ -299,3 +299,33 @@ func JailClone(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+// @Tags Jails
+// @Summary Get README.MD for a particular Jail.
+// @Description Get README.MD for a particular Jail.<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param jail_name path string true "Jail Name"
+// @Router /jail/readme/{jail_name} [get]
+func JailGetReadme(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	jailName := vars["jail_name"]
+
+	readme, err := HosterJail.GetReadme(jailName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	w.Header().Add("Content-Type", "text/plain")
+	SetStatusCode(w, http.StatusOK)
+	w.Write([]byte(readme))
+}

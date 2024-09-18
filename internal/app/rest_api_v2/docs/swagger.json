@@ -1111,6 +1111,46 @@
                 }
             }
         },
+        "/jail/readme/{jail_name}": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get README.MD for a particular Jail.\u003cbr\u003e`AUTH`: Only `rest` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Get README.MD for a particular Jail.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Jail Name",
+                        "name": "jail_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/start/{jail_name}": {
             "post": {
                 "security": [
@@ -3642,13 +3682,15 @@
                     "type": "string"
                 },
                 "network_adaptor_type": {
+                    "description": "this is a network driver type, e.g. virtio-net or e1000, rename to network_driver in the v2 release",
                     "type": "string"
                 },
                 "network_bridge": {
-                    "description": "is this a network name?",
+                    "description": "this is a network name",
                     "type": "string"
                 },
                 "network_mac": {
+                    "description": "rename to mac_address in the v2 release",
                     "type": "string"
                 }
             }
