@@ -48,10 +48,12 @@ func main() {
 	logCrashDetected = append(logCrashDetected, "read |0: file already closed")
 
 	// Start the process
-	parts := strings.Fields(vmStartCommand)
+	// parts := strings.Fields(vmStartCommand)
 	for {
 		log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Info("SUPERVISED SESSION STARTED: VM boot process has been initiated")
-		hupCmd := exec.Command(parts[0], parts[1:]...)
+		log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Info("BHYVE START CMD: " + vmStartCommand)
+		// hupCmd := exec.Command(parts[0], parts[1:]...)
+		hupCmd := exec.Command("sh", "-c", vmStartCommand)
 		stdout, err := hupCmd.StdoutPipe()
 		if err != nil {
 			log.WithFields(logrus.Fields{"type": LOG_SUPERVISOR}).Error("Failed to create stdout pipe: " + err.Error())
