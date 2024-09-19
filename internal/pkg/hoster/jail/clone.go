@@ -67,6 +67,11 @@ func Clone(jailName string, newJailName string, snapshotName string) error {
 		return fmt.Errorf(errValue)
 	}
 
+	_, err = HosterJailUtils.WriteCache()
+	if err != nil {
+		return err
+	}
+
 	log.Warn("jail has been cloned: " + jailName + "; cloned jail name: " + newJailName)
 	return nil
 }

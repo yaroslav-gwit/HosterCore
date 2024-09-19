@@ -88,5 +88,10 @@ func CiReset(input CiResetInput) error {
 	if err != nil {
 		return err
 	}
+	_, err = HosterJailUtils.WriteCache()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -1,6 +1,7 @@
 package HosterJail
 
 import (
+	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	"errors"
 	"fmt"
@@ -86,6 +87,15 @@ func Destroy(jailName string) error {
 		log.Warn("Jail parent dataset has been destroyed: " + parentDataset)
 	}
 	// EOF Remove the parent dataset if it exists
+
+	err = HosterHostUtils.ReloadDns()
+	if err != nil {
+		return err
+	}
+	_, err = HosterJailUtils.WriteCache()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

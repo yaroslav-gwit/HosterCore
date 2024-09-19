@@ -105,6 +105,10 @@ func Deploy(input DeployInput) error {
 	if err != nil {
 		return err
 	}
+	_, err = HosterJailUtils.WriteCache()
+	if err != nil {
+		return err
+	}
 
 	log.Info("Jail has been deployed: " + input.JailName)
 	return nil
