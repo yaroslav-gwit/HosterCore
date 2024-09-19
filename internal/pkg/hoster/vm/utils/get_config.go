@@ -72,6 +72,7 @@ type VmConfig struct {
 	DisableXHCI        bool        `json:"disable_xhci,omitempty"`
 	VncResolution      int         `json:"vnc_resolution,omitempty"`
 	Shares             []Virtio9P  `json:"9p_shares,omitempty"`
+	CustomOptions      []string    `json:"custom_options,omitempty"`
 }
 
 // Reads and returns the vm_config.json as Go struct.

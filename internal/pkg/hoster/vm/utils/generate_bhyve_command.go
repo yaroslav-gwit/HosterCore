@@ -158,10 +158,20 @@ func GenerateBhyveStartCmd(vmName string, vmLocation string, restoreVmState bool
 		loaderCommand = loaderCommand + " -U " + conf.UUID
 	}
 
+	// Check man BHYVE_CONFIG(5) to get the full list of options
+	// If an option doesn't exist in bhyve, it will be ignored
+	// This particular option, for example, can be used to execute custom commands at VM boot time
+	// -o system.serial_number="https://script-location-here.com/script.sh"
+	if len(conf.CustomOptions) > 0 {
+		for _, v := range conf.CustomOptions {
+			loaderCommand += " -o " + v
+		}
+	}
+
 	if restoreVmState {
-		loaderCommand = loaderCommand + " -r " + vmLocation + "/vm_state"
+		loaderCommand += " -r " + vmLocation + "/vm_state"
 	} else {
-		loaderCommand = loaderCommand + " -u " + vmName
+		loaderCommand += " -u " + vmName
 	}
 
 	for strings.Contains(r, "  ") {
