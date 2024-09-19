@@ -45,38 +45,39 @@ func GenerateBhyveStartCmd(vmName string, vmLocation string, restoreVmState bool
 	}
 	r += " -s 0:0,hostbridge -s 31,lpc "
 
+	// PCI slot counter, it looks like this in the output: -s 2:0
 	bhyvePci := 2
 	bhyvePci2 := 0
 
 	// Generate network config
-	var networkFinal string
-	for _, v := range conf.Networks {
+	networkFinal := ""
+	for i, v := range conf.Networks {
 		tap, err := HosterNetwork.CreateTapInterface(vmName, v.NetworkBridge)
 		if err != nil {
 			e = err
 			return
 		}
-		if bhyvePci == 2 {
-			_ = 0
-		} else {
+
+		// If there is more than one network adapter increment the PCI slot by 1
+		if i > 0 {
 			bhyvePci += 1
 		}
-		networkFinal = fmt.Sprintf("%s -s %d:%d,%s,%s,mac=%s", networkFinal, bhyvePci, bhyvePci2, v.NetworkAdaptorType, tap, v.NetworkMac)
+		networkFinal += fmt.Sprintf(" -s %d:%d,%s,%s,mac=%s", bhyvePci, bhyvePci2, v.NetworkAdaptorType, tap, v.NetworkMac)
 	}
 	r = r + networkFinal
 	// EOF Generate network config
 
 	// Generate disk config
-	var diskFinal string
+	diskFinal := ""
 	for _, v := range conf.Disks {
-		var diskImageLocation string
+		diskImageLocation := ""
 		if v.DiskLocation == "internal" {
 			diskImageLocation = vmLocation + "/" + v.DiskImage
 		} else {
 			diskImageLocation = v.DiskImage
 		}
 		bhyvePci = bhyvePci + 1
-		diskFinal = fmt.Sprintf("%s -s %d:%d,%s,%s", diskFinal, bhyvePci, bhyvePci2, v.DiskType, diskImageLocation)
+		diskFinal += fmt.Sprintf(" -s %d:%d,%s,%s", bhyvePci, bhyvePci2, v.DiskType, diskImageLocation)
 	}
 	r = r + diskFinal
 	// EOF Generate disk config
@@ -87,9 +88,9 @@ func GenerateBhyveStartCmd(vmName string, vmLocation string, restoreVmState bool
 		for _, v := range conf.Shares {
 			bhyvePci = bhyvePci + 1
 			if v.ReadOnly {
-				share9Pcommand = fmt.Sprintf("%s -s %d,virtio-9p,%s=%s,ro", share9Pcommand, bhyvePci, v.ShareName, v.ShareLocation)
+				share9Pcommand += fmt.Sprintf(" -s %d,virtio-9p,%s=%s,ro", bhyvePci, v.ShareName, v.ShareLocation)
 			} else {
-				share9Pcommand = fmt.Sprintf("%s -s %d,virtio-9p,%s=%s", share9Pcommand, bhyvePci, v.ShareName, v.ShareLocation)
+				share9Pcommand += fmt.Sprintf(" -s %d,virtio-9p,%s=%s", bhyvePci, v.ShareName, v.ShareLocation)
 			}
 		}
 		r = r + share9Pcommand
