@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"slices"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -508,7 +507,16 @@ func PostHostSshAuthKey(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if slices.Contains(keys, input.KeyValue) {
+	keyFound := false
+	for _, v := range keys {
+		v = strings.TrimSpace(v)
+		if strings.Contains(v, input.KeyValue) || v == input.KeyValue {
+			keyFound = true
+			break
+		}
+	}
+
+	if keyFound {
 		SetStatusCode(w, http.StatusOK)
 		w.Write(payload)
 	} else {
