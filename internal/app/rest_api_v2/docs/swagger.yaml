@@ -300,6 +300,41 @@ definitions:
       uuid:
         type: string
     type: object
+  HosterJailUtils.JailConfig:
+    properties:
+      config_file_append:
+        type: string
+      cpu_limit_percent:
+        type: integer
+      description:
+        type: string
+      dns_search_domain:
+        type: string
+      dns_server:
+        type: string
+      ip_address:
+        type: string
+      network:
+        type: string
+      parent:
+        type: string
+      production:
+        type: boolean
+      ram_limit:
+        type: string
+      shutdown_script:
+        type: string
+      startup_script:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      timezone:
+        type: string
+      uuid:
+        type: string
+    type: object
   HosterJailUtils.JailListSimple:
     properties:
       jail_name:
@@ -372,6 +407,10 @@ definitions:
         type: integer
       current_host:
         type: string
+      custom_options:
+        items:
+          type: string
+        type: array
       description:
         type: string
       disable_xhci:
@@ -452,6 +491,10 @@ definitions:
         type: integer
       cpu_threads:
         type: integer
+      custom_options:
+        items:
+          type: string
+        type: array
       description:
         type: string
       disable_xhci:
@@ -1638,6 +1681,29 @@ paths:
       summary: Get README.MD for a particular Jail.
       tags:
       - Jails
+  /jail/settings/{jail_name}:
+    get:
+      description: 'Get Jail config (settings).<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Jail Name
+        in: path
+        name: jail_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/HosterJailUtils.JailConfig'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get Jail config (settings).
   /jail/start/{jail_name}:
     post:
       description: 'Start a specific Jail using it''s name as a parameter.<br>`AUTH`:

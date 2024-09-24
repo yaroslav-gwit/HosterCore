@@ -1198,6 +1198,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/jail/settings/{jail_name}": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Get Jail config (settings).\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get Jail config (settings).",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Jail Name",
+                        "name": "jail_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/HosterJailUtils.JailConfig"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/start/{jail_name}": {
             "post": {
                 "security": [
@@ -3354,6 +3391,59 @@ const docTemplate = `{
                 }
             }
         },
+        "HosterJailUtils.JailConfig": {
+            "type": "object",
+            "properties": {
+                "config_file_append": {
+                    "type": "string"
+                },
+                "cpu_limit_percent": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "dns_search_domain": {
+                    "type": "string"
+                },
+                "dns_server": {
+                    "type": "string"
+                },
+                "ip_address": {
+                    "type": "string"
+                },
+                "network": {
+                    "type": "string"
+                },
+                "parent": {
+                    "type": "string"
+                },
+                "production": {
+                    "type": "boolean"
+                },
+                "ram_limit": {
+                    "type": "string"
+                },
+                "shutdown_script": {
+                    "type": "string"
+                },
+                "startup_script": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
         "HosterJailUtils.JailListSimple": {
             "type": "object",
             "properties": {
@@ -3463,6 +3553,12 @@ const docTemplate = `{
                 },
                 "current_host": {
                     "type": "string"
+                },
+                "custom_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "description": {
                     "type": "string"
@@ -3583,6 +3679,12 @@ const docTemplate = `{
                 },
                 "cpu_threads": {
                     "type": "integer"
+                },
+                "custom_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "description": {
                     "type": "string"
