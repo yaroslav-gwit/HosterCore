@@ -456,7 +456,7 @@ type HostAuthSshKeyInput struct {
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
-// @Param Input body HostAuthSshKeyInput true "Request Payload"
+// @Param Input body HostAuthSshKeyInput{} true "Request Payload"
 // @Router /host/settings/ssh-auth-key [post]
 func PostHostSshAuthKey(w http.ResponseWriter, r *http.Request) {
 	authKeyLocation := "/root/.ssh/authorized_keys"
@@ -502,14 +502,15 @@ func PostHostSshAuthKey(w http.ResponseWriter, r *http.Request) {
 	kSplit := strings.Split(string(keyFile), "\n")
 	keys := []string{}
 	for _, v := range kSplit {
+		v = strings.TrimSpace(v)
 		if len(strings.TrimSpace(v)) > 0 {
 			keys = append(keys, v)
 		}
 	}
 
 	keyFound := false
+	input.KeyValue = strings.TrimSpace(input.KeyValue)
 	for _, v := range keys {
-		v = strings.TrimSpace(v)
 		if strings.Contains(v, input.KeyValue) || v == input.KeyValue {
 			keyFound = true
 			break
