@@ -39,10 +39,11 @@ func init() {
 	hostCmd.Flags().BoolVarP(&jsonHostInfoOutput, "json", "j", false, "Output as JSON (useful for automation)")
 	hostCmd.Flags().BoolVarP(&jsonPrettyHostInfoOutput, "json-pretty", "", false, "Pretty JSON Output")
 
-	// Host Network Info
+	// Host Network Section
 	rootCmd.AddCommand(networkCmd)
 	networkCmd.AddCommand(networkListCmd)
 	networkListCmd.Flags().BoolVarP(&networkListUnixStyleTable, "unix-style", "u", false, "Show Unix style table (useful for scripting)")
+	networkCmd.AddCommand(networkInitCmd)
 
 	// Host Dataset Info
 	rootCmd.AddCommand(datasetCmd)

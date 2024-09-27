@@ -4,6 +4,7 @@
 package cmd
 
 import (
+	"HosterCore/internal/pkg/emojlog"
 	HosterNetwork "HosterCore/internal/pkg/hoster/network"
 	"fmt"
 	"os"
@@ -35,6 +36,23 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 			printNetworkInfoTable()
+		},
+	}
+)
+
+var (
+	networkInitCmd = &cobra.Command{
+		Use:   "init",
+		Short: "Initialize or re-load Hoster network configuration",
+		Long:  `Initialize or re-load Hoster network configuration.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := loadNetworkConfig()
+			if err != nil {
+				emojlog.PrintLogMessage("Could not load network config: "+err.Error(), emojlog.Error)
+				os.Exit(1)
+			}
 		},
 	}
 )
