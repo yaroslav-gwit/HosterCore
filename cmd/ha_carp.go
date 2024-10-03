@@ -4,6 +4,8 @@
 package cmd
 
 import (
+	CarpClient "HosterCore/internal/app/ha_carp/client"
+	CarpUtils "HosterCore/internal/app/ha_carp/utils"
 	"HosterCore/internal/pkg/emojlog"
 	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
 	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
@@ -93,6 +95,51 @@ var (
 			} else {
 				emojlog.PrintChangedMessage("HA service has been stopped")
 			}
+		},
+	}
+)
+
+var (
+	haInfoCmd = &cobra.Command{
+		Use:   "info",
+		Short: "Get real-time HA Mode information",
+		Long:  "Get real-time HA Mode information.",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := CarpClient.HostAdd()
+			if err != nil {
+				emojlog.PrintErrorMessage("could not add host -> " + err.Error())
+				os.Exit(1)
+			}
+
+			os.Exit(0)
+		},
+	}
+)
+
+var (
+	haShowLogCmd = &cobra.Command{
+		Use:   "show-log",
+		Short: "Get real-time HA Mode logs",
+		Long:  "Get real-time HA Mode logs.",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			tailCmd := exec.Command("tail", "-35", "-f", CarpUtils.LOG_FILE)
+			tailCmd.Stdin = os.Stdin
+			tailCmd.Stdout = os.Stdout
+			tailCmd.Stderr = os.Stderr
+
+			err := tailCmd.Run()
+			if err != nil {
+				emojlog.PrintErrorMessage("could not show log -> " + err.Error())
+				os.Exit(1)
+			}
+
+			os.Exit(0)
 		},
 	}
 )

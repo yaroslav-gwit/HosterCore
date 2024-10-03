@@ -91,6 +91,10 @@ func init() {
 	carpHaCmd.AddCommand(haStopCmd)
 	// HA -> status
 	carpHaCmd.AddCommand(haStatusCmd)
+	// HA -> info
+	carpHaCmd.AddCommand(haInfoCmd)
+	// HA -> show-log
+	carpHaCmd.AddCommand(haShowLogCmd)
 
 	// Jail Command Section
 	rootCmd.AddCommand(jailCmd)
