@@ -1,4 +1,4 @@
-package main
+package CarpUtils
 
 import (
 	"fmt"
@@ -8,7 +8,8 @@ import (
 	"strings"
 )
 
-func parseIfconfig() (r []CarpInfo, e error) {
+// Returns an error if the ifconfig command fails, or if it cannot find any carp interfaces, or if it cannot parse the output.
+func ParseIfconfig() (r []CarpInfo, e error) {
 	out, err := exec.Command("ifconfig").CombinedOutput()
 	if err != nil {
 		e = fmt.Errorf("could not run ifconfig: %s; %s", strings.TrimSpace(string(out)), err.Error())

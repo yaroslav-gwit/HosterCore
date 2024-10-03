@@ -83,6 +83,15 @@ func init() {
 	schedulerSnapshotAllCmd.Flags().StringVarP(&schedulerSnapshotAllType, "type", "t", "custom", "Snapshot type: custom, frequent, hourly, daily, weekly, monthly, yearly")
 	schedulerSnapshotAllCmd.Flags().IntVarP(&schedulerSnapshotAllToKeep, "keep", "k", 5, "How many snapshots to keep")
 
+	// HA
+	rootCmd.AddCommand(carpHaCmd)
+	// HA -> start
+	carpHaCmd.AddCommand(haStartCmd)
+	// HA -> stop
+	carpHaCmd.AddCommand(haStopCmd)
+	// HA -> status
+	carpHaCmd.AddCommand(haStatusCmd)
+
 	// Jail Command Section
 	rootCmd.AddCommand(jailCmd)
 	// Jail -> start

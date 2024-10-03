@@ -3,9 +3,17 @@
     "Advbase",
     "Advskew",
     "Cheatsheet",
+    "cireset",
+    "emojlog",
+    "Infof",
+    "logrus",
     "Mountpoint",
+    "Pgrep",
+    "pids",
     "poweroff",
+    "sirupsen",
     "Traefik",
+    "unmarshalling",
     "Vhid"
   ]
 }
