@@ -37,6 +37,7 @@ cp -v internal/app/mbuffer/mbuffer /opt/hoster-core/ 2>/dev/null || echo -e "${E
 cp -v internal/app/node_exporter/node_exporter /opt/hoster-core/node_exporter_custom 2>/dev/null || echo -e "${ERROR_TEXT} node_exporter_custom binary is in use"
 cp -v internal/app/scheduler/scheduler /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} scheduler binary is in use"
 cp -v internal/app/ha_watchdog/ha_watchdog /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} ha_watchdog binary is in use"
+cp -v internal/app/ha_carp/ha_carp /opt/hoster-core/ 2>/dev/null || echo -e "${ERROR_TEXT} ha_carp binary is in use"
 
 # TEMPORARILY DISABLED DUE TO v2 MIGRATION, WILL BE REMOVED LATER
 # cp -v internal/app/rest_api/rest_api /opt/hoster-core/hoster_rest_api 2>/dev/null || echo -e "${ERROR_TEXT} hoster_rest_api binary is in use"

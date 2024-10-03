@@ -109,6 +109,19 @@ printf "${GREEN}Done${NC}\n"
 # printf "${GREEN}Done${NC}\n"
 
 # shellcheck disable=SC2059
+printf "Building the ${GREEN}ha_carp${NC} module ... "
+cd ..
+cd ha_carp/
+# $GO_BINARY build -trimpath
+if test -z "${RELEASE}"; then
+    $GO_BINARY build -ldflags="-X main.version=${DEV_VERSION}" -trimpath
+else
+    $GO_BINARY build -ldflags="-X main.version=${RELEASE_VERSION}" -trimpath
+fi
+# shellcheck disable=SC2059
+printf "${GREEN}Done${NC}\n"
+
+# shellcheck disable=SC2059
 printf "Building the ${GREEN}ha_watchdog${NC} module ... "
 cd ..
 cd ha_watchdog/
