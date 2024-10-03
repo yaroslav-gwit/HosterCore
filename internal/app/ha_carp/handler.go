@@ -37,7 +37,7 @@ func handleConnection(conn net.Conn) {
 		mutexHosts.Lock()
 		hosts = append(hosts, payload)
 		mutexHosts.Unlock()
-		log.Infof("Received Hosts Payload: %+v\n", payload)
+		log.Infof("Received Hosts Payload: %+v", payload)
 
 	case "backup_add":
 		var payload CarpUtils.BackupInfo
@@ -50,7 +50,7 @@ func handleConnection(conn net.Conn) {
 		mutexBackups.Lock()
 		backups = append(backups, payload)
 		mutexBackups.Unlock()
-		log.Infof("Received Backups Payload: %+v\n", payload)
+		log.Infof("Received Backups Payload: %+v", payload)
 
 	default:
 		log.Warn("Unknown payload type:", base.Type)

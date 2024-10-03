@@ -30,9 +30,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating Unix socket: %v", err)
 	}
+
+	// Clean up the socket file and listener
+	defer log.Info("HA Module is shutting down")
+	defer os.Remove(CarpUtils.SOCKET_FILE)
 	defer listener.Close()
 
-	log.Infof("Server listening on %s\n", CarpUtils.SOCKET_FILE)
+	log.Infof("HA Module has started listening on %s", CarpUtils.SOCKET_FILE)
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
