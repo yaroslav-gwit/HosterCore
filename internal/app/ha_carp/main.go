@@ -46,6 +46,13 @@ func main() {
 		}
 	}()
 
+	go func() { // Ping master in order to refresh our online status
+		for {
+			pingMaster()
+			time.Sleep(pingRemoteMasterInterval)
+		}
+	}()
+
 	for { // Accept incoming socket connections
 		conn, err := listener.Accept()
 		if err != nil {

@@ -2,6 +2,7 @@ package main
 
 import (
 	CarpUtils "HosterCore/internal/app/ha_carp/utils"
+	ApiV2client "HosterCore/internal/pkg/api_v2_client"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func checkIfMaster() {
 }
 
 func pingMaster() {
-	// Send a ping to the master node
+	ApiV2client.PingMaster()
 }
 
 func syncBackupsFromMaster() {

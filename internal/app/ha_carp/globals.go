@@ -14,6 +14,7 @@ var offlineBackups []CarpUtils.BackupInfo
 var iAmMaster bool
 var becameMaster int64
 var masterCheckInterval = 5 * time.Second
+var pingRemoteMasterInterval = 10 * time.Second
 
 var mutexHosts = &sync.RWMutex{}
 var mutexBackups = &sync.RWMutex{}
