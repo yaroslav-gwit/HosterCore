@@ -33,11 +33,24 @@ func handleConnection(conn net.Conn) {
 			log.Error("Error unmarshalling Hosts Payload:", err)
 			return
 		}
-
-		mutexHosts.Lock()
-		hosts = append(hosts, payload)
-		mutexHosts.Unlock()
+		// addNewHost(payload)
+		receivePing(payload)
 		log.Infof("Received Hosts Payload: %+v", payload)
+
+	case "host_list":
+		var payload CarpUtils.HostInfo
+		err = json.Unmarshal(buf[:n], &payload)
+		if err != nil {
+			log.Error("Error unmarshalling Hosts Payload:", err)
+			return
+		}
+
+		resp := listHosts()
+		// Send a response back
+		respBytes, _ := json.Marshal(resp)
+		conn.Write(respBytes)
+		log.Infof("Received Hosts Payload: %+v", payload)
+		return
 
 	case "backup_add":
 		var payload CarpUtils.BackupInfo
@@ -47,19 +60,40 @@ func handleConnection(conn net.Conn) {
 			return
 		}
 
-		mutexBackups.Lock()
-		backups = append(backups, payload)
-		mutexBackups.Unlock()
+		addNewBackup(payload)
 		log.Infof("Received Backups Payload: %+v", payload)
+
+	case "backup_list":
+		var payload CarpUtils.HostInfo
+		err = json.Unmarshal(buf[:n], &payload)
+		if err != nil {
+			log.Error("Error unmarshalling Hosts Payload:", err)
+			return
+		}
+
+		resp := listBackups()
+		// Send a response back
+		respBytes, _ := json.Marshal(resp)
+		conn.Write(respBytes)
+		log.Infof("Received Hosts Payload: %+v", payload)
+		return
 
 	default:
 		log.Warn("Unknown payload type:", base.Type)
+		response := CarpUtils.SocketResponse{
+			Success: false,
+		}
+
+		respBytes, _ := json.Marshal(response)
+		conn.Write(respBytes)
+		return
 	}
 
 	// Send a response back
 	response := CarpUtils.SocketResponse{
 		Success: true,
 	}
+
 	respBytes, _ := json.Marshal(response)
 	conn.Write(respBytes)
 }

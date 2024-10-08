@@ -7,21 +7,16 @@ import (
 	"net"
 )
 
-func HostAdd() error {
+func HostAdd(input CarpUtils.HostInfo) error {
 	conn, err := net.Dial("unix", CarpUtils.SOCKET_FILE)
 	if err != nil {
 		return fmt.Errorf("can't connect to Unix socket: " + err.Error())
 	}
 	defer conn.Close()
 
-	// Create a sample payload (you can switch between Type1Payload and Type2Payload)
-	payload := CarpUtils.HostInfo{
-		BasePayload: CarpUtils.BasePayload{Type: "host_add"},
-		HostName:    "host1",
-	}
-
 	// Marshal the payload to JSON
-	payloadBytes, err := json.Marshal(payload)
+	input.Type = "host_add"
+	payloadBytes, err := json.Marshal(input)
 	if err != nil {
 		return fmt.Errorf("error marshaling JSON: %v", err)
 	}

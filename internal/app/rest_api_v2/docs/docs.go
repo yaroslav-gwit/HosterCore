@@ -19,6 +19,48 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/carp-ha/ping": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Ping CARP interface.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only HA user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "High Availability"
+                ],
+                "summary": "Ping CARP interface.",
+                "parameters": [
+                    {
+                        "description": "Request Payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CarpUtils.HostInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/dataset/all": {
             "get": {
                 "security": [
@@ -2941,6 +2983,38 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "CarpUtils.HostInfo": {
+            "type": "object",
+            "properties": {
+                "basic_auth": {
+                    "description": "Basic Auth username:password",
+                    "type": "string"
+                },
+                "host_name": {
+                    "description": "Host name",
+                    "type": "string"
+                },
+                "http_port": {
+                    "description": "HTTP port",
+                    "type": "integer"
+                },
+                "http_proto": {
+                    "description": "HTTP protocol, e.g. \"http\" or \"https\"",
+                    "type": "string"
+                },
+                "ip_address": {
+                    "description": "IP address",
+                    "type": "string"
+                },
+                "last_seen": {
+                    "description": "Last seen timestamp",
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "FreeBSDOsInfo.ArcInfo": {
             "type": "object",
             "properties": {

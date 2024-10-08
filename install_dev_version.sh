@@ -23,6 +23,7 @@ hoster node_exporter stop
 hoster scheduler stop
 hoster dns stop
 hoster api stop
+hoster ha stop
 echo -e "${LIGHT_GREEN}=== Stopping the additional services: DONE ===${NC}"
 
 echo ""
@@ -60,4 +61,5 @@ hoster node_exporter start
 hoster scheduler start
 hoster dns start
 hoster api start
+hoster ha start
 echo -e "${LIGHT_GREEN}=== Starting the additional services back up: DONE ===${NC}"

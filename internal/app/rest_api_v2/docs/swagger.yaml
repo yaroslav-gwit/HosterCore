@@ -1,5 +1,28 @@
 basePath: /api/v2
 definitions:
+  CarpUtils.HostInfo:
+    properties:
+      basic_auth:
+        description: Basic Auth username:password
+        type: string
+      host_name:
+        description: Host name
+        type: string
+      http_port:
+        description: HTTP port
+        type: integer
+      http_proto:
+        description: HTTP protocol, e.g. "http" or "https"
+        type: string
+      ip_address:
+        description: IP address
+        type: string
+      last_seen:
+        description: Last seen timestamp
+        type: integer
+      type:
+        type: string
+    type: object
   FreeBSDOsInfo.ArcInfo:
     properties:
       arc_used_bytes:
@@ -942,6 +965,32 @@ info:
   title: Hoster Node REST API Docs
   version: "2.0"
 paths:
+  /carp-ha/ping:
+    post:
+      description: 'Ping CARP interface.<br>`AUTH`: Only HA user is allowed.'
+      parameters:
+      - description: Request Payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/CarpUtils.HostInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Ping CARP interface.
+      tags:
+      - High Availability
   /dataset/all:
     get:
       description: 'Get active dataset list.<br>`AUTH`: Only REST user is allowed.'

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"time"
 )
 
 var version = "" // version is set by the build system
@@ -37,7 +38,15 @@ func main() {
 	defer listener.Close()
 
 	log.Infof("HA Module has started listening on %s", CarpUtils.SOCKET_FILE)
-	for {
+
+	go func() { // Check if the current node is the master
+		for {
+			checkIfMaster()
+			time.Sleep(masterCheckInterval)
+		}
+	}()
+
+	for { // Accept incoming socket connections
 		conn, err := listener.Accept()
 		if err != nil {
 			log.Error("Error accepting connection:", err)
@@ -47,12 +56,4 @@ func main() {
 		// Handle the connection in a new goroutine
 		go handleConnection(conn)
 	}
-
-	// out, err := CarpUtils.ParseIfconfig()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	os.Exit(1)
-	// }
-
-	// fmt.Println(out)
 }
