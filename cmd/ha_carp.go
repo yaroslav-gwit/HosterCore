@@ -108,7 +108,8 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			err := CarpClient.HostAdd()
+			input := CarpUtils.HostInfo{}
+			err := CarpClient.HostAdd(input)
 			if err != nil {
 				emojlog.PrintErrorMessage("could not add host -> " + err.Error())
 				os.Exit(1)
