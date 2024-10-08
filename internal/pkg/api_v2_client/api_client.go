@@ -37,10 +37,10 @@ func PingMaster() error {
 	}
 
 	host := CarpUtils.HostInfo{}
-	host.BasicAuth = auth
 	host.HostName = hostname
-	host.HttpPort = apiConfig.Port
-	host.HttpProto = apiConfig.Protocol
+	// host.BasicAuth = auth
+	// host.HttpPort = apiConfig.Port
+	// host.HttpProto = apiConfig.Protocol
 
 	jp, err := json.Marshal(host)
 	if err != nil {

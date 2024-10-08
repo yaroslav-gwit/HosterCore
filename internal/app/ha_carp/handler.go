@@ -78,6 +78,22 @@ func handleConnection(conn net.Conn) {
 		log.Infof("Received Hosts Payload: %+v", payload)
 		return
 
+	case "ha_status":
+		ha := CarpUtils.HaStatus{}
+		if iAmMaster {
+			ha.Status = "MASTER"
+		} else {
+			ha.Status = "BACKUP"
+		}
+		ha.Resources = listBackups()
+		ha.Hosts = listHosts()
+
+		// Send a response back
+		respBytes, _ := json.Marshal(ha)
+		conn.Write(respBytes)
+		log.Infof("Responded: %+v", ha)
+		return
+
 	default:
 		log.Warn("Unknown payload type:", base.Type)
 		response := CarpUtils.SocketResponse{

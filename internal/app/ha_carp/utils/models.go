@@ -1,5 +1,12 @@
 package CarpUtils
 
+type HaStatus struct {
+	BasePayload              // type: ha_status
+	Status      string       `json:"status"`    // Current HA status: MASTER, BACKUP, INIT
+	Hosts       []HostInfo   `json:"hosts"`     // List of hosts
+	Resources   []BackupInfo `json:"resources"` // List of resources
+}
+
 type CarpInfo struct {
 	BasePayload
 	Status    string `json:"status"`    // Current CARP status: MASTER, BACKUP, INIT
@@ -33,12 +40,12 @@ type BackupInfo struct {
 
 type HostInfo struct {
 	BasePayload
-	HostName  string `json:"host_name"`  // Host name
-	IpAddress string `json:"ip_address"` // IP address
-	LastSeen  int64  `json:"last_seen"`  // Last seen timestamp
-	BasicAuth string `json:"basic_auth"` // Basic Auth username:password
-	HttpProto string `json:"http_proto"` // HTTP protocol, e.g. "http" or "https"
-	HttpPort  int    `json:"http_port"`  // HTTP port
+	HostName  string `json:"host_name,omitempty"`  // Host name
+	IpAddress string `json:"ip_address,omitempty"` // IP address
+	LastSeen  int64  `json:"last_seen,omitempty"`  // Last seen timestamp
+	// BasicAuth string `json:"basic_auth"` // Basic Auth username:password
+	// HttpProto string `json:"http_proto"` // HTTP protocol, e.g. "http" or "https"
+	// HttpPort  int    `json:"http_port"`  // HTTP port
 }
 
 type SocketResponse struct {

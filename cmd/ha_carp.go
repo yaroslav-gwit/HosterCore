@@ -10,6 +10,7 @@ import (
 	FreeBSDKill "HosterCore/internal/pkg/freebsd/kill"
 	FreeBSDPgrep "HosterCore/internal/pkg/freebsd/pgrep"
 	HosterLocations "HosterCore/internal/pkg/hoster/locations"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -108,12 +109,18 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			input := CarpUtils.HostInfo{}
-			err := CarpClient.HostAdd(input)
+			out, err := CarpClient.GetHaStatus()
 			if err != nil {
-				emojlog.PrintErrorMessage("could not add host -> " + err.Error())
+				emojlog.PrintErrorMessage("could not read HA status -> " + err.Error())
 				os.Exit(1)
 			}
+
+			jsonOut, err := json.MarshalIndent(out, "", "  ")
+			if err != nil {
+				emojlog.PrintErrorMessage("could not convert HA status into JSON -> " + err.Error())
+				os.Exit(1)
+			}
+			fmt.Println(string(jsonOut))
 
 			os.Exit(0)
 		},
