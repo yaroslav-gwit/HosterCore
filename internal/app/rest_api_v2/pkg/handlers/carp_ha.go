@@ -7,6 +7,7 @@ import (
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 // @Tags High Availability
@@ -27,6 +28,8 @@ func CarpPing(w http.ResponseWriter, r *http.Request) {
 
 	input := CarpUtils.HostInfo{}
 	input.IpAddress = r.RemoteAddr
+	input.IpAddress = strings.Split(r.RemoteAddr, ":")[0]
+
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
 	if err != nil {

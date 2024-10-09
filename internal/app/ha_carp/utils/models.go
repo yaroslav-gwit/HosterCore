@@ -34,6 +34,7 @@ type BackupInfo struct {
 	ResourceName     string `json:"resource_name"`     // Resource name
 	ResourceType     string `json:"resource_type"`     // Resource type, e.g. "vm", "jail"
 	LastSnapshot     string `json:"last_snapshot"`     // Last snapshot name
+	CurrentHost      string `json:"current_host"`      // Current host name
 	ParentHost       string `json:"parent_host"`       // Parent host name
 	FailoverStrategy string `json:"failover_strategy"` // Failover strategy, e.g. "cireset" or "change_parent"
 }

@@ -13,7 +13,7 @@ var offlineBackups []CarpUtils.BackupInfo
 
 var iAmMaster bool
 var becameMaster int64
-var masterCheckInterval = 5 * time.Second
+var selfMasterCheckInterval = 5 * time.Second
 var pingRemoteMasterInterval = 10 * time.Second
 
 var mutexHosts = &sync.RWMutex{}
@@ -45,6 +45,8 @@ func listBackups() []CarpUtils.BackupInfo {
 
 func receivePing(host CarpUtils.HostInfo) {
 	found := false
+	host.Type = "" // Clear the type field
+
 	mutexHosts.Lock()
 	for i, v := range hosts {
 		if v.HostName == host.HostName {
@@ -63,10 +65,14 @@ func receivePing(host CarpUtils.HostInfo) {
 func removeHost(host CarpUtils.HostInfo) {
 	mutexHosts.Lock()
 	defer mutexHosts.Unlock()
-	for i, h := range hosts {
-		if h.HostName == host.HostName {
-			hosts = append(hosts[:i], hosts[i+1:]...)
-			return
+
+	localHosts := []CarpUtils.HostInfo{}
+	for _, v := range hosts {
+		if v.HostName != host.HostName { // Remove the host from the list if hostname matches
+			localHosts = append(localHosts, v)
 		}
 	}
+
+	hosts = []CarpUtils.HostInfo{}
+	hosts = append(hosts, localHosts...)
 }

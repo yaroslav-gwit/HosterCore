@@ -42,7 +42,7 @@ func main() {
 	go func() { // Check if the current node is the master
 		for {
 			checkIfMaster()
-			time.Sleep(masterCheckInterval)
+			time.Sleep(selfMasterCheckInterval)
 		}
 	}()
 
