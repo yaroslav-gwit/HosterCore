@@ -18,7 +18,9 @@ func checkIfMaster() {
 	// Check if the interface is in MASTER state
 	for _, v := range iface {
 		if v.Status == "MASTER" {
+			hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 			iAmMaster = true
+			currentMaster = hostname
 			becameMaster = time.Now().Local().Unix()
 			return
 		}
@@ -41,6 +43,7 @@ func pingMaster() {
 
 func syncState() {
 	if !iAmMaster {
+		log.Debug("Not master, skipping sync")
 		return
 	}
 
@@ -52,6 +55,7 @@ func syncState() {
 	wg := sync.WaitGroup{}
 	for _, v := range ha.Hosts {
 		wg.Add(1)
+		log.Debug("Sending local state to", v.IpAddress)
 		go func(v CarpUtils.HostInfo, wg *sync.WaitGroup) {
 			defer wg.Done()
 			if hostname == currentMaster { // Don't send the state to self
@@ -62,6 +66,7 @@ func syncState() {
 			if err != nil {
 				log.Errorf("Error sending local state to %s: %s", v.IpAddress, err.Error())
 			}
+			log.Debug("Sent local state to", v.IpAddress)
 		}(v, &wg)
 	}
 
