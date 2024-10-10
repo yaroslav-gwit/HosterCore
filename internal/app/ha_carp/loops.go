@@ -43,7 +43,7 @@ func pingMaster() {
 
 func syncState() {
 	if !iAmMaster {
-		log.Debug("Not master, skipping sync")
+		log.Debug("STATE SYNC: I am not a master, skipping sync")
 		return
 	}
 
@@ -52,31 +52,23 @@ func syncState() {
 	ha.Hosts = listHosts()
 
 	wg := sync.WaitGroup{}
-	log.Debug("Begin syncing state using fan-out")
+	log.Debug("STATE SYNC: Begin syncing state using fan-out")
 	for _, v := range ha.Hosts {
 		wg.Add(1)
-		log.Debug("Sending local state to ", v.IpAddress)
+		log.Debug("STATE SYNC: Sending local state to ", v.IpAddress)
 
 		go func(v CarpUtils.HostInfo, wg *sync.WaitGroup) {
 			defer wg.Done()
 
 			err := ApiV2client.SendLocalState(ha, v.IpAddress, currentMaster)
 			if err != nil {
-				log.Errorf("Error sending local state to %s: %s", v.IpAddress, err.Error())
+				log.Errorf("STATE SYNC: Error sending local state to %s: %s", v.IpAddress, err.Error())
 			}
 
-			log.Debug("Sent local state to ", v.IpAddress)
+			log.Debug("STATE SYNC: Sent local state to ", v.IpAddress)
 		}(v, &wg)
 	}
 
 	wg.Wait()
-	log.Debug("Done syncing state using fan-out")
-}
-
-func syncHosts() {
-	// Sync the backups with the master node
-}
-
-func collectBackups() {
-	// Collect backups from all nodes
+	log.Debug("STATE SYNC: Done syncing state using fan-out")
 }
