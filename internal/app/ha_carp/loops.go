@@ -52,7 +52,7 @@ func syncState() {
 	wg := sync.WaitGroup{}
 	for _, v := range ha.Hosts {
 		wg.Add(1)
-		go func(v CarpUtils.HostInfo) {
+		go func(v CarpUtils.HostInfo, wg *sync.WaitGroup) {
 			defer wg.Done()
 			if hostname == currentMaster { // Don't send the state to self
 				return
@@ -62,7 +62,7 @@ func syncState() {
 			if err != nil {
 				log.Errorf("Error sending local state to %s: %s", v.IpAddress, err.Error())
 			}
-		}(v)
+		}(v, &wg)
 	}
 
 	wg.Wait()
