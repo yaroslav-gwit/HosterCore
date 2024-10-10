@@ -4,6 +4,7 @@ import (
 	CarpClient "HosterCore/internal/app/ha_carp/client"
 	CarpUtils "HosterCore/internal/app/ha_carp/utils"
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
+	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	"encoding/json"
 	"net/http"
@@ -95,15 +96,7 @@ func CarpReceiveHostState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Make and populate the response map
-	mp := make(map[string]interface{})
-	mp["message"] = "success"
-	payload, err := json.Marshal(mp)
-	if err != nil {
-		ReportError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
