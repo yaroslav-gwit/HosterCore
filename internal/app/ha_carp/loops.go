@@ -51,26 +51,26 @@ func syncState() {
 	ha.Resources = listBackups()
 	ha.Hosts = listHosts()
 
-	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 	wg := sync.WaitGroup{}
+	log.Debug("Begin syncing state using fan-out")
 	for _, v := range ha.Hosts {
 		wg.Add(1)
-		log.Debug("Sending local state to", v.IpAddress)
+		log.Debug("Sending local state to ", v.IpAddress)
+
 		go func(v CarpUtils.HostInfo, wg *sync.WaitGroup) {
 			defer wg.Done()
-			if hostname == currentMaster { // Don't send the state to self
-				return
-			}
 
 			err := ApiV2client.SendLocalState(ha, v.IpAddress, currentMaster)
 			if err != nil {
 				log.Errorf("Error sending local state to %s: %s", v.IpAddress, err.Error())
 			}
-			log.Debug("Sent local state to", v.IpAddress)
+
+			log.Debug("Sent local state to ", v.IpAddress)
 		}(v, &wg)
 	}
 
 	wg.Wait()
+	log.Debug("Done syncing state using fan-out")
 }
 
 func syncHosts() {

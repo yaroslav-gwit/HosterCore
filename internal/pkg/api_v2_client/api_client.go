@@ -60,7 +60,7 @@ func PingMaster(carpConfig CarpUtils.CarpConfig) (r string, e error) {
 	return
 }
 
-func SendLocalState(hosts CarpUtils.HaStatus, remoteIp string, masterHostname string) error {
+func SendLocalState(haState CarpUtils.HaStatus, remoteIp string, masterHostname string) error {
 	apiConfig, err := RestApiConfig.GetApiConfig()
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func SendLocalState(hosts CarpUtils.HaStatus, remoteIp string, masterHostname st
 		return fmt.Errorf("no HA user found in the config")
 	}
 
-	jp, err := json.Marshal(hosts)
+	jp, err := json.Marshal(haState)
 	if err != nil {
 		return err
 	}
