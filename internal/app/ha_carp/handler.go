@@ -35,7 +35,7 @@ func handleConnection(conn net.Conn) {
 		}
 		// addNewHost(payload)
 		receivePing(payload)
-		log.Infof("Received Hosts Payload: %+v", payload)
+		log.Debugf("Received Hosts Payload: %+v", payload)
 
 	case "host_list":
 		var payload CarpUtils.HostInfo
@@ -49,7 +49,7 @@ func handleConnection(conn net.Conn) {
 		// Send a response back
 		respBytes, _ := json.Marshal(resp)
 		conn.Write(respBytes)
-		log.Infof("Received Hosts Payload: %+v", payload)
+		log.Debugf("Received Hosts Payload: %+v", payload)
 		return
 
 	case "backup_add":
@@ -61,7 +61,7 @@ func handleConnection(conn net.Conn) {
 		}
 
 		addNewBackup(payload)
-		log.Infof("Received Backups Payload: %+v", payload)
+		log.Debugf("Received Backups Payload: %+v", payload)
 
 	case "backup_list":
 		var payload CarpUtils.HostInfo
@@ -75,7 +75,7 @@ func handleConnection(conn net.Conn) {
 		// Send a response back
 		respBytes, _ := json.Marshal(resp)
 		conn.Write(respBytes)
-		log.Infof("Received Hosts Payload: %+v", payload)
+		log.Debugf("Received Hosts Payload: %+v", payload)
 		return
 
 	case "ha_status":
@@ -92,11 +92,12 @@ func handleConnection(conn net.Conn) {
 		// Send a response back
 		respBytes, _ := json.Marshal(ha)
 		conn.Write(respBytes)
-		log.Infof("Responded: %+v", ha)
+		log.Debugf("Responded: %+v", ha)
 		return
 
 	case "ha_receive_hosts":
 		if iAmMaster {
+			log.Debug("Received state from a follower, not syncing")
 			return
 		}
 
@@ -121,6 +122,13 @@ func handleConnection(conn net.Conn) {
 		backups = append(backups, info.Resources...)
 		mutexBackups.Unlock()
 
+		response := CarpUtils.SocketResponse{
+			Success: true,
+		}
+		respBytes, _ := json.Marshal(response)
+		conn.Write(respBytes)
+
+		log.Debug("Received and synced state from master")
 		return
 
 	default:
@@ -138,7 +146,6 @@ func handleConnection(conn net.Conn) {
 	response := CarpUtils.SocketResponse{
 		Success: true,
 	}
-
 	respBytes, _ := json.Marshal(response)
 	conn.Write(respBytes)
 }
