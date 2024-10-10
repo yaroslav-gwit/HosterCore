@@ -4,7 +4,7 @@ import (
 	CarpClient "HosterCore/internal/app/ha_carp/client"
 	CarpUtils "HosterCore/internal/app/ha_carp/utils"
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
-	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
+	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -15,8 +15,8 @@ import (
 // @Description Ping CARP interface.<br>`AUTH`: Only HA user is allowed.
 // @Produce json
 // @Security BasicAuth
-// @Success 200 {object} SwaggerSuccess
-// @Failure 500 {object} SwaggerError
+// @Success 200 {object} CarpUtils.CarpPingResponse{}
+// @Failure 500 {object} SwaggerError{}
 // @Param Input body CarpUtils.HostInfo{} true "Request Payload"
 // @Router /carp-ha/ping [post]
 func CarpPing(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +43,18 @@ func CarpPing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload, err := JSONResponse.GenerateJson(w, "message", "success")
+	hostname, err := FreeBSDsysctls.SysctlKernHostname()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	res := CarpUtils.CarpPingResponse{
+		Message:  "success",
+		Hostname: hostname,
+	}
+
+	payload, err := json.Marshal(res)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

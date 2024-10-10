@@ -9,20 +9,17 @@ import (
 )
 
 // func PingMaster(host CarpUtils.HostInfo) error {
-func PingMaster() error {
-	carpConfig, err := CarpUtils.ParseCarpConfigFile()
-	if err != nil {
-		return err
-	}
-
+func PingMaster(carpConfig CarpUtils.CarpConfig) (r string, e error) {
 	hostname, err := FreeBSDsysctls.SysctlKernHostname()
 	if err != nil {
-		return err
+		e = err
+		return
 	}
 
 	apiConfig, err := RestApiConfig.GetApiConfig()
 	if err != nil {
-		return err
+		e = err
+		return
 	}
 
 	url := apiConfig.Protocol + "://" + carpConfig.MasterIpAddress + ":" + fmt.Sprintf("%d", apiConfig.Port) + "/api/v2/carp-ha/ping"
@@ -33,7 +30,8 @@ func PingMaster() error {
 		}
 	}
 	if len(auth) < 1 {
-		return fmt.Errorf("no HA user found in the config")
+		e = fmt.Errorf("no HA user found in the config")
+		return
 	}
 
 	host := CarpUtils.HostInfo{}
@@ -44,15 +42,25 @@ func PingMaster() error {
 
 	jp, err := json.Marshal(host)
 	if err != nil {
-		return err
+		e = err
+		return
 	}
 	mp := make(map[string]interface{})
 	json.Unmarshal(jp, &mp)
 
-	err = PostFunc(url, auth, mp)
+	body, err := PostFunc(url, auth, mp)
 	if err != nil {
-		return err
+		e = err
+		return
 	}
 
-	return nil
+	res := CarpUtils.CarpPingResponse{}
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		e = err
+		return
+	}
+
+	r = res.Hostname
+	return
 }

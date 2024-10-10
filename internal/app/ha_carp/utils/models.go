@@ -1,10 +1,11 @@
 package CarpUtils
 
 type HaStatus struct {
-	BasePayload              // type: ha_status
-	Status      string       `json:"status"`    // Current HA status: MASTER, BACKUP, INIT
-	Hosts       []HostInfo   `json:"hosts"`     // List of hosts
-	Resources   []BackupInfo `json:"resources"` // List of resources
+	BasePayload                // type: ha_status
+	Status        string       `json:"status"`         // Current HA status: MASTER, BACKUP, INIT
+	CurrentMaster string       `json:"current_master"` // Current master hostname
+	Hosts         []HostInfo   `json:"hosts"`          // List of hosts
+	Resources     []BackupInfo `json:"resources"`      // List of resources
 }
 
 type CarpInfo struct {
@@ -56,4 +57,9 @@ type SocketResponse struct {
 
 type BasePayload struct {
 	Type string `json:"type,omitempty"`
+}
+
+type CarpPingResponse struct {
+	Message  string `json:"message"`  // success
+	Hostname string `json:"hostname"` // hostname
 }

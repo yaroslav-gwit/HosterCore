@@ -49,7 +49,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                            "$ref": "#/definitions/CarpUtils.CarpPingResponse"
                         }
                     },
                     "500": {
@@ -2983,23 +2983,24 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "CarpUtils.CarpPingResponse": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "description": "hostname",
+                    "type": "string"
+                },
+                "message": {
+                    "description": "success",
+                    "type": "string"
+                }
+            }
+        },
         "CarpUtils.HostInfo": {
             "type": "object",
             "properties": {
-                "basic_auth": {
-                    "description": "Basic Auth username:password",
-                    "type": "string"
-                },
                 "host_name": {
                     "description": "Host name",
-                    "type": "string"
-                },
-                "http_port": {
-                    "description": "HTTP port",
-                    "type": "integer"
-                },
-                "http_proto": {
-                    "description": "HTTP protocol, e.g. \"http\" or \"https\"",
                     "type": "string"
                 },
                 "ip_address": {

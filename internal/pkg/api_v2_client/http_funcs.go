@@ -18,7 +18,7 @@ import (
 // - `url` should be the full URL to post to, aka "http://host:port/api/v2/host/settings/ssh-auth-key"
 //
 // - `inputPayload` (optional) should be a map of strings, aka `map[string]interface{}{"ssh_auth_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD..."}`
-func PostFunc(url string, auth string, inputPayload ...map[string]interface{}) error {
+func PostFunc(url string, auth string, inputPayload ...map[string]interface{}) (r []byte, e error) {
 	ctx, cancel := context.WithTimeout(context.Background(), HTTP_CALL_TIMEOUT*time.Second)
 	defer cancel()
 
@@ -29,19 +29,22 @@ func PostFunc(url string, auth string, inputPayload ...map[string]interface{}) e
 		// if the payload is not empty, marshal it to json and create a new request with the payload
 		jsonPayload, err := json.Marshal(inputPayload[0])
 		if err != nil {
-			return fmt.Errorf("error marshalling payload: %s", err.Error())
+			e = fmt.Errorf("error marshalling payload: %s", err.Error())
+			return
 		}
 		payload := strings.NewReader(string(jsonPayload))
 
 		req, err = http.NewRequestWithContext(ctx, http.MethodPost, url, payload)
 		if err != nil {
-			return fmt.Errorf("error creating new post request: %s", err.Error())
+			e = fmt.Errorf("error creating new post request: %s", err.Error())
+			return
 		}
 	} else {
 		// if the payload is empty, create a new request without a payload
 		req, err = http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
 		if err != nil {
-			return fmt.Errorf("error creating new post request: %s", err.Error())
+			e = fmt.Errorf("error creating new post request: %s", err.Error())
+			return
 		}
 	}
 
@@ -51,19 +54,23 @@ func PostFunc(url string, auth string, inputPayload ...map[string]interface{}) e
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("error posting to: %s" + err.Error())
+		e = fmt.Errorf("error posting to: %s" + err.Error())
+		return
 	}
 
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return fmt.Errorf("error posting to: %s; err: %s; body: %s", url, err.Error(), strings.TrimSpace(string(body)))
+		e = fmt.Errorf("error posting to: %s; err: %s; body: %s", url, err.Error(), strings.TrimSpace(string(body)))
+		return
 	}
 	if res.StatusCode > 299 || res.StatusCode < 200 {
-		return fmt.Errorf("error posting to: %s; err: %d; body: %s", url, res.StatusCode, strings.TrimSpace(string(body)))
+		e = fmt.Errorf("error posting to: %s; err: %d; body: %s", url, res.StatusCode, strings.TrimSpace(string(body)))
+		return
 	}
 
-	return nil
+	r = body
+	return
 }
 
 // A generic function to send a "DELETE" request to a URL on a Hoster node and (optionally) include a payload.

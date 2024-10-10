@@ -83,10 +83,11 @@ func handleConnection(conn net.Conn) {
 		if iAmMaster {
 			ha.Status = "MASTER"
 		} else {
-			ha.Status = "BACKUP"
+			ha.Status = "FOLLOWER"
 		}
 		ha.Resources = listBackups()
 		ha.Hosts = listHosts()
+		ha.CurrentMaster = currentMaster
 
 		// Send a response back
 		respBytes, _ := json.Marshal(ha)

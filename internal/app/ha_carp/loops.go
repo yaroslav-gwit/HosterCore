@@ -26,14 +26,22 @@ func checkIfMaster() {
 }
 
 func pingMaster() {
-	ApiV2client.PingMaster()
+	hostname, err := ApiV2client.PingMaster(activeHaConfig)
+	if err != nil {
+		log.Error("Error pinging master:", err)
+		return
+	}
+
+	if hostname != currentMaster {
+		currentMaster = hostname
+	}
 }
 
-func syncBackupsFromMaster() {
+func syncBackups() {
 	// Sync the backups with the master node
 }
 
-func syncHostsFromMaster() {
+func syncHosts() {
 	// Sync the backups with the master node
 }
 

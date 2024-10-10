@@ -6,6 +6,7 @@
     "cireset",
     "Dsysctls",
     "emojlog",
+    "iface",
     "Infof",
     "logrus",
     "Mountpoint",
