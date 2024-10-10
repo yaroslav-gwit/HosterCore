@@ -53,6 +53,13 @@ func main() {
 		}
 	}()
 
+	go func() { // Sync local master state with other nodes
+		for {
+			syncState()
+			time.Sleep(120 * time.Second)
+		}
+	}()
+
 	for { // Accept incoming socket connections
 		conn, err := listener.Accept()
 		if err != nil {

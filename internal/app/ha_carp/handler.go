@@ -85,14 +85,42 @@ func handleConnection(conn net.Conn) {
 		} else {
 			ha.Status = "FOLLOWER"
 		}
-		ha.Resources = listBackups()
 		ha.Hosts = listHosts()
+		ha.Resources = listBackups()
 		ha.CurrentMaster = currentMaster
 
 		// Send a response back
 		respBytes, _ := json.Marshal(ha)
 		conn.Write(respBytes)
 		log.Infof("Responded: %+v", ha)
+		return
+
+	case "ha_receive_hosts":
+		if iAmMaster {
+			return
+		}
+
+		info := CarpUtils.HaStatus{}
+		err := json.Unmarshal(buf[:n], &info)
+		if err != nil {
+			log.Warn("Unknown payload type:", base.Type)
+			response := CarpUtils.SocketResponse{
+				Success: false,
+			}
+			respBytes, _ := json.Marshal(response)
+			conn.Write(respBytes)
+		}
+
+		mutexHosts.Lock()
+		hosts = []CarpUtils.HostInfo{}
+		hosts = append(hosts, info.Hosts...)
+		mutexHosts.Unlock()
+
+		mutexBackups.Lock()
+		backups = []CarpUtils.BackupInfo{}
+		backups = append(backups, info.Resources...)
+		mutexBackups.Unlock()
+
 		return
 
 	default:

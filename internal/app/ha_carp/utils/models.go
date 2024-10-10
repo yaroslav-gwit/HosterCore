@@ -45,9 +45,6 @@ type HostInfo struct {
 	HostName  string `json:"host_name,omitempty"`  // Host name
 	IpAddress string `json:"ip_address,omitempty"` // IP address
 	LastSeen  int64  `json:"last_seen,omitempty"`  // Last seen timestamp
-	// BasicAuth string `json:"basic_auth"` // Basic Auth username:password
-	// HttpProto string `json:"http_proto"` // HTTP protocol, e.g. "http" or "https"
-	// HttpPort  int    `json:"http_port"`  // HTTP port
 }
 
 type SocketResponse struct {

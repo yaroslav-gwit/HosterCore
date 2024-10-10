@@ -133,6 +133,7 @@ func main() {
 
 	// HA
 	r.HandleFunc("/api/v2/carp-ha/ping", handlers.CarpPing).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/carp-ha/receive-state/{master_hostname}", handlers.CarpReceiveHostState).Methods(http.MethodPost)
 	if restConf.HaMode {
 		r.HandleFunc("/api/v2/ha/ping", HandlersHA.HandlePing).Methods(http.MethodPost)
 		r.HandleFunc("/api/v2/ha/register", HandlersHA.HandleRegistration).Methods(http.MethodPost)

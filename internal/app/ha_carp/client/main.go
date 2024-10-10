@@ -78,3 +78,33 @@ func GetHaStatus() (r CarpUtils.HaStatus, e error) {
 
 	return
 }
+
+func ReceiveRemoteState(input CarpUtils.HaStatus) error {
+	conn, err := net.Dial("unix", CarpUtils.SOCKET_FILE)
+	if err != nil {
+		return fmt.Errorf("can't connect to Unix socket: " + err.Error())
+	}
+	defer conn.Close()
+
+	// Marshal the payload to JSON
+	input.Type = "ha_receive_hosts"
+	payloadBytes, err := json.Marshal(input)
+	if err != nil {
+		return fmt.Errorf("error marshaling JSON: %v", err)
+	}
+
+	// Send the JSON payload to the server
+	_, err = conn.Write(payloadBytes)
+	if err != nil {
+		return fmt.Errorf("error sending data: %v", err)
+	}
+
+	// Read the server's response
+	var buf [512]byte
+	_, err = conn.Read(buf[:])
+	if err != nil {
+		return fmt.Errorf("error reading response: %v", err)
+	}
+
+	return nil
+}

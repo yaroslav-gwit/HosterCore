@@ -54,6 +54,55 @@
                 }
             }
         },
+        "/carp-ha/receive-state/{master_hostname}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Receive the cluster state from the master.\u003cbr\u003e`AUTH`: Only HA user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "High Availability"
+                ],
+                "summary": "Receive the cluster state from the master.",
+                "parameters": [
+                    {
+                        "description": "Request Payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CarpUtils.HaStatus"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Hostname of the master server",
+                        "name": "master_hostname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/dataset/all": {
             "get": {
                 "security": [
@@ -2976,6 +3025,38 @@
         }
     },
     "definitions": {
+        "CarpUtils.BackupInfo": {
+            "type": "object",
+            "properties": {
+                "current_host": {
+                    "description": "Current host name",
+                    "type": "string"
+                },
+                "failover_strategy": {
+                    "description": "Failover strategy, e.g. \"cireset\" or \"change_parent\"",
+                    "type": "string"
+                },
+                "last_snapshot": {
+                    "description": "Last snapshot name",
+                    "type": "string"
+                },
+                "parent_host": {
+                    "description": "Parent host name",
+                    "type": "string"
+                },
+                "resource_name": {
+                    "description": "Resource name",
+                    "type": "string"
+                },
+                "resource_type": {
+                    "description": "Resource type, e.g. \"vm\", \"jail\"",
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "CarpUtils.CarpPingResponse": {
             "type": "object",
             "properties": {
@@ -2985,6 +3066,36 @@
                 },
                 "message": {
                     "description": "success",
+                    "type": "string"
+                }
+            }
+        },
+        "CarpUtils.HaStatus": {
+            "type": "object",
+            "properties": {
+                "current_master": {
+                    "description": "Current master hostname",
+                    "type": "string"
+                },
+                "hosts": {
+                    "description": "List of hosts",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/CarpUtils.HostInfo"
+                    }
+                },
+                "resources": {
+                    "description": "List of resources",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/CarpUtils.BackupInfo"
+                    }
+                },
+                "status": {
+                    "description": "Current HA status: MASTER, BACKUP, INIT",
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }

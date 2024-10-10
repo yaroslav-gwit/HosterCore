@@ -8,7 +8,6 @@ import (
 	"fmt"
 )
 
-// func PingMaster(host CarpUtils.HostInfo) error {
 func PingMaster(carpConfig CarpUtils.CarpConfig) (r string, e error) {
 	hostname, err := FreeBSDsysctls.SysctlKernHostname()
 	if err != nil {
@@ -36,10 +35,6 @@ func PingMaster(carpConfig CarpUtils.CarpConfig) (r string, e error) {
 
 	host := CarpUtils.HostInfo{}
 	host.HostName = hostname
-	// host.BasicAuth = auth
-	// host.HttpPort = apiConfig.Port
-	// host.HttpProto = apiConfig.Protocol
-
 	jp, err := json.Marshal(host)
 	if err != nil {
 		e = err
@@ -63,4 +58,36 @@ func PingMaster(carpConfig CarpUtils.CarpConfig) (r string, e error) {
 
 	r = res.Hostname
 	return
+}
+
+func SendLocalState(hosts CarpUtils.HaStatus, remoteIp string, masterHostname string) error {
+	apiConfig, err := RestApiConfig.GetApiConfig()
+	if err != nil {
+		return err
+	}
+
+	url := apiConfig.Protocol + "://" + remoteIp + ":" + fmt.Sprintf("%d", apiConfig.Port) + "/api/v2/carp-ha/receive-state/" + masterHostname
+	auth := ""
+	for _, v := range apiConfig.HTTPAuth {
+		if v.HaUser {
+			auth = v.User + ":" + v.Password
+		}
+	}
+	if len(auth) < 1 {
+		return fmt.Errorf("no HA user found in the config")
+	}
+
+	jp, err := json.Marshal(hosts)
+	if err != nil {
+		return err
+	}
+	mp := make(map[string]interface{})
+	json.Unmarshal(jp, &mp)
+
+	_, err = PostFunc(url, auth, mp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

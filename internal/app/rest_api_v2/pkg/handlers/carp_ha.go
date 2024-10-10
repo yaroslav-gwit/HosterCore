@@ -63,3 +63,47 @@ func CarpPing(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
+
+// @Tags High Availability
+// @Summary Receive the cluster state from the master.
+// @Description Receive the cluster state from the master.<br>`AUTH`: Only HA user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess{}
+// @Failure 500 {object} SwaggerError{}
+// @Param Input body CarpUtils.HaStatus{} true "Request Payload"
+// @Param master_hostname path string true "Hostname of the master server"
+// @Router /carp-ha/receive-state/{master_hostname} [post]
+func CarpReceiveHostState(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckHaUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	input := CarpUtils.HaStatus{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = CarpClient.ReceiveRemoteState(input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Make and populate the response map
+	mp := make(map[string]interface{})
+	mp["message"] = "success"
+	payload, err := json.Marshal(mp)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}

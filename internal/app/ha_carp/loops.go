@@ -3,6 +3,8 @@ package main
 import (
 	CarpUtils "HosterCore/internal/app/ha_carp/utils"
 	ApiV2client "HosterCore/internal/pkg/api_v2_client"
+	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
+	"sync"
 	"time"
 )
 
@@ -37,8 +39,33 @@ func pingMaster() {
 	}
 }
 
-func syncBackups() {
-	// Sync the backups with the master node
+func syncState() {
+	if !iAmMaster {
+		return
+	}
+
+	ha := CarpUtils.HaStatus{}
+	ha.Resources = listBackups()
+	ha.Hosts = listHosts()
+
+	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
+	wg := sync.WaitGroup{}
+	for _, v := range ha.Hosts {
+		wg.Add(1)
+		go func(v CarpUtils.HostInfo) {
+			defer wg.Done()
+			if hostname == currentMaster { // Don't send the state to self
+				return
+			}
+
+			err := ApiV2client.SendLocalState(ha, v.IpAddress, currentMaster)
+			if err != nil {
+				log.Errorf("Error sending local state to %s: %s", v.IpAddress, err.Error())
+			}
+		}(v)
+	}
+
+	wg.Wait()
 }
 
 func syncHosts() {

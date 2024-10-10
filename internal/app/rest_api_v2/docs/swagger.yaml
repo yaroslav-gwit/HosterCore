@@ -1,5 +1,28 @@
 basePath: /api/v2
 definitions:
+  CarpUtils.BackupInfo:
+    properties:
+      current_host:
+        description: Current host name
+        type: string
+      failover_strategy:
+        description: Failover strategy, e.g. "cireset" or "change_parent"
+        type: string
+      last_snapshot:
+        description: Last snapshot name
+        type: string
+      parent_host:
+        description: Parent host name
+        type: string
+      resource_name:
+        description: Resource name
+        type: string
+      resource_type:
+        description: Resource type, e.g. "vm", "jail"
+        type: string
+      type:
+        type: string
+    type: object
   CarpUtils.CarpPingResponse:
     properties:
       hostname:
@@ -7,6 +30,27 @@ definitions:
         type: string
       message:
         description: success
+        type: string
+    type: object
+  CarpUtils.HaStatus:
+    properties:
+      current_master:
+        description: Current master hostname
+        type: string
+      hosts:
+        description: List of hosts
+        items:
+          $ref: '#/definitions/CarpUtils.HostInfo'
+        type: array
+      resources:
+        description: List of resources
+        items:
+          $ref: '#/definitions/CarpUtils.BackupInfo'
+        type: array
+      status:
+        description: 'Current HA status: MASTER, BACKUP, INIT'
+        type: string
+      type:
         type: string
     type: object
   CarpUtils.HostInfo:
@@ -989,6 +1033,38 @@ paths:
       security:
       - BasicAuth: []
       summary: Ping CARP interface.
+      tags:
+      - High Availability
+  /carp-ha/receive-state/{master_hostname}:
+    post:
+      description: 'Receive the cluster state from the master.<br>`AUTH`: Only HA
+        user is allowed.'
+      parameters:
+      - description: Request Payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/CarpUtils.HaStatus'
+      - description: Hostname of the master server
+        in: path
+        name: master_hostname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Receive the cluster state from the master.
       tags:
       - High Availability
   /dataset/all:
