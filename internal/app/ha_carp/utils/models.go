@@ -19,15 +19,16 @@ type CarpInfo struct {
 
 type CarpConfig struct {
 	BasePayload
-	Interface         string `json:"interface"`           // Interface name
-	MasterIpAddress   string `json:"master_ip_address"`   // IP address
-	Netmask           string `json:"netmask"`             // Netmask
-	Password          string `json:"password"`            // CARP Group Password, used to authenticate CARP packets and prevent unauthorized nodes from joining the CARP group
-	Vhid              int    `json:"vhid"`                // Virtual Host Group ID
-	Advbase           int    `json:"advbase"`             // Advertisement base interval, seconds
-	Advskew           int    `json:"advskew"`             // Advertisement skew, calculated as 1/256th of a second
-	ApplyCarpSettings bool   `json:"apply_carp_settings"` // Apply CARP settings to the interface
-	FailoverAfter     int    `json:"failover_after"`      // Failover after x seconds
+	ParticipateInCarp     bool   `json:"participate_in_carp"`     // Apply CARP settings to the interface
+	ParticipateInFailover bool   `json:"participate_in_failover"` // Participate in failover
+	Vhid                  int    `json:"vhid"`                    // Virtual Host Group ID
+	Advbase               int    `json:"advbase"`                 // Advertisement base interval, seconds
+	Advskew               int    `json:"advskew"`                 // Advertisement skew, calculated as 1/256th of a second
+	FailoverAfter         int    `json:"failover_after"`          // Failover after x seconds
+	Interface             string `json:"interface"`               // Interface name
+	MasterIpAddress       string `json:"master_ip_address"`       // IP address
+	Netmask               string `json:"netmask"`                 // Netmask
+	Password              string `json:"password"`                // CARP Group Password, used to authenticate CARP packets and prevent unauthorized nodes from joining the CARP group
 }
 
 type BackupInfo struct {

@@ -43,7 +43,7 @@ func pingMaster() {
 
 func syncState() {
 	if !iAmMaster {
-		log.Debug("STATE SYNC: I am not a master, skipping sync")
+		log.Debug("STATE SYNC: I am not a master, skipping fan-out sync")
 		return
 	}
 
