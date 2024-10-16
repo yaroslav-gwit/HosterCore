@@ -123,5 +123,9 @@ func ReturnBackups(host CarpUtils.HostInfo) (r []CarpUtils.BackupInfo, e error) 
 		return
 	}
 
+	for i := range r {
+		r[i].Type = "backup"
+	}
+
 	return
 }
