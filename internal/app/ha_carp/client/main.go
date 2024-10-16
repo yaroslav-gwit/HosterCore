@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+
+	"github.com/gofiber/fiber/v2/log"
 )
 
 func HostAdd(input CarpUtils.HostInfo) error {
@@ -90,6 +92,7 @@ func ReceiveRemoteState(input CarpUtils.HaStatus) error {
 	input.Type = "ha_receive_hosts"
 	payloadBytes, err := json.Marshal(input)
 	if err != nil {
+		log.Error("Error marshaling JSON, here is the data dump :: ", input)
 		return fmt.Errorf("error marshaling JSON: %v", err)
 	}
 

@@ -91,6 +91,7 @@ func getRemoteBackups() {
 	}
 
 	mutexBackups.Lock()
-	backups = result
+	backups = []CarpUtils.BackupInfo{}
+	backups = append(backups, result...)
 	mutexBackups.Unlock()
 }
