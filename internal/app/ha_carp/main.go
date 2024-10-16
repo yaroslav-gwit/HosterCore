@@ -60,6 +60,14 @@ func main() {
 		}
 	}()
 
+	go func() { // Sync local master state with other nodes
+		for {
+			getRemoteBackups()
+			// time.Sleep(15 * time.Minute)
+			time.Sleep(60 * time.Second) // Temporary short-time value for testing
+		}
+	}()
+
 	for { // Accept incoming socket connections
 		conn, err := listener.Accept()
 		if err != nil {

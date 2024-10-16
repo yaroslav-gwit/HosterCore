@@ -91,3 +91,37 @@ func SendLocalState(haState CarpUtils.HaStatus, remoteIp string, masterHostname 
 
 	return nil
 }
+
+func ReturnBackups(host CarpUtils.HostInfo) (r []CarpUtils.BackupInfo, e error) {
+	apiConfig, err := RestApiConfig.GetApiConfig()
+	if err != nil {
+		e = err
+		return
+	}
+
+	url := apiConfig.Protocol + "://" + host.IpAddress + ":" + fmt.Sprintf("%d", apiConfig.Port) + "/api/v2/carp-ha/backups"
+	auth := ""
+	for _, v := range apiConfig.HTTPAuth {
+		if v.HaUser {
+			auth = v.User + ":" + v.Password
+		}
+	}
+	if len(auth) < 1 {
+		e = fmt.Errorf("no HA user found in the config")
+		return
+	}
+
+	body, err := GetFunc(url, auth)
+	if err != nil {
+		e = err
+		return
+	}
+
+	err = json.Unmarshal(body, &r)
+	if err != nil {
+		e = err
+		return
+	}
+
+	return
+}

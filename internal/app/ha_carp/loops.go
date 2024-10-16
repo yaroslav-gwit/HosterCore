@@ -72,3 +72,20 @@ func syncState() {
 	wg.Wait()
 	log.Debug("STATE SYNC: Done syncing state using fan-out")
 }
+
+func getRemoteBackups() {
+	result := []CarpUtils.BackupInfo{}
+
+	for _, v := range listHosts() { // Get backups from all hosts (naive approach, for now)
+		tmp, err := ApiV2client.ReturnBackups(v)
+		if err != nil {
+			log.Errorf("Error getting backups from %s: %s", v.IpAddress, err.Error())
+			continue
+		}
+		result = append(result, tmp...)
+	}
+
+	mutexBackups.Lock()
+	backups = result
+	mutexBackups.Unlock()
+}

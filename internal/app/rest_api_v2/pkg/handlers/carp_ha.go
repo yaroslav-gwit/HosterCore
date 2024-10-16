@@ -6,6 +6,8 @@ import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
+	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -97,6 +99,81 @@ func CarpReceiveHostState(w http.ResponseWriter, r *http.Request) {
 	}
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags High Availability
+// @Summary Receive the cluster state from the master.
+// @Description Receive the cluster state from the master.<br>`AUTH`: Only HA user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} []CarpUtils.BackupInfo{}
+// @Failure 500 {object} SwaggerError{}
+// @Router /carp-ha/backups [get]
+func CarpReturnListOfBackups(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckHaUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	backups := []CarpUtils.BackupInfo{}
+
+	vms, err := HosterVmUtils.ReadCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	jails, err := HosterJailUtils.ReadCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	for _, v := range vms {
+		if v.Backup {
+			temp := CarpUtils.BackupInfo{}
+			temp.CurrentHost = v.CurrentHost
+			temp.Type = "vm"
+			temp.ResourceName = v.Name
+			temp.ParentHost = v.ParentHost
+
+			backups = append(backups, temp)
+		}
+	}
+
+	for _, v := range jails {
+		if v.Backup {
+			temp := CarpUtils.BackupInfo{}
+			temp.CurrentHost = v.CurrentHost
+			temp.Type = "jail"
+			temp.ResourceName = v.Name
+			temp.ParentHost = v.Parent
+
+			backups = append(backups, temp)
+		}
+	}
+
+	// snaps, err := zfsutils.ReadSnapshotCache()
+	// if err != nil {
+	// 	ReportError(w, http.StatusInternalServerError, err.Error())
+	// 	return
+	// }
+
+	// result := []zfsutils.SnapshotInfo{}
+	// for _, v := range snaps {
+	// 	if v.Dataset == resDataset {
+	// 		result = append(result, v)
+	// 	}
+	// }
+
+	payload, err := json.Marshal(backups)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
