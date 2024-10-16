@@ -9,7 +9,7 @@ import (
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
-	var buf [512]byte
+	var buf [5120000]byte
 	n, err := conn.Read(buf[:])
 	if err != nil {
 		log.Error("Error reading from connection:", err)
