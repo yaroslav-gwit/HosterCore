@@ -19,6 +19,40 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/carp-ha/backups": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Receive the cluster state from the master.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only HA user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "High Availability"
+                ],
+                "summary": "Receive the cluster state from the master.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/CarpUtils.BackupInfo"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/carp-ha/ping": {
             "post": {
                 "security": [

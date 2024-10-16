@@ -1009,6 +1009,28 @@ info:
   title: Hoster Node REST API Docs
   version: "2.0"
 paths:
+  /carp-ha/backups:
+    get:
+      description: 'Receive the cluster state from the master.<br>`AUTH`: Only HA
+        user is allowed.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/CarpUtils.BackupInfo'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Receive the cluster state from the master.
+      tags:
+      - High Availability
   /carp-ha/ping:
     post:
       description: 'Ping CARP interface.<br>`AUTH`: Only HA user is allowed.'
