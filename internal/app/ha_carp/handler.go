@@ -92,7 +92,14 @@ func handleConnection(conn net.Conn) {
 		ha.CurrentMaster = currentMaster
 
 		// Send a response back
-		respBytes, _ := json.Marshal(ha)
+		respBytes, err := json.Marshal(ha)
+		if err != nil {
+			log.Error("Error marshalling ha_status response:", err)
+			log.Debugf("Response dump: %+v", ha)
+			closeWithFailure(conn)
+			return
+		}
+
 		conn.Write(respBytes)
 		log.Debugf("Responded: %+v", ha)
 		return
