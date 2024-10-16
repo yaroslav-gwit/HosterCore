@@ -76,6 +76,11 @@ func syncState() {
 func getRemoteBackups() {
 	result := []CarpUtils.BackupInfo{}
 
+	if !iAmMaster {
+		log.Debug("BACKUP SYNC: I am not a master, skipping backup sync")
+		return
+	}
+
 	for _, v := range listHosts() { // Get backups from all hosts (naive approach, for now)
 		tmp, err := ApiV2client.ReturnBackups(v)
 		if err != nil {
