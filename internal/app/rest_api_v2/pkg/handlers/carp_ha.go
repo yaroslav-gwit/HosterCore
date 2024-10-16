@@ -141,7 +141,7 @@ func CarpReturnListOfBackups(w http.ResponseWriter, r *http.Request) {
 			if v.Backup {
 				temp := CarpUtils.BackupInfo{}
 				temp.CurrentHost = v.CurrentHost
-				temp.Type = "vm"
+				temp.ResourceType = "vm"
 				temp.ResourceName = v.Name
 				temp.ParentHost = v.ParentHost
 
@@ -153,7 +153,7 @@ func CarpReturnListOfBackups(w http.ResponseWriter, r *http.Request) {
 			if v.Backup {
 				temp := CarpUtils.BackupInfo{}
 				temp.CurrentHost = v.CurrentHost
-				temp.Type = "jail"
+				temp.ResourceType = "jail"
 				temp.ResourceName = v.Name
 				temp.ParentHost = v.Parent
 
