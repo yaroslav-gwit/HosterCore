@@ -42,7 +42,10 @@ func listHosts() []CarpUtils.HostInfo {
 func listBackups() []CarpUtils.BackupInfo {
 	mutexBackups.RLock()
 	defer mutexBackups.RUnlock()
-	return backups
+
+	result := []CarpUtils.BackupInfo{}
+	result = append(result, backups...)
+	return result
 }
 
 func receivePing(host CarpUtils.HostInfo) {
