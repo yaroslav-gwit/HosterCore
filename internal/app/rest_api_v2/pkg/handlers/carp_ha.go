@@ -118,40 +118,47 @@ func CarpReturnListOfBackups(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	haConf, err := CarpUtils.ParseCarpConfigFile()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	backups := []CarpUtils.BackupInfo{}
-
-	vms, err := HosterVmUtils.ReadCache()
-	if err != nil {
-		ReportError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	jails, err := HosterJailUtils.ReadCache()
-	if err != nil {
-		ReportError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	for _, v := range vms {
-		if v.Backup {
-			temp := CarpUtils.BackupInfo{}
-			temp.CurrentHost = v.CurrentHost
-			temp.Type = "vm"
-			temp.ResourceName = v.Name
-			temp.ParentHost = v.ParentHost
-
-			backups = append(backups, temp)
+	if haConf.ParticipateInFailover {
+		vms, err := HosterVmUtils.ReadCache()
+		if err != nil {
+			ReportError(w, http.StatusInternalServerError, err.Error())
+			return
 		}
-	}
+		jails, err := HosterJailUtils.ReadCache()
+		if err != nil {
+			ReportError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	for _, v := range jails {
-		if v.Backup {
-			temp := CarpUtils.BackupInfo{}
-			temp.CurrentHost = v.CurrentHost
-			temp.Type = "jail"
-			temp.ResourceName = v.Name
-			temp.ParentHost = v.Parent
+		for _, v := range vms {
+			if v.Backup {
+				temp := CarpUtils.BackupInfo{}
+				temp.CurrentHost = v.CurrentHost
+				temp.Type = "vm"
+				temp.ResourceName = v.Name
+				temp.ParentHost = v.ParentHost
 
-			backups = append(backups, temp)
+				backups = append(backups, temp)
+			}
+		}
+
+		for _, v := range jails {
+			if v.Backup {
+				temp := CarpUtils.BackupInfo{}
+				temp.CurrentHost = v.CurrentHost
+				temp.Type = "jail"
+				temp.ResourceName = v.Name
+				temp.ParentHost = v.Parent
+
+				backups = append(backups, temp)
+			}
 		}
 	}
 
