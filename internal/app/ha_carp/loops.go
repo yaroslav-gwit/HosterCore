@@ -87,6 +87,12 @@ func getRemoteBackups() {
 			log.Errorf("Error getting backups from %s: %s", v.IpAddress, err.Error())
 			continue
 		}
+
+		for i := range tmp {
+			tmp[i].BasePayload = CarpUtils.BasePayload{}
+			tmp[i].Type = ""
+		}
+
 		result = append(result, tmp...)
 	}
 
