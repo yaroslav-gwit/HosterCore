@@ -26,7 +26,13 @@ func HostAdd(input CarpUtils.HostInfo) error {
 	}
 
 	// Send the JSON payload to the server
-	_, err = conn.Write(payloadBytes)
+	// _, err = conn.Write(payloadBytes)
+	// if err != nil {
+	// 	return fmt.Errorf("error sending data: %v", err)
+	// }
+	// Send the JSON payload to the server
+	jsonDataWithNewLine := append(payloadBytes, []byte("\n")...)
+	_, err = conn.Write(jsonDataWithNewLine)
 	if err != nil {
 		return fmt.Errorf("error sending data: %v", err)
 	}
@@ -59,7 +65,14 @@ func GetHaStatus() (r CarpUtils.HaStatus, e error) {
 	}
 
 	// Send the JSON payload to the server
-	_, err = conn.Write(payloadBytes)
+	// _, err = conn.Write(payloadBytes)
+	// if err != nil {
+	// 	e = fmt.Errorf("error sending data: %v", err)
+	// 	return
+	// }
+	// Send the JSON payload to the server
+	jsonDataWithNewLine := append(payloadBytes, []byte("\n")...)
+	_, err = conn.Write(jsonDataWithNewLine)
 	if err != nil {
 		e = fmt.Errorf("error sending data: %v", err)
 		return
@@ -120,7 +133,8 @@ func ReceiveRemoteState(input CarpUtils.HaStatus) error {
 	}
 
 	// Send the JSON payload to the server
-	_, err = conn.Write(payloadBytes)
+	jsonDataWithNewLine := append(payloadBytes, []byte("\n")...)
+	_, err = conn.Write(jsonDataWithNewLine)
 	if err != nil {
 		return fmt.Errorf("error sending data: %v", err)
 	}
