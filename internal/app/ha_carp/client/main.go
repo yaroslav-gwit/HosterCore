@@ -64,7 +64,7 @@ func GetHaStatus() (r CarpUtils.HaStatus, e error) {
 	}
 
 	// Read the server's response
-	var buf [512]byte
+	var buf [5120000]byte
 	out, err := conn.Read(buf[:])
 	if err != nil {
 		e = fmt.Errorf("error reading response: %v", err)
