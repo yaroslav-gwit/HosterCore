@@ -21,17 +21,8 @@ func handleConnection(conn net.Conn) {
 	// Remove the newline before processing
 	messageBytes = messageBytes[:len(messageBytes)-1]
 
-	// Old code that reads the entire buffer
-	// var buf [5120000]byte
-	// n, err := conn.Read(buf[:])
-	// if err != nil {
-	// 	log.Error("Error reading from connection:", err)
-	// 	return
-	// }
-
 	// First, unmarshal the base struct to detect the payload type
 	var base CarpUtils.BasePayload
-	// err = json.Unmarshal(buf[:n], &base)
 	err = json.Unmarshal(messageBytes, &base)
 	if err != nil {
 		log.Error("Error unmarshalling JSON:", err)
@@ -42,7 +33,6 @@ func handleConnection(conn net.Conn) {
 	switch base.Type {
 	case "host_add":
 		var payload CarpUtils.HostInfo
-		// err = json.Unmarshal(buf[:n], &payload)
 		err = json.Unmarshal(messageBytes, &payload)
 		if err != nil {
 			log.Error("Error unmarshalling Hosts Payload:", err)
@@ -55,7 +45,6 @@ func handleConnection(conn net.Conn) {
 
 	case "host_list":
 		var payload CarpUtils.HostInfo
-		// err = json.Unmarshal(buf[:n], &payload)
 		err = json.Unmarshal(messageBytes, &payload)
 		if err != nil {
 			log.Error("Error unmarshalling Hosts Payload:", err)
@@ -65,13 +54,13 @@ func handleConnection(conn net.Conn) {
 		resp := listHosts()
 		// Send a response back
 		respBytes, _ := json.Marshal(resp)
+		respBytes = append(respBytes, []byte("\n")...)
 		conn.Write(respBytes)
 		log.Debugf("Received Hosts Payload: %+v", payload)
 		return
 
 	case "backup_add":
 		var payload CarpUtils.BackupInfo
-		// err = json.Unmarshal(buf[:n], &payload)
 		err = json.Unmarshal(messageBytes, &payload)
 		if err != nil {
 			log.Error("Error unmarshalling Backups Payload:", err)
@@ -84,7 +73,6 @@ func handleConnection(conn net.Conn) {
 
 	case "backup_list":
 		var payload CarpUtils.HostInfo
-		// err = json.Unmarshal(buf[:n], &payload)
 		err = json.Unmarshal(messageBytes, &payload)
 		if err != nil {
 			log.Error("Error unmarshalling Hosts Payload:", err)
@@ -94,6 +82,7 @@ func handleConnection(conn net.Conn) {
 		resp := listBackups()
 		// Send a response back
 		respBytes, _ := json.Marshal(resp)
+		respBytes = append(respBytes, []byte("\n")...)
 		conn.Write(respBytes)
 		log.Debugf("Received Hosts Payload: %+v", payload)
 		return
@@ -118,6 +107,7 @@ func handleConnection(conn net.Conn) {
 			return
 		}
 
+		respBytes = append(respBytes, []byte("\n")...)
 		conn.Write(respBytes)
 		log.Debugf("Responded: %+v", ha)
 		return
@@ -130,7 +120,6 @@ func handleConnection(conn net.Conn) {
 		}
 
 		info := CarpUtils.HaStatus{}
-		// err := json.Unmarshal(buf[:n], &info)
 		err = json.Unmarshal(messageBytes, &info)
 		if err != nil {
 			log.Warn("Unknown payload type:", base.Type)
@@ -163,6 +152,7 @@ func closeWithSuccess(conn net.Conn) {
 		Success: true,
 	}
 	respBytes, _ := json.Marshal(response)
+	respBytes = append(respBytes, []byte("\n")...)
 	conn.Write(respBytes)
 }
 
@@ -171,5 +161,6 @@ func closeWithFailure(conn net.Conn) {
 		Success: true,
 	}
 	respBytes, _ := json.Marshal(response)
+	respBytes = append(respBytes, []byte("\n")...)
 	conn.Write(respBytes)
 }

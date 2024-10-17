@@ -40,7 +40,7 @@ func CarpPing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = CarpClient.HostAdd(input)
+	err = CarpClient.ReceiveHostAdd(input)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
