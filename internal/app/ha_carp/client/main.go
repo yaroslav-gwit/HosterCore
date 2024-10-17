@@ -2,8 +2,10 @@ package CarpClient
 
 import (
 	CarpUtils "HosterCore/internal/app/ha_carp/utils"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 
 	"github.com/gofiber/fiber/v2/log"
@@ -63,20 +65,41 @@ func GetHaStatus() (r CarpUtils.HaStatus, e error) {
 		return
 	}
 
-	// Read the server's response
-	var buf [5120000]byte
-	out, err := conn.Read(buf[:])
+	// Read and decode the server's response
+	var buf bytes.Buffer
+	tmp := make([]byte, 512)
+
+	for {
+		n, err := conn.Read(tmp)
+		if err != nil {
+			if err != io.EOF {
+				log.Errorf("Error reading from connection: %v", err)
+			}
+			break
+		}
+		buf.Write(tmp[:n])
+	}
+	decoder := json.NewDecoder(&buf)
+	err = decoder.Decode(&r)
 	if err != nil {
-		e = fmt.Errorf("error reading response: %v", err)
+		e = fmt.Errorf("error decoding JSON: %v", err)
 		return
 	}
 
+	// Read the server's response
+	// var buf [5120000]byte
+	// out, err := conn.Read(buf[:])
+	// if err != nil {
+	// 	e = fmt.Errorf("error reading response: %v", err)
+	// 	return
+	// }
+
 	// Unmarshal the response
-	err = json.Unmarshal(buf[:out], &r)
-	if err != nil {
-		e = fmt.Errorf("error unmarshaling JSON: %v", err)
-		return
-	}
+	// err = json.Unmarshal(buf[:out], &r)
+	// if err != nil {
+	// 	e = fmt.Errorf("error unmarshaling JSON: %v", err)
+	// 	return
+	// }
 
 	return
 }
