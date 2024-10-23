@@ -8,12 +8,14 @@ import (
 
 var hosts []CarpUtils.HostInfo
 var backups []CarpUtils.BackupInfo
-var offlineHosts []CarpUtils.HostInfo
-var offlineBackups []CarpUtils.BackupInfo
+
+// var offlineHosts []CarpUtils.HostInfo
+// var offlineBackups []CarpUtils.BackupInfo
 var activeHaConfig CarpUtils.CarpConfig
 
 var iAmMaster bool
 var currentMaster string
+
 var becameMaster int64
 var selfMasterCheckInterval = 5 * time.Second
 var pingRemoteMasterInterval = 10 * time.Second

@@ -8,6 +8,7 @@ import (
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
+	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -126,11 +127,18 @@ func CarpReturnListOfBackups(w http.ResponseWriter, r *http.Request) {
 
 	backups := []CarpUtils.BackupInfo{}
 	if haConf.ParticipateInFailover {
+		snaps, err := zfsutils.SnapshotListAll()
+		if err != nil {
+			ReportError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
 		vms, err := HosterVmUtils.ReadCache()
 		if err != nil {
 			ReportError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+
 		jails, err := HosterJailUtils.ReadCache()
 		if err != nil {
 			ReportError(w, http.StatusInternalServerError, err.Error())
@@ -144,6 +152,13 @@ func CarpReturnListOfBackups(w http.ResponseWriter, r *http.Request) {
 				temp.ResourceType = "vm"
 				temp.ResourceName = v.Name
 				temp.ParentHost = v.ParentHost
+				temp.FailoverStrategy = v.FailoverStrategy
+
+				for _, vv := range snaps {
+					if vv.Dataset == v.Simple.DsName+"/"+v.Name {
+						temp.LastSnapshot = vv.ShortName
+					}
+				}
 
 				backups = append(backups, temp)
 			}
@@ -156,24 +171,18 @@ func CarpReturnListOfBackups(w http.ResponseWriter, r *http.Request) {
 				temp.ResourceType = "jail"
 				temp.ResourceName = v.Name
 				temp.ParentHost = v.Parent
+				temp.FailoverStrategy = v.FailoverStrategy
+
+				for _, vv := range snaps {
+					if vv.Dataset == v.Simple.DsName+"/"+v.Name {
+						temp.LastSnapshot = vv.ShortName
+					}
+				}
 
 				backups = append(backups, temp)
 			}
 		}
 	}
-
-	// snaps, err := zfsutils.ReadSnapshotCache()
-	// if err != nil {
-	// 	ReportError(w, http.StatusInternalServerError, err.Error())
-	// 	return
-	// }
-
-	// result := []zfsutils.SnapshotInfo{}
-	// for _, v := range snaps {
-	// 	if v.Dataset == resDataset {
-	// 		result = append(result, v)
-	// 	}
-	// }
 
 	payload, err := json.Marshal(backups)
 	if err != nil {

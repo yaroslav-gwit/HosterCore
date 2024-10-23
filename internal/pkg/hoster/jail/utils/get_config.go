@@ -13,8 +13,10 @@ import (
 )
 
 type JailConfig struct {
+	Production       bool     `json:"production"`
 	CPULimitPercent  int      `json:"cpu_limit_percent"`
 	RAMLimit         string   `json:"ram_limit"`
+	FailoverStrategy string   `json:"failover_strategy,omitempty"` // Can only be set to one of the two values: "cireset" or "change_parent"
 	StartupScript    string   `json:"startup_script"`
 	ShutdownScript   string   `json:"shutdown_script"`
 	ConfigFileAppend string   `json:"config_file_append"`
@@ -24,10 +26,9 @@ type JailConfig struct {
 	DnsServer        string   `json:"dns_server"`
 	Timezone         string   `json:"timezone"`
 	Parent           string   `json:"parent"`
-	Production       bool     `json:"production"`
-	Tags             []string `json:"tags"`
 	UUID             string   `json:"uuid,omitempty"`
 	Description      string   `json:"description"`
+	Tags             []string `json:"tags"`
 }
 
 const jailConfFilename = "jail_config.json"
@@ -54,6 +55,14 @@ func GetJailConfig(jailLocation string) (r JailConfig, e error) {
 	if err != nil {
 		e = err
 		return
+	}
+
+	// Set the default failover strategy
+	if len(r.FailoverStrategy) < 1 {
+		r.FailoverStrategy = "change_parent"
+	}
+	if r.FailoverStrategy != "cireset" && r.FailoverStrategy != "change_parent" {
+		r.FailoverStrategy = "change_parent"
 	}
 
 	return

@@ -14,9 +14,9 @@ import (
 )
 
 type SnapshotInfo struct {
-	Name        string   `json:"snapshot_name"` // Full snapshot path, or in other words it's full "ZFS name", e.g. zroot/vm-encrypted/test-vm-0107@replication_2023-08-14_16-49-08
-	Dataset     string   `json:"snapshot_dataset"`
-	ShortName   string   `json:"snapshot_short_name"`
+	Name        string   `json:"snapshot_name"`       // Full snapshot path, or in other words it's full "ZFS name", e.g. zroot/vm-encrypted/test-vm-0107@replication_2023-08-14_16-49-08
+	Dataset     string   `json:"snapshot_dataset"`    // Dataset name, e.g. zroot/vm-encrypted/test-vm-0107
+	ShortName   string   `json:"snapshot_short_name"` // Short snapshot name, e.g. replication_2023-08-14_16-49-08
 	Locked      bool     `json:"snapshot_locked"`
 	Clones      []string `json:"snapshot_clones"`
 	SizeBytes   uint64   `json:"snapshot_size_bytes"`

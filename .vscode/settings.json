@@ -2,6 +2,7 @@
   "cSpell.words": [
     "Advbase",
     "Advskew",
+    "bhyve",
     "Cheatsheet",
     "cireset",
     "Debugf",
@@ -11,14 +12,21 @@
     "Infof",
     "logrus",
     "Mountpoint",
+    "Passthru",
     "Pgrep",
     "pids",
     "poweroff",
+    "rctl",
     "sirupsen",
+    "sysctls",
+    "timeconversion",
     "Traefik",
     "unmarshaling",
     "unmarshalling",
     "Vhid",
-    "zfsutils"
+    "Virtio",
+    "XHCI",
+    "zfsutils",
+    "zroot"
   ]
 }

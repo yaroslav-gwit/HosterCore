@@ -45,32 +45,32 @@ type Virtio9P struct {
 }
 
 type VmConfig struct {
-	// LiveStatus         string      `json:"live_status"`
 	Production         bool        `json:"production"`
+	IgnoreHostClock    bool        `json:"ignore_host_clock,omitempty"`
+	IncludeHostSSHKeys bool        `json:"include_host_ssh_keys"`
+	DisableXHCI        bool        `json:"disable_xhci,omitempty"`
 	CPUSockets         int         `json:"cpu_sockets"`
 	CPUCores           int         `json:"cpu_cores"`
 	CPUThreads         int         `json:"cpu_threads,omitempty"`
-	IgnoreHostClock    bool        `json:"ignore_host_clock,omitempty"`
+	VncResolution      int         `json:"vnc_resolution,omitempty"`
+	VncPort            int         `json:"vnc_port"`
+	VncPassword        string      `json:"vnc_password"`
 	Memory             string      `json:"memory"`
 	Loader             string      `json:"loader"`
 	OsType             string      `json:"os_type"`
 	OsComment          string      `json:"os_comment"`
 	Owner              string      `json:"owner"`
 	ParentHost         string      `json:"parent_host"`
-	Networks           []VmNetwork `json:"networks"`
-	DnsSearchDomain    string      `json:"dns_search_domain,omitempty"`
-	Disks              []VmDisk    `json:"disks"`
-	IncludeHostSSHKeys bool        `json:"include_host_ssh_keys"`
-	VmSshKeys          []VmSshKey  `json:"vm_ssh_keys"`
-	VncPort            int         `json:"vnc_port"`
-	VncPassword        string      `json:"vnc_password"`
-	Tags               []string    `json:"tags"`
-	Description        string      `json:"description"`
-	UUID               string      `json:"uuid,omitempty"`
+	FailoverStrategy   string      `json:"failover_strategy,omitempty"` // Only 2 options are allowed: cireset or change_parent
 	VGA                string      `json:"vga,omitempty"`
+	UUID               string      `json:"uuid,omitempty"`
+	Description        string      `json:"description"`
+	DnsSearchDomain    string      `json:"dns_search_domain,omitempty"`
+	Networks           []VmNetwork `json:"networks"`
+	Disks              []VmDisk    `json:"disks"`
+	VmSshKeys          []VmSshKey  `json:"vm_ssh_keys"`
+	Tags               []string    `json:"tags"`
 	Passthru           []string    `json:"passthru,omitempty"`
-	DisableXHCI        bool        `json:"disable_xhci,omitempty"`
-	VncResolution      int         `json:"vnc_resolution,omitempty"`
 	Shares             []Virtio9P  `json:"9p_shares,omitempty"`
 	CustomOptions      []string    `json:"custom_options,omitempty"`
 }
@@ -97,6 +97,14 @@ func GetVmConfig(vmLocation string) (r VmConfig, e error) {
 	if err != nil {
 		r, e = FixVmConfig(vmConfLocation)
 		return
+	}
+
+	// Set the default failover strategy
+	if len(r.FailoverStrategy) < 1 {
+		r.FailoverStrategy = "change_parent"
+	}
+	if r.FailoverStrategy != "cireset" && r.FailoverStrategy != "change_parent" {
+		r.FailoverStrategy = "change_parent"
 	}
 
 	return
