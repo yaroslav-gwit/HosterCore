@@ -25,6 +25,7 @@
     "unmarshalling",
     "Vhid",
     "Virtio",
+    "Warnf",
     "XHCI",
     "zfsutils",
     "zroot"

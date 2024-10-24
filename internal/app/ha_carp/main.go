@@ -86,3 +86,34 @@ func main() {
 		go handleConnection(conn)
 	}
 }
+
+func isSelfMaster() bool {
+	if !iAmMaster {
+		return false
+	}
+
+	if time.Now().Local().Unix()-becameMaster < 25 { // Don't add offline backups for the first 15 seconds after becoming master
+		return false
+	}
+
+	return true
+}
+
+func addOfflineBackup(hostname string) {
+	if !isSelfMaster() {
+		return
+	}
+
+	mutexOfflineBackups.Lock()
+	mutexBackups.RLock()
+
+	for _, v := range backups {
+		if v.ParentHost == hostname {
+			offlineBackups = append(offlineBackups, v)
+			log.Warnf("Added backup %s to offline backups", v.ResourceName)
+		}
+	}
+
+	mutexBackups.RUnlock()
+	mutexOfflineBackups.Unlock()
+}

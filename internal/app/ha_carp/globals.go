@@ -10,7 +10,7 @@ var hosts []CarpUtils.HostInfo
 var backups []CarpUtils.BackupInfo
 
 // var offlineHosts []CarpUtils.HostInfo
-// var offlineBackups []CarpUtils.BackupInfo
+var offlineBackups []CarpUtils.BackupInfo
 var activeHaConfig CarpUtils.CarpConfig
 
 var iAmMaster bool
@@ -22,6 +22,7 @@ var pingRemoteMasterInterval = 10 * time.Second
 
 var mutexHosts = &sync.RWMutex{}
 var mutexBackups = &sync.RWMutex{}
+var mutexOfflineBackups = &sync.RWMutex{}
 
 func addNewHost(host CarpUtils.HostInfo) {
 	mutexHosts.Lock()

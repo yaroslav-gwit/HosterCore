@@ -107,10 +107,7 @@ func getRemoteBackups() {
 }
 
 func detectOfflineHosts() {
-	if !iAmMaster {
-		return
-	}
-	if time.Now().Local().Unix()-becameMaster < 25 { // Don't remove hosts for the first 15 seconds after becoming master
+	if isSelfMaster() {
 		return
 	}
 
@@ -124,6 +121,8 @@ func detectOfflineHosts() {
 	for i, v := range hosts {
 		if time.Now().Local().Unix()-v.LastSeen > int64(config.FailoverAfter) { // Remove hosts that haven't been seen in a while
 			hosts[i].Offline = true
+			addOfflineBackup(v.HostName)
+			log.Warnf("Host %s has gone offline", v.HostName)
 		}
 	}
 
