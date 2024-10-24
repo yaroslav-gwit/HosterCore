@@ -18,10 +18,14 @@ func checkIfMaster() {
 	// Check if the interface is in MASTER state
 	for _, v := range iface {
 		if v.Status == "MASTER" {
+			if !iAmMaster { // If we just became master, update the timestamp
+				becameMaster = time.Now().Local().Unix()
+			}
+
 			hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 			iAmMaster = true
 			currentMaster = hostname
-			becameMaster = time.Now().Local().Unix()
+
 			return
 		}
 	}
@@ -100,4 +104,28 @@ func getRemoteBackups() {
 	backups = []CarpUtils.BackupInfo{}
 	backups = append(backups, result...)
 	mutexBackups.Unlock()
+}
+
+func detectOfflineHosts() {
+	if !iAmMaster {
+		return
+	}
+	if time.Now().Local().Unix()-becameMaster < 25 { // Don't remove hosts for the first 15 seconds after becoming master
+		return
+	}
+
+	mutexHosts.Lock()
+	config, err := CarpUtils.ParseCarpConfigFile()
+	if err != nil {
+		log.Error("Error getting config: ", err)
+		return
+	}
+
+	for i, v := range hosts {
+		if time.Now().Local().Unix()-v.LastSeen > int64(config.FailoverAfter) { // Remove hosts that haven't been seen in a while
+			hosts[i].Offline = true
+		}
+	}
+
+	mutexHosts.Unlock()
 }

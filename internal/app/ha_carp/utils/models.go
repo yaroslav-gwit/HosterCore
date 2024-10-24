@@ -43,9 +43,10 @@ type BackupInfo struct {
 
 type HostInfo struct {
 	BasePayload
+	Offline   bool   `json:"offline,omitempty"`    // Online status
+	LastSeen  int64  `json:"last_seen,omitempty"`  // Last seen timestamp
 	HostName  string `json:"host_name,omitempty"`  // Host name
 	IpAddress string `json:"ip_address,omitempty"` // IP address
-	LastSeen  int64  `json:"last_seen,omitempty"`  // Last seen timestamp
 }
 
 type SocketResponse struct {

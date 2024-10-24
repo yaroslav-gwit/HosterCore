@@ -53,6 +53,13 @@ func main() {
 		}
 	}()
 
+	go func() { // Detect offline hosts
+		for {
+			detectOfflineHosts()
+			time.Sleep(21 * time.Second)
+		}
+	}()
+
 	go func() { // Sync local master state with other nodes
 		for {
 			syncState()

@@ -68,18 +68,3 @@ func receivePing(host CarpUtils.HostInfo) {
 		hosts = append(hosts, host)
 	}
 }
-
-func removeHost(host CarpUtils.HostInfo) {
-	mutexHosts.Lock()
-	defer mutexHosts.Unlock()
-
-	localHosts := []CarpUtils.HostInfo{}
-	for _, v := range hosts {
-		if v.HostName != host.HostName { // Remove the host from the list if hostname matches
-			localHosts = append(localHosts, v)
-		}
-	}
-
-	hosts = []CarpUtils.HostInfo{}
-	hosts = append(hosts, localHosts...)
-}
