@@ -51,6 +51,81 @@ func AddReplicationJob(replJob SchedulerUtils.ReplicationJob) error {
 	return nil
 }
 
+func AddReplicationByTagJob(tag string, sshKeyFile string, sshEndpoint string, sshPort int, speedLimit int) error {
+	vms, err := HosterVmUtils.ListJsonApi()
+	if err != nil {
+		return err
+	}
+
+	jails, err := HosterJailUtils.ListJsonApi()
+	if err != nil {
+		return err
+	}
+
+	// Validate input fields
+	if len(tag) < 1 {
+		return fmt.Errorf("tag cannot be empty")
+	}
+	if len(sshKeyFile) < 1 {
+		return fmt.Errorf("ssh key file cannot be empty")
+	}
+	if len(sshEndpoint) < 1 {
+		return fmt.Errorf("ssh endpoint cannot be empty")
+	}
+	if sshPort < 1 {
+		return fmt.Errorf("ssh port cannot be less than 1")
+	}
+	if speedLimit < 1 {
+		return fmt.Errorf("speed limit cannot be less than 1")
+	}
+
+	for _, v := range vms {
+		if v.Backup {
+			continue
+		}
+
+		for _, vv := range v.Tags {
+			if vv == tag {
+				job := SchedulerUtils.ReplicationJob{}
+				job.ResName = v.Name
+				job.SshKey = sshKeyFile
+				job.SshEndpoint = sshEndpoint
+				job.SshPort = sshPort
+				job.SpeedLimit = speedLimit
+
+				err = AddReplicationJob(job)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	for _, v := range jails {
+		if v.Backup {
+			continue
+		}
+
+		for _, vv := range v.Tags {
+			if vv == tag {
+				job := SchedulerUtils.ReplicationJob{}
+				job.ResName = v.Name
+				job.SshKey = sshKeyFile
+				job.SshEndpoint = sshEndpoint
+				job.SshPort = sshPort
+				job.SpeedLimit = speedLimit
+
+				err = AddReplicationJob(job)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJob, resType string, e error) {
 	localDs := ""
 	if len(job.ResName) < 1 {
@@ -235,55 +310,6 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 
 	r.ScriptsRemove = append(r.ScriptsRemove, removeCmds...)
 	r.ScriptsReplicate = append(r.ScriptsReplicate, replicateCmds...)
-
-	// reMatchSize := regexp.MustCompile(`^size.*`)
-	// reMatchSpace := regexp.MustCompile(`\s+`)
-	// reMatchTime := regexp.MustCompile(`.*\d\d:\d\d:\d\d.*`)
-	// for _, v := range replicateCmds {
-	// 	replFile := "/tmp/" + ulid.Make().String()
-	// 	err := os.WriteFile(replFile, []byte(v), 0600)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	defer os.Remove(replFile)
-
-	// 	cmd := exec.Command("sh", replFile)
-	// 	stderr, err := cmd.StderrPipe()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	if err := cmd.Start(); err != nil {
-	// 		return err
-	// 	}
-
-	// 	scanner := bufio.NewScanner(stderr)
-	// 	errLines := []string{}
-	// 	for scanner.Scan() {
-	// 		line := scanner.Text()
-	// 		if reMatchSize.MatchString(line) {
-	// 			temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
-	// 			if err != nil {
-	// 				return err
-	// 			}
-	// 			emojlog.PrintLogMessage("Snapshot size: "+byteconversion.BytesToHuman(temp), emojlog.Debug)
-	// 		} else if reMatchTime.MatchString(line) {
-	// 			temp, err := strconv.ParseUint(reMatchSpace.Split(line, -1)[1], 10, 64)
-	// 			if err != nil {
-	// 				return err
-	// 			}
-	// 			fmt.Printf("Copied so far: %d\n", temp)
-	// 		} else {
-	// 			errLines = append(errLines, line)
-	// 		}
-	// 	}
-
-	// 	// Wait for command to finish
-	// 	err = cmd.Wait()
-	// 	if err != nil {
-	// 		return fmt.Errorf("%v", errLines)
-	// 	}
-	// }
 
 	return
 }

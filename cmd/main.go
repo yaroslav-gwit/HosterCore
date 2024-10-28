@@ -74,6 +74,12 @@ func init() {
 	schedulerReplicateCmd.Flags().StringVarP(&schedulerReplicateKey, "key", "k", "/root/.ssh/id_rsa", "SSH key location")
 	schedulerReplicateCmd.Flags().IntVarP(&schedulerReplicatePort, "port", "p", 22, "Endpoint SSH port")
 	schedulerReplicateCmd.Flags().IntVarP(&schedulerReplicateSpeedLimit, "speed-limit", "s", 50, "Replication speed limit")
+	// Host Scheduler -> Replication by tag
+	schedulerCmd.AddCommand(schedulerReplicateByTagCmd)
+	schedulerReplicateByTagCmd.Flags().StringVarP(&schedulerReplicateByTagEndpoint, "endpoint", "e", "", "SSH endpoint to send the replicated data to")
+	schedulerReplicateByTagCmd.Flags().StringVarP(&schedulerReplicateByTagKey, "key", "k", "/root/.ssh/id_rsa", "SSH key location")
+	schedulerReplicateByTagCmd.Flags().IntVarP(&schedulerReplicateByTagPort, "port", "p", 22, "Endpoint SSH port")
+	schedulerReplicateByTagCmd.Flags().IntVarP(&schedulerReplicateByTagSpeedLimit, "speed-limit", "s", 50, "Replication speed limit")
 	// Host Scheduler -> Snapshot
 	schedulerCmd.AddCommand(schedulerSnapshotCmd)
 	schedulerSnapshotCmd.Flags().StringVarP(&schedulerSnapshotType, "type", "t", "custom", "Snapshot type: custom, frequent, hourly, daily, weekly, monthly, yearly")

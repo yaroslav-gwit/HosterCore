@@ -83,7 +83,7 @@ func AddSnapshotJob(resName string, snapshotsToKeep int, snapshotType string, ta
 }
 
 func AddSnapshotAllJob(snapshotsToKeep int, snapshotType string) error {
-	// Get all running resoruces
+	// Get all running resources
 	jails, err := HosterJailUtils.ListJsonApi()
 	if err != nil {
 		return err
@@ -92,7 +92,6 @@ func AddSnapshotAllJob(snapshotsToKeep int, snapshotType string) error {
 	if err != nil {
 		return err
 	}
-	// Get all running resoruces
 
 	job := SchedulerUtils.Job{}
 	job.JobType = SchedulerUtils.JOB_TYPE_SNAPSHOT

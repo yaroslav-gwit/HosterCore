@@ -239,12 +239,6 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			// err := SchedulerClient.AddReplicationJob(args[0], schedulerReplicateEndpoint, schedulerReplicateKey, schedulerReplicateSpeedLimit)
-			// if err != nil {
-			// 	emojlog.PrintLogMessage(err.Error(), emojlog.Error)
-			// 	os.Exit(1)
-			// }
-
 			job := SchedulerUtils.ReplicationJob{}
 			job.ResName = args[0]
 			job.SshKey = schedulerReplicateKey
@@ -260,6 +254,31 @@ var (
 			}
 
 			emojlog.PrintLogMessage("A new background replication job has been added for "+args[0], emojlog.Changed)
+		},
+	}
+)
+
+var (
+	schedulerReplicateByTagKey        string
+	schedulerReplicateByTagEndpoint   string
+	schedulerReplicateByTagPort       int
+	schedulerReplicateByTagSpeedLimit int
+
+	schedulerReplicateByTagCmd = &cobra.Command{
+		Use:   "replicate-by-tag [tag]",
+		Short: "Use the Scheduling Service to start multi-resource replication",
+		Long:  `Use the Scheduling Service to start multi-resource replication in the background mode.`,
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			checkInitFile()
+
+			err := SchedulerClient.AddReplicationByTagJob(args[0], schedulerReplicateByTagKey, schedulerReplicateByTagEndpoint, schedulerReplicateByTagPort, schedulerReplicateByTagSpeedLimit)
+			if err != nil {
+				emojlog.PrintErrorMessage(err.Error())
+				os.Exit(1)
+			}
+
+			emojlog.PrintChangedMessage("Replication jobs have been added for a tag: " + args[0])
 		},
 	}
 )
