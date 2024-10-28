@@ -97,6 +97,7 @@ func handleConnection(conn net.Conn) {
 		ha.Hosts = listHosts()
 		ha.Resources = listBackups()
 		ha.CurrentMaster = currentMaster
+		ha.ServiceHealth = "OK"
 
 		// Send a response back
 		respBytes, err := json.Marshal(ha)

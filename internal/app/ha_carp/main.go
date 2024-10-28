@@ -60,6 +60,13 @@ func main() {
 		}
 	}()
 
+	go func() { // Failover resources
+		for {
+			failOverResource()
+			time.Sleep(6 * time.Second)
+		}
+	}()
+
 	go func() { // Sync local master state with other nodes
 		for {
 			syncState()
@@ -70,8 +77,8 @@ func main() {
 	go func() { // Sync local master state with other nodes
 		for {
 			getRemoteBackups()
-			time.Sleep(15 * time.Minute)
-			// time.Sleep(60 * time.Second) // Temporary short-time value for testing
+			// time.Sleep(15 * time.Minute)
+			time.Sleep(3 * time.Minute) // Temporary short-time value for testing
 		}
 	}()
 

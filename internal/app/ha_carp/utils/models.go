@@ -2,6 +2,7 @@ package CarpUtils
 
 type HaStatus struct {
 	BasePayload                // type: ha_status
+	ServiceHealth string       `json:"service_health"` // Health status: OK, WARN, CRIT
 	Status        string       `json:"status"`         // Current HA status: MASTER, BACKUP, INIT
 	CurrentMaster string       `json:"current_master"` // Current master hostname
 	Hosts         []HostInfo   `json:"hosts"`          // List of hosts

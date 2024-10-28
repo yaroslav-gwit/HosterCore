@@ -4,6 +4,9 @@ import (
 	CarpUtils "HosterCore/internal/app/ha_carp/utils"
 	ApiV2client "HosterCore/internal/pkg/api_v2_client"
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
+	"slices"
+	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -119,6 +122,10 @@ func detectOfflineHosts() {
 	}
 
 	for i, v := range hosts {
+		if v.Offline {
+			continue
+		}
+
 		if time.Now().Local().Unix()-v.LastSeen > int64(config.FailoverAfter) { // Remove hosts that haven't been seen in a while
 			hosts[i].Offline = true
 			addOfflineBackup(v.HostName)
@@ -127,4 +134,60 @@ func detectOfflineHosts() {
 	}
 
 	mutexHosts.Unlock()
+}
+
+func failOverResource() {
+	if failoverInProcess {
+		return
+	}
+
+	if !isSelfMaster() {
+		return
+	}
+	if len(offlineBackups) < 1 {
+		return
+	}
+
+	failoverInProcess = true
+	mutexOfflineBackups.Lock()
+	defer func() {
+		failoverInProcess = false
+		mutexOfflineBackups.Unlock()
+	}()
+
+	if len(offlineBackups) == 1 {
+		log.Warnf("Failing over resource %s to %s", offlineBackups[0].ResourceName, offlineBackups[0].ParentHost)
+		return
+	}
+
+	// Sort by ResourceName
+	sort.SliceStable(offlineBackups, func(i, j int) bool {
+		return strings.ToLower(backups[i].ResourceName) < strings.ToLower(backups[j].ResourceName)
+	})
+
+	localList := []CarpUtils.BackupInfo{}
+	for _, v := range offlineBackups { // filter out the latest snapshot for each resource
+		for ii, vv := range localList {
+			if slices.Contains(localList, v) {
+				continue
+			}
+
+			if v.ResourceName == vv.ResourceName {
+				if v.LastSnapshot > vv.LastSnapshot {
+					localList[ii] = v
+				}
+				continue
+			}
+
+			localList = append(localList, v)
+		}
+	}
+
+	failed := []CarpUtils.BackupInfo{}
+	for _, v := range localList {
+		log.Warnf("Failing over resource %s to %s", v.ResourceName, v.ParentHost)
+	}
+
+	offlineBackups = []CarpUtils.BackupInfo{}
+	offlineBackups = append(offlineBackups, failed...)
 }

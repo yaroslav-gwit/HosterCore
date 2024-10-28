@@ -14,6 +14,7 @@ var offlineBackups []CarpUtils.BackupInfo
 var activeHaConfig CarpUtils.CarpConfig
 
 var iAmMaster bool
+var failoverInProcess bool
 var currentMaster string
 
 var becameMaster int64
