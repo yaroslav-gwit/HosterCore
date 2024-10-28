@@ -102,7 +102,12 @@ func ListAllExtendedTable() (r []JailListExtendedTable, e error) {
 		}
 		jailStruct.Release = release
 		jailStruct.Uptime = GetUptimeHuman(v.JailName)
-		jailStruct.Description = jailConfig.Description
+
+		if jailStruct.Backup {
+			jailStruct.Description = "💾 Backup from " + jailConfig.Parent
+		} else {
+			jailStruct.Description = jailConfig.Description
+		}
 
 		for _, vv := range zfsSpace {
 			if v.MountPoint.DsName+"/"+v.JailName == vv.Name {
