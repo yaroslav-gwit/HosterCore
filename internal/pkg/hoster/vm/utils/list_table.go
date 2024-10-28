@@ -55,7 +55,12 @@ func ListAllTable() (r []ListTable, e error) {
 		l.OsComment = v.OsComment
 		l.VmUptime = v.Uptime
 		l.VmUptimeNoSpaces = strings.ReplaceAll(v.Uptime, " ", "")
-		l.VmDescription = v.Description
+
+		if v.Backup {
+			l.VmDescription = "💾 Backup from " + v.ParentHost
+		} else {
+			l.VmDescription = v.Description
+		}
 
 		if len(v.Networks) > 0 {
 			l.MainIpAddress = v.Networks[0].IPAddress

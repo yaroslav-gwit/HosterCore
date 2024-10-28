@@ -21,8 +21,17 @@ func checkIfMaster() {
 	// Check if the interface is in MASTER state
 	for _, v := range iface {
 		if v.Status == "MASTER" {
-			if !iAmMaster { // If we just became master, update the timestamp
+			if !iAmMaster {
+				// If we just became master, update the timestamp
 				becameMaster = time.Now().Local().Unix()
+
+				// Clear the offline status for all hosts when we become master
+				// This is required to re-trigger the failover process for the hosts that are still offline
+				mutexHosts.Lock()
+				for i := range hosts {
+					hosts[i].Offline = false
+				}
+				mutexHosts.Unlock()
 			}
 
 			hostname, _ := FreeBSDsysctls.SysctlKernHostname()

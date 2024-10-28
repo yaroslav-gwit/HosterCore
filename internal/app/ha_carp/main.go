@@ -111,6 +111,8 @@ func addOfflineBackup(hostname string) {
 		return
 	}
 
+	getRemoteBackups()
+
 	mutexOfflineBackups.Lock()
 	mutexBackups.RLock()
 
