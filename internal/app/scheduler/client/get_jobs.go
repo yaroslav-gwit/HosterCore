@@ -6,6 +6,7 @@ package SchedulerClient
 
 import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -28,6 +29,7 @@ func GetJobInfo(jobID string) (r SchedulerUtils.Job, e error) {
 		return
 	}
 
+	jsonJob = append(jsonJob, '\n')
 	_, err = c.Write(jsonJob)
 	if err != nil {
 		e = err
@@ -35,21 +37,13 @@ func GetJobInfo(jobID string) (r SchedulerUtils.Job, e error) {
 	}
 
 	// Read the response from the socket
-	var jsonResponse []byte
-	buffer := make([]byte, 1024) // Adjust buffer size as needed
-
-	for {
-		n, err := c.Read(buffer)
-		if err != nil {
-			e = err
-			return
-		}
-
-		jsonResponse = append(jsonResponse, buffer[:n]...)
-		if n < len(buffer) {
-			break
-		}
+	reader := bufio.NewReader(c)
+	jsonResponse, err := reader.ReadBytes('\n')
+	if err != nil {
+		e = err
+		return
 	}
+	jsonResponse = jsonResponse[:len(jsonResponse)-1]
 
 	// Process the JSON response as needed
 	var jobs []SchedulerUtils.Job
@@ -87,6 +81,7 @@ func GetJobList() (r []SchedulerUtils.Job, e error) {
 		return
 	}
 
+	jsonJob = append(jsonJob, '\n')
 	_, err = c.Write(jsonJob)
 	if err != nil {
 		e = err
@@ -94,20 +89,13 @@ func GetJobList() (r []SchedulerUtils.Job, e error) {
 	}
 
 	// Read the response from the socket
-	var jsonResponse []byte
-	buffer := make([]byte, 1024) // Adjust buffer size as needed
-
-	for {
-		n, err := c.Read(buffer)
-		if err != nil {
-			return nil, err
-		}
-
-		jsonResponse = append(jsonResponse, buffer[:n]...)
-		if n < len(buffer) {
-			break
-		}
+	reader := bufio.NewReader(c)
+	jsonResponse, err := reader.ReadBytes('\n')
+	if err != nil {
+		e = err
+		return
 	}
+	jsonResponse = jsonResponse[:len(jsonResponse)-1]
 
 	// Process the JSON response as needed
 	err = json.Unmarshal(jsonResponse, &r)
