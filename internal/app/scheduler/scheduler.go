@@ -178,8 +178,29 @@ func addJob(job SchedulerUtils.Job, m *sync.RWMutex) error {
 		job.JobId = ulid.Make().String()
 	}
 	job.TimeAdded = time.Now().Unix()
-	jobs = append(jobs, job)
 
+	// Only add the replication job if the resource is not already being replicated
+	if job.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
+		for _, v := range jobs {
+			if v.Replication.ResName == job.Replication.ResName && !v.JobDone {
+				log.Warnf("resource %s is already being replicated, new replication job will be ignored", job.Replication.ResName)
+				return nil
+			}
+		}
+	}
+
+	// Only add the snapshot job if the resource is not already being replicated
+	if job.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
+		for _, v := range jobs {
+			if v.Replication.ResName == job.Snapshot.ResName && !v.JobDone {
+				log.Warnf("resource %s is being replicated, new snapshot job will be ignored", job.Snapshot.ResName)
+				return nil
+			}
+		}
+	}
+
+	// Append the job to the jobs slice
+	jobs = append(jobs, job)
 	return nil
 }
 
