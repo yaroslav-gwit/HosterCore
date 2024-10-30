@@ -207,7 +207,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 	}
 
 	if len(remoteDs) == 1 {
-		e = fmt.Errorf("remote dataset exists")
+		e = fmt.Errorf("remote dataset exists for %s, please remove it before re-trying", job.ResName)
 		return
 	}
 
