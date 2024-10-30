@@ -190,7 +190,7 @@ func addJob(job SchedulerUtils.Job, m *sync.RWMutex) error {
 	}
 
 	// Only add the snapshot job if the resource is not already being replicated
-	if job.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
+	if job.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT && !job.Snapshot.TakeImmediately {
 		for _, v := range jobs {
 			if v.Replication.ResName == job.Snapshot.ResName && !v.JobDone {
 				log.Warnf("resource %s is being replicated, new snapshot job will be ignored", job.Snapshot.ResName)
