@@ -16,10 +16,10 @@ import (
 
 var (
 	jobs              = []SchedulerUtils.Job{}
-	jobsMutex         sync.RWMutex
+	jobsMutex         = &sync.RWMutex{}
 	snapshotMap       map[string]bool // this map keeps an exclusive snapshot lock for a specific VM, which prevents snapshot new, snapshot destroy, snapshot replicate and other ZFS conflicts
 	replicatedVm      string
-	replicatedVmMutex sync.RWMutex
+	replicatedVmMutex = &sync.RWMutex{}
 )
 
 var version = "" // automatically set during the build process
@@ -45,7 +45,7 @@ func main() {
 	// We don't care to wait for this routine, because all the jobs will be cleared on exit anyway
 	go func() {
 		for {
-			removeDoneJobs(&jobsMutex)
+			removeDoneJobs(jobsMutex)
 			time.Sleep(SchedulerUtils.SLEEP_REMOVE_DONE_JOBS * time.Second)
 		}
 	}()
@@ -54,7 +54,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for {
-			executeSnapshotJobs(&jobsMutex)
+			executeSnapshotJobs(jobsMutex)
 			time.Sleep(SchedulerUtils.SLEEP_EXECUTE_SNAPSHOTS * time.Second)
 		}
 	}()
@@ -63,7 +63,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for {
-			executeReplicationJobs(&jobsMutex)
+			executeReplicationJobs(jobsMutex)
 			time.Sleep(SchedulerUtils.SLEEP_EXECUTE_REPL * time.Second)
 		}
 	}()
@@ -72,7 +72,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for {
-			executeImmediateSnapshot(&jobsMutex)
+			executeImmediateSnapshot(jobsMutex)
 			time.Sleep(SchedulerUtils.SLEEP_EXECUTE_IMMEDIATE_SNAPSHOTS * time.Millisecond)
 		}
 	}()
@@ -139,7 +139,7 @@ func socketReceive(c net.Conn) error {
 	}
 
 	if job.JobType == SchedulerUtils.JOB_TYPE_INFO {
-		jobs := getJobs(&jobsMutex)
+		jobs := getJobs(jobsMutex)
 		// Send the response back through the socket
 		resp, err := json.Marshal(jobs)
 		if err != nil {
@@ -164,7 +164,7 @@ func socketReceive(c net.Conn) error {
 		// EOF Cleanup empty jobs from being logged out
 
 		log.Infof("new job added: [%s]", message)
-		addJob(job, &jobsMutex)
+		addJob(job, jobsMutex)
 	}
 
 	return nil
@@ -225,97 +225,3 @@ func updateJob(m *sync.RWMutex, job SchedulerUtils.Job) {
 		}
 	}
 }
-
-// Runs every 6 seconds and executes a first available job
-// func executeJobs(m *sync.RWMutex) error {
-// 	m.Lock()
-// 	defer m.Unlock()
-
-// 	for i, v := range jobs {
-// 		if v.JobDone && !v.JobDoneLogged {
-// 			if v.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
-// 				logLine := "replication -> done for: " + v.Replication.ResName
-// 				log.Info(logLine)
-// 			}
-// 			if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
-// 				logLine := "snapshot -> done for: " + v.Snapshot.ResName
-// 				log.Info(logLine)
-// 			}
-
-// 			jobs[i].JobDoneLogged = true
-// 			jobs[i].JobInProgress = false
-
-// 			continue
-// 		}
-
-// 		if v.JobFailed && !v.JobFailedLogged {
-// 			if v.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
-// 				logLine := "replication -> failed for: " + v.Replication.ResName
-// 				log.Error(logLine)
-// 			}
-// 			if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT && !v.JobFailedLogged {
-// 				logLine := "snapshot -> failed for: " + v.Snapshot.ResName
-// 				log.Error(logLine)
-// 			}
-
-// 			jobs[i].JobFailedLogged = true
-// 			jobs[i].JobInProgress = false
-// 			continue
-// 		}
-
-// 		// If the job is still in progress then break and try again during the next loop
-// 		if v.JobInProgress {
-// 			if v.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
-// 				jobs[i].JobDone = true
-// 				logLine := "replication -> in progress for: " + v.Replication.ResName
-// 				log.Info(logLine)
-// 			}
-// 			if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
-// 				logLine := "snapshot -> in progress for: " + v.Snapshot.ResName
-// 				log.Info(logLine)
-// 			}
-
-// 			break
-// 		}
-
-// 		if !v.JobDone {
-// 			jobs[i].JobInProgress = true
-
-// 			// Replication Jobs
-// 			if v.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
-// 				logLine := "replication -> started a new job for: " + v.Replication.ResName
-// 				log.Info(logLine)
-// 				break
-// 			}
-// 			// EOF Replication Jobs
-
-// 			// Snapshot Jobs
-// 			if v.JobType == SchedulerUtils.JOB_TYPE_SNAPSHOT {
-// 				log.Infof("snapshot -> started a new job for: %s", v.Snapshot.ResName)
-
-// 				dataset, err := zfsutils.FindResourceDataset(v.Snapshot.ResName)
-// 				if err != nil {
-// 					log.Infof("snapshot job jailed: %v", err)
-// 					jobs[i].JobFailed = true
-// 					jobs[i].JobError = err.Error()
-// 				}
-
-// 				newSnap, removedSnaps, err := zfsutils.TakeScheduledSnapshot(dataset, v.Snapshot.SnapshotType, v.Snapshot.SnapshotsToKeep)
-// 				if err != nil {
-// 					log.Infof("snapshot job jailed: %v", err)
-// 					jobs[i].JobFailed = true
-// 					jobs[i].JobError = err.Error()
-// 				} else {
-// 					log.Infof("new snapshot taken: %s", newSnap)
-// 					log.Infof("old snapshots removed: %v", removedSnaps)
-// 					jobs[i].JobDone = true
-// 				}
-
-// 				break
-// 			}
-// 			// EOF Snapshot Jobs
-// 		}
-// 	}
-
-// 	return nil
-// }
