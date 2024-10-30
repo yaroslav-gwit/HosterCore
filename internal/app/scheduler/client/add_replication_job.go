@@ -17,6 +17,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
 func AddReplicationJob(replJob SchedulerUtils.ReplicationJob) error {
@@ -97,6 +98,7 @@ func AddReplicationByTagJob(tag string, sshKeyFile string, sshEndpoint string, s
 				if err != nil {
 					return err
 				}
+				time.Sleep(1500 * time.Millisecond)
 			}
 		}
 	}
@@ -119,6 +121,7 @@ func AddReplicationByTagJob(tag string, sshKeyFile string, sshEndpoint string, s
 				if err != nil {
 					return err
 				}
+				time.Sleep(1500 * time.Millisecond)
 			}
 		}
 	}
@@ -265,7 +268,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 	}
 
 	if len(remoteDs) > 1 && len(commonSnaps) < 1 {
-		e = fmt.Errorf("could not find any common snapshots, remote resource must have a conflicting name with our local one")
+		e = fmt.Errorf("could not find any common snapshots for %s on the remote endpoint", job.ResName)
 		return
 	}
 
