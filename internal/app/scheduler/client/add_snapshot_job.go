@@ -74,6 +74,7 @@ func AddSnapshotJob(resName string, snapshotsToKeep int, snapshotType string, ta
 		return "", err
 	}
 
+	jsonJob = append(jsonJob, '\n')
 	_, err = c.Write(jsonJob)
 	if err != nil {
 		return "", err
@@ -117,6 +118,7 @@ func AddSnapshotAllJob(snapshotsToKeep int, snapshotType string) error {
 			return err
 		}
 
+		jsonJob = append(jsonJob, '\n')
 		_, err = c.Write(jsonJob)
 		if err != nil {
 			c.Close()
