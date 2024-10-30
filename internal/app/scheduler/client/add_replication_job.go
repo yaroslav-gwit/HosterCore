@@ -44,6 +44,7 @@ func AddReplicationJob(replJob SchedulerUtils.ReplicationJob) error {
 		return err
 	}
 
+	jsonJob = append(jsonJob, '\n')
 	_, err = c.Write(jsonJob)
 	if err != nil {
 		return err

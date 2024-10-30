@@ -2,6 +2,7 @@ package main
 
 import (
 	SchedulerUtils "HosterCore/internal/app/scheduler/utils"
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -115,25 +116,18 @@ func socketReceive(c net.Conn) error {
 	defer c.Close()
 	log.Infof("new connection [%s]", c.RemoteAddr().Network())
 
-	buffer := make([]byte, 0)
-	dynamicBuffer := make([]byte, 1024)
-
-	for {
-		bytes, err := c.Read(dynamicBuffer)
-		if err != nil {
-			log.Errorf("error [%s]", err)
-			break
-		}
-
-		buffer = append(buffer, dynamicBuffer[0:bytes]...)
-
-		if bytes < len(dynamicBuffer) {
-			break
-		}
+	// Create a new reader
+	reader := bufio.NewReader(c)
+	// Read the message until a newline character is encountered
+	messageBytes, err := reader.ReadBytes('\n')
+	if err != nil {
+		return err
 	}
+	// Remove the newline before processing
+	buffer := messageBytes[:len(messageBytes)-1]
 
 	job := SchedulerUtils.Job{}
-	err := json.Unmarshal(buffer, &job)
+	err = json.Unmarshal(buffer, &job)
 	if err != nil {
 		return err
 	}

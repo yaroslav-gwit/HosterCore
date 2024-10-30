@@ -145,6 +145,7 @@ func AddSnapshotAllJob(snapshotsToKeep int, snapshotType string) error {
 			return err
 		}
 
+		jsonJob = append(jsonJob, '\n')
 		_, err = c.Write(jsonJob)
 		if err != nil {
 			c.Close()
@@ -211,6 +212,7 @@ func AddSnapshotDestroyJob(resName string, snapshotName string) (string, error) 
 		return "", err
 	}
 
+	jsonJob = append(jsonJob, '\n')
 	_, err = c.Write(jsonJob)
 	if err != nil {
 		return "", err
@@ -272,6 +274,7 @@ func AddSnapshotRollbackJob(resName string, snapshotName string) (string, error)
 		return "", err
 	}
 
+	jsonJob = append(jsonJob, '\n')
 	_, err = c.Write(jsonJob)
 	if err != nil {
 		return "", err
