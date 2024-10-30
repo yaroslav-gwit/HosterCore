@@ -59,13 +59,13 @@ func executeReplicationJobs(m *sync.RWMutex) error {
 		}
 
 		if !v.JobDone {
-			jobs[i].JobInProgress = true
 			if len(getReplicatedVm()) > 0 {
 				continue
 			}
 
 			if v.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
 				setReplicatedVm(v.Replication.ResName)
+				jobs[i].JobInProgress = true
 				logLine := "replication -> started a new job for: " + v.Replication.ResName + ", speed limit: " + strconv.Itoa(v.Replication.SpeedLimit) + "MB/s"
 				log.Info(logLine)
 

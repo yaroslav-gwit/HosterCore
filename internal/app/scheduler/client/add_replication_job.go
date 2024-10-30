@@ -98,7 +98,7 @@ func AddReplicationByTagJob(tag string, sshKeyFile string, sshEndpoint string, s
 				if err != nil {
 					return err
 				}
-				time.Sleep(1500 * time.Millisecond)
+				time.Sleep(700 * time.Millisecond)
 			}
 		}
 	}
