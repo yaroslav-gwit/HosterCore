@@ -15,11 +15,8 @@ import (
 )
 
 var (
-	jobs      = []SchedulerUtils.Job{}
-	jobsMutex sync.RWMutex
-
-	replicatedVm string
-	// snapShottedVM string
+	jobs        = []SchedulerUtils.Job{}
+	jobsMutex   sync.RWMutex
 	snapshotMap map[string]bool // this map keeps an exclusive snapshot lock for a specific VM, which prevents snapshot new, snapshot destroy, snapshot replicate and other ZFS conflicts
 )
 

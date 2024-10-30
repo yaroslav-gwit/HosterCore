@@ -20,7 +20,7 @@ func executeSnapshotJobs(m *sync.RWMutex) error {
 		if v.JobType != SchedulerUtils.JOB_TYPE_SNAPSHOT {
 			continue
 		}
-		if v.Snapshot.ResName == replicatedVm {
+		if v.Snapshot.ResName == getReplicatedVm() {
 			continue
 		}
 		// if v.Replication.ResName == snapShottedVM {
@@ -100,7 +100,7 @@ IMMEDIATE_SNAPSHOT:
 		} else {
 			continue IMMEDIATE_SNAPSHOT
 		}
-		if v.Snapshot.ResName == replicatedVm {
+		if v.Snapshot.ResName == getReplicatedVm() {
 			continue IMMEDIATE_SNAPSHOT
 		}
 		// if v.Replication.ResName == snapShottedVM {

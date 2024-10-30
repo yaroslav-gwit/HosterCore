@@ -15,6 +15,7 @@
     "logrus",
     "mbuffer",
     "Mountpoint",
+    "oklog",
     "Passthru",
     "Pgrep",
     "pids",

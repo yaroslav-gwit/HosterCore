@@ -21,7 +21,7 @@ func executeReplicationJobs(m *sync.RWMutex) error {
 	m.Lock()
 	defer m.Unlock()
 
-	if len(replicatedVm) > 0 {
+	if len(getReplicatedVm()) > 0 {
 		return nil
 	}
 
@@ -60,8 +60,12 @@ func executeReplicationJobs(m *sync.RWMutex) error {
 
 		if !v.JobDone {
 			jobs[i].JobInProgress = true
+			if len(getReplicatedVm()) > 0 {
+				continue
+			}
 
 			if v.JobType == SchedulerUtils.JOB_TYPE_REPLICATION {
+				setReplicatedVm(v.Replication.ResName)
 				logLine := "replication -> started a new job for: " + v.Replication.ResName + ", speed limit: " + strconv.Itoa(v.Replication.SpeedLimit) + "MB/s"
 				log.Info(logLine)
 
@@ -81,10 +85,9 @@ func executeReplicationJobs(m *sync.RWMutex) error {
 }
 
 func Replicate(job SchedulerUtils.Job, m *sync.RWMutex) error {
-	replicatedVm = job.Replication.ResName
 	scriptsToRemove := []string{}
 	defer func() {
-		replicatedVm = ""
+		resetReplicatedVm()
 		job.JobDone = true
 		for _, v := range scriptsToRemove {
 			os.Remove(v)
@@ -173,4 +176,25 @@ func Replicate(job SchedulerUtils.Job, m *sync.RWMutex) error {
 	}
 
 	return nil
+}
+
+var replicatedVm string
+var replicatedVmMutex *sync.RWMutex
+
+func setReplicatedVm(vm string) {
+	replicatedVmMutex.Lock()
+	replicatedVm = vm
+	replicatedVmMutex.Unlock()
+}
+
+func resetReplicatedVm() {
+	replicatedVmMutex.Lock()
+	replicatedVm = ""
+	replicatedVmMutex.Unlock()
+}
+
+func getReplicatedVm() string {
+	replicatedVmMutex.Lock()
+	defer replicatedVmMutex.Unlock()
+	return replicatedVm
 }
