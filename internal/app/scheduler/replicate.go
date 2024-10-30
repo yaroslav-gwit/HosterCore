@@ -194,7 +194,7 @@ func resetReplicatedVm() {
 
 func getReplicatedVm() string {
 	replicatedVmMutex.RLock()
-	defer replicatedVmMutex.Unlock()
+	defer replicatedVmMutex.RUnlock()
 
 	return replicatedVm
 }
