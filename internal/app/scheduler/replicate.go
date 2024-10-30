@@ -178,23 +178,23 @@ func Replicate(job SchedulerUtils.Job, m *sync.RWMutex) error {
 	return nil
 }
 
-var replicatedVm string
-var replicatedVmMutex *sync.RWMutex
-
 func setReplicatedVm(vm string) {
 	replicatedVmMutex.Lock()
+	defer replicatedVmMutex.Unlock()
+
 	replicatedVm = vm
-	replicatedVmMutex.Unlock()
 }
 
 func resetReplicatedVm() {
 	replicatedVmMutex.Lock()
+	defer replicatedVmMutex.Unlock()
+
 	replicatedVm = ""
-	replicatedVmMutex.Unlock()
 }
 
 func getReplicatedVm() string {
-	replicatedVmMutex.Lock()
+	replicatedVmMutex.RLock()
 	defer replicatedVmMutex.Unlock()
+
 	return replicatedVm
 }

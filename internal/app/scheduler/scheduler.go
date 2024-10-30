@@ -15,9 +15,11 @@ import (
 )
 
 var (
-	jobs        = []SchedulerUtils.Job{}
-	jobsMutex   sync.RWMutex
-	snapshotMap map[string]bool // this map keeps an exclusive snapshot lock for a specific VM, which prevents snapshot new, snapshot destroy, snapshot replicate and other ZFS conflicts
+	jobs              = []SchedulerUtils.Job{}
+	jobsMutex         sync.RWMutex
+	snapshotMap       map[string]bool // this map keeps an exclusive snapshot lock for a specific VM, which prevents snapshot new, snapshot destroy, snapshot replicate and other ZFS conflicts
+	replicatedVm      string
+	replicatedVmMutex *sync.RWMutex
 )
 
 var version = "" // automatically set during the build process
