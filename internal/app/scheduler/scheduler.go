@@ -139,6 +139,8 @@ func socketReceive(c net.Conn) error {
 		if err != nil {
 			log.Errorf("could not marshal INFO response: [%s]", err.Error())
 		}
+
+		resp = append(resp, '\n')
 		_, err = c.Write(resp)
 		if err != nil {
 			log.Errorf("could not write the INFO response to socket: [%s]", err.Error())
