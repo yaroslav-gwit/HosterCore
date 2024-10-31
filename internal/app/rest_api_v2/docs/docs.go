@@ -2397,6 +2397,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/vm/settings/description/{vm_name}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Update VM's description.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Update VM's description.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the VM",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ResourceDescription"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/settings/disk/add-new/{vm_name}": {
             "post": {
                 "security": [
@@ -3132,6 +3181,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/CarpUtils.BackupInfo"
                     }
                 },
+                "service_health": {
+                    "description": "Health status: OK, WARN, CRIT",
+                    "type": "string"
+                },
                 "status": {
                     "description": "Current HA status: MASTER, BACKUP, INIT",
                     "type": "string"
@@ -3155,6 +3208,10 @@ const docTemplate = `{
                 "last_seen": {
                     "description": "Last seen timestamp",
                     "type": "integer"
+                },
+                "offline": {
+                    "description": "Online status",
+                    "type": "boolean"
                 },
                 "type": {
                     "type": "string"
@@ -3549,6 +3606,10 @@ const docTemplate = `{
                 "encrypted": {
                     "type": "boolean"
                 },
+                "failover_strategy": {
+                    "description": "Can only be set to one of the two values: \"cireset\" or \"change_parent\"",
+                    "type": "string"
+                },
                 "ip_address": {
                     "type": "string"
                 },
@@ -3627,6 +3688,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "dns_server": {
+                    "type": "string"
+                },
+                "failover_strategy": {
+                    "description": "Can only be set to one of the two values: \"cireset\" or \"change_parent\"",
                     "type": "string"
                 },
                 "ip_address": {
@@ -3798,6 +3863,10 @@ const docTemplate = `{
                 "encrypted": {
                     "type": "boolean"
                 },
+                "failover_strategy": {
+                    "description": "Only 2 options are allowed: cireset or change_parent",
+                    "type": "string"
+                },
                 "ignore_host_clock": {
                     "type": "boolean"
                 },
@@ -3838,7 +3907,6 @@ const docTemplate = `{
                     }
                 },
                 "production": {
-                    "description": "LiveStatus         string      ` + "`" + `json:\"live_status\"` + "`" + `",
                     "type": "boolean"
                 },
                 "running": {
@@ -3921,6 +3989,10 @@ const docTemplate = `{
                 "dns_search_domain": {
                     "type": "string"
                 },
+                "failover_strategy": {
+                    "description": "Only 2 options are allowed: cireset or change_parent",
+                    "type": "string"
+                },
                 "ignore_host_clock": {
                     "type": "boolean"
                 },
@@ -3958,7 +4030,6 @@ const docTemplate = `{
                     }
                 },
                 "production": {
-                    "description": "LiveStatus         string      ` + "`" + `json:\"live_status\"` + "`" + `",
                     "type": "boolean"
                 },
                 "tags": {
@@ -4267,6 +4338,14 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.ResourceDescription": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.SnapshotInput": {
             "type": "object",
             "properties": {
@@ -4491,6 +4570,7 @@ const docTemplate = `{
                     }
                 },
                 "snapshot_dataset": {
+                    "description": "Dataset name, e.g. zroot/vm-encrypted/test-vm-0107",
                     "type": "string"
                 },
                 "snapshot_description": {
@@ -4504,6 +4584,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "snapshot_short_name": {
+                    "description": "Short snapshot name, e.g. replication_2023-08-14_16-49-08",
                     "type": "string"
                 },
                 "snapshot_size_bytes": {

@@ -61,3 +61,7 @@ type VmDiskExpandInput struct {
 type JailShells struct {
 	AvailableShells []string `json:"available_shells"`
 }
+
+type ResourceDescription struct {
+	Description string `json:"description"`
+}
