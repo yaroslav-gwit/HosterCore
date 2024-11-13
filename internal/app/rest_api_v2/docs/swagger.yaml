@@ -1874,6 +1874,44 @@ paths:
       security:
       - BasicAuth: []
       summary: Get Jail config (settings).
+  /jail/settings/add-tag/{jail_name}:
+    post:
+      description: 'Add a new tag for any particular Jail.<br>`AUTH`: Only `rest`
+        user is allowed.'
+      parameters:
+      - description: Jail Name
+        in: path
+        name: jail_name
+        required: true
+        type: string
+      - description: New Tag
+        in: path
+        name: new_tag
+        required: true
+        type: string
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.TagInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Add a new tag for any particular Jail.
+      tags:
+      - Jails
+      - Tags
   /jail/settings/description/{jail_name}:
     post:
       description: 'Update Jails''s description.<br>`AUTH`: Only `rest` user is allowed.'
