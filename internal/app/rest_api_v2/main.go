@@ -120,6 +120,7 @@ func main() {
 	r.HandleFunc("/api/v2/jail/readme/{jail_name}", handlers.JailGetReadme).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/jail/get/shells/{jail_name}", handlers.JailGetShells).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/jail/settings/{jail_name}", handlers.JailGetSettings).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/jail/settings/description/{jail_name}", handlers.JailPostDescription).Methods(http.MethodPost)
 	// Snapshots
 	r.HandleFunc("/api/v2/snapshot/take/immediate", handlers.SnapshotTakeImmediate).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/snapshot/clone", handlers.SnapshotClone).Methods(http.MethodPost)
