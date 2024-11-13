@@ -1943,6 +1943,38 @@ paths:
       summary: Update Jails's description.
       tags:
       - Jails
+  /jail/settings/firmware/{jail_name}/{production}:
+    post:
+      description: 'Modify Jail''s Workload type (e.g. is this a production Jail,
+        true or false).<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Jail Name
+        in: path
+        name: jail_name
+        required: true
+        type: string
+      - description: Workload type (is this a production Jail?), e.g. true or false
+        in: path
+        name: production
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Modify Jail's Workload type (e.g. is this a production Jail, true or
+        false).
+      tags:
+      - Jails
   /jail/start/{jail_name}:
     post:
       description: 'Start a specific Jail using it''s name as a parameter.<br>`AUTH`:

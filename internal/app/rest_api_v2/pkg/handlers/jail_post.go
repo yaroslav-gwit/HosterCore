@@ -6,6 +6,7 @@ import (
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -116,6 +117,59 @@ func JailPostNewTag(w http.ResponseWriter, r *http.Request) {
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags Jails
+// @Summary Modify Jail's Workload type (e.g. is this a production Jail, true or false).
+// @Description Modify Jail's Workload type (e.g. is this a production Jail, true or false).<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param jail_name path string true "Jail Name"
+// @Param production path string true "Workload type (is this a production Jail?), e.g. true or false"
+// @Router /jail/settings/firmware/{jail_name}/{production} [post]
+func JailPostProductionSetting(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	jailName := vars["jail_name"]
+	prod := vars["production"]
+
+	prod = strings.ToLower(prod)
+	if prod == "true" || prod == "false" {
+		_ = 0
+	} else {
+		errValue := "invalid workload type, must be either 'true' or 'false'"
+		ReportError(w, http.StatusInternalServerError, errValue)
+		return
+	}
+
+	jailInfo, err := HosterJailUtils.InfoJsonApi(jailName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	location := jailInfo.Simple.Mountpoint + "/" + jailName + "/" + HosterJailUtils.JAIL_CONFIG_NAME
+
+	if prod == "true" {
+		jailInfo.JailConfig.Production = true
+	} else {
+		jailInfo.JailConfig.Production = false
+	}
+	err = HosterJailUtils.ConfigFileWriter(jailInfo.JailConfig, location)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
 }
