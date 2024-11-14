@@ -2006,6 +2006,36 @@ paths:
         false).
       tags:
       - Jails
+  /jail/settings/ram/{jail_name}/{limit}:
+    post:
+      description: 'Modify Jail''s RAM limit.<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Jail Name
+        in: path
+        name: jail_name
+        required: true
+        type: string
+      - description: Memory limit (in MB or GB, e.g. 2GB, or 2048MB)
+        in: path
+        name: limit
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Modify Jail's RAM limit.
+      tags:
+      - Jails
   /jail/start/{jail_name}:
     post:
       description: 'Start a specific Jail using it''s name as a parameter.<br>`AUTH`:

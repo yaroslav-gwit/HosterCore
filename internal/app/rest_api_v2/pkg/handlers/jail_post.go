@@ -5,6 +5,7 @@ import (
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -215,6 +216,71 @@ func JailPostCpuPercentageLimit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jailInfo.JailConfig.CPULimitPercent = limitInt
+	location := jailInfo.Simple.Mountpoint + "/" + jailName + "/" + HosterJailUtils.JAIL_CONFIG_NAME
+	err = HosterJailUtils.ConfigFileWriter(jailInfo.JailConfig, location)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags Jails
+// @Summary Modify Jail's RAM limit.
+// @Description Modify Jail's RAM limit.<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param jail_name path string true "Jail Name"
+// @Param limit path string true "Memory limit (in MB or GB, e.g. 2GB, or 2048MB)"
+// @Router /jail/settings/ram/{jail_name}/{limit} [post]
+func JailPostRamLimit(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	jailName := vars["jail_name"]
+	limit := vars["limit"]
+
+	if !strings.HasSuffix(limit, "M") || !strings.HasSuffix(limit, "MB") {
+		if !strings.HasSuffix(limit, "G") || !strings.HasSuffix(limit, "GB") {
+			errValue := "invalid RAM limit, must end with 'M', 'MB', 'G', or 'GB'"
+			ReportError(w, http.StatusInternalServerError, errValue)
+			return
+		}
+	}
+
+	limitType := ""
+	if strings.HasSuffix(limit, "M") || strings.HasSuffix(limit, "MB") {
+		limit = strings.TrimSuffix(limit, "MB")
+		limit = strings.TrimSuffix(limit, "M")
+		limitType = "M"
+	} else {
+		limit = strings.TrimSuffix(limit, "GB")
+		limit = strings.TrimSuffix(limit, "G")
+		limitType = "G"
+	}
+
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, "memory limit value could not be parsed: "+err.Error())
+		return
+	}
+
+	jailInfo, err := HosterJailUtils.InfoJsonApi(jailName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	jailInfo.JailConfig.RAMLimit = fmt.Sprintf("%d%s", limitInt, limitType)
 	location := jailInfo.Simple.Mountpoint + "/" + jailName + "/" + HosterJailUtils.JAIL_CONFIG_NAME
 	err = HosterJailUtils.ConfigFileWriter(jailInfo.JailConfig, location)
 	if err != nil {
