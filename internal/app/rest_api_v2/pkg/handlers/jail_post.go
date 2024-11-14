@@ -248,13 +248,17 @@ func JailPostRamLimit(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	jailName := vars["jail_name"]
 	limit := vars["limit"]
+	limit = strings.ToUpper(limit)
+	limit = strings.TrimSpace(limit)
 
-	if !strings.HasSuffix(limit, "M") || !strings.HasSuffix(limit, "MB") {
-		if !strings.HasSuffix(limit, "G") || !strings.HasSuffix(limit, "GB") {
-			errValue := "invalid RAM limit, must end with 'M', 'MB', 'G', or 'GB'"
-			ReportError(w, http.StatusInternalServerError, errValue)
-			return
-		}
+	if strings.HasSuffix(limit, "M") || strings.HasSuffix(limit, "MB") {
+		_ = 0
+	} else if strings.HasSuffix(limit, "G") || strings.HasSuffix(limit, "GB") {
+		_ = 0
+	} else {
+		errValue := "invalid RAM limit, must end with 'M', 'MB', 'G', or 'GB'"
+		ReportError(w, http.StatusInternalServerError, errValue)
+		return
 	}
 
 	limitType := ""
