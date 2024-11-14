@@ -530,7 +530,7 @@ func VmPostFirmwareType(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} SwaggerError
 // @Param vm_name path string true "Name of the VM"
 // @Param production path string true "Workload type (is this a production VM), e.g. true or false"
-// @Router /vm/settings/firmware/{vm_name}/{production} [post]
+// @Router /vm/settings/production/{vm_name}/{production} [post]
 func VmPostProductionSetting(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()

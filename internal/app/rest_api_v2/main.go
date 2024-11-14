@@ -123,6 +123,7 @@ func main() {
 	r.HandleFunc("/api/v2/jail/settings/description/{jail_name}", handlers.JailPostDescription).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/jail/settings/add-tag/{jail_name}", handlers.JailPostNewTag).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/jail/settings/production/{jail_name}/{production}", handlers.JailPostProductionSetting).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/jail/settings/cpu/{jail_name}/{limit}", handlers.JailPostCpuPercentageLimit).Methods(http.MethodPost)
 	// Snapshots
 	r.HandleFunc("/api/v2/snapshot/take/immediate", handlers.SnapshotTakeImmediate).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/snapshot/clone", handlers.SnapshotClone).Methods(http.MethodPost)

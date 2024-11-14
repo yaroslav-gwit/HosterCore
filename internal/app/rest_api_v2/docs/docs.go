@@ -1380,6 +1380,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/jail/settings/cpu/{jail_name}/{limit}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Modify Jail's CPU limitation (in %, maximum 100).\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Modify Jail's CPU limitation (in %, 1-100).",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Jail Name",
+                        "name": "jail_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Percentage limit (1-100)",
+                        "name": "limit",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/settings/description/{jail_name}": {
             "post": {
                 "security": [
@@ -1429,7 +1476,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/jail/settings/firmware/{jail_name}/{production}": {
+        "/jail/settings/production/{jail_name}/{production}": {
             "post": {
                 "security": [
                     {
@@ -2744,53 +2791,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/vm/settings/firmware/{vm_name}/{production}": {
-            "post": {
-                "security": [
-                    {
-                        "BasicAuth": []
-                    }
-                ],
-                "description": "Modify VM's Workload type (e.g. is this a production VM, true or false).\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "VMs"
-                ],
-                "summary": "Modify VM's Workload type (e.g. is this a production VM, true or false).",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Name of the VM",
-                        "name": "vm_name",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Workload type (is this a production VM), e.g. true or false",
-                        "name": "production",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.SwaggerSuccess"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.SwaggerError"
-                        }
-                    }
-                }
-            }
-        },
         "/vm/settings/mount-iso/{vm_name}": {
             "post": {
                 "security": [
@@ -2912,6 +2912,53 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/handlers.VmOsSettings"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vm/settings/production/{vm_name}/{production}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Modify VM's Workload type (e.g. is this a production VM, true or false).\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Modify VM's Workload type (e.g. is this a production VM, true or false).",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the VM",
+                        "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workload type (is this a production VM), e.g. true or false",
+                        "name": "production",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {

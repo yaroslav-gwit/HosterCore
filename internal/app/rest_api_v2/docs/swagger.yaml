@@ -1912,6 +1912,37 @@ paths:
       tags:
       - Jails
       - Tags
+  /jail/settings/cpu/{jail_name}/{limit}:
+    post:
+      description: 'Modify Jail''s CPU limitation (in %, maximum 100).<br>`AUTH`:
+        Only `rest` user is allowed.'
+      parameters:
+      - description: Jail Name
+        in: path
+        name: jail_name
+        required: true
+        type: string
+      - description: Percentage limit (1-100)
+        in: path
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Modify Jail's CPU limitation (in %, 1-100).
+      tags:
+      - Jails
   /jail/settings/description/{jail_name}:
     post:
       description: 'Update Jails''s description.<br>`AUTH`: Only `rest` user is allowed.'
@@ -1943,7 +1974,7 @@ paths:
       summary: Update Jails's description.
       tags:
       - Jails
-  /jail/settings/firmware/{jail_name}/{production}:
+  /jail/settings/production/{jail_name}/{production}:
     post:
       description: 'Modify Jail''s Workload type (e.g. is this a production Jail,
         true or false).<br>`AUTH`: Only `rest` user is allowed.'
@@ -2794,37 +2825,6 @@ paths:
       summary: Modify VM's Firmware type (e.g. bootloader type, bios vs uefi).
       tags:
       - VMs
-  /vm/settings/firmware/{vm_name}/{production}:
-    post:
-      description: 'Modify VM''s Workload type (e.g. is this a production VM, true
-        or false).<br>`AUTH`: Only `rest` user is allowed.'
-      parameters:
-      - description: Name of the VM
-        in: path
-        name: vm_name
-        required: true
-        type: string
-      - description: Workload type (is this a production VM), e.g. true or false
-        in: path
-        name: production
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.SwaggerSuccess'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handlers.SwaggerError'
-      security:
-      - BasicAuth: []
-      summary: Modify VM's Workload type (e.g. is this a production VM, true or false).
-      tags:
-      - VMs
   /vm/settings/mount-iso/{vm_name}:
     post:
       description: 'Mount a real ISO. This could be an installation ISO, or an ISO
@@ -2914,6 +2914,37 @@ paths:
       security:
       - BasicAuth: []
       summary: Modify VM's OS info (e.g. os_type - debian12, os_comment - Debian 12).
+      tags:
+      - VMs
+  /vm/settings/production/{vm_name}/{production}:
+    post:
+      description: 'Modify VM''s Workload type (e.g. is this a production VM, true
+        or false).<br>`AUTH`: Only `rest` user is allowed.'
+      parameters:
+      - description: Name of the VM
+        in: path
+        name: vm_name
+        required: true
+        type: string
+      - description: Workload type (is this a production VM), e.g. true or false
+        in: path
+        name: production
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Modify VM's Workload type (e.g. is this a production VM, true or false).
       tags:
       - VMs
   /vm/settings/ram/{vm_name}:
