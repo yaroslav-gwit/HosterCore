@@ -1476,6 +1476,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/jail/settings/dns/{jail_name}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Modify Jail's DNS settings.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only ` + "`" + `rest` + "`" + ` user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Modify Jail's DNS settings.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Jail Name",
+                        "name": "jail_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.JailDnsInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/settings/production/{jail_name}/{production}": {
             "post": {
                 "security": [
@@ -4570,6 +4619,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "snapshot_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.JailDnsInput": {
+            "type": "object",
+            "properties": {
+                "dns_server": {
+                    "type": "string"
+                },
+                "search_domain": {
                     "type": "string"
                 }
             }

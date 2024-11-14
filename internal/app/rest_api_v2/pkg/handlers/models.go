@@ -65,3 +65,8 @@ type JailShells struct {
 type ResourceDescription struct {
 	Description string `json:"description"`
 }
+
+type JailDnsInput struct {
+	DnsServer    string `json:"dns_server"`
+	SearchDomain string `json:"search_domain"`
+}
