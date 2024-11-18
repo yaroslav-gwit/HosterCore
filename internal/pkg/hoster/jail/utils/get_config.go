@@ -6,6 +6,7 @@ package HosterJailUtils
 
 import (
 	FileExists "HosterCore/internal/pkg/file_exists"
+	HosterHost "HosterCore/internal/pkg/hoster/host"
 	"encoding/json"
 	"errors"
 	"os"
@@ -63,6 +64,16 @@ func GetJailConfig(jailLocation string) (r JailConfig, e error) {
 	}
 	if r.FailoverStrategy != "cireset" && r.FailoverStrategy != "change_parent" {
 		r.FailoverStrategy = "change_parent"
+	}
+
+	// Set the default DNS search domain
+	if len(r.DnsSearchDomain) < 1 {
+		hostConfig, err := HosterHost.GetHostConfig()
+		if err != nil {
+			e = err
+			return
+		}
+		r.DnsSearchDomain = hostConfig.DnsSearchDomain
 	}
 
 	return
