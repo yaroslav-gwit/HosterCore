@@ -126,6 +126,7 @@ func main() {
 	r.HandleFunc("/api/v2/jail/settings/cpu/{jail_name}/{limit}", handlers.JailPostCpuPercentageLimit).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/jail/settings/ram/{jail_name}/{limit}", handlers.JailPostRamLimit).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/jail/settings/dns/{jail_name}", handlers.JailPostSettingsDns).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/jail/settings/network/{jail_name}", handlers.JailPostSettingsNetwork).Methods(http.MethodPost)
 	// Snapshots
 	r.HandleFunc("/api/v2/snapshot/take/immediate", handlers.SnapshotTakeImmediate).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/snapshot/clone", handlers.SnapshotClone).Methods(http.MethodPost)

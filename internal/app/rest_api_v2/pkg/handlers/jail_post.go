@@ -4,6 +4,7 @@ import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
+	HosterNetwork "HosterCore/internal/pkg/hoster/network"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -349,6 +350,85 @@ func JailPostSettingsDns(w http.ResponseWriter, r *http.Request) {
 	location := jailInfo.Simple.Mountpoint + "/" + jailInfo.Name + "/" + HosterJailUtils.JAIL_CONFIG_NAME
 	jailInfo.JailConfig.DnsServer = input.DnsServer
 	jailInfo.JailConfig.DnsSearchDomain = input.SearchDomain
+
+	err = HosterJailUtils.ConfigFileWriter(jailInfo.JailConfig, location)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags Jails
+// @Summary Modify Jail's Network settings.
+// @Description Modify Jail's Network settings.<br>`AUTH`: Only `rest` user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param jail_name path string true "Jail Name"
+// @Param Input body JailNetworkInput{} true "Request payload"
+// @Router /jail/settings/network/{jail_name} [post]
+func JailPostSettingsNetwork(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	jailName := vars["jail_name"]
+
+	input := JailNetworkInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	const ipv4Pattern = `\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`
+	// const ipv6Pattern = `\b([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:)\b`
+	reMatchIpv4 := regexp.MustCompile(ipv4Pattern)
+	if !reMatchIpv4.MatchString(input.IpAddress) {
+		errValue := "invalid IPv4 address"
+		ReportError(w, http.StatusInternalServerError, errValue)
+		return
+	}
+
+	networks, err := HosterNetwork.GetNetworkConfig()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	networkFound := false
+	for _, v := range networks {
+		if v.NetworkName == input.NetworkBridge {
+			networkFound = true
+			break
+		}
+	}
+	if !networkFound {
+		errValue := "network bridge not found"
+		ReportError(w, http.StatusInternalServerError, errValue)
+		return
+	}
+
+	jailInfo, err := HosterJailUtils.InfoJsonApi(jailName)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	location := jailInfo.Simple.Mountpoint + "/" + jailInfo.Name + "/" + HosterJailUtils.JAIL_CONFIG_NAME
+	jailInfo.JailConfig.IPAddress = input.IpAddress
+	jailInfo.JailConfig.Network = input.NetworkBridge
 
 	err = HosterJailUtils.ConfigFileWriter(jailInfo.JailConfig, location)
 	if err != nil {

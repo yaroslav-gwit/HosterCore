@@ -70,3 +70,8 @@ type JailDnsInput struct {
 	DnsServer    string `json:"dns_server"`
 	SearchDomain string `json:"search_domain"`
 }
+
+type JailNetworkInput struct {
+	NetworkBridge string `json:"network_bridge"`
+	IpAddress     string `json:"ip_address"`
+}
