@@ -3141,6 +3141,31 @@ paths:
       summary: Modify VM's VNC Resolution.
       tags:
       - VMs
+  /vm/start-all/{production_only}:
+    post:
+      description: 'Start all VMs.<br>`AUTH`: Both users are allowed.'
+      parameters:
+      - description: Start only production VMs (true or false)
+        in: path
+        name: production_only
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Start all VMs.
+      tags:
+      - VMs
   /vm/start/{vm_name}:
     post:
       description: 'Start a specific VM using it''s name as a parameter.<br>`AUTH`:

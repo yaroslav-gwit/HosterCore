@@ -3298,6 +3298,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/vm/start-all/{production_only}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Start all VMs.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Start all VMs.",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Start only production VMs (true or false)",
+                        "name": "production_only",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/vm/start/wait-vnc/{vm_name}": {
             "post": {
                 "security": [

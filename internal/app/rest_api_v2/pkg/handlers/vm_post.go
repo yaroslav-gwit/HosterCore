@@ -166,6 +166,43 @@ func VmPostStart(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Tags VMs
+// @Summary Start all VMs.
+// @Description Start all VMs.<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param production_only path bool true "Start only production VMs (true or false)"
+// @Router /vm/start-all/{production_only} [post]
+func VmPostStartAll(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	prodOnly := vars["production_only"]
+
+	prod := false
+	if strings.ToLower(prodOnly) == "true" {
+		prod = true
+	}
+
+	go func() {
+		err := HosterVm.StartAll(prod, 1)
+		if err != nil {
+			log.Errorf("Error starting all VMs: %s", err)
+			return
+		}
+	}()
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
 // @Summary Start a specific VM (and wait for a VNC screen connection).
 // @Description Start a specific VM using it's name as a parameter (and wait for a VNC screen connection).<br>`AUTH`: Only `REST`-type user is allowed.
 // @Produce json
