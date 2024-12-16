@@ -27,15 +27,15 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 // @Security BasicAuth
 // @Router /health/auth/regular [get]
 func HealthCheckRegularAuth(w http.ResponseWriter, r *http.Request) {
-	auth := ApiAuth.CheckRestUser(r)
-	if auth {
-		payload, _ := JSONResponse.GenerateJson(w, "message", "success")
-		SetStatusCode(w, http.StatusOK)
-		w.Write(payload)
-	} else {
+	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
+		return
 	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
 }
 
 // @Tags Health
@@ -47,15 +47,15 @@ func HealthCheckRegularAuth(w http.ResponseWriter, r *http.Request) {
 // @Security BasicAuth
 // @Router /health/auth/ha [get]
 func HealthCheckHaAuth(w http.ResponseWriter, r *http.Request) {
-	auth := ApiAuth.CheckHaUser(r)
-	if auth {
-		payload, _ := JSONResponse.GenerateJson(w, "message", "success")
-		SetStatusCode(w, http.StatusOK)
-		w.Write(payload)
-	} else {
+	if !ApiAuth.CheckHaUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
+		return
 	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
 }
 
 // @Tags Health
@@ -67,13 +67,13 @@ func HealthCheckHaAuth(w http.ResponseWriter, r *http.Request) {
 // @Security BasicAuth
 // @Router /health/auth/any [get]
 func HealthCheckAnyAuth(w http.ResponseWriter, r *http.Request) {
-	auth := ApiAuth.CheckAnyUser(r)
-	if auth {
-		payload, _ := JSONResponse.GenerateJson(w, "message", "success")
-		SetStatusCode(w, http.StatusOK)
-		w.Write(payload)
-	} else {
+	if !ApiAuth.CheckHaUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)
+		return
 	}
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
 }
