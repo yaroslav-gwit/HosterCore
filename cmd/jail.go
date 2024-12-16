@@ -43,7 +43,9 @@ var (
 )
 
 var (
-	jailStartAllCmd = &cobra.Command{
+	jailStartAllCmdWait     int
+	jailStartAllCmdProdOnly bool
+	jailStartAllCmd         = &cobra.Command{
 		Use:   "start-all",
 		Short: "Start all available Jails on this system",
 		Long:  `Start all available Jails on this system.`,
@@ -51,7 +53,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			checkInitFile()
 
-			err := HosterJail.StartAll()
+			err := HosterJail.StartAll(jailStartAllCmdProdOnly, jailStartAllCmdWait)
 			if err != nil {
 				emojlog.PrintLogMessage(err.Error(), emojlog.Error)
 				os.Exit(1)

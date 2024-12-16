@@ -108,6 +108,8 @@ func init() {
 	jailCmd.AddCommand(jailStartCmd)
 	// Jail -> start-all
 	jailCmd.AddCommand(jailStartAllCmd)
+	jailStartAllCmd.Flags().IntVarP(&jailStartAllCmdWait, "wait-time", "t", 0, "Set a static wait time between each Jail start")
+	jailStartAllCmd.Flags().BoolVarP(&jailStartAllCmdProdOnly, "production-only", "p", false, "Only start all production Jails")
 	// Jail -> stop-all
 	jailCmd.AddCommand(jailStopAllCmd)
 	// Jail -> stop

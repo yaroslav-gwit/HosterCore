@@ -11,12 +11,13 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 // Starts all available jails on this system. Running Jails will be ignored.
 //
 // Has it's own logging configured.
-func StartAll() error {
+func StartAll(productionOnly bool, wait int) error {
 	// If the logger was already set, ignore this
 	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 	if !log.ConfigSet {
@@ -66,6 +67,10 @@ func StartAll() error {
 			continue
 		}
 
+		if productionOnly && !jailConfig.Production {
+			continue
+		}
+
 		ifaces, err := HosterNetwork.CreateEpairInterface(v.JailName, jailConfig.Network)
 		if err != nil {
 			log.Error(err.Error())
@@ -104,6 +109,7 @@ func StartAll() error {
 		}
 
 		log.Info("The Jail is now running: " + v.JailName)
+		time.Sleep(time.Duration(wait) * time.Second)
 	}
 
 	return nil

@@ -1698,6 +1698,46 @@
                 }
             }
         },
+        "/jail/start-all/{production_only}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Start all Jails.\u003cbr\u003e`AUTH`: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Start all Jails.",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Start only production Jails (true or false)",
+                        "name": "production_only",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/jail/start/{jail_name}": {
             "post": {
                 "security": [
