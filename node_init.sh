@@ -71,14 +71,10 @@ done
 
 # Enable Chrony as a main source of time, and disable the `ntpd` and `ntpdate`
 service chronyd enable
-(
-    service ntpd stop
-    service ntpdate stop
-) || true
-(
-    service ntpd disable
-    service ntpdate disable
-) || true
+service ntpd stop || true
+service ntpdate stop || true
+service ntpd disable || true
+service ntpdate disable || true
 service chronyd start
 # EOF Enable Chrony as a main source of time, and disable the old `ntpd` and `ntpdate`
 
