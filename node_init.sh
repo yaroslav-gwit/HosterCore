@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e # Exit on error
+# set -e # Exit on error
 if [ "$EUID" -ne 0 ]; then echo " 🚦 ERROR: Please run this script as root user!" && exit 1; fi
 
 #_ SET DEFAULT VARS _#
