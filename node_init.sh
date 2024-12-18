@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-#_ CHECK IF USER IS ROOT _#
+set -e # Exit on error
 if [ "$EUID" -ne 0 ]; then echo " 🚦 ERROR: Please run this script as root user!" && exit 1; fi
-#_ EOF CHECK IF USER IS ROOT _#
 
 #_ SET DEFAULT VARS _#
 NETWORK_NAME="${DEF_NETWORK_NAME:=internal}"
@@ -12,31 +11,65 @@ NETWORK_RANGE_START="${DEF_NETWORK_RANGE_START:=10.0.101.10}"
 NETWORK_RANGE_END="${DEF_NETWORK_RANGE_END:=10.0.101.200}"
 PUBLIC_INTERFACE="${DEF_PUBLIC_INTERFACE:=$(ifconfig | head -1 | awk '{ print $1 }' | sed s/://)}"
 UPSTREAM_DNS_SERVER="${DEF_UPSTREAM_DNS_SERVER:=1.1.1.2}"
-DNS_SEARCH_DOMAIN="${DEF_DNS_SEARCH_DOMAIN:=hoster-core.lan}"
+DNS_SEARCH_DOMAIN="${DEF_DNS_SEARCH_DOMAIN:=hoster.lan}"
+HA_ENABLED="${DEF_HA_ENABLE:=false}"
+HA_ADDRESS="${DEF_HA_ADDRESS:=}"
+HA_INTERFACE="${DEF_HA_INTERFACE:=}"
 #_ EOF SET DEFAULT VARS _#
 
 #_ CREATE AND SET A WORKING DIRECTORY _#
 zfs create zroot/opt
 zfs set mountpoint=/opt zroot/opt
 zfs mount -a
-mkdir /opt/hoster-core
+mkdir -p /opt/hoster-core
 HOSTER_WD="/opt/hoster-core/"
 #_ EOF CREATE AND SET A WORKING DIRECTORY _#
 
-#_ INSTALL THE REQUIRED PACKAGES _#
+# INSTALL THE REQUIRED PACKAGES
 pkg update
 pkg upgrade -y
-pkg install -y vim bash bash-completion pftop tmux qemu-tools git curl
-pkg install -y bhyve-firmware uefi-edk2-bhyve-csm edk2-bhyve openssl smartmontools
-pkg install -y htop wget gtar unzip cdrkit-genisoimage go121 beadm chrony nano
-pkg install -y exa bat micro # modern alternatives to `cat`, `ls` and `nano`
-#_ EOF INSTALL THE REQUIRED PACKAGES _#
+for PKG in vim \
+    bash \
+    bash-completion \
+    pftop \
+    fusefs-sshfs \
+    tmux \
+    tailscale \
+    zerotier \
+    nebula \
+    qemu-tools \
+    git \
+    curl \
+    zsh \
+    bhyve-firmware \
+    edk2-bhyve \
+    openssl \
+    smartmontools \
+    htop \
+    wget \
+    gtar \
+    unzip \
+    cdrkit-genisoimage \
+    go121 \
+    go122 \
+    go123 \
+    beadm \
+    chrony \
+    nano \
+    exa \
+    bat \
+    fping \
+    gnu-watch \
+    mc \
+    bmon \
+    iftop \
+    micro; do
 
-#_ OPTIONAL PACKAGES _#
-# (install for easier debugging)
-# pkg install -y nano micro bmon iftop mc fusefs-sshfs gnu-watch fping fish bhyve-rc grub2-bhyve
+    pkg install -y ${PKG} || (echo " 🚦 ERROR: Failed to install ${PKG}" && echo)
+done
+# EOF INSTALL THE REQUIRED PACKAGES
 
-# Enable Chrony as a main source of time, and disable the old `ntpd` and `ntpdate`
+# Enable Chrony as a main source of time, and disable the `ntpd` and `ntpdate`
 service chronyd enable
 (
     service ntpd stop
@@ -49,20 +82,20 @@ service chronyd enable
 service chronyd start
 # EOF Enable Chrony as a main source of time, and disable the old `ntpd` and `ntpdate`
 
-# Link bash into /bin/bash for better discover-ability
+# Link bash to /bin/bash if it's not already there
 if [[ -f /bin/bash ]]; then rm /bin/bash; fi
 ln -s "$(which bash)" /bin/bash
-# EOF Link bash into /bin/bash for better discover-ability
+# EOF Link bash to /bin/bash if it's not already there
 
-#_ Set the ZFS encryption password _#
+# Set the ZFS encryption password
 if [ -z "${DEF_ZFS_ENCRYPTION_PASSWORD}" ]; then
-    ZFS_RANDOM_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
+    ZFS_RANDOM_PASSWORD=$(openssl rand -base64 40 | tr -dc '[:alnum:]')
 else
     ZFS_RANDOM_PASSWORD=${DEF_ZFS_ENCRYPTION_PASSWORD}
 fi
-#_ EOF Set the ZFS encryption password _#
+# EOF Set the ZFS encryption password
 
-#_ GENERATE SSH KEYS _#
+# GENERATE SSH KEYS
 if [[ ! -f /root/.ssh/id_rsa ]]; then
     ssh-keygen -b 4096 -t rsa -f /root/.ssh/id_rsa -q -N ""
 else
@@ -74,40 +107,32 @@ if [[ ! -f /root/.ssh/config ]]; then
 fi
 
 HOST_SSH_KEY=$(cat /root/.ssh/id_rsa.pub)
-#_ EOF GENERATE SSH KEYS _#
+# EOF GENERATE SSH KEYS
 
-#_ REGISTER IF THE REQUIRED DATASETS EXIST _#
+# REGISTER IF THE REQUIRED DATASETS EXIST
 ENCRYPTED_DS=$(zfs list | grep -c "zroot/vm-encrypted")
 UNENCRYPTED_DS=$(zfs list | grep -c "zroot/vm-unencrypted")
-#_ EOF REGISTER IF THE REQUIRED DATASETS EXIST _#
+# EOF REGISTER IF THE REQUIRED DATASETS EXIST
 
-#_ CREATE ZFS DATASETS IF THEY DON'T EXIST _#
+# CREATE ZFS DATASETS IF THEY DON'T EXIST
 zpool set autoexpand=on zroot
 zpool set autoreplace=on zroot
 
 if [[ ${ENCRYPTED_DS} -lt 1 ]]; then
-    # zfs set primarycache=metadata zroot
     echo -e "${ZFS_RANDOM_PASSWORD}" | zfs create -o encryption=on -o keyformat=passphrase zroot/vm-encrypted
     zfs atime=off zroot/vm-encrypted
+    zfs set primarycache=metadata zroot/vm-encrypted
 fi
 
 if [[ ${UNENCRYPTED_DS} -lt 1 ]]; then
-    # zfs set primarycache=metadata zroot
     zfs create zroot/vm-unencrypted
     zfs atime=off zroot/vm-unencrypted
+    zfs set primarycache=metadata zroot/vm-unencrypted
 fi
-#_ EOF CREATE ZFS DATASETS IF THEY DON'T EXIST _#
+# EOF CREATE ZFS DATASETS IF THEY DON'T EXIST
 
-#_ BOOTLOADER OPTIMIZATIONS _#
+# BOOTLOADER OPTIMIZATIONS
 BOOTLOADER_FILE="/boot/loader.conf"
-## Deprecated values, will be removed in the next release
-# CMD_LINE='fusefs_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
-# CMD_LINE='vm.kmem_size="400M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
-# CMD_LINE='vm.kmem_size_max="400M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
-# CMD_LINE='vfs.zfs.arc_max="40M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
-# CMD_LINE='vfs.zfs.vdev.cache.size="5M"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
-# CMD_LINE='virtio_blk_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >> ${BOOTLOADER_FILE}; fi
-## Up-to-date values
 CMD_LINE='# vfs.zfs.arc.max=367001600  # 350MB -> Min possible ZFS ARC Limit on FreeBSD' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 CMD_LINE='vfs.zfs.arc.max=1073741824  # 1G Default Hoster ZFS ARC Limit' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 CMD_LINE='pf_load="YES"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
@@ -120,9 +145,9 @@ ifconfig re0 &>/dev/null && CMD_LINE='if_re_load="YES"' && if [[ $(grep -c "${CM
 ifconfig re0 &>/dev/null && CMD_LINE='if_re_name="/boot/modules/if_re.ko"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 ifconfig re0 &>/dev/null && CMD_LINE='# Disable the below if you are using Jumbo frames' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
 ifconfig re0 &>/dev/null && CMD_LINE='hw.re.max_rx_mbuf_sz="2048"' && if [[ $(grep -c "${CMD_LINE}" ${BOOTLOADER_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${BOOTLOADER_FILE}; fi
-#_ EOF BOOTLOADER OPTIMIZATIONS _#
+# EOF BOOTLOADER OPTIMIZATIONS
 
-#_ PF CONFIG BLOCK IN rc.conf _#
+# PF CONFIG BLOCK IN rc.conf
 RC_CONF_FILE="/etc/rc.conf"
 ## Up-to-date values
 CMD_LINE='pf_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
@@ -131,7 +156,7 @@ CMD_LINE='pflog_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) 
 CMD_LINE='pflog_logfile="/var/log/pflog"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
 CMD_LINE='pflog_flags=""' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
 CMD_LINE='gateway_enable="yes"' && if [[ $(grep -c "${CMD_LINE}" ${RC_CONF_FILE}) -lt 1 ]]; then echo "${CMD_LINE}" >>${RC_CONF_FILE}; fi
-#_ EOF PF CONFIG BLOCK IN rc.conf _#
+# EOF PF CONFIG BLOCK IN rc.conf
 
 # Set .profile for the `root` user
 cat <<'EOF' | cat >/root/.profile
@@ -199,8 +224,8 @@ cat <<EOF | cat >${HOSTER_WD}config_files/network_config.json
 EOF
 
 ### REST API CONFIG ###
-API_RANDOM_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
-HA_RANDOM_PASSWORD=$(openssl rand -base64 32 | tr -dc '[:alnum:]')
+API_RANDOM_PASSWORD=$(openssl rand -base64 40 | tr -dc '[:alnum:]')
+HA_RANDOM_PASSWORD=$(openssl rand -base64 40 | tr -dc '[:alnum:]')
 cat <<EOF | cat >${HOSTER_WD}config_files/restapi_config.json
 {
     "bind": "0.0.0.0",
