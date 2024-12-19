@@ -35,17 +35,6 @@ func StartAll(prodOnly bool, waitTime int) error {
 		return err
 	}
 
-	// binaryLoc := ""
-	// for _, v := range HosterLocations.GetBinaryFolders() {
-	// 	loc := v + "/vm_supervisor_service"
-	// 	if FileExists.CheckUsingOsStat(loc) {
-	// 		binaryLoc = loc
-	// 	}
-	// }
-	// if len(binaryLoc) < 1 {
-	// 	return fmt.Errorf("vm_supervisor_service has not been found on your system")
-	// }
-
 	binaryLoc, err := HosterLocations.LocateBinary(HosterLocations.VM_SUPERVISOR_BINARY_NAME)
 	if err != nil {
 		return err
@@ -56,9 +45,13 @@ func StartAll(prodOnly bool, waitTime int) error {
 		if slices.Contains(liveVms, v.Name) {
 			continue
 		}
-		if prodOnly && !v.Production {
-			continue
+
+		if prodOnly {
+			if !v.Production {
+				continue
+			}
 		}
+
 		if v.Backup {
 			continue
 		}
@@ -68,12 +61,12 @@ func StartAll(prodOnly bool, waitTime int) error {
 		}
 		startId += 1
 
-		log.Info("starting the vm: " + v.Name)
+		log.Info("starting the VM: " + v.Name)
 
 		vmLocation := v.Simple.Mountpoint + "/" + v.Name
 		bhyveCmd, err := HosterVmUtils.GenerateBhyveStartCmd(v.Name, vmLocation, false, false)
 		if err != nil {
-			return err
+			log.Error("error generating bhyve start cmd: " + err.Error())
 		}
 
 		os.Setenv("VM_START", bhyveCmd)
@@ -85,10 +78,10 @@ func StartAll(prodOnly bool, waitTime int) error {
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 		err = cmd.Start()
 		if err != nil {
-			return err
+			log.Error("error starting the VM: " + err.Error())
 		}
 
-		log.Info("vm is now up: " + v.Name)
+		log.Info("VM is now up: " + v.Name)
 	}
 
 	return nil
