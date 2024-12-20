@@ -186,16 +186,17 @@ func VmPostStartAll(w http.ResponseWriter, r *http.Request) {
 
 	prod := false
 	if strings.ToLower(prodOnly) == "true" {
+		log.Debug("starting only production VMs")
 		prod = true
 	}
 
-	go func() {
+	go func(prod bool) {
 		err := HosterVm.StartAll(prod, 1)
 		if err != nil {
 			log.Errorf("Error starting all VMs: %s", err)
 			return
 		}
-	}()
+	}(prod)
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
