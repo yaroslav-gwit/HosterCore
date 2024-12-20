@@ -179,8 +179,8 @@ func JailStart(w http.ResponseWriter, r *http.Request) {
 // @Security BasicAuth
 // @Success 200 {object} SwaggerSuccess
 // @Failure 500 {object} SwaggerError
-// @Param production_only path bool true "Start only production Jails (true or false)"
-// @Router /jail/start-all/{production_only} [post]
+// @Param production path bool true "Start only production Jails (true or false)"
+// @Router /jail/start-all/{production} [post]
 func JailPostStartAll(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckAnyUser(r) {
 		user, pass, _ := r.BasicAuth()
@@ -189,20 +189,21 @@ func JailPostStartAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	prodOnly := vars["production_only"]
+	prodOnly := vars["production"]
 
 	prod := false
 	if strings.ToLower(prodOnly) == "true" {
+		log.Debug("Starting only production Jails")
 		prod = true
 	}
 
-	go func() {
+	go func(prod bool) {
 		err := HosterJail.StartAll(prod, 1)
 		if err != nil {
-			log.Errorf("Error starting all VMs: %s", err)
+			log.Errorf("Error starting all Jails: %s", err)
 			return
 		}
-	}()
+	}(prod)
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
