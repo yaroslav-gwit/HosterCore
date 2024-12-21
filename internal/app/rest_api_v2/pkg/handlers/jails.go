@@ -6,6 +6,7 @@ import (
 	HosterJail "HosterCore/internal/pkg/hoster/jail"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -200,7 +201,8 @@ func JailPostStartAll(w http.ResponseWriter, r *http.Request) {
 	go func(prod bool) {
 		err := HosterJail.StartAll(prod, 1)
 		if err != nil {
-			log.Errorf("Error starting all Jails: %s", err.Error())
+			// log.Errorf("Error starting all Jails: %s", err.Error())
+			fmt.Printf("Error starting all Jails: %s\n", err.Error())
 			return
 		}
 	}(prod)
