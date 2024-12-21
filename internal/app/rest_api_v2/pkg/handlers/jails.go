@@ -3,7 +3,6 @@ package handlers
 import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
-	MiddlewareLogging "HosterCore/internal/app/rest_api_v2/pkg/middleware/logging"
 	HosterJail "HosterCore/internal/pkg/hoster/jail"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	"encoding/json"
@@ -198,13 +197,13 @@ func JailPostStartAll(w http.ResponseWriter, r *http.Request) {
 		prod = true
 	}
 
-	go func(prod bool, log *MiddlewareLogging.Log) {
+	go func(prod bool) {
 		err := HosterJail.StartAll(prod, 1)
 		if err != nil {
 			log.Errorf("Error starting all Jails: %s", err.Error())
 			return
 		}
-	}(prod, log)
+	}(prod)
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
