@@ -8,10 +8,13 @@ import (
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
 	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
 	HosterNetwork "HosterCore/internal/pkg/hoster/network"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
 	"fmt"
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Starts all available jails on this system. Running Jails will be ignored.
@@ -19,10 +22,12 @@ import (
 // Has it's own logging configured.
 func StartAll(productionOnly bool, wait int) error {
 	// If the logger was already set, ignore this
-	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 	if !log.ConfigSet {
-		log.SetFileLocation(HosterJailUtils.JAIL_AUDIT_LOG_LOCATION)
+		log.SetLevel(logrus.DebugLevel)
+		log.SetFileLocation(HosterVmUtils.VM_AUDIT_LOG_LOCATION)
 	}
+
+	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 
 	jails, err := HosterJailUtils.ListAllSimple()
 	if err != nil {
