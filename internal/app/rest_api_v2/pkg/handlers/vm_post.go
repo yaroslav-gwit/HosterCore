@@ -10,6 +10,7 @@ package handlers
 import (
 	ApiAuth "HosterCore/internal/app/rest_api_v2/pkg/auth"
 	JSONResponse "HosterCore/internal/app/rest_api_v2/pkg/json_response"
+	MiddlewareLogging "HosterCore/internal/app/rest_api_v2/pkg/middleware/logging"
 	"HosterCore/internal/pkg/byteconversion"
 	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
 	HosterVm "HosterCore/internal/pkg/hoster/vm"
@@ -190,13 +191,13 @@ func VmPostStartAll(w http.ResponseWriter, r *http.Request) {
 		prod = true
 	}
 
-	go func(prod bool) {
+	go func(prod bool, log *MiddlewareLogging.Log) {
 		err := HosterVm.StartAll(prod, 1)
 		if err != nil {
-			log.Errorf("Error starting all VMs: %s", err)
+			log.Errorf("Error starting all VMs: %s", err.Error())
 			return
 		}
-	}(prod)
+	}(prod, log)
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
