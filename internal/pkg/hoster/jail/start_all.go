@@ -28,7 +28,6 @@ func StartAll(productionOnly bool, wait int) error {
 	}
 
 	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
-
 	jails, err := HosterJailUtils.ListAllSimple()
 	if err != nil {
 		return err
@@ -44,15 +43,6 @@ func StartAll(productionOnly bool, wait int) error {
 		if running {
 			continue
 		}
-
-		// Insert an empty spacer on every one but first iteration
-		if first {
-			first = false
-		} else {
-			log.Spacer()
-		}
-
-		log.Info("Starting the Jail: " + v.JailName)
 
 		jailDsInfo := HosterJailUtils.JailListSimple{}
 		for _, vv := range jails {
@@ -72,9 +62,19 @@ func StartAll(productionOnly bool, wait int) error {
 			continue
 		}
 
-		if productionOnly && !jailConfig.Production {
-			continue
+		if productionOnly {
+			if !jailConfig.Production {
+				continue
+			}
 		}
+
+		// Insert an empty spacer on every one but first iteration
+		if first {
+			first = false
+		} else {
+			log.Spacer()
+		}
+		log.Info("Starting the Jail: " + v.JailName)
 
 		ifaces, err := HosterNetwork.CreateEpairInterface(v.JailName, jailConfig.Network)
 		if err != nil {
