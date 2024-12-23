@@ -2113,13 +2113,13 @@ paths:
       summary: Modify Jail's RAM limit.
       tags:
       - Jails
-  /jail/start-all/{production_only}:
+  /jail/start-all/{production}:
     post:
       description: 'Start all Jails.<br>`AUTH`: Both users are allowed.'
       parameters:
       - description: Start only production Jails (true or false)
         in: path
-        name: production_only
+        name: production
         required: true
         type: boolean
       produces:
@@ -2162,6 +2162,25 @@ paths:
       security:
       - BasicAuth: []
       summary: Start a specific Jail.
+      tags:
+      - Jails
+  /jail/stop-all:
+    post:
+      description: 'Stop all Jails.<br>`AUTH`: Both users are allowed.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Stop all Jails.
       tags:
       - Jails
   /jail/stop/{jail_name}:
@@ -3166,13 +3185,13 @@ paths:
       summary: Modify VM's VNC Resolution.
       tags:
       - VMs
-  /vm/start-all/{production_only}:
+  /vm/start-all/{production}:
     post:
       description: 'Start all VMs.<br>`AUTH`: Both users are allowed.'
       parameters:
       - description: Start only production VMs (true or false)
         in: path
-        name: production_only
+        name: production
         required: true
         type: boolean
       produces:
@@ -3241,6 +3260,31 @@ paths:
       security:
       - BasicAuth: []
       summary: Start a specific VM (and wait for a VNC screen connection).
+      tags:
+      - VMs
+  /vm/stop-all/{force}:
+    post:
+      description: 'Stop all VMs.<br>`AUTH`: Both users are allowed.'
+      parameters:
+      - description: Forcefully stop all the VMs (true or false)
+        in: path
+        name: force
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Stop all VMs.
       tags:
       - VMs
   /vm/stop/{vm_name}:

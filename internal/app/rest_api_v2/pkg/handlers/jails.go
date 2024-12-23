@@ -201,11 +201,38 @@ func JailPostStartAll(w http.ResponseWriter, r *http.Request) {
 	go func(prod bool) {
 		err := HosterJail.StartAll(prod, 1)
 		if err != nil {
-			// log.Errorf("Error starting all Jails: %s", err.Error())
 			fmt.Printf("Error starting all Jails: %s\n", err.Error())
 			return
 		}
 	}(prod)
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags Jails
+// @Summary Stop all Jails.
+// @Description Stop all Jails.<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Router /jail/stop-all [post]
+func JailPostStopAll(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	go func() {
+		err := HosterJail.StopAll()
+		if err != nil {
+			fmt.Printf("Error stopping all Jails: %s\n", err.Error())
+			return
+		}
+	}()
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)

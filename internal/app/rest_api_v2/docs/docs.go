@@ -1705,7 +1705,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/jail/start-all/{production_only}": {
+        "/jail/start-all/{production}": {
             "post": {
                 "security": [
                     {
@@ -1724,7 +1724,7 @@ const docTemplate = `{
                     {
                         "type": "boolean",
                         "description": "Start only production Jails (true or false)",
-                        "name": "production_only",
+                        "name": "production",
                         "in": "path",
                         "required": true
                     }
@@ -1769,6 +1769,37 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/jail/stop-all": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Stop all Jails.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Jails"
+                ],
+                "summary": "Stop all Jails.",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3338,7 +3369,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/vm/start-all/{production_only}": {
+        "/vm/start-all/{production}": {
             "post": {
                 "security": [
                     {
@@ -3357,7 +3388,7 @@ const docTemplate = `{
                     {
                         "type": "boolean",
                         "description": "Start only production VMs (true or false)",
-                        "name": "production_only",
+                        "name": "production",
                         "in": "path",
                         "required": true
                     }
@@ -3438,6 +3469,46 @@ const docTemplate = `{
                         "type": "string",
                         "description": "VM Name",
                         "name": "vm_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vm/stop-all/{force}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Stop all VMs.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "VMs"
+                ],
+                "summary": "Stop all VMs.",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Forcefully stop all the VMs (true or false)",
+                        "name": "force",
                         "in": "path",
                         "required": true
                     }

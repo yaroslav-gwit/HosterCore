@@ -102,6 +102,7 @@ func main() {
 	r.HandleFunc("/api/v2/vm/start/{vm_name}", handlers.VmPostStart).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/start/wait-vnc/{vm_name}", handlers.VmPostStartAndWaitVnc).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/start-all/{production}", handlers.VmPostStartAll).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/vm/stop-all/{force}", handlers.VmPostStopAll).Methods(http.MethodPost)
 	// r.HandleFunc("/api/v2/vm/stop", handlers.VmStop).Methods(http.MethodPost) // Deprecated old method
 	r.HandleFunc("/api/v2/vm/stop/{vm_name}", handlers.VmPostStop).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/vm/stop/force/{vm_name}", handlers.VmPostStopForce).Methods(http.MethodPost)
@@ -115,6 +116,7 @@ func main() {
 	r.HandleFunc("/api/v2/jail/info/{jail_name}", handlers.JailInfo).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/jail/start/{jail_name}", handlers.JailStart).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/jail/start-all/{production}", handlers.JailPostStartAll).Methods(http.MethodPost)
+	r.HandleFunc("/api/v2/jail/stop-all", handlers.JailPostStopAll).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/jail/stop/{jail_name}", handlers.JailStop).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/jail/clone", handlers.JailClone).Methods(http.MethodPost)
 	r.HandleFunc("/api/v2/jail/destroy/{jail_name}", handlers.JailDestroy).Methods(http.MethodDelete)
@@ -179,8 +181,8 @@ func main() {
 	http.Handle("/", r)
 	srv := &http.Server{
 		Addr:         bindAddress,
-		WriteTimeout: 10 * time.Second,
-		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
 	}
 
 	err := srv.ListenAndServe()

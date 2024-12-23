@@ -205,6 +205,45 @@ func VmPostStartAll(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Tags VMs
+// @Summary Stop all VMs.
+// @Description Stop all VMs.<br>`AUTH`: Both users are allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} SwaggerSuccess
+// @Failure 500 {object} SwaggerError
+// @Param force path bool true "Forcefully stop all the VMs (true or false)"
+// @Router /vm/stop-all/{force} [post]
+func VmPostStopAll(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckAnyUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	forceStr := vars["force"]
+
+	force := false
+	if strings.ToLower(forceStr) == "true" {
+		log.Debug("Stop all VMs forcefully")
+		force = true
+	}
+
+	go func(force bool) {
+		err := HosterVm.StopAll(force, false)
+		if err != nil {
+			// log.Errorf("Error starting all VMs: %s", err.Error())
+			fmt.Printf("Error stopping all VMs: %s\n", err.Error())
+			return
+		}
+	}(force)
+
+	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs
 // @Summary Start a specific VM (and wait for a VNC screen connection).
 // @Description Start a specific VM using it's name as a parameter (and wait for a VNC screen connection).<br>`AUTH`: Only `REST`-type user is allowed.
 // @Produce json
