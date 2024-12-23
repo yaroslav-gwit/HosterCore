@@ -193,7 +193,8 @@ func VmPostStartAll(w http.ResponseWriter, r *http.Request) {
 	go func(prod bool) {
 		err := HosterVm.StartAll(prod, 1)
 		if err != nil {
-			log.Errorf("Error starting all VMs: %s", err.Error())
+			// log.Errorf("Error starting all VMs: %s", err.Error())
+			fmt.Printf("Error starting all VMs: %s\n", err.Error())
 			return
 		}
 	}(prod)
