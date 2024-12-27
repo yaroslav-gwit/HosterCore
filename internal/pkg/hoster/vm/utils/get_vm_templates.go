@@ -54,7 +54,8 @@ func GetTemplates(ds string) (r []VmTemplate, e error) {
 		}
 
 		templateName := parts[0]
-		templateShortName := strings.TrimPrefix(templateName, ds+"/")
+		templateShortName := ""
+		templateShortName = strings.TrimPrefix(templateName, ds+"/")
 
 		if strings.Contains(templateShortName, "/") {
 			// e = fmt.Errorf("template name contains a slash: %s", templateShortName)
@@ -71,6 +72,9 @@ func GetTemplates(ds string) (r []VmTemplate, e error) {
 		temp.Name = templateName
 		temp.ShortName = templateShortName
 		temp.Mountpoint = parts[4]
+
+		fmt.Println("in struct: " + temp.ShortName)
+		fmt.Println("normal: " + templateShortName)
 
 		temp.Size, _ = strconv.ParseUint(parts[1], 10, 64)
 		temp.SizeHuman = byteconversion.BytesToHuman(temp.Size)
