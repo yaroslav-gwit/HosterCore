@@ -17,6 +17,11 @@ type VmTemplate struct {
 }
 
 func GetTemplates(ds string) (r []VmTemplate, e error) {
+	// Clean up the dataset name
+	ds = strings.TrimSpace(ds)
+	ds = strings.TrimSuffix(ds, "/")
+	ds = strings.TrimPrefix(ds, "/")
+
 	// Example output:
 	// [0 dataset]                                  [1 free]	    [2 used]	    [3 refer]	[4 mountpoint]
 	// tank/vm-encrypted	                        143357046784	1774603857920	417792	    /tank/vm-encrypted
