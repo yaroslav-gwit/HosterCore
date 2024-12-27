@@ -199,8 +199,8 @@ func VmGetSettings(w http.ResponseWriter, r *http.Request) {
 // @Security BasicAuth
 // @Success 200 {object} HosterVmUtils.VmTemplate{}
 // @Failure 500 {object} SwaggerError
-// @Param ds path string true "Dataset path or name (e.g. tank/vm-encrypted)"
-// @Router /vm/templates/{ds} [get]
+// @Param Input body ZfsDatasetInput{} true "Request payload"
+// @Router /vm/templates [post]
 func VmGetTemplates(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckRestUser(r) {
 		user, pass, _ := r.BasicAuth()
@@ -208,10 +208,15 @@ func VmGetTemplates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	ds := vars["ds"]
+	input := ZfsDatasetInput{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&input)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-	templates, err := HosterVmUtils.GetTemplates(ds)
+	templates, err := HosterVmUtils.GetTemplates(input.Dataset)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

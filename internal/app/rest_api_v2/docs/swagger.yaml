@@ -967,6 +967,11 @@ definitions:
       vm_template_link:
         type: string
     type: object
+  handlers.ZfsDatasetInput:
+    properties:
+      dataset:
+        type: string
+    type: object
   rctl.RctMetrics:
     properties:
       code_dump_size:
@@ -2744,8 +2749,8 @@ paths:
       - VMs
   /vm/settings/{vm_name}:
     get:
-      description: 'Get the settings for a particular VM.<br>`AUTH`: Both users are
-        allowed.'
+      description: 'Get the settings for a particular VM.<br>`AUTH`: Only REST user
+        is allowed.'
       parameters:
       - description: VM Name
         in: path
@@ -3357,15 +3362,16 @@ paths:
       summary: Stop (forcefully) a specific VM.
       tags:
       - VMs
-  /vm/templates/{ds}:
-    get:
+  /vm/templates:
+    post:
       description: 'Get the list of VM templates.<br>`AUTH`: Only REST user is allowed.'
       parameters:
-      - description: Dataset path or name (e.g. tank/vm-encrypted)
-        in: path
-        name: ds
+      - description: Request payload
+        in: body
+        name: Input
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/handlers.ZfsDatasetInput'
       produces:
       - application/json
       responses:

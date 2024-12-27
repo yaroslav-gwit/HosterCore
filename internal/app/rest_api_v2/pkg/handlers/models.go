@@ -75,3 +75,7 @@ type JailNetworkInput struct {
 	NetworkBridge string `json:"network_bridge"`
 	IpAddress     string `json:"ip_address"`
 }
+
+type ZfsDatasetInput struct {
+	Dataset string `json:"dataset"`
+}

@@ -3336,7 +3336,7 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Get the settings for a particular VM.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Both users are allowed.",
+                "description": "Get the settings for a particular VM.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only REST user is allowed.",
                 "produces": [
                     "application/json"
                 ],
@@ -3609,8 +3609,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/vm/templates/{ds}": {
-            "get": {
+        "/vm/templates": {
+            "post": {
                 "security": [
                     {
                         "BasicAuth": []
@@ -3627,11 +3627,13 @@ const docTemplate = `{
                 "summary": "Get the list of VM templates.",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Dataset path or name (e.g. tank/vm-encrypted)",
-                        "name": "ds",
-                        "in": "path",
-                        "required": true
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ZfsDatasetInput"
+                        }
                     }
                 ],
                 "responses": {
@@ -5084,6 +5086,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "vm_template_link": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.ZfsDatasetInput": {
+            "type": "object",
+            "properties": {
+                "dataset": {
                     "type": "string"
                 }
             }
