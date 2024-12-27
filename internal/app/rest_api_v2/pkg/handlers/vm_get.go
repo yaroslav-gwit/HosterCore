@@ -152,7 +152,7 @@ func VmGetReadme(w http.ResponseWriter, r *http.Request) {
 
 // @Tags VMs
 // @Summary Get the settings for a particular VM.
-// @Description Get the settings for a particular VM.<br>`AUTH`: Both users are allowed.
+// @Description Get the settings for a particular VM.<br>`AUTH`: Only REST user is allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} HosterVmUtils.VmConfig
@@ -183,6 +183,41 @@ func VmGetSettings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	payload, err := json.Marshal(config)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	SetStatusCode(w, http.StatusOK)
+	w.Write(payload)
+}
+
+// @Tags VMs, Templates
+// @Summary Get the list of VM templates.
+// @Description Get the list of VM templates.<br>`AUTH`: Only REST user is allowed.
+// @Produce json
+// @Security BasicAuth
+// @Success 200 {object} HosterVmUtils.VmTemplate{}
+// @Failure 500 {object} SwaggerError
+// @Param ds path string true "Dataset path or name (e.g. tank/vm-encrypted)"
+// @Router /vm/templates/{ds} [get]
+func VmGetTemplates(w http.ResponseWriter, r *http.Request) {
+	if !ApiAuth.CheckRestUser(r) {
+		user, pass, _ := r.BasicAuth()
+		UnauthenticatedResponse(w, user, pass)
+		return
+	}
+
+	vars := mux.Vars(r)
+	ds := vars["ds"]
+
+	templates, err := HosterVmUtils.GetTemplates(ds)
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	payload, err := json.Marshal(templates)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return

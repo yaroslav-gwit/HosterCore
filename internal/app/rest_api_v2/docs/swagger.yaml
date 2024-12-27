@@ -694,6 +694,24 @@ definitions:
       key_value:
         type: string
     type: object
+  HosterVmUtils.VmTemplate:
+    properties:
+      mountpoint:
+        description: Mountpoint (e.g. /tank/vm-encrypted/template-ubuntu2404)
+        type: string
+      name:
+        description: Dataset name/path (e.g. tank/vm-encrypted/template-ubuntu2404)
+        type: string
+      short_name:
+        description: Short name, template- is trimmed (e.g. ubuntu2404)
+        type: string
+      size:
+        description: Size in bytes
+        type: integer
+      size_human:
+        description: Human-readable size (e.g. 5.0G)
+        type: string
+    type: object
   HosterZfs.MountPoint:
     properties:
       dsName:
@@ -3339,6 +3357,32 @@ paths:
       summary: Stop (forcefully) a specific VM.
       tags:
       - VMs
+  /vm/templates/{ds}:
+    get:
+      description: 'Get the list of VM templates.<br>`AUTH`: Only REST user is allowed.'
+      parameters:
+      - description: Dataset path or name (e.g. tank/vm-encrypted)
+        in: path
+        name: ds
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/HosterVmUtils.VmTemplate'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Get the list of VM templates.
+      tags:
+      - VMs
+      - Templates
 securityDefinitions:
   BasicAuth:
     type: basic
