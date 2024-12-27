@@ -67,11 +67,11 @@ func GetTemplates(ds string) (r []VmTemplate, e error) {
 		}
 		templateShortName = strings.TrimPrefix(templateName, "template-")
 
-		temp := VmTemplate{
-			Name:       templateName,
-			ShortName:  templateShortName,
-			Mountpoint: parts[4],
-		}
+		temp := VmTemplate{}
+		temp.Name = templateName
+		temp.ShortName = templateShortName
+		temp.Mountpoint = parts[4]
+
 		temp.Size, _ = strconv.ParseUint(parts[1], 10, 64)
 		temp.SizeHuman = byteconversion.BytesToHuman(temp.Size)
 
