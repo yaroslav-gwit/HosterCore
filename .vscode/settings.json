@@ -60,6 +60,7 @@
     "sysctls",
     "tailscale",
     "timeconversion",
+    "tmpl",
     "Traefik",
     "uefi",
     "unmarshaling",

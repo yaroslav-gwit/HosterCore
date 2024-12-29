@@ -130,6 +130,12 @@ func VmPostDeploy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, err = HosterVmUtils.WriteCache()
+	if err != nil {
+		ReportError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
 	w.Write(payload)
