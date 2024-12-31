@@ -2051,6 +2051,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/prometheus/autodiscovery/vms": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Generate a list of autodiscovery resources.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only PROM user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Prometheus"
+                ],
+                "summary": "Generate a list of autodiscovery resources.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/HosterPrometheus.PrometheusTarget"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
         "/snapshot/all/{res_name}": {
             "get": {
                 "security": [
@@ -4308,6 +4342,43 @@ const docTemplate = `{
                 }
             }
         },
+        "HosterPrometheus.PrometheusLabels": {
+            "type": "object",
+            "properties": {
+                "hoster_jail_name": {
+                    "type": "string"
+                },
+                "hoster_parent": {
+                    "type": "string"
+                },
+                "hoster_resource_encrypted": {
+                    "type": "string"
+                },
+                "hoster_resource_name": {
+                    "type": "string"
+                },
+                "hoster_resource_type": {
+                    "type": "string"
+                },
+                "hoster_vm_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "HosterPrometheus.PrometheusTarget": {
+            "type": "object",
+            "properties": {
+                "labels": {
+                    "$ref": "#/definitions/HosterPrometheus.PrometheusLabels"
+                },
+                "targets": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "HosterVm.VmDeployInput": {
             "type": "object",
             "properties": {
@@ -4796,6 +4867,10 @@ const docTemplate = `{
                             "password": {
                                 "description": "password for the basic HTTP auth",
                                 "type": "string"
+                            },
+                            "prometheus": {
+                                "description": "Prometheus User has access to the Prometheus metrics endpoint",
+                                "type": "boolean"
                             },
                             "user": {
                                 "description": "user name for the basic HTTP auth",

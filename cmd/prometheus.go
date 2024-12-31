@@ -21,7 +21,7 @@ var (
 			checkInitFile()
 
 			// cmd.Help()
-			r, e := HosterPrometheus.GenerateTargets()
+			r, e := HosterPrometheus.GenerateVmDnsTargets()
 			if e != nil {
 				log.Fatal(e)
 			}

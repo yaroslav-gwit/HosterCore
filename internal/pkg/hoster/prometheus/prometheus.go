@@ -2,42 +2,70 @@ package HosterPrometheus
 
 import (
 	FreeBSDsysctls "HosterCore/internal/pkg/freebsd/sysctls"
-	HosterJailUtils "HosterCore/internal/pkg/hoster/jail/utils"
+	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
+	"strings"
 )
 
-// type PrometheusTarget struct {
-// 	Targets []string `json:"targets"`
-// 	Labels  struct {
-// 		Labelname string `json:"labelname"`
-// 	} `json:"labels"`
-// }
-
-type PrometheusTarget struct {
-	Targets []string                 `json:"targets"`
-	Labels  []map[string]interface{} `json:"labels"`
+type PrometheusLabels struct {
+	HosterParent            string `json:"hoster_parent"`
+	HosterResourceType      string `json:"hoster_resource_type"`
+	HosterResourceName      string `json:"hoster_resource_name"`
+	HosterVmName            string `json:"hoster_vm_name,omitempty"`
+	HosterJailName          string `json:"hoster_jail_name,omitempty"`
+	HosterResourceEncrypted string `json:"hoster_resource_encrypted"`
 }
 
-func GenerateTargets() (r []PrometheusTarget, e error) {
-	jails, err := HosterJailUtils.ListAllSimple()
+type PrometheusTarget struct {
+	Targets []string         `json:"targets"`
+	Labels  PrometheusLabels `json:"labels"`
+	// Labels  []map[string]string `json:"labels"`
+}
+
+// This function generates a list of Prometheus targets using the VM DNS names.
+func GenerateVmDnsTargets() (r []PrometheusTarget, e error) {
+	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
+	// vms, err := HosterVmUtils.ListJsonApi()
+	vms, err := HosterVmUtils.ReadCache()
 	if err != nil {
 		e = err
 		return
 	}
 
-	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
+	for _, v := range vms {
+		if v.Backup {
+			continue
+		}
+		if !v.Running {
+			continue
+		}
 
-	for _, v := range jails {
 		pt := PrometheusTarget{}
-		pt.Targets = append(pt.Targets, v.JailName)
 
-		pt.Labels = append(pt.Labels, map[string]interface{}{"hoster_parent": hostname})
-		pt.Labels = append(pt.Labels, map[string]interface{}{"hoster_resource_type": "jail"})
-		pt.Labels = append(pt.Labels, map[string]interface{}{"hoster_resource_name": v.JailName})
-		pt.Labels = append(pt.Labels, map[string]interface{}{"jail_name": v.JailName})
-		pt.Labels = append(pt.Labels, map[string]interface{}{"hoster_resource_encrypted": v.Encrypted})
+		target := generateVmTarget(v)
+		pt.Targets = append(pt.Targets, target)
 
+		pl := PrometheusLabels{HosterParent: hostname, HosterResourceType: "vm", HosterResourceName: v.Name, HosterVmName: v.Name}
+		if v.Encrypted {
+			pl.HosterResourceEncrypted = "true"
+		} else {
+			pl.HosterResourceEncrypted = "false"
+		}
+		// pt.Labels = append(pt.Labels, map[string]interface{}{"hoster_resource_encrypted": v.Encrypted})
+
+		pt.Labels = pl
 		r = append(r, pt)
 	}
 
 	return
+}
+
+func generateVmTarget(info HosterVmUtils.VmApi) string {
+	if strings.Contains(info.OsType, "windows") {
+		return info.Name + ":9182"
+	}
+	if strings.Contains(info.OsType, "winsrv") {
+		return info.Name + ":9182"
+	}
+
+	return info.Name + ":9100"
 }

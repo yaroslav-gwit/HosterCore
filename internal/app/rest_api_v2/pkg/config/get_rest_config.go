@@ -16,9 +16,10 @@ type RestApiConfig struct {
 	HaDebug       bool   `json:"ha_debug"`  // ha_debug allows you to test the HA Mode, because instead of applying the real actions, ha_debug will only log them instead
 	LogLevel      string `json:"log_level"` // DEBUG, INFO, WARN, or ERROR
 	HTTPAuth      []struct {
-		User     string `json:"user"`     // user name for the basic HTTP auth
-		Password string `json:"password"` // password for the basic HTTP auth
-		HaUser   bool   `json:"ha_user"`  // HA User has access to a different set of routes than the regular REST API user, and vise versa. Has been implemented to limit per-user API exposure, aka normal user is not authorized to call HA related routes.
+		User           string `json:"user"`       // user name for the basic HTTP auth
+		Password       string `json:"password"`   // password for the basic HTTP auth
+		HaUser         bool   `json:"ha_user"`    // HA User has access to a different set of routes than the regular REST API user, and vise versa. Has been implemented to limit per-user API exposure, aka normal user is not authorized to call HA related routes.
+		PrometheusUser bool   `json:"prometheus"` // Prometheus User has access to the Prometheus metrics endpoint
 	} `json:"http_auth"`
 }
 
