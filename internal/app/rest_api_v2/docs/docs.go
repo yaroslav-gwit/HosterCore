@@ -1679,6 +1679,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Jails"
+                ],
                 "summary": "Get Jail config (settings).",
                 "parameters": [
                     {

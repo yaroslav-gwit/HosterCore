@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// @Tags Jails
 // @Summary Get Jail config (settings).
 // @Description Get Jail config (settings).<br>`AUTH`: Only `rest` user is allowed.
 // @Produce json

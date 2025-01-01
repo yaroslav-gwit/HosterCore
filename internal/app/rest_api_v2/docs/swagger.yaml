@@ -1938,6 +1938,8 @@ paths:
       security:
       - BasicAuth: []
       summary: Get Jail config (settings).
+      tags:
+      - Jails
   /jail/settings/add-tag/{jail_name}:
     post:
       description: 'Add a new tag for any particular Jail.<br>`AUTH`: Only `rest`
