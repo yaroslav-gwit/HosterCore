@@ -3464,6 +3464,35 @@ paths:
       tags:
       - VMs
       - Templates
+  /wireguard/script:
+    post:
+      consumes:
+      - plain/text
+      description: 'Accept any arbitrary bash script that brings up the WG interfaces.<br>`AUTH`:
+        Only REST user is allowed.'
+      parameters:
+      - description: Request payload
+        in: body
+        name: Input
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SwaggerSuccess'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Accept any arbitrary bash script that brings up the WG interfaces.
+      tags:
+      - WireGuard
 securityDefinitions:
   BasicAuth:
     type: basic

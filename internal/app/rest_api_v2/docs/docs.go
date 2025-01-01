@@ -3722,6 +3722,51 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/wireguard/script": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Accept any arbitrary bash script that brings up the WG interfaces.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only REST user is allowed.",
+                "consumes": [
+                    "plain/text"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WireGuard"
+                ],
+                "summary": "Accept any arbitrary bash script that brings up the WG interfaces.",
+                "parameters": [
+                    {
+                        "description": "Request payload",
+                        "name": "Input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerSuccess"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

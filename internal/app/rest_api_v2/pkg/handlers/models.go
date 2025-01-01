@@ -79,3 +79,7 @@ type JailNetworkInput struct {
 type ZfsDatasetInput struct {
 	Dataset string `json:"dataset"`
 }
+
+type WireGuardScriptInput struct {
+	Script string `json:"script"`
+}

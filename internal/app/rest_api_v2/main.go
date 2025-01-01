@@ -146,6 +146,8 @@ func main() {
 	// Prometheus Metrics and Autodiscovery
 	r.HandleFunc("/api/v2/prometheus/autodiscovery/vms", handlers.PrometheusAutoDiscoveryVms).Methods(http.MethodGet)
 	r.HandleFunc("/api/v2/prometheus/autodiscovery/vms/use-ips", handlers.PrometheusAutoDiscoveryVmsIps).Methods(http.MethodGet)
+	// WireGuard
+	r.HandleFunc("/api/v2/wireguard/script", handlers.WireGuardScript).Methods(http.MethodPost)
 
 	// HA
 	r.HandleFunc("/api/v2/carp-ha/ping", handlers.CarpPing).Methods(http.MethodPost)
