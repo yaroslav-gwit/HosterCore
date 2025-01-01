@@ -292,7 +292,7 @@ func init() {
 	// Prometheus command section
 	rootCmd.AddCommand(prometheusCmd)
 	prometheusCmd.AddCommand(prometheusVmsCmd)
-	vmSecretsCmd.Flags().BoolVarP(&prometheusVmsUseIps, "use-ips", "i", false, "Use IP addresses instead of DNS names for the Prometheus VM targets")
+	prometheusVmsCmd.Flags().BoolVarP(&prometheusVmsUseIps, "use-ips", "i", false, "Use IP addresses instead of DNS names for the Prometheus VM targets")
 
 	// Image command section
 	rootCmd.AddCommand(imageCmd)
