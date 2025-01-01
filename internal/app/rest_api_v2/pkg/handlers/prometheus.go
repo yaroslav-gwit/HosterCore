@@ -28,6 +28,7 @@ func PrometheusAutoDiscoveryVms(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Add("content-type", "application/json")
 	payload, err := json.Marshal(prometheusTargets)
 	if err != nil {
 		ReportError(w, http.StatusInternalServerError, err.Error())
