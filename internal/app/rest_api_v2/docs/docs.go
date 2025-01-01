@@ -2061,14 +2061,14 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Generate a list of autodiscovery resources.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only PROM user is allowed.",
+                "description": "Generate a Prometheus autodiscovery JSON output for all Hoster VMs.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only PROM user is allowed.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Prometheus"
                 ],
-                "summary": "Generate a list of autodiscovery resources.",
+                "summary": "Generate a Prometheus autodiscovery JSON output for all Hoster VMs.",
                 "responses": {
                     "200": {
                         "description": "OK",

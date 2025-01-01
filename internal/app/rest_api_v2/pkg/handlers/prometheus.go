@@ -8,14 +8,14 @@ import (
 )
 
 // @Tags Prometheus
-// @Summary Generate a list of autodiscovery resources.
-// @Description Generate a list of autodiscovery resources.<br>`AUTH`: Only PROM user is allowed.
+// @Summary Generate a Prometheus autodiscovery JSON output for all Hoster VMs.
+// @Description Generate a Prometheus autodiscovery JSON output for all Hoster VMs.<br>`AUTH`: Only PROM user is allowed.
 // @Produce json
 // @Security BasicAuth
 // @Success 200 {object} []HosterPrometheus.PrometheusTarget{}
 // @Failure 500 {object} SwaggerError
 // @Router /prometheus/autodiscovery/vms [get]
-func GeneratePrometheusAutoDiscovery(w http.ResponseWriter, r *http.Request) {
+func PrometheusAutoDiscoveryVms(w http.ResponseWriter, r *http.Request) {
 	if !ApiAuth.CheckPrometheusUser(r) {
 		user, pass, _ := r.BasicAuth()
 		UnauthenticatedResponse(w, user, pass)

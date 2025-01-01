@@ -2388,8 +2388,8 @@ paths:
       - Networks
   /prometheus/autodiscovery/vms:
     get:
-      description: 'Generate a list of autodiscovery resources.<br>`AUTH`: Only PROM
-        user is allowed.'
+      description: 'Generate a Prometheus autodiscovery JSON output for all Hoster
+        VMs.<br>`AUTH`: Only PROM user is allowed.'
       produces:
       - application/json
       responses:
@@ -2405,7 +2405,7 @@ paths:
             $ref: '#/definitions/handlers.SwaggerError'
       security:
       - BasicAuth: []
-      summary: Generate a list of autodiscovery resources.
+      summary: Generate a Prometheus autodiscovery JSON output for all Hoster VMs.
       tags:
       - Prometheus
   /snapshot/all/{res_name}:
