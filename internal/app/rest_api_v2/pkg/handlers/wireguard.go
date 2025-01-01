@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/google/uuid"
 )
@@ -48,14 +47,17 @@ func WireGuardScript(w http.ResponseWriter, r *http.Request) {
 		ReportError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	defer os.Remove(scriptLoc)
 
-	out, err := exec.Command("bash", scriptLoc).CombinedOutput()
-	if err != nil {
-		errStr := strings.TrimSpace(string(out)) + "; " + err.Error()
-		ReportError(w, http.StatusInternalServerError, errStr)
-		return
-	}
+	go func(script string, scriptLoc string) {
+		defer os.Remove(scriptLoc)
+
+		// out, err := exec.Command("bash", scriptLoc).CombinedOutput()
+		_, err := exec.Command("bash", scriptLoc).CombinedOutput()
+		if err != nil {
+			// errStr := strings.TrimSpace(string(out)) + "; " + err.Error()
+			return
+		}
+	}(script, scriptLoc)
 
 	payload, _ := JSONResponse.GenerateJson(w, "message", "success")
 	SetStatusCode(w, http.StatusOK)
