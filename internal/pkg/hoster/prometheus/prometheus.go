@@ -22,7 +22,7 @@ type PrometheusTarget struct {
 }
 
 // This function generates a list of Prometheus targets using the VM DNS names.
-func GenerateVmDnsTargets() (r []PrometheusTarget, e error) {
+func GenerateVmTargets(useIps bool) (r []PrometheusTarget, e error) {
 	hostname, _ := FreeBSDsysctls.SysctlKernHostname()
 	// vms, err := HosterVmUtils.ListJsonApi()
 	vms, err := HosterVmUtils.ReadCache()
@@ -41,7 +41,7 @@ func GenerateVmDnsTargets() (r []PrometheusTarget, e error) {
 
 		pt := PrometheusTarget{}
 
-		target := generateVmTarget(v)
+		target := generateVmTarget(v, useIps)
 		pt.Targets = append(pt.Targets, target)
 
 		pl := PrometheusLabels{HosterParent: hostname, HosterResourceType: "vm", HosterResourceName: v.Name, HosterVmName: v.Name}
@@ -59,13 +59,24 @@ func GenerateVmDnsTargets() (r []PrometheusTarget, e error) {
 	return
 }
 
-func generateVmTarget(info HosterVmUtils.VmApi) string {
-	if strings.Contains(info.OsType, "windows") {
-		return info.Name + ":9182"
+func generateVmTarget(info HosterVmUtils.VmApi, useIps bool) string {
+	address := ""
+	if useIps {
+		for _, v := range info.Networks {
+			address = v.IPAddress
+			break // pick the first available IP address
+		}
 	}
-	if strings.Contains(info.OsType, "winsrv") {
-		return info.Name + ":9182"
+	if len(address) < 1 {
+		address = info.Name
 	}
 
-	return info.Name + ":9100"
+	if strings.Contains(info.OsType, "windows") {
+		return address + ":9182"
+	}
+	if strings.Contains(info.OsType, "winsrv") {
+		return address + ":9182"
+	}
+
+	return address + ":9100"
 }

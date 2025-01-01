@@ -797,7 +797,7 @@ definitions:
             password:
               description: password for the basic HTTP auth
               type: string
-            prometheus:
+            prometheus_user:
               description: Prometheus User has access to the Prometheus metrics endpoint
               type: boolean
             user:
@@ -2389,7 +2389,31 @@ paths:
   /prometheus/autodiscovery/vms:
     get:
       description: 'Generate a Prometheus autodiscovery JSON output for all Hoster
-        VMs.<br>`AUTH`: Only PROM user is allowed.'
+        VMs (this call will returns targets as DNS names).<br>`AUTH`: Only prometheus
+        user is allowed.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/HosterPrometheus.PrometheusTarget'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.SwaggerError'
+      security:
+      - BasicAuth: []
+      summary: Generate a Prometheus autodiscovery JSON output for all Hoster VMs.
+      tags:
+      - Prometheus
+  /prometheus/autodiscovery/vms/use-ips:
+    get:
+      description: 'Generate a Prometheus autodiscovery JSON output for all Hoster
+        VMs (use IP addresses instead of DNS names).<br>`AUTH`: Only prometheus user
+        is allowed.'
       produces:
       - application/json
       responses:

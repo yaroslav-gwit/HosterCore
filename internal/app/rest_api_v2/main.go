@@ -145,6 +145,7 @@ func main() {
 	r.HandleFunc("/api/v2/metrics/jail/{jail_name}", handlers.JailMetrics).Methods(http.MethodGet)
 	// Prometheus Metrics and Autodiscovery
 	r.HandleFunc("/api/v2/prometheus/autodiscovery/vms", handlers.PrometheusAutoDiscoveryVms).Methods(http.MethodGet)
+	r.HandleFunc("/api/v2/prometheus/autodiscovery/vms/use-ips", handlers.PrometheusAutoDiscoveryVmsIps).Methods(http.MethodGet)
 
 	// HA
 	r.HandleFunc("/api/v2/carp-ha/ping", handlers.CarpPing).Methods(http.MethodPost)

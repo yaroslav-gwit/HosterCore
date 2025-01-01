@@ -2061,7 +2061,41 @@ const docTemplate = `{
                         "BasicAuth": []
                     }
                 ],
-                "description": "Generate a Prometheus autodiscovery JSON output for all Hoster VMs.\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only PROM user is allowed.",
+                "description": "Generate a Prometheus autodiscovery JSON output for all Hoster VMs (this call will returns targets as DNS names).\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only prometheus user is allowed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Prometheus"
+                ],
+                "summary": "Generate a Prometheus autodiscovery JSON output for all Hoster VMs.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/HosterPrometheus.PrometheusTarget"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SwaggerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/prometheus/autodiscovery/vms/use-ips": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Generate a Prometheus autodiscovery JSON output for all Hoster VMs (use IP addresses instead of DNS names).\u003cbr\u003e` + "`" + `AUTH` + "`" + `: Only prometheus user is allowed.",
                 "produces": [
                     "application/json"
                 ],
@@ -4871,7 +4905,7 @@ const docTemplate = `{
                                 "description": "password for the basic HTTP auth",
                                 "type": "string"
                             },
-                            "prometheus": {
+                            "prometheus_user": {
                                 "description": "Prometheus User has access to the Prometheus metrics endpoint",
                                 "type": "boolean"
                             },
