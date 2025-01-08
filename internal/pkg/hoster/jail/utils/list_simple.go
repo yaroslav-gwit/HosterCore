@@ -9,6 +9,8 @@ import (
 	HosterZfs "HosterCore/internal/pkg/hoster/zfs"
 	"fmt"
 	"os"
+	"sort"
+	"strings"
 )
 
 type JailListSimple struct {
@@ -56,6 +58,10 @@ func ListAllSimple() (r []JailListSimple, e error) {
 			}
 		}
 	}
+
+	sort.SliceStable(r, func(i, j int) bool {
+		return strings.ToLower(r[i].JailName) < strings.ToLower(r[j].JailName)
+	})
 
 	return
 }

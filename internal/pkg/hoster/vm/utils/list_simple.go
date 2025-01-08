@@ -9,6 +9,8 @@ import (
 	HosterZfs "HosterCore/internal/pkg/hoster/zfs"
 	"fmt"
 	"os"
+	"sort"
+	"strings"
 )
 
 type VmListSimple struct {
@@ -58,6 +60,10 @@ func ListAllSimple() (r []VmListSimple, e error) {
 			}
 		}
 	}
+
+	sort.SliceStable(r, func(i, j int) bool {
+		return strings.ToLower(r[i].VmName) < strings.ToLower(r[j].VmName)
+	})
 
 	return
 }
