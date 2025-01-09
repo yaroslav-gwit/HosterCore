@@ -188,7 +188,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 	}
 
 	reSplitSpace := regexp.MustCompile(`\s+`)
-	var remoteDs []string
+	var remoteDsList []string
 	var toRemove []string
 	var localSnaps []string
 	var toReplicate []string
@@ -203,11 +203,11 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 
 		split := reSplitSpace.Split(v, -1)
 		if split[0] == localDs || strings.Contains(split[0], localDs+"@") {
-			remoteDs = append(remoteDs, split[0])
+			remoteDsList = append(remoteDsList, split[0])
 		}
 	}
 
-	if len(remoteDs) == 1 {
+	if len(remoteDsList) == 1 {
 		e = fmt.Errorf("remote dataset exists for %s, please remove it before re-trying", job.ResName)
 		return
 	}
@@ -252,13 +252,13 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 	}
 
 	for _, v := range localSnaps {
-		if !slices.Contains(remoteDs, v) {
+		if !slices.Contains(remoteDsList, v) {
 			if strings.Contains(v, "@") {
 				toReplicate = append(toReplicate, v)
 			}
 		}
 	}
-	for _, v := range remoteDs {
+	for _, v := range remoteDsList {
 		if !slices.Contains(localSnaps, v) {
 			if strings.Contains(v, "@") {
 				toRemove = append(toRemove, v)
@@ -268,7 +268,7 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 		}
 	}
 
-	if len(remoteDs) > 1 && len(commonSnaps) < 1 {
+	if len(remoteDsList) > 1 && len(commonSnaps) < 1 {
 		e = fmt.Errorf("could not find any common snapshots for %s on the remote endpoint", job.ResName)
 		return
 	}
@@ -284,10 +284,9 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 	}
 
 	// Send initial snapshot
-	if len(remoteDs) < 1 {
-		// if job.SpeedLimit > 0 {
+	if len(remoteDsList) < 1 {
 		// 	os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
-		// }
+		// Speed limit is set by the scheduler itself, right before the replication starts
 		cmd := fmt.Sprintf("zfs send -P -v %s | %s | ssh -oStrictHostKeyChecking=accept-new -oBatchMode=yes -i %s -p%d %s zfs receive %s", toReplicate[0], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 		replicateCmds = append(replicateCmds, cmd)
 	} else {
@@ -304,9 +303,8 @@ func Replicate(job SchedulerUtils.ReplicationJob) (r SchedulerUtils.ReplicationJ
 				break
 			}
 
-			// if job.SpeedLimit > 0 {
 			// 	os.Setenv("SPEED_LIMIT_MB_PER_SECOND", strconv.Itoa(job.SpeedLimit))
-			// }
+			// Speed limit is set by the scheduler itself, right before the replication starts
 			cmd := fmt.Sprintf("zfs send -P -vi %s %s | %s | ssh -oStrictHostKeyChecking=accept-new -i %s -p%d %s zfs receive -F %s", v, toReplicate[i+1], mbufferBinary, job.SshKey, job.SshPort, job.SshEndpoint, localDs)
 			replicateCmds = append(replicateCmds, cmd)
 		}

@@ -13,6 +13,7 @@ import (
 	HosterHostUtils "HosterCore/internal/pkg/hoster/host/utils"
 	HosterNetwork "HosterCore/internal/pkg/hoster/network"
 	HosterVmUtils "HosterCore/internal/pkg/hoster/vm/utils"
+	zfsutils "HosterCore/internal/pkg/zfs_utils"
 	"bufio"
 	"errors"
 	"os"
@@ -322,10 +323,15 @@ func Deploy(input VmDeployInput) error {
 		return err
 	}
 
+	// Take an initial VM snapshot. This fixes the replication issue, if the oldest snapshot is of type "frequent".
+	_, _, err = zfsutils.TakeScheduledSnapshot(input.TargetDataset+"/"+c.VmName, zfsutils.TYPE_MONTHLY, 300)
+	if err != nil {
+		return err
+	}
+
 	// Start the VM when all of the above is complete
 	if input.StartWhenRdy {
 		time.Sleep(time.Second * 1)
-		// err := VmStart(c.VmName, false, false, false)
 		err := Start(input.VmName, false, false)
 		if err != nil {
 			return err

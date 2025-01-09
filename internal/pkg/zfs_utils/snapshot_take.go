@@ -31,7 +31,7 @@ func TakeScheduledSnapshot(dataset string, snapshotType string, keep int) (snaps
 
 	out, err := exec.Command("zfs", "snapshot", snapshotName).CombinedOutput()
 	if err != nil {
-		e = fmt.Errorf(strings.TrimSpace(string(out)) + "; " + err.Error())
+		e = fmt.Errorf(strings.TrimSpace(string(out))+"; %s", err.Error())
 		return
 	}
 
